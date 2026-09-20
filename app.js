@@ -100,6 +100,10 @@ function newsSitemapXml(db){
 function robotsTxt(){
   return ['User-agent: *','Allow: /','Disallow: /admin','Disallow: /search','Sitemap: '+publicUrl('/sitemap.xml'),'Sitemap: '+publicUrl('/news-sitemap.xml'),''].join('\n');
 }
+function rssXml(db){
+  const items=published(db).slice(0,30);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>نبض ساردو</title><link>'+xmlEsc(publicUrl('/'))+'</link><description>اخبار ساردوئیه، جیرفت و جنوب کرمان</description><language>fa-ir</language>'+items.map(a=>'<item><title>'+xmlEsc(a.title)+'</title><link>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</link><guid isPermaLink="true">'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</guid><pubDate>'+new Date(a.publishedAt||a.createdAt).toUTCString()+'</pubDate><description>'+xmlEsc(a.lead||a.body||a.title)+'</description></item>').join('')+'</channel></rss>';
+}
 function serveFile(res,base,pathname,prefix,cache='public,max-age=604800'){
   const rel=pathname.slice(prefix.length);
   const root=path.resolve(base),f=path.resolve(base,rel);
@@ -168,6 +172,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/robots.txt')return send(res,200,robotsTxt(),'text/plain; charset=utf-8',{'Cache-Control':'public,max-age=3600'});
   if(req.method==='GET'&&p==='/sitemap.xml')return send(res,200,sitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=900'});
   if(req.method==='GET'&&p==='/news-sitemap.xml')return send(res,200,newsSitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
+  if(req.method==='GET'&&p==='/feed.xml')return send(res,200,rssXml(db),'application/rss+xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/')return send(res,200,views.home(db));
   if(req.method==='GET'&&p==='/all-news')return send(res,200,views.archive(db,u.searchParams.get('q')||''));
   if(req.method==='GET'&&p==='/search')return send(res,200,views.search(db,u.searchParams.get('q')||''));
