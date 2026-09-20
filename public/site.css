@@ -755,3 +755,82 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
     background:linear-gradient(180deg,rgba(4,7,12,.04) 0%,rgba(4,7,12,.08) 62%,rgba(4,7,12,.18) 100%)!important;
   }
 }
+
+
+/* ===== Promo banner ratio 2.35:1 ===== */
+.promo-slot{
+  width:min(1240px,92%)!important;
+  aspect-ratio:2.35 / 1!important;
+  min-height:0!important;
+  height:auto!important;
+  grid-template-columns:1.18fr .82fr!important;
+  gap:24px!important;
+  padding:28px 34px!important;
+}
+.promo-visual{
+  min-height:0!important;
+  height:100%!important;
+}
+.school-card{
+  width:min(360px,92%)!important;
+  max-height:100%!important;
+}
+@media(max-width:900px){
+  .promo-slot{
+    grid-template-columns:1.14fr .86fr!important;
+    padding:22px 24px!important;
+    gap:18px!important;
+  }
+  .promo-copy h2{font-size:32px!important;margin:10px 0 6px!important}
+  .promo-copy p{font-size:12px!important;line-height:1.75!important}
+  .promo-tags{margin-top:12px!important;gap:6px!important}
+  .promo-tags>span{padding:6px 9px!important;font-size:9px!important}
+  .school-card{width:min(300px,96%)!important}
+}
+@media(max-width:620px){
+  .promo-slot{
+    aspect-ratio:2.35 / 1!important;
+    grid-template-columns:1.2fr .8fr!important;
+    margin-top:16px!important;
+    padding:11px 13px!important;
+    gap:10px!important;
+    border-radius:18px!important;
+  }
+  .promo-kicker{display:none!important}
+  .promo-copy h2{
+    font-size:18px!important;
+    line-height:1.25!important;
+    margin:0 0 5px!important;
+  }
+  .promo-copy p{
+    font-size:8.5px!important;
+    line-height:1.55!important;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .promo-tags{display:none!important}
+  .promo-visual{min-height:0!important}
+  .school-card{
+    width:100%!important;
+    aspect-ratio:1.45!important;
+    border-radius:16px!important;
+  }
+  .school-card svg{width:70%!important}
+  .school-sun{width:42px!important;height:42px!important;right:12px!important;top:10px!important}
+  .promo-book{width:24px!important;height:33px!important;font-size:10px!important;bottom:7px!important}
+  .pbook-1{left:8px!important}
+  .pbook-2{left:27px!important;bottom:5px!important}
+  .promo-pencil{right:8px!important;bottom:10px!important;width:44px!important;height:5px!important}
+  .promo-leaf{font-size:9px!important}
+  .promo-story-btn{
+    left:8px!important;
+    bottom:7px!important;
+    padding:5px 8px!important;
+    font-size:8px!important;
+    gap:4px!important;
+  }
+  .story-share-icon{font-size:11px!important}
+  .story-longpress-hint{display:none!important}
+}
