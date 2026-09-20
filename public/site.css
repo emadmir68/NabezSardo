@@ -675,3 +675,44 @@ html[data-lang="en"] .promo-tags{direction:ltr}
   .promo-tags{gap:7px}
   .promo-tags>span{padding:7px 10px;font-size:10px}
 }
+
+
+/* ===== Banner long-press / Instagram story sharing ===== */
+.promo-slot{touch-action:pan-y}
+.promo-story-btn{
+  position:absolute;left:22px;bottom:20px;z-index:6;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 13px;border-radius:999px;
+  border:1px solid rgba(238,196,112,.34);
+  background:rgba(7,12,20,.72);color:#f0d18d;
+  font:800 11px Vazirmatn,sans-serif;cursor:pointer;
+  backdrop-filter:blur(9px);box-shadow:0 8px 25px rgba(0,0,0,.24);
+}
+.story-share-icon{font-size:16px;line-height:1}
+.story-longpress-hint{
+  position:absolute;right:22px;bottom:22px;z-index:5;
+  color:rgba(219,225,234,.62);font-size:9px;
+}
+.story-share-sheet[hidden]{display:none!important}
+.story-share-sheet{position:fixed;inset:0;z-index:5000;display:grid;align-items:end}
+.story-sheet-backdrop{position:absolute;inset:0;border:0;background:rgba(0,0,0,.62);backdrop-filter:blur(5px)}
+.story-sheet-card{
+  position:relative;z-index:1;width:min(620px,calc(100% - 20px));margin:0 auto 10px;
+  padding:13px 18px 18px;border-radius:26px;
+  border:1px solid var(--theme-border,#333b48);
+  background:linear-gradient(180deg,#151b24,#0c1016);
+  box-shadow:0 -20px 70px rgba(0,0,0,.45);
+  text-align:center;
+}
+.story-sheet-handle{display:block;width:44px;height:4px;border-radius:999px;background:#505865;margin:0 auto 13px}
+.story-sheet-card h3{margin:0 0 5px;font-size:18px}
+.story-sheet-card p{margin:0 0 14px;color:#9da5b0;font-size:11px}
+.story-sheet-card .btn{display:flex;width:100%;justify-content:center;margin-top:9px}
+.story-sheet-cancel{border:0;background:transparent;color:#89919d;padding:12px;font:700 12px Vazirmatn,sans-serif;cursor:pointer}
+.story-sheet-open{overflow:hidden}
+html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
+@media(max-width:620px){
+  .promo-story-btn{left:14px;bottom:14px}
+  .story-longpress-hint{right:14px;bottom:17px;max-width:52%;text-align:right}
+  .story-sheet-card{border-radius:24px 24px 18px 18px;padding:12px 14px 16px}
+}
