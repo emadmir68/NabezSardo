@@ -175,7 +175,7 @@ function articlePayload(db,f,files,current={}){
   };
 }
 
-const HERO_MOSQUE_PATH=path.join(ROOT,'public','header-mosque-hq.jpg');
+const HERO_MOSQUE_PATH=path.join(ROOT,'public','header-mosque-fixed.jpg');
 const HERO_MOSQUE_JPG=fs.readFileSync(HERO_MOSQUE_PATH);
 const HERO_MOSQUE_SHA1=crypto.createHash('sha1').update(HERO_MOSQUE_JPG).digest('hex');
 console.log(`hero-image-ready bytes=${HERO_MOSQUE_JPG.length} sha1=${HERO_MOSQUE_SHA1}`);
