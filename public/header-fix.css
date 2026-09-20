@@ -32,6 +32,8 @@
   filter:none!important;
   transform:none!important;
   animation:none!important;
+  image-rendering:auto!important;
+  -webkit-image-rendering:auto!important;
 }
 .hero.hero-photo-final::before,
 .hero.hero-photo-final::after{
