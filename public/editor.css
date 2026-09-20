@@ -16,3 +16,8 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
 .article-gallery{margin-top:30px}.article-gallery h3{font-family:"Vazirmatn",Tahoma,sans-serif;font-size:20px}.article-gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.article-gallery-grid img{width:100%;height:210px;object-fit:cover;border-radius:14px;border:1px solid #2e3540}
 @media(max-width:760px){.gallery-head{align-items:flex-start;flex-direction:column}.gallery-list{grid-template-columns:1fr 1fr}.integration-grid{grid-template-columns:1fr 1fr}.article-gallery-grid{grid-template-columns:1fr 1fr}.article-gallery-grid img{height:160px}}
 @media(max-width:460px){.integration-grid{grid-template-columns:1fr}.gallery-list{grid-template-columns:1fr 1fr}}
+
+
+/* Featured image preview mirrors final 16:9 output */
+.image-preview{aspect-ratio:16/9;min-height:0}
+.image-preview img{width:100%;height:100%;object-fit:cover;object-position:center center}
