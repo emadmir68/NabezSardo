@@ -5,6 +5,7 @@ const crypto=require('crypto');
 const store=require('./lib/store');
 const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullBackup,restoreFullBackup}=store;
 const views=require('./lib/views-v2');
+const articleTools=require('./lib/article-tools');
 
 const PORT=Number(process.env.PORT||3000);
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
@@ -134,7 +135,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&m){const c=db.categories.find(x=>x.id===m[1]);return c?send(res,200,views.category(db,c)):send(res,404,'دسته‌بندی یافت نشد');}
 
   if(p.startsWith('/admin')&&p!=='/admin/login'&&!authed(req))return redirect(res,'/admin/login');
-  if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams));
+  if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams,articleTools.socialStatus()));
   if(req.method==='GET'&&p==='/admin/articles/new')return send(res,200,views.editor(db));
   m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
   if(req.method==='GET'&&m){const a=db.articles.find(x=>x.id===m[1]);return a?send(res,200,views.editor(db,a,'/admin/articles/'+a.id+'/edit','ویرایش خبر')):send(res,404,'یافت نشد');}
@@ -157,6 +158,17 @@ const server=http.createServer(async(req,res)=>{
     if(p==='/send-news'){db.citizens.unshift({id:id(),createdAt:now(),name:f.name||'',phone:f.phone||'',location:f.location||'',headline:f.headline||'',details:f.details||'',mediaLink:f.mediaLink||''});save(db);return redirect(res,'/send-news?ok=1');}
 
     if(p.startsWith('/admin')&&!authed(req))return redirect(res,'/admin/login');
+    if(p==='/admin/upload/image'){
+      const file=files.image||files.imageFile;
+      if(!file||!file.data||!file.data.length)return send(res,400,JSON.stringify({ok:false,error:'فایلی انتخاب نشده است'}),'application/json; charset=utf-8');
+      try{
+        const url=articleTools.saveImage(file);
+        return send(res,200,JSON.stringify({ok:true,url}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
+      }catch(err){
+        const msg=err.message==='image-too-large'?'حجم عکس باید کمتر از ۱۰ مگابایت باشد.':'فرمت عکس پشتیبانی نمی‌شود.';
+        return send(res,400,JSON.stringify({ok:false,error:msg}),'application/json; charset=utf-8');
+      }
+    }
     if(p==='/admin/backup/create'){createBackup('manual');return redirect(res,'/admin?backup=1');}
     if(p==='/admin/backup/restore'){
       if(!files.backupFile||!files.backupFile.data.length)return redirect(res,'/admin?restoreError=1');
@@ -164,15 +176,20 @@ const server=http.createServer(async(req,res)=>{
       catch{return redirect(res,'/admin?restoreError=1');}
     }
     if(p==='/admin/articles/new'){
-      const payload=articlePayload(db,f,files,{});
+      const payload=articleTools.articlePayload(db,f,files,{},uniqueSlug);
       const a={id:id(),createdAt:now(),...payload,publishedAt:payload.status==='published'?now():null};
-      db.articles.unshift(a);save(db);return redirect(res,'/admin');
+      db.articles.unshift(a);save(db);
+      if(a.status==='published')articleTools.dispatchAndPersist(a.id).catch(err=>console.error('social distribution',err));
+      return redirect(res,'/admin');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
-      const was=a.status==='published',payload=articlePayload(db,f,files,a);Object.assign(a,payload);
-      if(!was&&a.status==='published')a.publishedAt=now();save(db);return redirect(res,'/admin');
+      const was=a.status==='published',payload=articleTools.articlePayload(db,f,files,a,uniqueSlug);Object.assign(a,payload);
+      if(!was&&a.status==='published')a.publishedAt=now();
+      save(db);
+      if(!was&&a.status==='published')articleTools.dispatchAndPersist(a.id).catch(err=>console.error('social distribution',err));
+      return redirect(res,'/admin');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/delete$/);
     if(m){const a=db.articles.find(x=>x.id===m[1]);if(a)deleteUpload(a.image);db.articles=db.articles.filter(x=>x.id!==m[1]);save(db);return redirect(res,'/admin');}
@@ -187,3 +204,5 @@ const server=http.createServer(async(req,res)=>{
  }
 });
 server.listen(PORT,'0.0.0.0',()=>console.log('Nabez Sardo running on :'+PORT));
+setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
+setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
