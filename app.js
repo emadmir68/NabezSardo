@@ -176,7 +176,7 @@ const server=http.createServer(async(req,res)=>{
       catch{return redirect(res,'/admin?restoreError=1');}
     }
     if(p==='/admin/articles/new'){
-      const payload=articleTools.articlePayload(db,f,files,{},uniqueSlug);
+      const payload=await articleTools.articlePayload(db,f,files,{},uniqueSlug);
       const a={id:id(),createdAt:now(),...payload,publishedAt:payload.status==='published'?now():null};
       db.articles.unshift(a);save(db);
       if(a.status==='published')articleTools.dispatchAndPersist(a.id).catch(err=>console.error('social distribution',err));
@@ -185,7 +185,7 @@ const server=http.createServer(async(req,res)=>{
     m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
-      const was=a.status==='published',payload=articleTools.articlePayload(db,f,files,a,uniqueSlug);Object.assign(a,payload);
+      const was=a.status==='published',payload=await articleTools.articlePayload(db,f,files,a,uniqueSlug);Object.assign(a,payload);
       if(!was&&a.status==='published')a.publishedAt=now();
       save(db);
       if(!was&&a.status==='published')articleTools.dispatchAndPersist(a.id).catch(err=>console.error('social distribution',err));
@@ -204,5 +204,6 @@ const server=http.createServer(async(req,res)=>{
  }
 });
 server.listen(PORT,'0.0.0.0',()=>console.log('Nabez Sardo running on :'+PORT));
+articleTools.normalizeExistingFeaturedImages().then(changed=>{if(changed)console.log('Featured images normalized to 1600x900');}).catch(err=>console.error('featured image normalization',err));
 setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
 setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
