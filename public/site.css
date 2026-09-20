@@ -276,3 +276,36 @@
   border:1px solid #2d333d;
 }
 .citizen-media a{color:#ddb66c;text-decoration:none;font-size:12px;font-weight:800}
+
+
+/* Hero mosque visibility hard override */
+.hero-bg{
+  background-image:url('/assets/hero-mosque.jpg')!important;
+  background-size:cover!important;
+  background-position:center 48%!important;
+  filter:none!important;
+  opacity:1!important;
+  animation:heroMosquePan 18s ease-in-out infinite alternate!important;
+}
+.hero:before{
+  opacity:.18!important;
+}
+.hero:after{
+  background:
+    linear-gradient(90deg,rgba(6,8,11,.58) 0%,rgba(7,9,13,.28) 34%,rgba(7,9,13,.05) 68%,rgba(7,9,13,.16) 100%),
+    linear-gradient(180deg,transparent 76%,rgba(9,11,15,.72) 100%)!important;
+}
+@keyframes heroMosquePan{
+  0%{transform:scale(1.04) translate3d(-1%,0,0);background-position:48% 48%}
+  100%{transform:scale(1.08) translate3d(1%,-1%,0);background-position:52% 46%}
+}
+@media(max-width:620px){
+  .hero-bg{
+    background-position:center 42%!important;
+  }
+  .hero:before{opacity:.10!important}
+  .hero:after{
+    background:
+      linear-gradient(180deg,rgba(6,8,11,.08) 0%,rgba(6,8,11,.12) 55%,rgba(9,11,15,.58) 100%)!important;
+  }
+}
