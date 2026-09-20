@@ -499,3 +499,45 @@ nav{background:color-mix(in srgb,var(--theme-header) 94%,transparent)!important}
 .reward-card-admin b{display:block;color:#d0a65f;font-size:11px;margin-bottom:5px}
 .reward-card-admin span{direction:ltr;display:inline-block;font-family:monospace;letter-spacing:1px}
 @media(max-width:620px){.hero-bg-image{object-position:center 36%!important}.pulse-stage{transform:translateY(82px) scale(.70)!important}.hero{min-height:830px!important}}
+
+
+/* ===== Bilingual FA/EN + live Jalali clock ===== */
+.lang-en{display:none}
+html[data-lang="en"] .lang-fa{display:none!important}
+html[data-lang="en"] .lang-en{display:inline!important}
+html[data-lang="fa"] .lang-fa{display:inline!important}
+html[data-lang="fa"] .lang-en{display:none!important}
+html[data-lang="en"] body{direction:ltr;text-align:left}
+html[data-lang="en"] .navrow,
+html[data-lang="en"] .actions,
+html[data-lang="en"] .row,
+html[data-lang="en"] .meta,
+html[data-lang="en"] .sectionhead,
+html[data-lang="en"] .citizen,
+html[data-lang="en"] .foot{direction:ltr}
+html[data-lang="en"] .hero-copy,
+html[data-lang="en"] .page,
+html[data-lang="en"] .article,
+html[data-lang="en"] .card,
+html[data-lang="en"] .panel,
+html[data-lang="en"] .topic,
+html[data-lang="en"] .form{direction:ltr;text-align:left}
+.top-row{gap:18px}
+.top-copy{min-width:0}
+.top-tools{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.site-datetime{display:flex;align-items:center;gap:8px;direction:ltr;color:#d8dde5}
+.site-clock{font-family:monospace;font-size:12px;font-weight:900;color:var(--theme-accent,#d0a65f)}
+.site-date{font-size:10px;color:#9ca3ad;white-space:nowrap}
+.lang-switcher{display:flex;align-items:center;border:1px solid #323844;border-radius:999px;padding:3px;background:#0d1117;direction:ltr}
+.lang-btn{border:0;background:transparent;color:#8e96a2;border-radius:999px;padding:5px 8px;font:inherit;font-size:10px;font-weight:900;cursor:pointer}
+.lang-btn.active{background:var(--theme-accent,#d0a65f);color:#101318}
+.news-date{display:block;margin:7px 0 2px;color:#818995;font-size:10px}
+.en-fields{margin:14px 0;padding:16px;border:1px solid #34404c;border-radius:15px;background:#0b1118;direction:ltr;text-align:left}
+.en-fields h3{margin:0 0 12px;color:#d8b56e;font-size:14px}
+@media(max-width:620px){
+  .top-row{display:flex!important;align-items:flex-start!important;flex-direction:column!important;text-align:initial!important}
+  .top-tools{width:100%;justify-content:space-between}
+  .site-datetime{gap:6px}
+  .site-date{font-size:9px}
+  .lang-btn{padding:5px 9px}
+}
