@@ -4,7 +4,7 @@ const path=require('path');
 const crypto=require('crypto');
 const store=require('./lib/store');
 const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullBackup,restoreFullBackup}=store;
-const views=require('./lib/views');
+const views=require('./lib/views-v2');
 
 const PORT=Number(process.env.PORT||3000);
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
