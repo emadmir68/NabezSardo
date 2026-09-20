@@ -278,57 +278,100 @@
 .citizen-media a{color:#ddb66c;text-decoration:none;font-size:12px;font-weight:800}
 
 
-/* Hero mosque visibility hard override */
+
+
+
+
+/* ===== FINAL HERO VISIBILITY FIX ===== */
+.hero{
+  position:relative;
+  overflow:hidden;
+  background:#0b0e13;
+}
 .hero-bg{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  display:block!important;
   background-image:url('/assets/hero-mosque-v2.jpg')!important;
   background-size:cover!important;
-  background-position:center 48%!important;
-  filter:none!important;
+  background-repeat:no-repeat!important;
+  background-position:center 42%!important;
   opacity:1!important;
-  animation:heroMosquePan 18s ease-in-out infinite alternate!important;
+  filter:none!important;
+  transform:scale(1.025)!important;
+  animation:heroPhotoMove 18s ease-in-out infinite alternate!important;
+  will-change:transform,background-position;
 }
-.hero:before{
-  opacity:.18!important;
+.hero::before,
+.hero::after{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
 }
-.hero:after{
-  background:
-    linear-gradient(90deg,rgba(6,8,11,.58) 0%,rgba(7,9,13,.28) 34%,rgba(7,9,13,.05) 68%,rgba(7,9,13,.16) 100%),
-    linear-gradient(180deg,transparent 76%,rgba(9,11,15,.72) 100%)!important;
+.hero::before{
+  z-index:1!important;
+  background:linear-gradient(
+    90deg,
+    rgba(6,8,11,.42) 0%,
+    rgba(6,8,11,.20) 34%,
+    rgba(6,8,11,.04) 68%,
+    rgba(6,8,11,.10) 100%
+  )!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  filter:none!important;
+  animation:none!important;
 }
-@keyframes heroMosquePan{
-  0%{transform:scale(1.04) translate3d(-1%,0,0);background-position:48% 48%}
-  100%{transform:scale(1.08) translate3d(1%,-1%,0);background-position:52% 46%}
+.hero::after{
+  z-index:1!important;
+  background:linear-gradient(
+    180deg,
+    rgba(9,11,15,0) 0%,
+    rgba(9,11,15,.02) 58%,
+    rgba(9,11,15,.34) 100%
+  )!important;
+  opacity:1!important;
+}
+.hero-grid,
+.hero-copy,
+.hero-art,
+.pulse-stage{
+  position:relative!important;
+  z-index:2!important;
+}
+.lux-pulse{opacity:.90!important}
+.pulse-halo{opacity:.16!important}
+@keyframes heroPhotoMove{
+  0%{transform:scale(1.025) translate3d(-.5%,0,0);background-position:48% 42%}
+  100%{transform:scale(1.055) translate3d(.5%,-.5%,0);background-position:52% 40%}
 }
 @media(max-width:620px){
   .hero-bg{
-    background-position:center 42%!important;
+    background-position:center 34%!important;
+    transform:scale(1.015)!important;
   }
-  .hero:before{opacity:.10!important}
-  .hero:after{
-    background:
-      linear-gradient(180deg,rgba(6,8,11,.08) 0%,rgba(6,8,11,.12) 55%,rgba(9,11,15,.58) 100%)!important;
+  .hero::before{
+    background:linear-gradient(
+      180deg,
+      rgba(6,8,11,.06) 0%,
+      rgba(6,8,11,.08) 52%,
+      rgba(6,8,11,.18) 76%,
+      rgba(9,11,15,.36) 100%
+    )!important;
   }
-}
-
-
-/* Hero mosque v2 — cache-safe and clearly visible */
-.hero-bg{
-  background-image:url('/assets/hero-mosque-v2.jpg')!important;
-  background-size:cover!important;
-  background-position:center 44%!important;
-  filter:none!important;
-  opacity:1!important;
-}
-.hero:before{opacity:.08!important}
-.hero:after{
-  background:
-    linear-gradient(90deg,rgba(6,8,11,.36) 0%,rgba(7,9,13,.16) 36%,rgba(7,9,13,.02) 68%,rgba(7,9,13,.08) 100%),
-    linear-gradient(180deg,transparent 82%,rgba(9,11,15,.52) 100%)!important;
-}
-@media(max-width:620px){
-  .hero-bg{background-position:center 38%!important}
-  .hero:before{opacity:.04!important}
-  .hero:after{
-    background:linear-gradient(180deg,rgba(6,8,11,.03) 0%,rgba(6,8,11,.06) 58%,rgba(9,11,15,.45) 100%)!important;
+  .hero::after{
+    background:linear-gradient(
+      180deg,
+      rgba(9,11,15,0) 0%,
+      rgba(9,11,15,0) 68%,
+      rgba(9,11,15,.28) 100%
+    )!important;
   }
+  .lux-pulse{opacity:.86!important}
+  .pulse-halo{opacity:.12!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-bg{animation:none!important;transform:scale(1.02)!important}
 }
