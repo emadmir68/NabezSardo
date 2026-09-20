@@ -66,3 +66,25 @@
     object-position:50% 40%!important;
   }
 }
+
+/* Sharp hero pass — prevent excessive enlargement on mobile */
+.hero.hero-photo-final{
+  min-height:640px!important;
+}
+.hero.hero-photo-final .hero-photo-layer img{
+  object-fit:cover!important;
+  object-position:50% 43%!important;
+  image-rendering:auto!important;
+  filter:contrast(1.035) saturate(1.025)!important;
+}
+@media(max-width:620px){
+  .hero.hero-photo-final{
+    min-height:640px!important;
+  }
+  .hero.hero-photo-final .hero-photo-layer img{
+    object-position:50% 42%!important;
+  }
+  .hero.hero-photo-final .pulse-stage{
+    transform:translateY(34px) scale(.66)!important;
+  }
+}
