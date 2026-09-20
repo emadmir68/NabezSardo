@@ -21,3 +21,11 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
 /* Featured image preview mirrors final 16:9 output */
 .image-preview{aspect-ratio:16/9;min-height:0}
 .image-preview img{width:100%;height:100%;object-fit:cover;object-position:center center}
+
+
+/* Adaptive featured-image preview */
+.image-preview{aspect-ratio:var(--preview-ratio,1.77778);height:auto;align-self:start}
+.image-preview img{width:100%;height:100%;object-fit:contain;object-position:center;background:#10141a}
+.image-preview.portrait{max-width:320px}
+.image-preview.square{max-width:320px}
+.image-preview.landscape{max-width:100%}
