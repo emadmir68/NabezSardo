@@ -90,10 +90,26 @@ document.addEventListener('DOMContentLoaded',()=>{
     input.addEventListener('change',()=>{
       const file=input.files&&input.files[0];if(!file)return;
       if(file.size>10*1024*1024){alert('حجم عکس باید کمتر از ۱۰ مگابایت باشد.');input.value='';return;}
-      const img=input.closest('.image-upload')?.querySelector('[data-image-preview]');
-      const empty=input.closest('.image-upload')?.querySelector('[data-preview-empty]');
-      if(!img)return;const reader=new FileReader();
-      reader.onload=()=>{img.src=reader.result;img.hidden=false;if(empty)empty.hidden=true;};reader.readAsDataURL(file);
+      const root=input.closest('.image-upload');
+      const img=root?.querySelector('[data-image-preview]');
+      const frame=root?.querySelector('[data-image-preview-frame]');
+      const empty=root?.querySelector('[data-preview-empty]');
+      if(!img)return;
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const probe=new Image();
+        probe.onload=()=>{
+          const w=probe.naturalWidth||16,h=probe.naturalHeight||9,ratio=w/h;
+          if(frame){
+            frame.style.setProperty('--preview-ratio',String(ratio));
+            frame.classList.remove('portrait','square','landscape');
+            frame.classList.add(ratio<.92?'portrait':ratio>1.08?'landscape':'square');
+          }
+          img.src=reader.result;img.hidden=false;if(empty)empty.hidden=true;
+        };
+        probe.src=reader.result;
+      };
+      reader.readAsDataURL(file);
     });
   });
 
