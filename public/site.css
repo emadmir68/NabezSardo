@@ -716,3 +716,42 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
   .story-longpress-hint{right:14px;bottom:17px;max-width:52%;text-align:right}
   .story-sheet-card{border-radius:24px 24px 18px 18px;padding:12px 14px 16px}
 }
+
+
+/* ===== HEADER HERO FIX v1 ===== */
+.hero{
+  position:relative!important;
+  overflow:hidden!important;
+  background:#111820!important;
+}
+.hero-fixed-photo{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  display:block!important;
+  background-image:url('/assets/header-mosque-fixed.jpg')!important;
+  background-repeat:no-repeat!important;
+  background-size:cover!important;
+  background-position:center 42%!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:saturate(1.03) contrast(1.02) brightness(1.04)!important;
+}
+.hero-fixed-photo::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,rgba(4,7,12,.34) 0%,rgba(4,7,12,.16) 34%,rgba(4,7,12,.02) 68%,rgba(4,7,12,.08) 100%);
+  pointer-events:none;
+}
+.hero-bg-image,.hero-bg,.hero-media,.hero-overlay{display:none!important}
+.hero::before,.hero::after{display:none!important;content:none!important}
+.hero-grid{position:relative!important;z-index:2!important}
+@media(max-width:620px){
+  .hero-fixed-photo{
+    background-position:center 34%!important;
+  }
+  .hero-fixed-photo::after{
+    background:linear-gradient(180deg,rgba(4,7,12,.04) 0%,rgba(4,7,12,.08) 62%,rgba(4,7,12,.18) 100%)!important;
+  }
+}
