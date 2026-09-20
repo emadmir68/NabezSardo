@@ -53,3 +53,17 @@
 .hero-emblem{position:relative;z-index:3;width:340px;height:340px;border-radius:46px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(20,23,30,.82),rgba(6,8,11,.52));border:1px solid rgba(225,190,119,.23);backdrop-filter:blur(12px);box-shadow:0 45px 90px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
 .hero-emblem svg{width:78%;height:78%;filter:drop-shadow(0 22px 18px rgba(0,0,0,.38))}
 @media(max-width:620px){.hero-emblem{width:270px;height:270px}}
+
+
+/* SEO navigation + related stories */
+.breadcrumbs{display:flex;align-items:center;gap:9px;margin:0 0 16px;color:#8e96a2;font-size:11px}
+.breadcrumbs a{color:#caa35f;text-decoration:none}
+.breadcrumbs a:hover{text-decoration:underline}
+.related-news{padding:48px 0 12px}
+.related-news .sectionhead{margin-bottom:22px}
+.related-news .sectionhead h2{font-size:30px}
+@media(max-width:620px){
+  .breadcrumbs{font-size:10px;overflow:auto;white-space:nowrap}
+  .related-news{padding-top:36px}
+  .related-news .sectionhead h2{font-size:25px}
+}
