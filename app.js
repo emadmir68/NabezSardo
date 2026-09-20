@@ -12,6 +12,7 @@ const ADMIN_USER=process.env.ADMIN_USER||'editor';
 const ADMIN_PASS=process.env.ADMIN_PASS||'change-this';
 const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
 const ROOT=__dirname;
+const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabezsardo-prod-production.up.railway.app').replace(/\/+$/,'');
 
 function headers(type='text/html; charset=utf-8'){
   return {'Content-Type':type,'X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'};
@@ -78,6 +79,27 @@ function trackView(req,db,article){
   const secure=process.env.NODE_ENV==='production'?'; Secure':'';
   return 'nabez_seen='+value+'; Path=/; Max-Age=604800; SameSite=Lax'+secure;
 }
+function xmlEsc(v=''){return String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[ch]));}
+function publicUrl(p='/'){return PUBLIC_BASE+(p.startsWith('/')?p:'/'+p);}
+function sitemapXml(db){
+  const urls=[
+    {loc:publicUrl('/'),lastmod:null},
+    {loc:publicUrl('/all-news'),lastmod:null},
+    {loc:publicUrl('/about'),lastmod:null},
+    {loc:publicUrl('/contact'),lastmod:null},
+    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null})),
+    ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt}))
+  ];
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+'</url>').join('\n')+'\n</urlset>';
+}
+function newsSitemapXml(db){
+  const cutoff=Date.now()-48*60*60*1000;
+  const items=published(db).filter(a=>new Date(a.publishedAt||a.createdAt).getTime()>=cutoff);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n'+items.map(a=>'<url><loc>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</loc><news:news><news:publication><news:name>نبض ساردو</news:name><news:language>fa</news:language></news:publication><news:publication_date>'+xmlEsc(new Date(a.publishedAt||a.createdAt).toISOString())+'</news:publication_date><news:title>'+xmlEsc(a.title)+'</news:title></news:news></url>').join('\n')+'\n</urlset>';
+}
+function robotsTxt(){
+  return ['User-agent: *','Allow: /','Disallow: /admin','Disallow: /search','Sitemap: '+publicUrl('/sitemap.xml'),'Sitemap: '+publicUrl('/news-sitemap.xml'),''].join('\n');
+}
 function serveFile(res,base,pathname,prefix,cache='public,max-age=604800'){
   const rel=pathname.slice(prefix.length);
   const root=path.resolve(base),f=path.resolve(base,rel);
@@ -143,6 +165,9 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',time:now()}),'application/json; charset=utf-8');
 
   const db=load();
+  if(req.method==='GET'&&p==='/robots.txt')return send(res,200,robotsTxt(),'text/plain; charset=utf-8',{'Cache-Control':'public,max-age=3600'});
+  if(req.method==='GET'&&p==='/sitemap.xml')return send(res,200,sitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=900'});
+  if(req.method==='GET'&&p==='/news-sitemap.xml')return send(res,200,newsSitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/')return send(res,200,views.home(db));
   if(req.method==='GET'&&p==='/all-news')return send(res,200,views.archive(db,u.searchParams.get('q')||''));
   if(req.method==='GET'&&p==='/search')return send(res,200,views.search(db,u.searchParams.get('q')||''));
