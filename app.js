@@ -56,6 +56,28 @@ function cookies(req){return Object.fromEntries((req.headers.cookie||'').split('
 function sign(v){return crypto.createHmac('sha256',SECRET).update(v).digest('hex');}
 function token(){const v=ADMIN_USER+':'+Date.now();return Buffer.from(v).toString('base64url')+'.'+sign(v);}
 function authed(req){const t=cookies(req).nabez_admin;if(!t)return false;const [b,s]=t.split('.');if(!b||!s)return false;let v='';try{v=Buffer.from(b,'base64url').toString()}catch{return false}const [u,ts]=v.split(':');if(u!==ADMIN_USER||Date.now()-Number(ts)>604800000)return false;const a=Buffer.from(s),z=Buffer.from(sign(v));return a.length===z.length&&crypto.timingSafeEqual(a,z);}
+function seenViews(req){
+  try{
+    const raw=cookies(req).nabez_seen;
+    if(!raw)return {};
+    const parsed=JSON.parse(Buffer.from(raw,'base64url').toString('utf8'));
+    return parsed&&typeof parsed==='object'?parsed:{};
+  }catch{return {};}
+}
+function trackView(req,db,article){
+  const seen=seenViews(req),t=Date.now(),ttl=12*60*60*1000;
+  const last=Number(seen[article.id]||0);
+  if(last&&t-last<ttl)return null;
+  article.views=Number(article.views||0)+1;
+  seen[article.id]=t;
+  const cleaned=Object.fromEntries(Object.entries(seen)
+    .filter(([,ts])=>t-Number(ts)<7*24*60*60*1000)
+    .sort((a,b)=>Number(b[1])-Number(a[1])).slice(0,24));
+  save(db,false);
+  const value=Buffer.from(JSON.stringify(cleaned),'utf8').toString('base64url');
+  const secure=process.env.NODE_ENV==='production'?'; Secure':'';
+  return 'nabez_seen='+value+'; Path=/; Max-Age=604800; SameSite=Lax'+secure;
+}
 function serveFile(res,base,pathname,prefix,cache='public,max-age=604800'){
   const rel=pathname.slice(prefix.length);
   const root=path.resolve(base),f=path.resolve(base,rel);
@@ -123,6 +145,7 @@ const server=http.createServer(async(req,res)=>{
   const db=load();
   if(req.method==='GET'&&p==='/')return send(res,200,views.home(db));
   if(req.method==='GET'&&p==='/all-news')return send(res,200,views.archive(db,u.searchParams.get('q')||''));
+  if(req.method==='GET'&&p==='/search')return send(res,200,views.search(db,u.searchParams.get('q')||''));
   if(req.method==='GET'&&p==='/about')return send(res,200,views.simple(db,'about'));
   if(req.method==='GET'&&p==='/contact')return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));
   if(req.method==='GET'&&p==='/send-news')return send(res,200,views.simple(db,'send-news',u.searchParams.get('ok')==='1'));
@@ -130,7 +153,12 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
   let m=p.match(/^\/news\/(.+)$/);
-  if(req.method==='GET'&&m){const a=published(db).find(x=>x.slug===m[1]);return a?send(res,200,views.article(db,a)):send(res,404,'خبر یافت نشد');}
+  if(req.method==='GET'&&m){
+    const a=published(db).find(x=>x.slug===m[1]);
+    if(!a)return send(res,404,'خبر یافت نشد');
+    const viewCookie=trackView(req,db,a);
+    return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
+  }
   m=p.match(/^\/category\/(.+)$/);
   if(req.method==='GET'&&m){const c=db.categories.find(x=>x.id===m[1]);return c?send(res,200,views.category(db,c)):send(res,404,'دسته‌بندی یافت نشد');}
 
