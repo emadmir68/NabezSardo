@@ -212,3 +212,34 @@
   .hero-bg,.hero:before,.lux-pulse,.pulse-main,.pulse-highlight,.pulse-node,.pulse-halo-a,.pulse-halo-b{animation:none!important}
   .pulse-main,.pulse-highlight{stroke-dashoffset:0}
 }
+
+
+/* Hero photo cleanup — preserve previous hero/pulse, mask only the faint heart artifact */
+.hero-bg:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:76%;
+  width:285px;
+  height:235px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at center,
+      rgba(7,9,13,.96) 0%,
+      rgba(7,9,13,.90) 34%,
+      rgba(7,9,13,.68) 56%,
+      rgba(7,9,13,.22) 76%,
+      transparent 100%);
+  filter:blur(7px);
+  opacity:.88;
+}
+@media(min-width:621px){
+  .hero-bg:after{
+    top:79%;
+    width:350px;
+    height:250px;
+    opacity:.72;
+  }
+}
