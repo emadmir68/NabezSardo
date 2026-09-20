@@ -11,6 +11,43 @@ document.addEventListener('DOMContentLoaded',()=>{
     localStorage.setItem(themeKey,theme);
     syncThemeButtons();
   }));
+
+  const langKey='nabez-lang';
+  const setLang=(lang)=>{
+    const l=lang==='en'?'en':'fa';
+    root.dataset.lang=l;
+    root.lang=l==='en'?'en':'fa-IR';
+    root.dir=l==='en'?'ltr':'rtl';
+    localStorage.setItem(langKey,l);
+    document.querySelectorAll('[data-lang-option]').forEach(btn=>btn.classList.toggle('active',btn.dataset.langOption===l));
+    document.querySelectorAll('[data-placeholder-fa]').forEach(el=>{
+      el.placeholder=l==='en'?(el.dataset.placeholderEn||el.dataset.placeholderFa):(el.dataset.placeholderFa||'');
+    });
+    updateDateTime();
+  };
+  const formatJalali=(date,withTime=false)=>{
+    const lang=root.dataset.lang==='en'?'en-US-u-ca-persian':'fa-IR-u-ca-persian';
+    const opt=withTime
+      ? {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Tehran'}
+      : {year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Tehran'};
+    try{return new Intl.DateTimeFormat(lang,opt).format(date)}catch{return ''}
+  };
+  const updateDateTime=()=>{
+    const now=new Date();
+    const clockLocale=root.dataset.lang==='en'?'en-GB':'fa-IR';
+    document.querySelectorAll('[data-live-clock]').forEach(el=>el.textContent=new Intl.DateTimeFormat(clockLocale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Tehran'}).format(now));
+    document.querySelectorAll('[data-jalali-date]').forEach(el=>el.textContent=formatJalali(now,false));
+    document.querySelectorAll('[data-news-date]').forEach(el=>{
+      const d=new Date(el.dataset.newsDate);
+      if(!isNaN(d))el.textContent=formatJalali(d,true);
+    });
+  };
+  const savedLang=localStorage.getItem(langKey)||'fa';
+  document.querySelectorAll('[data-lang-option]').forEach(btn=>btn.addEventListener('click',()=>setLang(btn.dataset.langOption)));
+  setLang(savedLang);
+  updateDateTime();
+  setInterval(updateDateTime,1000);
+
   const syncAdaptiveMedia=frame=>{
     const img=frame.querySelector('img');
     if(!img)return;
