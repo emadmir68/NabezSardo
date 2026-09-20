@@ -26,7 +26,7 @@ async function multipart(req){
   const m=ct.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
   if(!m)throw new Error('missing-boundary');
   const boundary=m[1]||m[2];
-  const raw=await readRaw(req,14*1024*1024);
+  const raw=await readRaw(req,60*1024*1024);
   const text=raw.toString('latin1');
   const parts=text.split('--'+boundary);
   const fields={},files={};
@@ -110,7 +110,7 @@ function serveFile(res,base,pathname,prefix,cache='public,max-age=604800'){
   if(!f.startsWith(root+path.sep)&&f!==root)return false;
   if(!fs.existsSync(f)||!fs.statSync(f).isFile())return false;
   const ext=path.extname(f).toLowerCase();
-  const type={'.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif'}[ext]||'application/octet-stream';
+  const type={'.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.mp4':'video/mp4','.webm':'video/webm','.mov':'video/quicktime'}[ext]||'application/octet-stream';
   res.writeHead(200,{...headers(type),'Cache-Control':cache,'Content-Length':fs.statSync(f).size});
   fs.createReadStream(f).pipe(res);return true;
 }
@@ -125,6 +125,20 @@ function saveImage(file){
   fs.mkdirSync(UPLOAD_DIR,{recursive:true});
   fs.writeFileSync(path.join(UPLOAD_DIR,name),file.data);
   return '/uploads/'+name;
+}
+function saveCitizenMedia(file){
+  if(!file||!file.data||!file.data.length)return {url:'',type:'',name:''};
+  if(file.data.length>50*1024*1024)throw new Error('citizen-media-too-large');
+  const extByType={
+    'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp','image/gif':'.gif',
+    'video/mp4':'.mp4','video/webm':'.webm','video/quicktime':'.mov'
+  };
+  const ext=extByType[file.type];
+  if(!ext)throw new Error('invalid-citizen-media');
+  const name=Date.now().toString(36)+'-citizen-'+crypto.randomBytes(6).toString('hex')+ext;
+  fs.mkdirSync(UPLOAD_DIR,{recursive:true});
+  fs.writeFileSync(path.join(UPLOAD_DIR,name),file.data);
+  return {url:'/uploads/'+name,type:file.type,name:file.filename||name};
 }
 function deleteUpload(url){
   if(!String(url||'').startsWith('/uploads/'))return;
@@ -178,7 +192,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/search')return send(res,200,views.search(db,u.searchParams.get('q')||''));
   if(req.method==='GET'&&p==='/about')return send(res,200,views.simple(db,'about'));
   if(req.method==='GET'&&p==='/contact')return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));
-  if(req.method==='GET'&&p==='/send-news')return send(res,200,views.simple(db,'send-news',u.searchParams.get('ok')==='1'));
+  if(req.method==='GET'&&p==='/send-news')return send(res,200,views.simple(db,'send-news',u.searchParams.get('ok')==='1',u.searchParams.get('uploadError')||''));
   if(req.method==='GET'&&p==='/admin/login')return send(res,200,views.login(u.searchParams.get('error')==='1'));
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
@@ -213,7 +227,22 @@ const server=http.createServer(async(req,res)=>{
       return redirect(res,'/admin/login?error=1');
     }
     if(p==='/contact'){db.contacts.unshift({id:id(),createdAt:now(),name:f.name||'',contact:f.contact||'',subject:f.subject||'',message:f.message||''});save(db);return redirect(res,'/contact?ok=1');}
-    if(p==='/send-news'){db.citizens.unshift({id:id(),createdAt:now(),name:f.name||'',phone:f.phone||'',location:f.location||'',headline:f.headline||'',details:f.details||'',mediaLink:f.mediaLink||''});save(db);return redirect(res,'/send-news?ok=1');}
+    if(p==='/send-news'){
+      try{
+        const media=saveCitizenMedia(files.mediaFile);
+        db.citizens.unshift({
+          id:id(),createdAt:now(),name:f.name||'',phone:f.phone||'',location:f.location||'',
+          headline:f.headline||'',details:f.details||'',
+          mediaUrl:media.url,mediaType:media.type,mediaName:media.name
+        });
+        save(db);
+        return redirect(res,'/send-news?ok=1');
+      }catch(err){
+        if(err.message==='citizen-media-too-large')return redirect(res,'/send-news?uploadError=large');
+        if(err.message==='invalid-citizen-media')return redirect(res,'/send-news?uploadError=type');
+        throw err;
+      }
+    }
 
     if(p.startsWith('/admin')&&!authed(req))return redirect(res,'/admin/login');
     if(p==='/admin/upload/image'){
