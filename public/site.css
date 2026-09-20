@@ -541,3 +541,137 @@ html[data-lang="en"] .form{direction:ltr;text-align:left}
   .site-date{font-size:9px}
   .lang-btn{padding:5px 9px}
 }
+
+
+/* ===== Permanent homepage promo/banner slot ===== */
+.promo-slot{
+  position:relative;
+  margin-top:28px;
+  margin-bottom:10px;
+  min-height:310px;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:1.08fr .92fr;
+  align-items:center;
+  gap:34px;
+  padding:34px 40px;
+  border:1px solid color-mix(in srgb,var(--theme-accent,#d0a65f) 34%,transparent);
+  border-radius:30px;
+  background:
+    radial-gradient(circle at 84% 16%,rgba(255,209,111,.18),transparent 27%),
+    radial-gradient(circle at 18% 90%,rgba(154,36,72,.16),transparent 31%),
+    linear-gradient(135deg,#0d1726 0%,#101b2c 48%,#18283a 100%);
+  box-shadow:0 26px 70px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.06);
+  isolation:isolate;
+}
+.promo-slot:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  opacity:.28;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:26px 26px;
+  mask-image:linear-gradient(90deg,#000,transparent 72%);
+}
+.promo-glow{
+  position:absolute;
+  width:300px;height:300px;
+  border-radius:50%;
+  left:-90px;bottom:-150px;
+  background:radial-gradient(circle,rgba(224,165,70,.22),transparent 68%);
+  filter:blur(10px);
+}
+.promo-copy{position:relative;z-index:2}
+.promo-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid rgba(232,190,111,.34);
+  background:rgba(6,10,16,.36);
+  color:#e5be73;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.promo-copy h2{
+  margin:16px 0 8px;
+  font-size:46px;
+  line-height:1.35;
+  color:#f5ecd9;
+  text-shadow:0 12px 28px rgba(0,0,0,.28);
+}
+.promo-copy p{
+  max-width:700px;
+  margin:0;
+  color:#c7ced8;
+  font-size:15px;
+  line-height:2;
+}
+.promo-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.promo-tags>span{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+  color:#d9dee6;font-size:11px;
+}
+.promo-tags b{color:#e1b565;font-size:10px}
+.promo-visual{position:relative;z-index:2;min-height:250px;display:grid;place-items:center}
+.school-card{
+  position:relative;
+  width:min(390px,92%);
+  aspect-ratio:1.45;
+  display:grid;
+  place-items:center;
+  border-radius:38px;
+  color:#e1b565;
+  background:
+    radial-gradient(circle at 70% 20%,rgba(240,195,105,.16),transparent 24%),
+    linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.015));
+  border:1px solid rgba(231,190,107,.24);
+  box-shadow:0 30px 70px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter:blur(8px);
+}
+.school-card svg{width:78%;height:auto;filter:drop-shadow(0 16px 18px rgba(0,0,0,.28))}
+.school-sun{
+  position:absolute;width:92px;height:92px;border-radius:50%;
+  right:34px;top:26px;
+  background:radial-gradient(circle,#ffe0a0 0%,#e8b95d 34%,rgba(232,185,93,.08) 68%,transparent 72%);
+  opacity:.7;
+}
+.promo-book{
+  position:absolute;bottom:22px;width:54px;height:72px;border-radius:8px 8px 5px 5px;
+  display:grid;place-items:center;font:bold 22px Georgia,serif;
+  color:#0f1825;box-shadow:0 10px 22px rgba(0,0,0,.25);
+}
+.pbook-1{left:26px;transform:rotate(-8deg);background:#d8a74e}
+.pbook-2{left:69px;bottom:18px;transform:rotate(5deg);background:#f2d48c}
+.promo-pencil{
+  position:absolute;right:28px;bottom:30px;width:92px;height:10px;border-radius:999px;
+  background:linear-gradient(90deg,#9c203f 0 14%,#e5b85e 14% 84%,#ead8ae 84%);
+  transform:rotate(-26deg);box-shadow:0 7px 16px rgba(0,0,0,.25);
+}
+.promo-leaf{position:absolute;color:#d17e35;font-size:18px;opacity:.9}
+.leaf-a{right:18px;top:18px;transform:rotate(20deg)}
+.leaf-b{left:18px;top:46px;transform:rotate(-18deg)}
+html[data-lang="en"] .promo-copy{text-align:left}
+html[data-lang="en"] .promo-tags{direction:ltr}
+@media(max-width:900px){
+  .promo-slot{grid-template-columns:1fr;padding:30px}
+  .promo-copy h2{font-size:38px}
+  .promo-visual{min-height:220px}
+}
+@media(max-width:620px){
+  .promo-slot{margin-top:20px;padding:23px 19px;border-radius:24px;gap:18px}
+  .promo-copy h2{font-size:30px}
+  .promo-copy p{font-size:13px;line-height:1.9}
+  .school-card{width:100%;border-radius:28px}
+  .promo-tags{gap:7px}
+  .promo-tags>span{padding:7px 10px;font-size:10px}
+}
