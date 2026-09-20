@@ -170,7 +170,7 @@ function articlePayload(db,f,files,current={}){
   const bodyHtml=sanitizeRich(f.bodyHtml||'');
   return {
     title:f.title||'',slug:uniqueSlug(db,f.slug||f.title||current.slug||'news',current.id),categoryId:f.categoryId||'',
-    lead:f.lead||'',bodyHtml,body:plainFromRich(bodyHtml),author:f.author||'تحریریه نبض ساردو',location:f.location||'ساردوئیه',
+    lead:f.lead||'',titleEn:f.titleEn||'',leadEn:f.leadEn||'',bodyEn:f.bodyEn||'',bodyHtml,body:plainFromRich(bodyHtml),author:f.author||'تحریریه نبض ساردو',location:f.location||'ساردوئیه',
     status:f.status==='published'?'published':'draft',featured:f.featured==='1',image,updatedAt:now()
   };
 }
