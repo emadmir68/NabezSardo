@@ -20,3 +20,30 @@
 .cover-frame.landscape{max-width:100%}
 .cover-frame .cover{display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center;border-radius:0;box-shadow:none}
 @media(max-width:620px){.cover-frame.portrait,.cover-frame.square,.cover-frame.landscape{max-width:100%}}
+
+
+/* Premium header brand + global search + view counters */
+.brand-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:18px;background:radial-gradient(circle at 30% 20%,rgba(212,175,55,.15),transparent 38%),linear-gradient(145deg,#151922,#090b10);border:1px solid rgba(212,175,55,.48);box-shadow:0 16px 38px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.07);overflow:hidden}
+.brand-mark svg{width:42px;height:42px;filter:drop-shadow(0 7px 10px rgba(0,0,0,.36))}
+.header-search{flex:1;max-width:470px;display:flex;align-items:center;gap:8px;padding:5px 6px 5px 12px;border:1px solid #303642;border-radius:999px;background:#0d1117;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.header-search svg{width:19px;height:19px;fill:none;stroke:#c9a35f;stroke-width:1.8;flex:0 0 auto}
+.header-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#f1eee8;padding:8px 3px;font:inherit;font-size:12px}
+.header-search input::placeholder{color:#757d89}
+.header-search button{border:0;border-radius:999px;background:#171c24;color:#dcb66d;padding:8px 13px;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.header-search button:hover{background:#222833}
+.card-kicker{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.view-badge{color:#7f8792;font-size:10px;white-space:nowrap}
+.article-views{color:#d0a65f!important}
+.search-page .pagehead p{color:#979eaa;margin-top:8px}
+.search-large{max-width:760px}
+.search-large input{max-width:none;flex:1}
+@media(max-width:900px){
+  .main{flex-wrap:wrap}
+  .header-search{order:3;max-width:none;width:100%}
+}
+@media(max-width:620px){
+  .brand-mark{width:52px;height:52px;border-radius:16px}
+  .brand-mark svg{width:38px;height:38px}
+  .header-search{order:3;width:100%}
+  .header-search button{padding-inline:10px}
+}
