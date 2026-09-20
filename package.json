@@ -1,0 +1,9 @@
+{
+  "name":"nabezsardo",
+  "version":"2.0.0",
+  "private":true,
+  "description":"Independent production newsroom for Nabez Sardo",
+  "main":"app.js",
+  "scripts":{"start":"node app.js"},
+  "engines":{"node":">=20"}
+}
