@@ -1,0 +1,52 @@
+/* Isolated final hero fix. Kept separate from legacy site.css on purpose. */
+.hero{
+  position:relative!important;
+  overflow:hidden!important;
+  background:#111820!important;
+}
+#ns-hero-photo-final{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:50% 45%!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  max-width:none!important;
+  max-height:none!important;
+}
+.hero-bg,
+.hero-bg-image,
+.hero-media,
+.hero-overlay,
+.hero-fixed-photo{
+  display:none!important;
+}
+.hero::before,
+.hero::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+}
+.hero-grid{
+  position:relative!important;
+  z-index:2!important;
+}
+.hero-copy,
+.hero-art,
+.pulse-stage{
+  position:relative!important;
+  z-index:3!important;
+}
+@media(max-width:620px){
+  #ns-hero-photo-final{
+    object-position:50% 40%!important;
+  }
+}
