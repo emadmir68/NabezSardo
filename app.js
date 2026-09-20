@@ -232,7 +232,7 @@ const server=http.createServer(async(req,res)=>{
         const media=saveCitizenMedia(files.mediaFile);
         db.citizens.unshift({
           id:id(),createdAt:now(),name:f.name||'',phone:f.phone||'',location:f.location||'',
-          headline:f.headline||'',details:f.details||'',
+          headline:f.headline||'',details:f.details||'',rewardCard:(f.rewardCard||'').replace(/\D/g,'').slice(0,16),
           mediaUrl:media.url,mediaType:media.type,mediaName:media.name
         });
         save(db);
