@@ -246,3 +246,33 @@
     border-top:1px solid rgba(255,255,255,.045);
   }
 }
+
+
+/* Citizen news direct upload */
+.citizen-upload{
+  padding:15px;
+  border:1px dashed #3a414e;
+  border-radius:15px;
+  background:#0c1016;
+}
+.citizen-upload input[type=file]{
+  display:block;
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:1px solid #343a45;
+  border-radius:11px;
+  background:#10151c;
+  color:#d8dce3;
+}
+.citizen-upload small{display:block;margin-top:8px;color:#858d98;font-weight:400;line-height:1.8}
+.citizen-media{margin-top:14px;display:grid;gap:10px}
+.citizen-media img,.citizen-media video{
+  width:min(100%,520px);
+  max-height:360px;
+  object-fit:contain;
+  border-radius:14px;
+  background:#080b10;
+  border:1px solid #2d333d;
+}
+.citizen-media a{color:#ddb66c;text-decoration:none;font-size:12px;font-weight:800}
