@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded',()=>{
+  const root=document.documentElement;
+  const themeKey='nabez-theme';
+  const savedTheme=localStorage.getItem(themeKey)||'gold';
+  root.dataset.theme=savedTheme;
+  const syncThemeButtons=()=>document.querySelectorAll('[data-theme-option]').forEach(btn=>btn.classList.toggle('active',btn.dataset.themeOption===root.dataset.theme));
+  syncThemeButtons();
+  document.querySelectorAll('[data-theme-option]').forEach(btn=>btn.addEventListener('click',()=>{
+    const theme=btn.dataset.themeOption||'gold';
+    root.dataset.theme=theme;
+    localStorage.setItem(themeKey,theme);
+    syncThemeButtons();
+  }));
   const syncAdaptiveMedia=frame=>{
     const img=frame.querySelector('img');
     if(!img)return;
