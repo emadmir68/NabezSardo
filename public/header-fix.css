@@ -1,30 +1,43 @@
-/* Final hero repair: no IMG element exists, so no broken-image icon can appear. */
+/* Header image final route-based repair */
 .hero.hero-photo-final{
   position:relative!important;
   overflow:hidden!important;
-  background-size:cover!important;
-  background-repeat:no-repeat!important;
-  background-position:50% 40%!important;
-  background-color:#111820!important;
+  background:#111820!important;
+  isolation:isolate!important;
 }
-.hero.hero-photo-final::before{
-  content:""!important;
-  display:block!important;
+.hero.hero-photo-final .hero-photo-layer{
   position:absolute!important;
   inset:0!important;
-  z-index:1!important;
+  z-index:0!important;
+  display:block!important;
+  opacity:1!important;
+  visibility:visible!important;
+  overflow:hidden!important;
   pointer-events:none!important;
-  background:linear-gradient(
-    90deg,
-    rgba(4,7,12,.32) 0%,
-    rgba(4,7,12,.14) 34%,
-    rgba(4,7,12,.02) 68%,
-    rgba(4,7,12,.06) 100%
-  )!important;
 }
+.hero.hero-photo-final .hero-photo-layer img{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:100%!important;
+  min-height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:50% 44%!important;
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+}
+.hero.hero-photo-final::before,
 .hero.hero-photo-final::after{
   content:none!important;
   display:none!important;
+  background:none!important;
 }
 .hero-bg,
 .hero-bg-image,
@@ -37,23 +50,17 @@
 .hero.hero-photo-final .hero-grid{
   position:relative!important;
   z-index:2!important;
+  background:transparent!important;
 }
 .hero.hero-photo-final .hero-copy,
 .hero.hero-photo-final .hero-art,
 .hero.hero-photo-final .pulse-stage{
   position:relative!important;
   z-index:3!important;
+  background:transparent!important;
 }
 @media(max-width:620px){
-  .hero.hero-photo-final{
-    background-position:50% 36%!important;
-  }
-  .hero.hero-photo-final::before{
-    background:linear-gradient(
-      180deg,
-      rgba(4,7,12,.04) 0%,
-      rgba(4,7,12,.07) 60%,
-      rgba(4,7,12,.16) 100%
-    )!important;
+  .hero.hero-photo-final .hero-photo-layer img{
+    object-position:50% 40%!important;
   }
 }
