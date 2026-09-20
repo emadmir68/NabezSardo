@@ -116,7 +116,7 @@ function articlePayload(db,f,files,current={}){
 const server=http.createServer(async(req,res)=>{
  try{
   const u=new URL(req.url,'http://localhost'),p=decodeURIComponent(u.pathname);
-  if(p.startsWith('/assets/'))return serveFile(res,path.join(ROOT,'public'),p,'/assets/')||send(res,404,'Not found','text/plain; charset=utf-8');
+  if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'no-cache, max-age=0, must-revalidate':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
   if(p.startsWith('/uploads/'))return serveFile(res,UPLOAD_DIR,p,'/uploads/','public,max-age=31536000,immutable')||send(res,404,'Not found','text/plain; charset=utf-8');
   if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',time:now()}),'application/json; charset=utf-8');
 
