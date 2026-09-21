@@ -1,6 +1,9 @@
 name: Deploy Cloudflare Preview
 
 on:
+  push:
+    branches:
+      - cloudflare-migration
   workflow_dispatch:
 
 jobs:
