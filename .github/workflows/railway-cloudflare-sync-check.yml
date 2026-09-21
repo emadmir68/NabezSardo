@@ -1,0 +1,54 @@
+name: Railway Cloudflare Sync Check
+
+on:
+  push:
+    branches:
+      - railway-cloudflare-sync
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax check
+        run: node --check lib/store.js
+      - name: Exercise non-blocking sync code
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const path=require('path');
+          const root='/tmp/nabez-sync-test';
+          fs.rmSync(root,{recursive:true,force:true});
+          process.env.DATA_DIR=root;
+          process.env.CLOUDFLARE_SYNC_URL='https://example.invalid/__sync/push';
+          process.env.CLOUDFLARE_SYNC_TOKEN='test-token';
+          let seen=null;
+          global.fetch=async (url,options)=>{
+            seen={url,options};
+            return new Response(JSON.stringify({ok:true,syncedAt:new Date().toISOString(),articles:1,uploads:0}),{status:200,headers:{'content-type':'application/json'}});
+          };
+          const store=require('./lib/store');
+          const db={
+            settings:{},
+            categories:[],
+            articles:[{id:'1',status:'published',createdAt:new Date().toISOString(),title:'test'}],
+            contacts:[],
+            citizens:[]
+          };
+          store.save(db,false);
+          store.pushCloudflareSync().then(result=>{
+            if(!result.ok)throw new Error('sync did not return ok');
+            if(!seen||seen.url!==process.env.CLOUDFLARE_SYNC_URL)throw new Error('wrong sync url');
+            if(seen.options.headers['x-nabzesardo-sync']!=='test-token')throw new Error('missing sync token');
+            const payload=JSON.parse(seen.options.body);
+            if(payload.format!=='nabezsardo-full-backup'||payload.version!==1)throw new Error('invalid backup payload');
+            console.log('sync-code-ok');
+          }).catch(err=>{console.error(err);process.exit(1)});
+          NODE
