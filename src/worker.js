@@ -5,7 +5,7 @@ import { handleAsNodeRequest } from "cloudflare:node";
 import http from "node:http";
 import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
-import views from "../lib/views-v2.js";
+import views from "../lib/view-public.js";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
 
 const PORT = 3000;
