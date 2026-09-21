@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const updateDateTime=()=>{
     const now=new Date();
     const clockLocale=root.dataset.lang==='en'?'en-GB':'fa-IR';
-    document.querySelectorAll('[data-live-clock],[data-radar-clock]').forEach(el=>el.textContent=new Intl.DateTimeFormat(clockLocale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Tehran'}).format(now));
+    document.querySelectorAll('[data-live-clock]').forEach(el=>el.textContent=new Intl.DateTimeFormat(clockLocale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Tehran'}).format(now));
     document.querySelectorAll('[data-jalali-date]').forEach(el=>el.textContent=formatJalali(now,false));
     document.querySelectorAll('[data-news-date]').forEach(el=>{
       const d=new Date(el.dataset.newsDate);
@@ -572,42 +572,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   };
   document.querySelectorAll('[data-adaptive-media]').forEach(syncAdaptiveMedia);
 
-  // Experimental live news radar: refresh only this module when hot stories change.
-  const radarRoot=document.querySelector('[data-news-radar]');
-  if(radarRoot){
-    let radarPolling=false;
-    const refreshRadar=async()=>{
-      if(radarPolling||document.visibilityState==='hidden')return;
-      radarPolling=true;
-      try{
-        const res=await fetch('/?__radar='+Date.now(),{
-          cache:'no-store',
-          credentials:'same-origin',
-          headers:{'Cache-Control':'no-cache','X-Nabez-Partial':'radar'}
-        });
-        if(!res.ok)return;
-        const html=await res.text();
-        const doc=new DOMParser().parseFromString(html,'text/html');
-        const next=doc.querySelector('[data-news-radar]');
-        const current=document.querySelector('[data-news-radar]');
-        if(!next||!current)return;
-        if((next.dataset.radarSignature||'')!==(current.dataset.radarSignature||'')){
-          current.replaceWith(next);
-          updateDateTime();
-          next.classList.add('radar-just-updated');
-          setTimeout(()=>next.classList.remove('radar-just-updated'),1400);
-        }
-      }catch(err){
-        console.warn('news radar refresh failed',err);
-      }finally{
-        radarPolling=false;
-      }
-    };
-    setInterval(refreshRadar,45000);
-    document.addEventListener('visibilitychange',()=>{
-      if(document.visibilityState==='visible')setTimeout(refreshRadar,700);
-    });
-  }
 
   const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!reduceMotion){
