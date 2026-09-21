@@ -2,12 +2,36 @@ import fs from "node:fs";
 import path from "node:path";
 import { Buffer } from "node:buffer";
 import { handleAsNodeRequest } from "cloudflare:node";
+import http from "node:http";
 import { env } from "cloudflare:workers";
-import server from "../app.js";
 import articleTools from "../lib/article-tools.js";
 
-const PORT = 8080;
-server.listen(PORT);
+const PORT = 3000;
+let appReady = false;
+
+async function ensureAppServer() {
+  if (appReady) return;
+  const originalListen = http.Server.prototype.listen;
+  const originalSetTimeout = globalThis.setTimeout;
+  const originalSetInterval = globalThis.setInterval;
+  http.Server.prototype.listen = function(...args) {
+    if (typeof args[1] === "string") {
+      const callback = typeof args[2] === "function" ? args[2] : (typeof args[1] === "function" ? args[1] : undefined);
+      return callback ? originalListen.call(this, args[0], callback) : originalListen.call(this, args[0]);
+    }
+    return originalListen.apply(this, args);
+  };
+  globalThis.setTimeout = () => 0;
+  globalThis.setInterval = () => 0;
+  try {
+    await import("../app.js");
+    appReady = true;
+  } finally {
+    http.Server.prototype.listen = originalListen;
+    globalThis.setTimeout = originalSetTimeout;
+    globalThis.setInterval = originalSetInterval;
+  }
+}
 
 const DATA_DIR = process.env.DATA_DIR || "/tmp/nabzesardo";
 const DB_FILE = path.join(DATA_DIR, "db.json");
@@ -252,6 +276,7 @@ async function handleApp(request) {
   const url = new URL(request.url);
   const includeUploads = request.method === "GET" && url.pathname === "/admin/backup/download";
   const before = await hydrateState({ includeUploads });
+  await ensureAppServer();
   const response = await handleAsNodeRequest(PORT, request);
   const states = await flushState(before, request, response);
   await maybeDistribute(states.beforeDb, states.afterDb);
