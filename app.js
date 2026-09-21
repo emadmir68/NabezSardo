@@ -290,12 +290,6 @@ const server=http.createServer(async(req,res)=>{
         return send(res,400,JSON.stringify({ok:false,error:msg}),'application/json; charset=utf-8');
       }
     }
-    if(p==='/admin/settings/template'){
-      db.settings=db.settings||{};
-      db.settings.siteTemplate=f.siteTemplate==='modern'?'modern':'classic';
-      save(db);
-      return redirect(res,'/admin?themeSaved=1');
-    }
     if(p==='/admin/settings/breaking'){
       db.settings=db.settings||{};
       db.settings.breakingText=String(f.breakingText||'').trim().slice(0,500)||'مهم‌ترین رویدادهای ساردوئیه و جنوب کرمان؛ سریع، دقیق و محلی.';
