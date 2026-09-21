@@ -29,3 +29,60 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
 .image-preview.portrait{max-width:320px}
 .image-preview.square{max-width:320px}
 .image-preview.landscape{max-width:100%}
+
+
+/* Stable rich-text editor flow + Persian font picker */
+.rich-editor{display:block;position:relative;overflow:visible;contain:layout paint;background:#0a0d12}
+.rich-area{
+  display:flow-root;
+  box-sizing:border-box;
+  width:100%;
+  min-height:360px;
+  height:auto!important;
+  overflow:visible;
+  clear:both;
+}
+.rich-area::after{content:"";display:block;clear:both}
+.rich-area img{
+  display:block;
+  float:none!important;
+  clear:both;
+  max-width:100%;
+  width:auto;
+  height:auto;
+  margin:18px auto;
+  border-radius:14px;
+}
+.rich-area p,.rich-area div,.rich-area blockquote,.rich-area ul,.rich-area ol{max-width:100%;box-sizing:border-box}
+.image-upload{position:relative;z-index:1;clear:both}
+.rich-font-picker{
+  display:flex!important;
+  align-items:center;
+  gap:6px;
+  margin:0;
+  color:#aeb5c0!important;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+.rich-font-picker>span{width:auto!important;background:none!important;margin:0!important}
+.rich-font-picker select{
+  height:32px;
+  min-width:132px;
+  border:1px solid #353c48;
+  background:#191f29;
+  color:#e9e4dc;
+  border-radius:9px;
+  padding:4px 8px;
+  font:inherit;
+  outline:none;
+}
+.rich-font-picker select:focus{border-color:#a57b3d}
+.rich-area font[face="B Nazanin"]{font-family:"B Nazanin","Vazirmatn",Tahoma,sans-serif}
+.rich-area font[face="B Lotus"]{font-family:"B Lotus","Vazirmatn",Tahoma,sans-serif}
+.rich-area font[face="B Titr"]{font-family:"B Titr","Vazirmatn",Tahoma,sans-serif}
+.rich-area font[face="IranNastaliq"]{font-family:"IranNastaliq","Iran Nastaliq","Noto Naskh Arabic","Vazirmatn",serif}
+.rich-area font[face="Vazirmatn"]{font-family:"Vazirmatn",Tahoma,sans-serif}
+@media(max-width:760px){
+  .rich-font-picker{width:100%;order:3}
+  .rich-font-picker select{flex:1;min-width:0}
+}
