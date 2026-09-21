@@ -928,3 +928,75 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
   .breaking-live{margin-right:14px}
   .breaking:hover .breaking-track.desktop-ticker-ready{animation-play-state:paused}
 }
+
+
+/* Compact archive layout — archive only */
+.archive-page{padding-top:38px}
+.archive-page .pagehead{margin-bottom:14px}
+.archive-page .pagehead h1{font-size:34px;margin-top:5px}
+.archive-search{margin:12px 0 22px}
+.archive-search input{max-width:430px;padding:10px 12px}
+.archive-search .btn{padding:9px 15px}
+.archive-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+  align-items:stretch;
+}
+.archive-grid .card{
+  border-radius:16px;
+  box-shadow:0 12px 28px rgba(0,0,0,.22);
+}
+.archive-grid .card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 18px 34px rgba(0,0,0,.3);
+}
+.archive-grid .card>a.card-media,
+.archive-grid .card>a:first-child{
+  aspect-ratio:16/9;
+}
+.archive-grid .pad{padding:13px 14px 14px}
+.archive-grid .card-kicker{gap:7px}
+.archive-grid .eyebrow{font-size:8px;letter-spacing:1.1px}
+.archive-grid .view-badge{font-size:9px}
+.archive-grid .news-date{font-size:9px;color:#7f8792}
+.archive-grid .card h3{
+  margin:6px 0 4px;
+  font-size:15px;
+  line-height:1.65;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  min-height:49px;
+}
+.archive-grid .card p{
+  margin:4px 0 8px;
+  font-size:10.5px;
+  line-height:1.75;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  min-height:37px;
+}
+.archive-grid .more{font-size:9.5px}
+@media(max-width:1100px){
+  .archive-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+  .archive-page{padding-top:28px}
+  .archive-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+  .archive-grid .pad{padding:11px}
+  .archive-grid .card h3{font-size:14px;min-height:46px}
+  .archive-grid .card p{display:none}
+}
+@media(max-width:460px){
+  .archive-grid{grid-template-columns:1fr!important}
+  .archive-grid .card{display:grid;grid-template-columns:132px minmax(0,1fr);min-height:112px}
+  .archive-grid .card>a.card-media,
+  .archive-grid .card>a:first-child{height:100%;aspect-ratio:auto;border-radius:0}
+  .archive-grid .card .pad{padding:10px 11px}
+  .archive-grid .card h3{font-size:13.5px;min-height:auto;margin:5px 0}
+  .archive-grid .card p{display:none}
+  .archive-grid .more{display:none}
+}
