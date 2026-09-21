@@ -290,6 +290,13 @@ const server=http.createServer(async(req,res)=>{
         return send(res,400,JSON.stringify({ok:false,error:msg}),'application/json; charset=utf-8');
       }
     }
+    if(p==='/admin/settings/breaking'){
+      db.settings=db.settings||{};
+      db.settings.breakingText=String(f.breakingText||'').trim().slice(0,500)||'مهم‌ترین رویدادهای ساردوئیه و جنوب کرمان؛ سریع، دقیق و محلی.';
+      db.settings.breakingTextEn=String(f.breakingTextEn||'').trim().slice(0,500)||'Top local developments from Sardouiyeh and South Kerman — fast, accurate and local.';
+      save(db);
+      return redirect(res,'/admin?breakingSaved=1');
+    }
     if(p==='/admin/backup/create'){createBackup('manual');return redirect(res,'/admin?backup=1');}
     if(p==='/admin/backup/restore'){
       if(!files.backupFile||!files.backupFile.data.length)return redirect(res,'/admin?restoreError=1');
