@@ -5,12 +5,16 @@
   "description": "Independent production newsroom for Nabez Sardo",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "wrangler deploy",
+    "cf:d1:init": "wrangler d1 execute nabzesardo-db --remote --file=./cloudflare/schema.sql"
   },
   "engines": {
     "node": ">=20"
   },
-  "dependencies": {
-    "sharp": "^0.34.4"
+  "dependencies": {},
+  "devDependencies": {
+    "wrangler": "^4.0.0"
   }
 }
