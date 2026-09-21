@@ -48,6 +48,19 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateDateTime();
   setInterval(updateDateTime,1000);
 
+  // Compact glass newsroom navigation after the full masthead scrolls away.
+  let navScrollTick=false;
+  const syncCompactNav=()=>{
+    navScrollTick=false;
+    root.classList.toggle('nav-condensed',window.scrollY>118);
+  };
+  syncCompactNav();
+  addEventListener('scroll',()=>{
+    if(navScrollTick)return;
+    navScrollTick=true;
+    requestAnimationFrame(syncCompactNav);
+  },{passive:true});
+
 
   // Reusable long-press story sharing for homepage promotional banners.
   const storyBanner=document.querySelector('[data-home-banner]');
