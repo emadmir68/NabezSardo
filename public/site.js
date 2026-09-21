@@ -161,85 +161,124 @@ document.addEventListener('DOMContentLoaded',()=>{
     };
     const storyFile=()=>{
       const lang=root.dataset.lang==='en'?'en':'fa';
+      const pick=(selector,fallback='')=>{
+        const node=storyBanner.querySelector(selector+' .lang-'+lang)||storyBanner.querySelector(selector);
+        return String(node?.textContent||fallback).trim();
+      };
       const title=storyBanner.dataset[lang==='en'?'storyTitleEn':'storyTitleFa']||'Nabez Sardo';
-      const message=storyBanner.dataset[lang==='en'?'storyTextEn':'storyTextFa']||'';
+      const lead=pick('.citizen-promo-lead',lang==='en'?'Seen something newsworthy?':'از اتفاقات منطقه خبر داری؟ عکس یا فیلمی گرفتی؟');
+      const paragraphs=[...storyBanner.querySelectorAll('.citizen-promo-text .lang-'+lang)].map(x=>x.textContent.trim()).filter(Boolean);
+      const note=pick('.citizen-promo-note',lang==='en'?'Be the reporter in your city.':'تو می‌تونی خبرنگار شهر خودت باشی؛ ببین، ثبت کن، بفرست و هدیه بگیر.');
+      const cta=pick('.citizen-promo-cta',lang==='en'?'Send your news & get rewarded':'خبرتو بفرست و هدیه بگیر');
       const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
       const ctx=canvas.getContext('2d');
 
       const bg=ctx.createLinearGradient(0,0,1080,1920);
-      bg.addColorStop(0,'#08111f');bg.addColorStop(.52,'#10233b');bg.addColorStop(1,'#071019');
+      bg.addColorStop(0,'#07101b');bg.addColorStop(.52,'#0d1a2a');bg.addColorStop(1,'#071018');
       ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1920);
 
-      const glow=ctx.createRadialGradient(810,280,40,810,280,520);
-      glow.addColorStop(0,'rgba(240,190,92,.32)');glow.addColorStop(1,'rgba(240,190,92,0)');
-      ctx.fillStyle=glow;ctx.fillRect(0,0,1080,900);
+      const glowA=ctx.createRadialGradient(830,260,25,830,260,470);
+      glowA.addColorStop(0,'rgba(231,185,94,.28)');glowA.addColorStop(1,'rgba(231,185,94,0)');
+      ctx.fillStyle=glowA;ctx.fillRect(350,0,730,760);
+      const glowB=ctx.createRadialGradient(180,1250,20,180,1250,420);
+      glowB.addColorStop(0,'rgba(129,28,61,.16)');glowB.addColorStop(1,'rgba(129,28,61,0)');
+      ctx.fillStyle=glowB;ctx.fillRect(0,820,650,900);
 
-      ctx.strokeStyle='rgba(232,188,103,.24)';ctx.lineWidth=3;
-      roundedRect(ctx,72,90,936,1740,54);ctx.stroke();
-
-      // Decorative autumn dots/leaves
-      ctx.fillStyle='rgba(210,116,48,.9)';
-      [[120,270,16],[930,360,13],[150,1500,12],[900,1420,18],[840,240,9]].forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],p[2],0,Math.PI*2);ctx.fill();});
+      ctx.strokeStyle='rgba(230,188,105,.28)';ctx.lineWidth=3;
+      roundedRect(ctx,64,76,952,1768,58);ctx.stroke();
 
       // Brand
       ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
-      ctx.fillStyle='#f0ca7b';ctx.font='800 34px Vazirmatn, sans-serif';
-      ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',lang==='en'?110:970,170);
-      ctx.fillStyle='rgba(232,238,247,.68)';ctx.font='500 21px Vazirmatn, sans-serif';
-      ctx.fillText(lang==='en'?'LOCAL NEWSROOM':'رسانه محلی ساردوئیه و جنوب کرمان',lang==='en'?110:970,212);
+      ctx.fillStyle='#f0c776';ctx.font='900 35px "Noto Sans Arabic", Tahoma, sans-serif';
+      ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',lang==='en'?105:975,150);
+      ctx.fillStyle='rgba(230,236,245,.65)';ctx.font='600 20px "Noto Sans Arabic", Tahoma, sans-serif';
+      ctx.fillText(lang==='en'?'CITIZEN NEWSROOM • SOUTH KERMAN':'خبرنگار مردمی • ساردوئیه و جنوب کرمان',lang==='en'?105:975,190);
 
-      // School illustration card
-      const cardX=120,cardY=310,cardW=840,cardH=640;
-      const glass=ctx.createLinearGradient(cardX,cardY,cardX+cardW,cardY+cardH);
-      glass.addColorStop(0,'rgba(255,255,255,.08)');glass.addColorStop(1,'rgba(255,255,255,.025)');
-      ctx.fillStyle=glass;roundedRect(ctx,cardX,cardY,cardW,cardH,48);ctx.fill();
-      ctx.strokeStyle='rgba(240,190,92,.28)';ctx.lineWidth=3;roundedRect(ctx,cardX,cardY,cardW,cardH,48);ctx.stroke();
+      // Visual panel
+      const px=100,py=245,pw=880,ph=500;
+      const panel=ctx.createLinearGradient(px,py,px+pw,py+ph);
+      panel.addColorStop(0,'rgba(255,255,255,.065)');panel.addColorStop(1,'rgba(255,255,255,.018)');
+      ctx.fillStyle=panel;roundedRect(ctx,px,py,pw,ph,48);ctx.fill();
+      ctx.strokeStyle='rgba(231,188,103,.22)';ctx.lineWidth=3;roundedRect(ctx,px,py,pw,ph,48);ctx.stroke();
 
-      // Sun
-      const sun=ctx.createRadialGradient(780,435,10,780,435,120);
-      sun.addColorStop(0,'#ffe4a6');sun.addColorStop(.35,'#e9b75b');sun.addColorStop(1,'rgba(233,183,91,0)');
-      ctx.fillStyle=sun;ctx.beginPath();ctx.arc(780,435,120,0,Math.PI*2);ctx.fill();
+      // Phone
+      const phoneX=190,phoneY=300,phoneW=245,phoneH=380;
+      ctx.fillStyle='#0a0f16';roundedRect(ctx,phoneX,phoneY,phoneW,phoneH,42);ctx.fill();
+      ctx.strokeStyle='rgba(236,195,114,.44)';ctx.lineWidth=4;roundedRect(ctx,phoneX,phoneY,phoneW,phoneH,42);ctx.stroke();
+      ctx.fillStyle='#030507';roundedRect(ctx,phoneX+78,phoneY+18,90,14,8);ctx.fill();
+      const screen=ctx.createLinearGradient(phoneX,phoneY,phoneX+phoneW,phoneY+phoneH);
+      screen.addColorStop(0,'#101c2a');screen.addColorStop(1,'#0b121c');
+      ctx.fillStyle=screen;roundedRect(ctx,phoneX+18,phoneY+55,phoneW-36,phoneH-95,28);ctx.fill();
 
-      // School icon
-      ctx.strokeStyle='#e2b35b';ctx.lineWidth=20;ctx.lineJoin='round';ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(280,790);ctx.lineTo(280,570);ctx.lineTo(540,420);ctx.lineTo(800,570);ctx.lineTo(800,790);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(390,790);ctx.lineTo(390,670);ctx.lineTo(490,670);ctx.lineTo(490,790);ctx.moveTo(590,790);ctx.lineTo(590,670);ctx.lineTo(690,670);ctx.lineTo(690,790);ctx.stroke();
-      ctx.strokeStyle='rgba(226,179,91,.45)';ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(220,815);ctx.lineTo(860,815);ctx.stroke();
-      ctx.strokeStyle='#f6dc9d';ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(540,420);ctx.lineTo(540,340);ctx.lineTo(690,382);ctx.lineTo(540,420);ctx.stroke();
+      // Upload cloud
+      ctx.strokeStyle='#edc271';ctx.lineWidth=10;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.beginPath();
+      ctx.moveTo(phoneX+78,phoneY+205);
+      ctx.bezierCurveTo(phoneX+48,phoneY+205,phoneX+47,phoneY+160,phoneX+84,phoneY+155);
+      ctx.bezierCurveTo(phoneX+101,phoneY+112,phoneX+164,phoneY+111,phoneX+181,phoneY+156);
+      ctx.bezierCurveTo(phoneX+216,phoneY+158,phoneX+223,phoneY+205,phoneX+190,phoneY+207);
+      ctx.stroke();
+      ctx.beginPath();ctx.moveTo(phoneX+135,phoneY+220);ctx.lineTo(phoneX+135,phoneY+165);ctx.moveTo(phoneX+113,phoneY+188);ctx.lineTo(phoneX+135,phoneY+165);ctx.lineTo(phoneX+157,phoneY+188);ctx.stroke();
 
-      // Title
+      // Gift
+      const gx=600,gy=415;
+      ctx.fillStyle='#e3b359';roundedRect(ctx,gx,gy+70,220,160,22);ctx.fill();
+      ctx.fillStyle='#f1cf87';roundedRect(ctx,gx-18,gy+48,256,55,18);ctx.fill();
+      ctx.fillStyle='#9d2045';ctx.fillRect(gx+92,gy+48,38,182);
+      ctx.strokeStyle='#ad2750';ctx.lineWidth=16;
+      ctx.beginPath();ctx.ellipse(gx+88,gy+34,58,38,-.28,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.ellipse(gx+145,gy+34,58,38,.28,0,Math.PI*2);ctx.stroke();
+
+      // Reward chip
+      ctx.fillStyle='rgba(7,12,19,.86)';roundedRect(ctx,560,665,335,80,24);ctx.fill();
+      ctx.strokeStyle='rgba(232,190,109,.28)';ctx.lineWidth=2;roundedRect(ctx,560,665,335,80,24);ctx.stroke();
+      ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';ctx.fillStyle='#efc477';
+      ctx.font='900 25px "Noto Sans Arabic", Tahoma, sans-serif';
+      ctx.fillText(lang==='en'?'CASH REWARD':'هدیه نقدی',728,697);
+      ctx.fillStyle='rgba(220,227,236,.64)';ctx.font='600 16px "Noto Sans Arabic", Tahoma, sans-serif';
+      ctx.fillText(lang==='en'?'After approval & publication':'پس از تأیید و انتشار',728,723);
+
+      // Headline
       ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
-      ctx.fillStyle='#f7efe0';ctx.font='900 72px Vazirmatn, sans-serif';
-      const titleLines=wrapLines(ctx,title,850);
-      let ty=1100;titleLines.slice(0,3).forEach(line=>{ctx.fillText(line,lang==='en'?115:965,ty);ty+=96;});
+      ctx.fillStyle='#fff5e4';ctx.font='900 68px "Noto Sans Arabic", Tahoma, sans-serif';
+      const titleLines=wrapLines(ctx,title,860);
+      let ty=870;titleLines.slice(0,3).forEach(line=>{ctx.fillText(line,lang==='en'?110:970,ty);ty+=90;});
 
-      // Gold rule
-      const rule=ctx.createLinearGradient(120,0,960,0);rule.addColorStop(0,'rgba(225,177,86,0)');rule.addColorStop(.2,'#e1b156');rule.addColorStop(.8,'#e1b156');rule.addColorStop(1,'rgba(225,177,86,0)');
-      ctx.fillStyle=rule;ctx.fillRect(120,ty+15,840,4);
+      ctx.fillStyle='#e8edf4';ctx.font='800 31px "Noto Sans Arabic", Tahoma, sans-serif';
+      const leadLines=wrapLines(ctx,lead,850);
+      let ly=ty+12;leadLines.slice(0,2).forEach(line=>{ctx.fillText(line,lang==='en'?110:970,ly);ly+=52;});
 
-      // Message
-      ctx.fillStyle='#cfd6e0';ctx.font='500 34px Vazirmatn, sans-serif';
-      const msgLines=wrapLines(ctx,message,840);
-      let my=ty+95;msgLines.slice(0,5).forEach(line=>{ctx.fillText(line,lang==='en'?120:960,my);my+=58;});
+      // Main copy
+      ctx.fillStyle='rgba(213,220,230,.84)';ctx.font='600 27px "Noto Sans Arabic", Tahoma, sans-serif';
+      let cy=ly+22;
+      const copy=(paragraphs.length?paragraphs:[storyBanner.dataset[lang==='en'?'storyTextEn':'storyTextFa']||'']).join(' ');
+      const copyLines=wrapLines(ctx,copy,850);
+      copyLines.slice(0,7).forEach(line=>{ctx.fillText(line,lang==='en'?110:970,cy);cy+=46;});
 
-      // Tags
-      const tags=lang==='en'?['KNOWLEDGE','HOPE','FUTURE']:['دانش','امید','آینده'];
-      ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';ctx.font='800 25px Vazirmatn, sans-serif';
-      tags.forEach((tag,i)=>{
-        const x=220+i*320,y=1570;
-        ctx.fillStyle='rgba(255,255,255,.055)';roundedRect(ctx,x-115,y-40,230,80,40);ctx.fill();
-        ctx.strokeStyle='rgba(225,177,86,.25)';ctx.lineWidth=2;roundedRect(ctx,x-115,y-40,230,80,40);ctx.stroke();
-        ctx.fillStyle='#e6bf73';ctx.fillText(tag,x,y+9);
-      });
+      // Note box
+      const noteY=Math.max(cy+18,1400);
+      ctx.fillStyle='rgba(230,184,96,.065)';roundedRect(ctx,104,noteY,872,112,26);ctx.fill();
+      ctx.strokeStyle='rgba(230,184,96,.20)';ctx.lineWidth=2;roundedRect(ctx,104,noteY,872,112,26);ctx.stroke();
+      ctx.fillStyle='#edc273';ctx.font='800 24px "Noto Sans Arabic", Tahoma, sans-serif';
+      const noteLines=wrapLines(ctx,note,810);
+      let ny=noteY+42;noteLines.slice(0,2).forEach(line=>{ctx.fillText(line,lang==='en'?135:945,ny);ny+=38;});
 
-      ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle='rgba(232,238,247,.56)';ctx.font='600 22px Arial, sans-serif';
-      ctx.fillText('NABZESARDO.IR',540,1760);
-      ctx.fillStyle='rgba(225,177,86,.9)';ctx.fillRect(365,1800,350,3);
+      // CTA
+      const ctaY=noteY+145;
+      const ctaGrad=ctx.createLinearGradient(170,ctaY,910,ctaY);
+      ctaGrad.addColorStop(0,'#d7a84f');ctaGrad.addColorStop(1,'#f0cd84');
+      ctx.fillStyle=ctaGrad;roundedRect(ctx,170,ctaY,740,92,28);ctx.fill();
+      ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';ctx.fillStyle='#10151c';
+      ctx.font='900 29px "Noto Sans Arabic", Tahoma, sans-serif';ctx.fillText(cta,540,ctaY+57);
+
+      ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle='rgba(232,238,247,.55)';ctx.font='700 21px Arial, sans-serif';
+      ctx.fillText('NABZESARDO.IR',540,1773);
+      ctx.fillStyle='rgba(225,177,86,.86)';ctx.fillRect(370,1810,340,3);
 
       const dataUrl=canvas.toDataURL('image/png');
       const parts=dataUrl.split(','),mime='image/png',bin=atob(parts[1]);const bytes=new Uint8Array(bin.length);
       for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-      return new File([bytes],'nabez-sardo-mehr-story.png',{type:mime});
+      return new File([bytes],'nabez-sardo-citizen-reward-story.png',{type:mime});
     };
 
     const nativeShare=storyBanner.querySelector('[data-story-native]');
@@ -247,7 +286,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       const file=storyFile();
       try{
         if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){
-          await navigator.share({files:[file],title:'Nabez Sardo',text:root.dataset.lang==='en'?'Nabez Sardo story':'استوری نبض ساردو'});
+          await navigator.share({files:[file],title:'Nabez Sardo',text:root.dataset.lang==='en'?'Send local news to Nabez Sardo':'خبر داری؟ برای نبض ساردو بفرست و هدیه بگیر'});
           closeSheet();
         }else{
           const url=URL.createObjectURL(file);const a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
