@@ -17,12 +17,15 @@
   },
   "d1_databases": [
     {
-      "binding": "DB"
+      "binding": "DB",
+      "database_name": "nabzesardo-cloudflare-db",
+      "database_id": "75ac406c-ba8d-4cf7-a077-f56c7f974601"
     }
   ],
   "r2_buckets": [
     {
-      "binding": "UPLOADS"
+      "binding": "UPLOADS",
+      "bucket_name": "nabzesardo-uploads"
     }
   ],
   "triggers": {
