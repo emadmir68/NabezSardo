@@ -86,6 +86,7 @@ function sitemapXml(db){
   const urls=[
     {loc:publicUrl('/'),lastmod:null},
     {loc:publicUrl('/all-news'),lastmod:null},
+    {loc:publicUrl('/briefs'),lastmod:null},
     {loc:publicUrl('/about'),lastmod:null},
     {loc:publicUrl('/contact'),lastmod:null},
     ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null})),
@@ -224,6 +225,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/feed.xml')return send(res,200,rssXml(db),'application/rss+xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/'){analytics.track(req,p);return send(res,200,views.home(db));}
   if(req.method==='GET'&&p==='/all-news'){analytics.track(req,p);return send(res,200,views.archive(db,u.searchParams.get('q')||''));}
+  if(req.method==='GET'&&p==='/briefs'){analytics.track(req,p);return send(res,200,views.briefs(db));}
   if(req.method==='GET'&&p==='/search'){analytics.track(req,p);return send(res,200,views.search(db,u.searchParams.get('q')||''));}
   if(req.method==='GET'&&p==='/about'){analytics.track(req,p);return send(res,200,views.simple(db,'about'));}
   if(req.method==='GET'&&p==='/contact'){analytics.track(req,p);return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));}
