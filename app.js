@@ -365,19 +365,7 @@ const server=http.createServer(async(req,res)=>{
   }
  }
 });
-server.listen(PORT,'0.0.0.0',()=>{
-  console.log('Nabez Sardo running on :'+PORT);
-  try{
-    const d=load();
-    const rows=d.articles.filter(a=>a.categoryId==='short-news');
-    console.log('short-news-diagnostic',JSON.stringify({
-      total:rows.length,
-      published:rows.filter(a=>a.status==='published').length,
-      draft:rows.filter(a=>a.status==='draft').length,
-      scheduled:rows.filter(a=>a.status==='scheduled').length
-    }));
-  }catch(err){console.error('short-news-diagnostic-failed',String(err&&err.message||err));}
-});
+server.listen(PORT,'0.0.0.0',()=>console.log('Nabez Sardo running on :'+PORT));
 articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('Featured image metadata backfilled');}).catch(err=>console.error('featured image metadata',err));
 articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
 setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
