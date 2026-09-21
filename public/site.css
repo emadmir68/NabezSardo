@@ -1070,3 +1070,179 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
 .rich-content font[face="B Titr"]{font-family:"B Titr","Vazirmatn",Tahoma,sans-serif}
 .rich-content font[face="IranNastaliq"]{font-family:"IranNastaliq","Iran Nastaliq","Noto Naskh Arabic","Vazirmatn",serif}
 .rich-content font[face="Vazirmatn"]{font-family:"Vazirmatn",Tahoma,sans-serif}
+
+
+/* Animated home advertising slot */
+.home-ad-slot{margin:22px auto 8px}
+.home-ad-card{
+  position:relative;
+  min-height:148px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 270px auto;
+  align-items:center;
+  gap:22px;
+  overflow:hidden;
+  padding:18px 22px;
+  border:1px solid rgba(210,168,94,.24);
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 82% 44%,rgba(143,30,66,.18),transparent 27%),
+    radial-gradient(circle at 65% 20%,rgba(210,168,94,.12),transparent 28%),
+    linear-gradient(135deg,#11161e 0%,#0b0f15 52%,#121821 100%);
+  box-shadow:0 16px 38px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.035);
+  color:#f5f1ea;
+  text-decoration:none;
+  isolation:isolate;
+}
+.home-ad-card:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent 10%,rgba(255,255,255,.035) 35%,transparent 60%);
+  transform:translateX(-120%);
+  animation:homeAdSweep 5.8s ease-in-out infinite;
+  pointer-events:none;
+}
+.home-ad-copy{position:relative;z-index:3;display:flex;flex-direction:column;gap:5px}
+.home-ad-kicker{
+  width:max-content;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(143,30,66,.18);
+  border:1px solid rgba(174,50,87,.35);
+  color:#d9b66e;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:1.2px;
+}
+.home-ad-copy strong{font-size:23px;line-height:1.45}
+.home-ad-copy small{color:#949daa;font-size:10.5px;line-height:1.7}
+.home-ad-visual{
+  position:relative;
+  height:112px;
+  display:grid;
+  place-items:center;
+  perspective:900px;
+  z-index:2;
+}
+.home-ad-device{
+  position:relative;
+  width:218px;
+  filter:drop-shadow(0 18px 25px rgba(0,0,0,.48));
+  transform-style:preserve-3d;
+  animation:homeAdFloat 4.2s ease-in-out infinite;
+}
+.home-ad-device svg{display:block;width:100%;height:auto}
+.home-ad-device>span{
+  position:absolute;
+  top:18px;
+  right:8px;
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  background:linear-gradient(145deg,#a12a50,#67152f);
+  border:1px solid rgba(255,255,255,.12);
+  color:#f1d18b;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1px;
+  box-shadow:0 10px 24px rgba(92,13,39,.42);
+  animation:homeAdBadge 2.8s ease-in-out infinite;
+}
+.home-ad-orbit{
+  position:absolute;
+  border:1px solid rgba(210,168,94,.2);
+  border-radius:50%;
+  pointer-events:none;
+}
+.orbit-one{width:238px;height:74px;animation:homeAdOrbit 7s linear infinite}
+.orbit-two{width:185px;height:96px;animation:homeAdOrbitReverse 5.5s linear infinite}
+.home-ad-spark{
+  position:absolute;
+  color:#d7ad63;
+  font-size:13px;
+  text-shadow:0 0 14px rgba(215,173,99,.65);
+  animation:homeAdSpark 2.6s ease-in-out infinite;
+}
+.spark-a{right:18px;top:12px;animation-delay:0s}
+.spark-b{left:30px;bottom:14px;animation-delay:.8s}
+.spark-c{right:52px;bottom:4px;animation-delay:1.4s}
+.home-ad-shine{
+  position:absolute;
+  width:36px;
+  height:130%;
+  top:-15%;
+  left:-20%;
+  transform:rotate(18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);
+  filter:blur(2px);
+  animation:homeAdVisualShine 3.6s ease-in-out infinite;
+}
+.home-ad-cta{
+  position:relative;
+  z-index:3;
+  white-space:nowrap;
+  padding:10px 13px;
+  border-radius:999px;
+  border:1px solid rgba(210,168,94,.3);
+  color:#ddb96f;
+  background:rgba(210,168,94,.06);
+  font-size:10px;
+  font-weight:800;
+  transition:.25s ease;
+}
+.home-ad-card:hover .home-ad-cta{transform:translateX(-4px);background:rgba(210,168,94,.12)}
+.home-ad-card:hover .home-ad-device{animation-duration:2.6s}
+@keyframes homeAdSweep{
+  0%,18%{transform:translateX(-120%)}
+  48%,60%{transform:translateX(120%)}
+  100%{transform:translateX(120%)}
+}
+@keyframes homeAdFloat{
+  0%,100%{transform:rotateX(7deg) rotateY(-8deg) translate3d(0,3px,0) scale(.98)}
+  50%{transform:rotateX(-3deg) rotateY(9deg) translate3d(0,-8px,24px) scale(1.03)}
+}
+@keyframes homeAdBadge{
+  0%,100%{transform:translate3d(0,0,22px) rotate(-5deg)}
+  50%{transform:translate3d(-4px,-7px,32px) rotate(5deg)}
+}
+@keyframes homeAdOrbit{to{transform:rotate(360deg)}}
+@keyframes homeAdOrbitReverse{to{transform:rotate(-360deg)}}
+@keyframes homeAdSpark{
+  0%,100%{transform:translateY(0) scale(.75);opacity:.35}
+  50%{transform:translateY(-8px) scale(1.18);opacity:1}
+}
+@keyframes homeAdVisualShine{
+  0%,15%{left:-28%;opacity:0}
+  40%{opacity:.85}
+  70%,100%{left:115%;opacity:0}
+}
+@media(max-width:800px){
+  .home-ad-card{grid-template-columns:minmax(0,1fr) 190px;gap:12px;min-height:132px;padding:15px 17px}
+  .home-ad-visual{height:100px}
+  .home-ad-device{width:178px}
+  .home-ad-cta{grid-column:1/-1;width:max-content;margin-top:-5px}
+  .home-ad-copy strong{font-size:19px}
+}
+@media(max-width:540px){
+  .home-ad-slot{margin-top:16px}
+  .home-ad-card{grid-template-columns:minmax(0,1fr) 124px;min-height:112px;padding:13px 14px;border-radius:18px}
+  .home-ad-copy strong{font-size:16px}
+  .home-ad-copy small{font-size:9px;line-height:1.6}
+  .home-ad-visual{height:82px}
+  .home-ad-device{width:132px}
+  .home-ad-device>span{width:32px;height:32px;border-radius:10px;font-size:8px;top:13px}
+  .orbit-one{width:145px;height:48px}
+  .orbit-two{width:112px;height:62px}
+  .home-ad-cta{padding:8px 10px;font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .home-ad-card:before,
+  .home-ad-device,
+  .home-ad-device>span,
+  .home-ad-orbit,
+  .home-ad-spark,
+  .home-ad-shine{animation:none!important}
+}
