@@ -5,6 +5,7 @@ import { handleAsNodeRequest } from "cloudflare:node";
 import http from "node:http";
 import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
+import views from "../lib/views-v2.js";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
 
 const PORT = 3000;
@@ -79,6 +80,52 @@ async function putState(key, value) {
   await env.DB.prepare(
     "INSERT INTO app_state(key,value,updated_at) VALUES(?,?,datetime('now')) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at"
   ).bind(key, value).run();
+}
+
+function html(body, status = 200) {
+  return new Response(body, {
+    status,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "SAMEORIGIN"
+    }
+  });
+}
+
+async function loadDbObject() {
+  const text = await getState("db");
+  return safeJson(text, { settings: {}, categories: [], articles: [], contacts: [], citizens: [] });
+}
+
+async function handlePublicPreview(request, url, pathname) {
+  if (request.method !== "GET") return null;
+  const db = await loadDbObject();
+
+  if (pathname === "/health") {
+    return Response.json({ ok: true, name: "nabzesardo-cloudflare", migrated: true });
+  }
+  if (pathname === "/") return html(views.home(db));
+  if (pathname === "/all-news") return html(views.archive(db, url.searchParams.get("q") || ""));
+  if (pathname === "/search") return html(views.search(db, url.searchParams.get("q") || ""));
+  if (pathname === "/about") return html(views.simple(db, "about"));
+  if (pathname === "/contact") return html(views.simple(db, "contact", url.searchParams.get("ok") === "1"));
+  if (pathname === "/send-news") return html(views.simple(db, "send-news", url.searchParams.get("ok") === "1", url.searchParams.get("uploadError") || ""));
+
+  let m = pathname.match(/^\/news\/(.+)$/);
+  if (m) {
+    const a = (db.articles || []).find(x => x.status === "published" && x.slug === m[1]);
+    return a ? html(views.article(db, a)) : html("خبر یافت نشد", 404);
+  }
+
+  m = pathname.match(/^\/category\/(.+)$/);
+  if (m) {
+    const cat = (db.categories || []).find(x => x.id === m[1]);
+    return cat ? html(views.category(db, cat)) : html("دسته‌بندی یافت نشد", 404);
+  }
+
+  return null;
 }
 
 function safeJson(text, fallback = null) {
@@ -405,6 +452,13 @@ export default {
 
     if ((p.startsWith("/assets/") || p === "/hero-mosque.jpg") && request.method === "GET") {
       return serveAsset(request, p);
+    }
+
+    const publicResponse = await handlePublicPreview(request, url, p);
+    if (publicResponse) return publicResponse;
+
+    if (String(env.PREVIEW_READONLY || "") === "1") {
+      return new Response("Preview is read-only during migration verification.", { status: 403 });
     }
 
     return handleApp(request);
