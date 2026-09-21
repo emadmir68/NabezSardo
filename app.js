@@ -6,6 +6,7 @@ const store=require('./lib/store');
 const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullBackup,restoreFullBackup}=store;
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
+const analytics=require('./lib/analytics');
 
 const PORT=Number(process.env.PORT||3000);
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
@@ -177,7 +178,7 @@ function articlePayload(db,f,files,current={}){
 
 const HERO_MOSQUE_PATH=path.join(ROOT,'public','header-mosque-fixed.jpg');
 const HERO_HQ_CHUNKS=['hero-hq-00.txt','hero-hq-01.txt','hero-hq-02.txt','hero-hq-03.txt','hero-hq-04.txt'];
-const HERO_SEED_TOKEN='9f3c7d2a8b6e41d7b5a4c9e2f81763ab';
+const HERO_SEED_TOKEN=process.env.HERO_SEED_TOKEN||'';
 
 function loadHeroImage(){
   try{
@@ -202,7 +203,7 @@ console.log(`hero-image-ready bytes=${HERO_MOSQUE_JPG.length} sha1=${HERO_MOSQUE
 const server=http.createServer(async(req,res)=>{
  try{
   const u=new URL(req.url,'http://localhost'),p=decodeURIComponent(u.pathname);
-  if(req.method==='POST'&&p==='/__hero_seed_'+HERO_SEED_TOKEN){
+  if(HERO_SEED_TOKEN&&req.method==='POST'&&p==='/__hero_seed_'+HERO_SEED_TOKEN){
     const raw=await readRaw(req,2*1024*1024);
     if(!raw||raw.length<10000)return send(res,400,'bad-image','text/plain; charset=utf-8');
     fs.mkdirSync(UPLOAD_DIR,{recursive:true});
@@ -221,12 +222,12 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/sitemap.xml')return send(res,200,sitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=900'});
   if(req.method==='GET'&&p==='/news-sitemap.xml')return send(res,200,newsSitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/feed.xml')return send(res,200,rssXml(db),'application/rss+xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
-  if(req.method==='GET'&&p==='/')return send(res,200,views.home(db));
-  if(req.method==='GET'&&p==='/all-news')return send(res,200,views.archive(db,u.searchParams.get('q')||''));
-  if(req.method==='GET'&&p==='/search')return send(res,200,views.search(db,u.searchParams.get('q')||''));
-  if(req.method==='GET'&&p==='/about')return send(res,200,views.simple(db,'about'));
-  if(req.method==='GET'&&p==='/contact')return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));
-  if(req.method==='GET'&&p==='/send-news')return send(res,200,views.simple(db,'send-news',u.searchParams.get('ok')==='1',u.searchParams.get('uploadError')||''));
+  if(req.method==='GET'&&p==='/'){analytics.track(req,p);return send(res,200,views.home(db));}
+  if(req.method==='GET'&&p==='/all-news'){analytics.track(req,p);return send(res,200,views.archive(db,u.searchParams.get('q')||''));}
+  if(req.method==='GET'&&p==='/search'){analytics.track(req,p);return send(res,200,views.search(db,u.searchParams.get('q')||''));}
+  if(req.method==='GET'&&p==='/about'){analytics.track(req,p);return send(res,200,views.simple(db,'about'));}
+  if(req.method==='GET'&&p==='/contact'){analytics.track(req,p);return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));}
+  if(req.method==='GET'&&p==='/send-news'){analytics.track(req,p);return send(res,200,views.simple(db,'send-news',u.searchParams.get('ok')==='1',u.searchParams.get('uploadError')||''));}
   if(req.method==='GET'&&p==='/admin/login')return send(res,200,views.login(u.searchParams.get('error')==='1'));
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
@@ -234,14 +235,15 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&m){
     const a=published(db).find(x=>x.slug===m[1]);
     if(!a)return send(res,404,'خبر یافت نشد');
+    analytics.track(req,p);
     const viewCookie=trackView(req,db,a);
     return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
   }
   m=p.match(/^\/category\/(.+)$/);
-  if(req.method==='GET'&&m){const c=db.categories.find(x=>x.id===m[1]);return c?send(res,200,views.category(db,c)):send(res,404,'دسته‌بندی یافت نشد');}
+  if(req.method==='GET'&&m){const c=db.categories.find(x=>x.id===m[1]);if(!c)return send(res,404,'دسته‌بندی یافت نشد');analytics.track(req,p);return send(res,200,views.category(db,c));}
 
   if(p.startsWith('/admin')&&p!=='/admin/login'&&!authed(req))return redirect(res,'/admin/login');
-  if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams,articleTools.socialStatus()));
+  if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams,articleTools.socialStatus(),analytics.snapshot()));
   if(req.method==='GET'&&p==='/admin/articles/new')return send(res,200,views.editor(db));
   m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
   if(req.method==='GET'&&m){const a=db.articles.find(x=>x.id===m[1]);return a?send(res,200,views.editor(db,a,'/admin/articles/'+a.id+'/edit','ویرایش خبر')):send(res,404,'یافت نشد');}
