@@ -2156,3 +2156,241 @@ html.nav-condensed .nav-brand-mini__mark{
   .breaking-live-dot,
   .breaking-label-pulse path{animation:none!important}
 }
+
+
+/* Nabez Today timeline */
+.today-pulse-section{padding:24px 0 12px}
+.today-pulse-shell{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr);
+  gap:26px;
+  overflow:hidden;
+  padding:26px;
+  border:1px solid rgba(222,178,101,.17);
+  border-radius:25px;
+  background:
+    radial-gradient(circle at 8% 15%,rgba(123,24,58,.18),transparent 30%),
+    radial-gradient(circle at 89% 80%,rgba(214,170,92,.07),transparent 24%),
+    linear-gradient(145deg,#121720,#0a0d12 72%);
+  box-shadow:0 20px 48px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.035);
+}
+.today-pulse-shell::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,transparent 25%,rgba(255,255,255,.025) 48%,transparent 70%);
+  transform:translateX(-100%);
+  animation:todayPulseSweep 8s ease-in-out infinite;
+}
+.today-pulse-intro{
+  position:relative;
+  z-index:2;
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:330px;
+  padding:5px 8px 5px 4px;
+}
+.today-pulse-kicker{
+  display:inline-flex;
+  width:max-content;
+  align-items:center;
+  gap:8px;
+  color:#d8ad61;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.8px;
+}
+.today-pulse-kicker i{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#d13b5d;
+  box-shadow:0 0 0 5px rgba(209,59,93,.10),0 0 16px rgba(209,59,93,.52);
+  animation:todayPulseLive 1.8s ease-in-out infinite;
+}
+.today-pulse-intro h2{
+  margin:12px 0 7px;
+  font-size:41px;
+  line-height:1.35;
+}
+.today-pulse-intro p{
+  max-width:330px;
+  margin:0;
+  color:#989faa;
+  font-size:12px;
+  line-height:2;
+}
+.today-pulse-clock{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  width:max-content;
+  margin-top:17px;
+  padding:7px 10px;
+  border:1px solid rgba(221,180,103,.12);
+  border-radius:999px;
+  background:rgba(255,255,255,.018);
+  color:#8e96a2;
+  font-size:9px;
+}
+.today-pulse-clock b{
+  color:#dfba72;
+  font:800 10px/1 Arial,sans-serif;
+  direction:ltr;
+}
+.today-pulse-clock-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#bd2e50;
+  box-shadow:0 0 9px rgba(189,46,80,.48);
+}
+.today-pulse-signature{
+  width:min(250px,90%);
+  margin-top:26px;
+  color:#d9ad60;
+  opacity:.9;
+  overflow:visible;
+  filter:drop-shadow(0 0 8px rgba(217,173,96,.18));
+}
+.today-pulse-signature path{
+  stroke-dasharray:440;
+  stroke-dashoffset:440;
+  animation:todayPulseDraw 4s ease-in-out infinite;
+}
+.today-pulse-timeline{
+  position:relative;
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:4px 0;
+}
+.today-pulse-timeline::before{
+  content:"";
+  position:absolute;
+  top:28px;
+  bottom:28px;
+  right:23px;
+  width:1px;
+  background:linear-gradient(180deg,transparent,rgba(217,173,96,.38) 12%,rgba(123,27,59,.48) 50%,rgba(217,173,96,.30) 88%,transparent);
+  box-shadow:0 0 12px rgba(217,173,96,.07);
+}
+html[data-lang="en"] .today-pulse-timeline::before{right:auto;left:23px}
+.today-pulse-item{
+  position:relative;
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr);
+  gap:14px;
+  align-items:start;
+  min-height:66px;
+  padding:9px 0;
+}
+.today-pulse-node{
+  position:relative;
+  z-index:3;
+  display:grid;
+  place-items:center;
+  width:47px;
+  height:47px;
+  border-radius:50%;
+  background:linear-gradient(145deg,#171c24,#0a0d12);
+  border:1px solid rgba(221,180,103,.23);
+  box-shadow:0 8px 18px rgba(0,0,0,.24),0 0 0 5px rgba(11,14,19,.75);
+}
+.today-pulse-node::after{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border-radius:50%;
+  border:1px solid rgba(133,31,65,.26);
+}
+.today-pulse-node b{
+  position:relative;
+  z-index:2;
+  color:#dcb56b;
+  font:900 11px/1 monospace;
+}
+.today-pulse-content{
+  padding:2px 0 11px;
+  border-bottom:1px solid rgba(255,255,255,.055);
+}
+.today-pulse-item:last-child .today-pulse-content{border-bottom:0}
+.today-pulse-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.today-pulse-meta .eyebrow{font-size:8px}
+.today-pulse-views{
+  color:#6f7782;
+  font-size:8px;
+}
+.today-pulse-content h3{
+  margin:5px 0 6px;
+  font-size:14px;
+  line-height:1.75;
+}
+.today-pulse-content h3 a{
+  text-decoration:none;
+  transition:color .2s ease;
+}
+.today-pulse-content h3 a:hover{color:#ecc87f}
+.today-pulse-bottom{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#717985;
+  font-size:8.5px;
+}
+.today-pulse-link{
+  margin-right:auto;
+  color:#cda65f;
+  text-decoration:none;
+  font-weight:800;
+}
+html[data-lang="en"] .today-pulse-link{margin-right:0;margin-left:auto}
+@keyframes todayPulseSweep{
+  0%,25%{transform:translateX(-110%)}
+  55%,100%{transform:translateX(110%)}
+}
+@keyframes todayPulseLive{
+  0%,100%{opacity:.48;transform:scale(.78)}
+  50%{opacity:1;transform:scale(1)}
+}
+@keyframes todayPulseDraw{
+  0%{stroke-dashoffset:440;opacity:.35}
+  38%,70%{stroke-dashoffset:0;opacity:1}
+  100%{stroke-dashoffset:-440;opacity:.3}
+}
+@media(max-width:900px){
+  .today-pulse-shell{grid-template-columns:1fr;gap:10px}
+  .today-pulse-intro{min-height:auto;padding-bottom:10px}
+  .today-pulse-intro p{max-width:620px}
+  .today-pulse-signature{width:190px;margin-top:17px}
+}
+@media(max-width:620px){
+  .today-pulse-section{padding:18px 0 5px}
+  .today-pulse-shell{padding:18px 15px;border-radius:20px}
+  .today-pulse-intro h2{font-size:30px}
+  .today-pulse-intro p{font-size:10.5px;line-height:1.8}
+  .today-pulse-clock{margin-top:12px}
+  .today-pulse-signature{width:145px;margin-top:13px}
+  .today-pulse-timeline::before{right:18px;top:24px;bottom:24px}
+  html[data-lang="en"] .today-pulse-timeline::before{right:auto;left:18px}
+  .today-pulse-item{grid-template-columns:38px minmax(0,1fr);gap:11px;min-height:61px;padding:7px 0}
+  .today-pulse-node{width:37px;height:37px;box-shadow:0 7px 15px rgba(0,0,0,.22),0 0 0 4px rgba(11,14,19,.76)}
+  .today-pulse-node::after{inset:6px}
+  .today-pulse-node b{font-size:9px}
+  .today-pulse-content h3{font-size:12.5px;line-height:1.7}
+  .today-pulse-bottom{gap:8px;flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+  .today-pulse-shell::before,
+  .today-pulse-kicker i,
+  .today-pulse-signature path{animation:none!important}
+}
