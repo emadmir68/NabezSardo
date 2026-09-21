@@ -22,8 +22,8 @@
   height:100%;
   display:block;
   object-fit:cover;
-  object-position:center 48%;
-  transform:scale(1.045);
+  object-position:center 46%;
+  transform:scale(1.015);
   animation:nsHeroCamera 18s ease-in-out infinite alternate;
   will-change:transform;
   image-rendering:auto;
@@ -165,9 +165,9 @@
 }
 
 @keyframes nsHeroCamera{
-  0%{transform:scale(1.045) translate3d(0,0,0)}
-  50%{transform:scale(1.075) translate3d(-.7%,-.3%,0)}
-  100%{transform:scale(1.095) translate3d(.7%,-.7%,0)}
+  0%{transform:scale(1.015) translate3d(0,0,0)}
+  50%{transform:scale(1.035) translate3d(-.45%,-.2%,0)}
+  100%{transform:scale(1.05) translate3d(.45%,-.45%,0)}
 }
 @keyframes nsHeroReveal{
   to{opacity:1;transform:translateY(0)}
@@ -201,7 +201,7 @@ html[data-lang="en"] .ns-hero-final__badge{
   }
   .ns-hero-final__media img{
     object-position:center center;
-    transform:scale(1.05);
+    transform:scale(1.02);
     animation-duration:20s;
   }
   .ns-hero-final__overlay{
