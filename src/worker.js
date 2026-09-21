@@ -10,6 +10,7 @@ const originalDispatchAndPersist = articleTools.dispatchAndPersist;
 
 const PORT = 3000;
 const EXPECTED_BACKUP_SHA256 = "b93b59e5a9dde845a2f4ae50674b44ea7f6e8d84ee42013f7593adfddb5f4619";
+const SYNC_TOKEN_SHA256 = "7959554b9a3f35cb94b38c33827254d4c36eb7a94c6f03690a2b201711513c63";
 let appReady = false;
 
 async function ensureAppServer() {
@@ -304,6 +305,50 @@ async function migrationPage() {
   return new Response(body, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
 }
 
+async function syncPush(request) {
+  const supplied = String(request.headers.get("x-nabzesardo-sync") || "");
+  if (!supplied) return Response.json({ ok: false, error: "missing-sync-token" }, { status: 401 });
+  const suppliedHash = await sha256Hex(new TextEncoder().encode(supplied));
+  if (suppliedHash !== SYNC_TOKEN_SHA256) {
+    return Response.json({ ok: false, error: "invalid-sync-token" }, { status: 403 });
+  }
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return Response.json({ ok: false, error: "invalid-json" }, { status: 400 });
+  }
+  if (!payload || payload.format !== "nabezsardo-full-backup" || payload.version !== 1 || !payload.db) {
+    return Response.json({ ok: false, error: "invalid-backup" }, { status: 400 });
+  }
+
+  await putState("db", JSON.stringify(payload.db, null, 2));
+  await clearMedia();
+
+  let uploaded = 0;
+  for (const item of Array.isArray(payload.uploads) ? payload.uploads : []) {
+    const name = path.basename(String(item.name || ""));
+    if (!name || name !== item.name || !item.data) continue;
+    const data = Buffer.from(item.data, "base64");
+    await putMedia(name, data, mimeFor(name));
+    uploaded++;
+  }
+
+  const stamp = new Date().toISOString();
+  await putState("last_sync_at", stamp);
+  await putState("last_sync_source", "railway");
+  await putState("last_sync_articles", String(Array.isArray(payload.db.articles) ? payload.db.articles.length : 0));
+  await putState("last_sync_uploads", String(uploaded));
+
+  return Response.json({
+    ok: true,
+    syncedAt: stamp,
+    articles: Array.isArray(payload.db.articles) ? payload.db.articles.length : 0,
+    uploads: uploaded
+  });
+}
+
 async function importBackup(request) {
   const done = await getState("migration_complete");
   if (done === "1") return Response.json({ ok: false, error: "migration-already-complete" }, { status: 409 });
@@ -444,6 +489,7 @@ export default {
 
     if (p === "/__migration" && request.method === "GET") return migrationPage();
     if (p === "/__migration/import" && request.method === "POST") return importBackup(request);
+    if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
 
     if (p.startsWith("/uploads/") && request.method === "GET") {
