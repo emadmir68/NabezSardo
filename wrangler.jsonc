@@ -12,7 +12,8 @@
     "CLOUDFLARE_WORKER": "1",
     "DATA_DIR": "/tmp/nabzesardo",
     "NODE_ENV": "production",
-    "PUBLIC_BASE_URL": "https://nabzesardo.ir"
+    "PUBLIC_BASE_URL": "https://nabzesardo.ir",
+    "PREVIEW_READONLY": "1"
   },
   "d1_databases": [
     {
@@ -25,6 +26,8 @@
     }
   ],
   "triggers": {
-    "crons": ["* * * * *"]
+    "crons": [
+      "* * * * *"
+    ]
   }
 }
