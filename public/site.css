@@ -3131,3 +3131,111 @@ html[data-lang="en"] .article-body blockquote{
 @media(prefers-reduced-motion:reduce){
   .live-desk-admin-state.on>i{animation:none!important}
 }
+
+
+/* Automatic newsroom typography normalization */
+.article-premium h1,
+.article-deck,
+.article-body,
+.article-body .lang-fa{
+  direction:rtl;
+  unicode-bidi:plaintext;
+  text-indent:0!important;
+}
+.article-premium h1{
+  text-align:right!important;
+  white-space:normal;
+  overflow-wrap:break-word;
+}
+.article-deck{
+  text-align:justify!important;
+  text-align-last:right!important;
+  text-justify:inter-word;
+  white-space:normal;
+  overflow-wrap:break-word;
+}
+.article-body .lang-fa>p,
+.article-body .lang-fa>div,
+.article-body .lang-fa li,
+.article-body .lang-fa blockquote{
+  direction:rtl!important;
+  text-align:justify!important;
+  text-align-last:right!important;
+  text-justify:inter-word;
+  text-indent:0!important;
+  white-space:normal!important;
+  word-spacing:normal;
+  letter-spacing:normal;
+  overflow-wrap:break-word;
+  padding-inline:0!important;
+}
+.article-body .lang-fa>p,
+.article-body .lang-fa>div{
+  margin:0 0 1.28em!important;
+}
+.article-body .lang-fa>p:last-child,
+.article-body .lang-fa>div:last-child{
+  margin-bottom:0!important;
+}
+.article-body .lang-fa p:empty,
+.article-body .lang-fa div:empty{
+  display:none!important;
+}
+.article-body .lang-fa br+br{display:none}
+.article-body .lang-fa h2,
+.article-body .lang-fa h3{
+  direction:rtl!important;
+  text-align:right!important;
+  text-indent:0!important;
+}
+.article-body .lang-fa ul,
+.article-body .lang-fa ol{
+  direction:rtl!important;
+  text-align:right!important;
+  padding-right:1.6em!important;
+  padding-left:0!important;
+  margin:0 0 1.25em!important;
+}
+.article-body .lang-fa li{
+  padding:0!important;
+  margin:.3em 0!important;
+}
+.card h3,.card p,
+.front-lead h2,.front-lead p,
+.front-brief h3,
+.popular-row h3,
+.today-pulse-content h3{
+  direction:rtl;
+  text-align:right;
+  text-indent:0;
+  white-space:normal;
+  overflow-wrap:break-word;
+}
+html[data-lang="en"] .article-premium h1,
+html[data-lang="en"] .article-deck,
+html[data-lang="en"] .article-body,
+html[data-lang="en"] .article-body .lang-en,
+html[data-lang="en"] .card h3,
+html[data-lang="en"] .card p,
+html[data-lang="en"] .front-lead h2,
+html[data-lang="en"] .front-lead p,
+html[data-lang="en"] .front-brief h3,
+html[data-lang="en"] .popular-row h3,
+html[data-lang="en"] .today-pulse-content h3{
+  direction:ltr!important;
+  text-align:left!important;
+  text-align-last:left!important;
+}
+html[data-lang="en"] .article-body .lang-en>p,
+html[data-lang="en"] .article-body .lang-en>div,
+html[data-lang="en"] .article-body .lang-en li,
+html[data-lang="en"] .article-body .lang-en blockquote{
+  direction:ltr!important;
+  text-align:justify!important;
+  text-align-last:left!important;
+}
+@media(max-width:620px){
+  .article-deck{line-height:1.95!important}
+  .article-body .lang-fa>p,
+  .article-body .lang-fa>div{margin-bottom:1.18em!important}
+}
