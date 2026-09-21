@@ -6,6 +6,7 @@ import http from "node:http";
 import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
 import views from "../lib/view-public.js";
+import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
 
 const PORT = 3000;
@@ -107,17 +108,8 @@ async function handlePublicPreview(request, url, pathname) {
   if (pathname === "/health") {
     return Response.json({ ok: true, name: "nabzesardo-cloudflare", migrated: true });
   }
-  if (pathname === "/") {
-    const snapshot = await getState("snapshot_home");
-    return html(snapshot || views.home(db));
-  }
-  if (pathname === "/all-news") {
-    if (!url.searchParams.get("q")) {
-      const snapshot = await getState("snapshot_archive");
-      if (snapshot) return html(snapshot);
-    }
-    return html(views.archive(db, url.searchParams.get("q") || ""));
-  }
+  if (pathname === "/") return html(views.home(db));
+  if (pathname === "/all-news") return html(views.archive(db, url.searchParams.get("q") || ""));
   if (pathname === "/search") return html(views.search(db, url.searchParams.get("q") || ""));
   if (pathname === "/about") return html(views.simple(db, "about"));
   if (pathname === "/contact") return html(views.simple(db, "contact", url.searchParams.get("ok") === "1"));
@@ -558,9 +550,6 @@ async function publicPull() {
     throw new Error("source-content-validation-failed");
   }
 
-  await putState("snapshot_home", homeHtml);
-  await putState("snapshot_archive", archiveHtml);
-
   const db = await loadDbObject();
   db.settings = db.settings || {};
   db.categories = Array.isArray(db.categories) ? db.categories : [];
@@ -594,15 +583,19 @@ async function publicPull() {
       const existing = db.articles.find(a => a.slug === slug);
       const id = existing?.id || ("sync-" + (await sha256Hex(new TextEncoder().encode(slug))).slice(0, 16));
       const schemaImage = Array.isArray(schema.image) ? schema.image[0] : schema.image;
-      let image = existing?.image || "";
+      let sourceImage = "";
+      let sourceImagePath = "";
       if (schemaImage) {
         try {
           const iu = new URL(String(schemaImage), sourceBase);
-          image = iu.hostname === new URL(sourceBase).hostname ? iu.pathname : iu.toString();
-        } catch {}
+          sourceImagePath = iu.pathname;
+          sourceImage = iu.hostname === new URL(sourceBase).hostname ? iu.pathname : iu.toString();
+        } catch {
+          sourceImage = String(schemaImage || "");
+        }
       }
 
-      const next = {
+      const baseArticle = {
         ...(existing || {}),
         id,
         slug,
@@ -613,19 +606,34 @@ async function publicPull() {
         categoryId: categoryId || existing?.categoryId || "",
         author: String(schema.author?.name || existing?.author || "تحریریه نبض ساردو"),
         status: "published",
-        image,
         publishedAt: schema.datePublished || existing?.publishedAt || existing?.createdAt || new Date().toISOString(),
         updatedAt: schema.dateModified || new Date().toISOString(),
         createdAt: existing?.createdAt || schema.datePublished || new Date().toISOString(),
         featured: existing?.featured === true,
         views: Number(existing?.views || 0)
       };
+      const category = db.categories.find(x => x.id === baseArticle.categoryId) || {};
+      const smart = await ensureSmartCover({
+        article: baseArticle, category, sourceImage, env,
+        getMedia, putMedia, sha256Hex
+      });
+      const next = { ...baseArticle, ...smart };
 
       if (existing) Object.assign(existing, next);
       else db.articles.unshift(next);
 
-      await putState("snapshot_article:" + slug, articleHtml);
-      for (const p of uploadLinksFromHtml(articleHtml)) mediaPaths.add(p);
+      let storedArticleHtml = articleHtml;
+      if (sourceImagePath && next.image && next.image !== sourceImage) {
+        storedArticleHtml = storedArticleHtml.split(sourceImagePath).join(next.image);
+        storedArticleHtml = storedArticleHtml.split(String(schemaImage)).join(next.image);
+      } else if (!sourceImage && next.image) {
+        const figure = '<figure class="article-cover-wrap"><div class="cover-frame landscape" data-adaptive-media style="--image-ratio:1.77778"><img class="cover" src="' + next.image + '" alt="" loading="eager" decoding="async" fetchpriority="high"></div><figcaption><span class="lang-fa">تصویر هوشمند خبر · نبض ساردو</span><span class="lang-en">Smart news image · Nabez Sardo</span></figcaption></figure>';
+        storedArticleHtml = storedArticleHtml.replace('<div class="article-reading-zone">', figure + '<div class="article-reading-zone">');
+      }
+      await putState("snapshot_article:" + slug, storedArticleHtml);
+      if (sourceImage && !isFallbackSourceImage(sourceImage)) {
+        for (const p of uploadLinksFromHtml(articleHtml)) mediaPaths.add(p);
+      }
       syncedArticles++;
     } catch (err) {
       console.error("public-sync-article", articlePath, String(err?.message || err));
@@ -633,6 +641,8 @@ async function publicPull() {
   }
 
   await putState("db", JSON.stringify(db, null, 2));
+  await putState("snapshot_home", homeHtml);
+  await putState("snapshot_archive", archiveHtml);
   const syncedMedia = await syncPublicMedia(sourceBase, [...mediaPaths]);
   const stamp = new Date().toISOString();
   await putState("last_public_sync_at", stamp);
@@ -647,12 +657,16 @@ async function publicSyncStatus() {
     getState("last_public_sync_articles"),
     getState("last_public_sync_media")
   ]);
+  const db = await loadDbObject();
+  const auto = (db.articles || []).filter(a => a.imageAuto === true);
   return {
     ok: true,
     source: String(env.SYNC_SOURCE_URL || "https://nabzesardo.ir"),
     syncedAt: at || null,
     articles: Number(articles || 0),
-    media: Number(media || 0)
+    media: Number(media || 0),
+    aiCovers: auto.filter(a => a.autoCoverSource === "ai").length,
+    fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length
   };
 }
 
