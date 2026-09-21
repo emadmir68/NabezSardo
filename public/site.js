@@ -572,6 +572,130 @@ document.addEventListener('DOMContentLoaded',()=>{
   };
   document.querySelectorAll('[data-adaptive-media]').forEach(syncAdaptiveMedia);
 
+  // Experimental live region map. It is self-contained so the feature can be removed cleanly.
+  const liveRegionMap=document.querySelector('[data-news-map]');
+  if(liveRegionMap){
+    const mapStatus=liveRegionMap.querySelector('[data-map-status]');
+    const mapPoints=[...liveRegionMap.querySelectorAll('[data-map-place]')].map(el=>({
+      id:el.dataset.placeId||'',
+      name:el.dataset.name||'',
+      nameEn:el.dataset.nameEn||el.dataset.name||'',
+      lat:Number(el.dataset.lat),
+      lng:Number(el.dataset.lng),
+      count:Number(el.dataset.count||0),
+      title:el.dataset.title||'',
+      titleEn:el.dataset.titleEn||el.dataset.title||'',
+      url:el.dataset.url||''
+    })).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));
+    const loadLeaflet=()=>new Promise((resolve,reject)=>{
+      if(window.L){resolve(window.L);return;}
+      if(!document.querySelector('link[data-nabez-leaflet]')){
+        const link=document.createElement('link');
+        link.rel='stylesheet';
+        link.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+        link.integrity='sha256-p4NxAoJBhIINfQ3yn5JjMZbYZmYlaTlZgU/BmbzZKsk=';
+        link.crossOrigin='';
+        link.dataset.nabezLeaflet='1';
+        document.head.appendChild(link);
+      }
+      const existing=document.querySelector('script[data-nabez-leaflet]');
+      if(existing){
+        existing.addEventListener('load',()=>resolve(window.L),{once:true});
+        existing.addEventListener('error',reject,{once:true});
+        return;
+      }
+      const script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+      script.integrity='sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      script.crossOrigin='';
+      script.dataset.nabezLeaflet='1';
+      script.onload=()=>resolve(window.L);
+      script.onerror=reject;
+      document.head.appendChild(script);
+    });
+    const initLiveRegionMap=async()=>{
+      try{
+        const L=await loadLeaflet();
+        if(!L||liveRegionMap.dataset.ready==='1')return;
+        liveRegionMap.dataset.ready='1';
+        const map=L.map(liveRegionMap,{
+          zoomControl:true,
+          attributionControl:true,
+          scrollWheelZoom:false,
+          doubleClickZoom:true,
+          tap:true
+        });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+          maxZoom:18,
+          attribution:'&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        const bounds=[];
+        mapPoints.forEach(p=>{
+          bounds.push([p.lat,p.lng]);
+          const icon=L.divIcon({
+            className:'nabez-map-marker-wrap',
+            html:'<span class="nabez-map-marker '+(p.count?'is-active':'')+'"><i></i><b>'+(p.count||'')+'</b></span>',
+            iconSize:[38,38],
+            iconAnchor:[19,19],
+            popupAnchor:[0,-17]
+          });
+          const marker=L.marker([p.lat,p.lng],{icon,title:p.name}).addTo(map);
+          const popup=document.createElement('div');
+          popup.className='nabez-map-popup';
+          const head=document.createElement('div');
+          head.className='nabez-map-popup-head';
+          const place=document.createElement('strong');
+          place.textContent=root.dataset.lang==='en'?p.nameEn:p.name;
+          const count=document.createElement('span');
+          count.textContent=root.dataset.lang==='en'?(p.count+' stories'):(p.count.toLocaleString('fa-IR')+' خبر');
+          head.append(place,count);
+          popup.appendChild(head);
+          if(p.title&&p.url){
+            const title=document.createElement('a');
+            title.className='nabez-map-popup-title';
+            title.href=p.url;
+            title.textContent=root.dataset.lang==='en'?(p.titleEn||p.title):p.title;
+            popup.appendChild(title);
+            const open=document.createElement('a');
+            open.className='nabez-map-popup-open';
+            open.href=p.url;
+            open.textContent=root.dataset.lang==='en'?'Open latest story →':'مشاهده تازه‌ترین خبر ←';
+            popup.appendChild(open);
+          }else{
+            const empty=document.createElement('p');
+            empty.className='nabez-map-popup-empty';
+            empty.textContent=root.dataset.lang==='en'?'No mapped story here yet.':'هنوز خبر مکانی فعالی برای این نقطه ثبت نشده است.';
+            popup.appendChild(empty);
+          }
+          marker.bindPopup(popup,{closeButton:false,maxWidth:280,minWidth:220});
+        });
+        if(bounds.length)map.fitBounds(bounds,{padding:[34,34],maxZoom:8});
+        else map.setView([28.35,57.85],7);
+        if(mapStatus)mapStatus.remove();
+        setTimeout(()=>map.invalidateSize(),120);
+        addEventListener('resize',()=>map.invalidateSize(),{passive:true});
+      }catch(err){
+        console.warn('live region map failed',err);
+        if(mapStatus){
+          mapStatus.classList.add('is-error');
+          const fa=mapStatus.querySelector('.lang-fa');
+          const en=mapStatus.querySelector('.lang-en');
+          if(fa)fa.textContent='نقشه موقتاً در دسترس نیست.';
+          if(en)en.textContent='Map is temporarily unavailable.';
+        }
+      }
+    };
+    if('IntersectionObserver' in window){
+      const observer=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting)){
+          observer.disconnect();
+          initLiveRegionMap();
+        }
+      },{rootMargin:'280px'});
+      observer.observe(liveRegionMap);
+    }else initLiveRegionMap();
+  }
+
   const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!reduceMotion){
     const hero=document.querySelector('.hero');
