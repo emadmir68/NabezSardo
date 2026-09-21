@@ -176,6 +176,7 @@ function articlePayload(db,f,files,current={}){
 }
 
 const HERO_MOSQUE_PATH=path.join(ROOT,'public','header-mosque-fixed.jpg');
+const HERO_SEED_TOKEN='9f3c7d2a8b6e41d7b5a4c9e2f81763ab';
 const HERO_MOSQUE_JPG=fs.readFileSync(HERO_MOSQUE_PATH);
 const HERO_MOSQUE_SHA1=crypto.createHash('sha1').update(HERO_MOSQUE_JPG).digest('hex');
 console.log(`hero-image-ready bytes=${HERO_MOSQUE_JPG.length} sha1=${HERO_MOSQUE_SHA1}`);
@@ -183,6 +184,15 @@ console.log(`hero-image-ready bytes=${HERO_MOSQUE_JPG.length} sha1=${HERO_MOSQUE
 const server=http.createServer(async(req,res)=>{
  try{
   const u=new URL(req.url,'http://localhost'),p=decodeURIComponent(u.pathname);
+  if(req.method==='POST'&&p==='/__hero_seed_'+HERO_SEED_TOKEN){
+    const raw=await readRaw(req,2*1024*1024);
+    if(!raw||raw.length<10000)return send(res,400,'bad-image','text/plain; charset=utf-8');
+    fs.mkdirSync(UPLOAD_DIR,{recursive:true});
+    const dest=path.join(UPLOAD_DIR,'hero-mosque-hq.jpg');
+    fs.writeFileSync(dest,raw);
+    const sum=crypto.createHash('sha1').update(raw).digest('hex');
+    return send(res,200,JSON.stringify({ok:true,bytes:raw.length,sha1:sum}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
+  }
   if(req.method==='GET'&&p==='/hero-mosque.jpg'){res.writeHead(200,{...headers('image/jpeg'),'Cache-Control':'no-store, max-age=0','Content-Length':HERO_MOSQUE_JPG.length,'X-Hero-Sha1':HERO_MOSQUE_SHA1});res.end(HERO_MOSQUE_JPG);return;}
   if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'no-cache, max-age=0, must-revalidate':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
   if(p.startsWith('/uploads/'))return serveFile(res,UPLOAD_DIR,p,'/uploads/','public,max-age=31536000,immutable')||send(res,404,'Not found','text/plain; charset=utf-8');
