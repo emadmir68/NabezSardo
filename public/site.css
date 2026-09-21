@@ -998,7 +998,7 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
   .archive-grid .card .pad{padding:10px 11px}
   .archive-grid .card h3{font-size:13.5px;min-height:auto;margin:5px 0}
   .archive-grid .card p{display:none}
-  .archive-grid .more{display:none}
+  .archive-grid .more{display:inline-flex!important;align-items:center;margin-top:7px;font-size:9.5px}
 }
 
 
@@ -1060,7 +1060,7 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
   .latest-grid .card .pad{padding:11px 12px}
   .latest-grid .card h3{font-size:14px;min-height:auto;margin:5px 0}
   .latest-grid .card p{display:none}
-  .latest-grid .more{display:none}
+  .latest-grid .more{display:inline-flex!important;align-items:center;margin-top:7px;font-size:9.5px}
 }
 
 
@@ -1744,3 +1744,17 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
   .news-story-preview{width:104px}
 }
 @media(prefers-reduced-motion:reduce){.card-story-dot{animation:none!important}}
+
+
+/* Keep read-more links visible on compact news cards */
+.latest-grid .card .more,
+.archive-grid .card .more{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  margin-top:auto;
+  padding-top:7px;
+  color:#e0b66d;
+  font-weight:800;
+  text-decoration:none;
+}
