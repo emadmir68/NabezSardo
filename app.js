@@ -297,6 +297,35 @@ const server=http.createServer(async(req,res)=>{
       save(db);
       return redirect(res,'/admin?breakingSaved=1');
     }
+    if(p==='/admin/settings/ad'){
+      try{
+        db.settings=db.settings||{};
+        const oldImage=String(db.settings.adImage||'');
+        if(f.removeAdImage==='1'){
+          articleTools.deleteUpload(oldImage);
+          db.settings.adImage='';
+        }
+        const adFile=files.adImage;
+        if(adFile&&adFile.data&&adFile.data.length){
+          const newImage=articleTools.saveImage(adFile);
+          if(oldImage&&oldImage!==newImage)articleTools.deleteUpload(oldImage);
+          db.settings.adImage=newImage;
+        }
+        db.settings.adEnabled=f.adEnabled==='1';
+        db.settings.adTitle=String(f.adTitle||'').trim().slice(0,120)||'جای تبلیغات شما اینجاست';
+        db.settings.adTitleEn=String(f.adTitleEn||'').trim().slice(0,120)||'Your ad could be here';
+        db.settings.adText=String(f.adText||'').trim().slice(0,300)||'برای رزرو این جایگاه با نبض ساردو در ارتباط باشید';
+        db.settings.adTextEn=String(f.adTextEn||'').trim().slice(0,300)||'Contact Nabez Sardo to reserve this placement';
+        let adLink=String(f.adLink||'').trim().slice(0,500);
+        if(!/^(https?:\/\/|\/(?!\/))/i.test(adLink))adLink='/contact';
+        db.settings.adLink=adLink;
+        save(db);
+        return redirect(res,'/admin?adSaved=1');
+      }catch(err){
+        console.error('ad settings',err);
+        return redirect(res,'/admin?adError=1');
+      }
+    }
     if(p==='/admin/backup/create'){createBackup('manual');return redirect(res,'/admin?backup=1');}
     if(p==='/admin/backup/restore'){
       if(!files.backupFile||!files.backupFile.data.length)return redirect(res,'/admin?restoreError=1');
