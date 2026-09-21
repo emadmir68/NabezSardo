@@ -3325,3 +3325,334 @@ html[data-lang="en"] .article-body .lang-en blockquote{
   .popular-row h3{font-size:12px}
   .focus h2{font-size:27px}
 }
+
+
+/* Clean mobile newsroom cards v2 */
+.frontpage-desk,
+.latest-section,
+.popular-section{
+  padding-top:38px;
+  padding-bottom:30px;
+}
+.frontpage-desk .sectionhead,
+.latest-section .sectionhead,
+.popular-section .sectionhead{
+  margin-bottom:16px;
+}
+.frontpage-desk .sectionhead h2,
+.latest-section .sectionhead h2,
+.popular-section .sectionhead h2{
+  font-size:clamp(25px,2.7vw,34px);
+  line-height:1.35;
+}
+
+/* Top stories — shorter and cleaner */
+.frontpage-grid{
+  gap:14px;
+}
+.front-lead{
+  border-radius:19px;
+}
+.front-lead-media{
+  aspect-ratio:16/8.5;
+}
+.front-lead-copy{
+  padding:17px 18px 18px;
+}
+.front-lead h2{
+  margin:8px 0 7px;
+  font-size:clamp(20px,2.1vw,27px);
+  line-height:1.65;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:3;
+  overflow:hidden;
+}
+.front-lead p{
+  font-size:11.5px;
+  line-height:1.9;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+.front-lead-bottom{
+  margin-top:12px;
+  padding-top:10px;
+}
+.front-briefs{gap:8px}
+.front-brief{
+  grid-template-columns:112px minmax(0,1fr);
+  min-height:96px;
+  padding:8px;
+  border-radius:14px;
+}
+.front-brief h3{
+  margin:5px 0 4px;
+  font-size:12.5px;
+  line-height:1.65;
+  -webkit-line-clamp:2;
+}
+.front-brief .news-date{font-size:8px}
+
+/* Latest news — remove oversized magazine cards */
+.latest-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-flow:row!important;
+  grid-auto-rows:auto!important;
+  gap:12px!important;
+}
+.latest-grid .magazine-card,
+.latest-grid .magazine-card-1,
+.latest-grid .magazine-card-4,
+.latest-grid .magazine-card-6{
+  grid-column:auto!important;
+  grid-row:auto!important;
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+  border-radius:16px!important;
+}
+.latest-grid .magazine-card::after,
+.latest-grid .magazine-card-1::after{
+  display:none!important;
+}
+.latest-grid .magazine-card>a.card-media,
+.latest-grid .magazine-card>a:first-child,
+.latest-grid .magazine-card-4>a.card-media{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:16/9!important;
+  border:0!important;
+  border-radius:0!important;
+}
+.latest-grid .magazine-card>a.card-media img,
+.latest-grid .magazine-card>a:first-child img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+.latest-grid .magazine-card .pad,
+.latest-grid .magazine-card-1 .pad,
+.latest-grid .magazine-card-4 .pad{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  padding:13px 14px 14px!important;
+}
+.latest-grid .magazine-card h3,
+.latest-grid .magazine-card-1 h3,
+.latest-grid .magazine-card-4 h3{
+  min-height:auto!important;
+  margin:6px 0 5px!important;
+  font-size:14.5px!important;
+  line-height:1.7!important;
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;
+  overflow:hidden!important;
+}
+.latest-grid .magazine-card p,
+.latest-grid .magazine-card-1 p,
+.latest-grid .magazine-card-4 p{
+  min-height:auto!important;
+  margin:3px 0 8px!important;
+  font-size:10.5px!important;
+  line-height:1.8!important;
+  display:-webkit-box!important;
+  -webkit-box-orient:vertical!important;
+  -webkit-line-clamp:2!important;
+  overflow:hidden!important;
+}
+.latest-grid .magazine-card .more{
+  margin-top:auto;
+  padding-top:6px;
+  font-size:9px!important;
+}
+.latest-grid .card-kicker{gap:7px}
+.latest-grid .eyebrow,
+.latest-grid .view-badge,
+.latest-grid .news-date{font-size:8px!important}
+
+/* Most read — fixed, compact cards */
+.popular-list{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.popular-row{
+  min-height:108px!important;
+  padding:12px 11px!important;
+  gap:8px!important;
+  border-radius:14px!important;
+}
+.popular-rank{
+  font-size:20px!important;
+}
+.popular-row h3{
+  margin:5px 0!important;
+  font-size:12.5px!important;
+  line-height:1.65!important;
+  min-height:auto!important;
+  -webkit-line-clamp:2!important;
+}
+.popular-meta{
+  gap:6px!important;
+  font-size:7.5px!important;
+}
+.popular-row .eyebrow{font-size:7px!important}
+
+/* Sardouiyeh focus — shorter cards and text */
+.focus{
+  padding:40px 0!important;
+}
+.focusgrid{
+  grid-template-columns:.72fr 1.28fr;
+  gap:22px!important;
+  align-items:center;
+}
+.focus h2{
+  margin:6px 0 6px!important;
+  font-size:clamp(27px,2.8vw,34px)!important;
+  line-height:1.55!important;
+}
+.focusgrid>div:first-child>p{
+  max-width:470px!important;
+  margin:0 0 14px!important;
+  font-size:12px!important;
+  line-height:1.9!important;
+}
+.focus .btn{
+  padding:8px 13px;
+  font-size:9px;
+}
+.topics{
+  gap:9px!important;
+}
+.topic{
+  min-height:118px!important;
+  padding:14px!important;
+  border-radius:16px!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.18)!important;
+}
+.topic small{
+  font-size:8px!important;
+}
+.topic h3{
+  margin:7px 0 3px!important;
+  font-size:16px!important;
+  line-height:1.65!important;
+}
+.topic p{
+  margin:2px 0 0!important;
+  font-size:9.5px!important;
+  line-height:1.7!important;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+
+@media(max-width:1000px){
+  .latest-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .popular-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .focusgrid{grid-template-columns:1fr!important;gap:17px!important}
+  .topics{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+
+@media(max-width:760px){
+  .frontpage-desk,
+  .latest-section,
+  .popular-section{padding-top:28px;padding-bottom:22px}
+  .frontpage-desk .sectionhead h2,
+  .latest-section .sectionhead h2,
+  .popular-section .sectionhead h2{font-size:27px!important}
+
+  .front-lead-media{aspect-ratio:16/9}
+  .front-lead-copy{padding:14px 15px 15px}
+  .front-lead h2{font-size:18px!important;line-height:1.65!important;-webkit-line-clamp:3}
+  .front-lead p{font-size:10.5px!important;line-height:1.8!important;-webkit-line-clamp:2}
+  .front-lead-bottom{margin-top:9px;padding-top:8px}
+  .front-brief{grid-template-columns:96px minmax(0,1fr)!important;min-height:86px!important}
+  .front-brief h3{font-size:11.5px!important}
+
+  .latest-grid{
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+  }
+  .latest-grid .magazine-card,
+  .latest-grid .magazine-card-1,
+  .latest-grid .magazine-card-4,
+  .latest-grid .magazine-card-6{
+    display:grid!important;
+    grid-template-columns:126px minmax(0,1fr)!important;
+    min-height:108px!important;
+  }
+  .latest-grid .magazine-card>a.card-media,
+  .latest-grid .magazine-card>a:first-child,
+  .latest-grid .magazine-card-4>a.card-media{
+    height:100%!important;
+    min-height:108px!important;
+    aspect-ratio:auto!important;
+  }
+  .latest-grid .magazine-card .pad,
+  .latest-grid .magazine-card-1 .pad,
+  .latest-grid .magazine-card-4 .pad{
+    padding:9px 10px 9px!important;
+  }
+  .latest-grid .magazine-card h3,
+  .latest-grid .magazine-card-1 h3,
+  .latest-grid .magazine-card-4 h3{
+    font-size:12.5px!important;
+    line-height:1.65!important;
+    -webkit-line-clamp:2!important;
+  }
+  .latest-grid .magazine-card p,
+  .latest-grid .magazine-card-1 p,
+  .latest-grid .magazine-card-4 p{
+    display:none!important;
+  }
+  .latest-grid .card-story-badge{display:none!important}
+
+  .popular-list{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+  }
+  .popular-row{
+    min-height:92px!important;
+    padding:10px 9px!important;
+  }
+  .popular-rank{font-size:17px!important}
+  .popular-row h3{font-size:11.5px!important;line-height:1.6!important}
+  .popular-meta{font-size:7px!important}
+
+  .focus{padding:30px 0!important}
+  .focus h2{font-size:26px!important}
+  .focusgrid>div:first-child>p{font-size:11px!important;line-height:1.8!important}
+  .topics{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+  }
+  .topic{
+    min-height:96px!important;
+    padding:11px!important;
+    border-radius:14px!important;
+  }
+  .topic h3{font-size:14px!important;line-height:1.55!important}
+  .topic p{font-size:8.5px!important;line-height:1.55!important}
+}
+
+@media(max-width:430px){
+  .latest-grid .magazine-card,
+  .latest-grid .magazine-card-1,
+  .latest-grid .magazine-card-4,
+  .latest-grid .magazine-card-6{
+    grid-template-columns:112px minmax(0,1fr)!important;
+  }
+  .popular-list{grid-template-columns:1fr!important}
+  .popular-row{min-height:82px!important}
+  .popular-row h3{font-size:11.5px!important}
+  .topic{min-height:90px!important}
+}
