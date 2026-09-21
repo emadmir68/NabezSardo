@@ -12,7 +12,7 @@ const ADMIN_USER=process.env.ADMIN_USER||'editor';
 const ADMIN_PASS=process.env.ADMIN_PASS||'change-this';
 const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
 const ROOT=__dirname;
-const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabezsardo-prod-production.up.railway.app').replace(/\/+$/,'');
+const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
 
 function headers(type='text/html; charset=utf-8'){
   return {'Content-Type':type,'X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'};
@@ -217,7 +217,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',time:now()}),'application/json; charset=utf-8');
 
   const db=load();
-  if(req.method==='GET'&&p==='/robots.txt')return send(res,200,robotsTxt(),'text/plain; charset=utf-8',{'Cache-Control':'public,max-age=3600'});
+  if(req.method==='GET'&&p==='/robots.txt')return send(res,200,robotsTxt(),'text/plain; charset=utf-8',{'Cache-Control':'no-cache, max-age=0, must-revalidate'});
   if(req.method==='GET'&&p==='/sitemap.xml')return send(res,200,sitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=900'});
   if(req.method==='GET'&&p==='/news-sitemap.xml')return send(res,200,newsSitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/feed.xml')return send(res,200,rssXml(db),'application/rss+xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
