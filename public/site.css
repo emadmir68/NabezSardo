@@ -1697,57 +1697,50 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
 }
 
 
-/* Latest-news long-press Story sharing */
-.latest-grid [data-story-card]{position:relative;touch-action:pan-y;-webkit-touch-callout:none}
-.latest-grid .card-media{position:relative}
+/* Latest-news + archive long-press Story sharing */
+.latest-grid [data-story-card],.archive-grid [data-story-card]{position:relative;touch-action:pan-y;-webkit-touch-callout:none}
+.latest-grid .card-media,.archive-grid .card-media{position:relative}
 .card-story-badge{
-  position:absolute;
-  left:10px;
-  bottom:10px;
-  z-index:3;
-  display:inline-flex;
-  align-items:center;
-  min-height:27px;
-  padding:5px 9px;
-  border-radius:999px;
-  border:1px solid rgba(230,188,107,.28);
-  background:rgba(7,11,16,.76);
-  color:#e2bd75;
-  font-size:8.5px;
-  font-weight:800;
-  backdrop-filter:blur(8px);
-  box-shadow:0 7px 22px rgba(0,0,0,.28);
-  opacity:.9;
-  transition:.2s ease;
+  position:absolute;left:10px;bottom:10px;z-index:3;
+  display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:6px 11px;
+  border-radius:999px;border:1px solid rgba(230,188,107,.32);
+  background:linear-gradient(135deg,rgba(9,13,19,.9),rgba(40,19,29,.88));
+  color:#efc777;font-size:9px;font-weight:900;letter-spacing:.2px;
+  backdrop-filter:blur(10px);box-shadow:0 10px 26px rgba(0,0,0,.34);
+  opacity:.96;transition:.25s ease
 }
-.latest-grid .card:hover .card-story-badge{opacity:1;transform:translateY(-2px)}
-.latest-grid .card.story-holding{transform:scale(.988)}
-.latest-grid .card.story-holding .card-media:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:2;
-  border-radius:inherit;
+.card-story-dot{
+  width:8px;height:8px;border-radius:50%;background:#c42458;
+  box-shadow:0 0 0 4px rgba(196,36,88,.16),0 0 14px rgba(196,36,88,.55);
+  animation:storyDotPulse 1.8s ease-in-out infinite
+}
+@keyframes storyDotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.7}}
+.latest-grid .card:hover .card-story-badge,.archive-grid .card:hover .card-story-badge{transform:translateY(-2px);box-shadow:0 14px 30px rgba(0,0,0,.42)}
+.latest-grid .card.story-holding,.archive-grid .card.story-holding{transform:scale(.988)}
+.latest-grid .card.story-holding .card-media:after,.archive-grid .card.story-holding .card-media:after{
+  content:"";position:absolute;inset:0;z-index:2;border-radius:inherit;
   background:linear-gradient(90deg,rgba(144,29,65,.18),rgba(218,178,104,.22),rgba(144,29,65,.18));
-  animation:newsStoryHold .68s linear forwards;
-  transform-origin:right center;
+  animation:newsStoryHold .68s linear forwards;transform-origin:right center
 }
 @keyframes newsStoryHold{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
-.news-story-sheet .story-sheet-card{width:min(520px,calc(100% - 20px))}
+.news-story-sheet .story-sheet-card{
+  width:min(560px,calc(100% - 20px));
+  border:1px solid rgba(214,171,96,.18);
+  background:linear-gradient(180deg,#111720 0%,#0c1016 100%);
+  box-shadow:0 24px 60px rgba(0,0,0,.42)
+}
+.news-story-sheet h3{font-size:20px;color:#f2d291}
 .news-story-preview{
-  width:112px;
-  aspect-ratio:9/16;
-  margin:6px auto 12px;
-  border-radius:13px;
-  overflow:hidden;
-  border:1px solid rgba(218,178,104,.24);
-  background:#0b1016;
-  box-shadow:0 12px 28px rgba(0,0,0,.32);
+  width:124px;aspect-ratio:9/16;margin:10px auto 16px;border-radius:16px;overflow:hidden;
+  border:1px solid rgba(218,178,104,.28);background:#0b1016;box-shadow:0 16px 35px rgba(0,0,0,.36)
 }
 .news-story-preview:empty{display:none}
 .news-story-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.news-story-sheet .btn.primary{background:linear-gradient(135deg,#8c1f43,#bc8b39);border:none;color:#fff7ea;font-weight:800}
+.news-story-sheet .btn.ghost{border:1px solid rgba(218,178,104,.24);color:#efcb84}
 .news-story-sheet button:disabled{opacity:.42;cursor:wait}
 @media(max-width:620px){
-  .card-story-badge{left:8px;bottom:8px;min-height:25px;padding:4px 8px;font-size:8px}
-  .news-story-preview{width:96px}
+  .card-story-badge{left:8px;bottom:8px;min-height:27px;padding:5px 9px;font-size:8.5px}
+  .news-story-preview{width:104px}
 }
+@media(prefers-reduced-motion:reduce){.card-story-dot{animation:none!important}}
