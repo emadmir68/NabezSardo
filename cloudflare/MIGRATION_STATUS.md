@@ -13,3 +13,5 @@ Current migration design:
 - Railway production must remain untouched until preview verification is complete.
 
 Safety rule: do not merge this branch to main or point nabzesardo.ir to Cloudflare until the preview passes.
+
+- Combined smart covers: Workers AI first; branded SVG fallback if AI is unavailable.
