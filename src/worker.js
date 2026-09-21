@@ -51,9 +51,17 @@ function ensureDirs() {
 let schemaReady;
 async function ensureSchema() {
   if (!schemaReady) {
-    schemaReady = env.DB.prepare(
-      "CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
-    ).run();
+    schemaReady = (async () => {
+      await env.DB.prepare(
+        "CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
+      ).run();
+      await env.DB.prepare(
+        "CREATE TABLE IF NOT EXISTS media_meta (name TEXT PRIMARY KEY, content_type TEXT NOT NULL, size INTEGER NOT NULL, chunk_count INTEGER NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
+      ).run();
+      await env.DB.prepare(
+        "CREATE TABLE IF NOT EXISTS media_chunks (name TEXT NOT NULL, chunk_index INTEGER NOT NULL, chunk_data TEXT NOT NULL, PRIMARY KEY(name, chunk_index))"
+      ).run();
+    })();
   }
   await schemaReady;
 }
@@ -103,6 +111,73 @@ function mimeFor(name = "") {
   })[ext] || "application/octet-stream";
 }
 
+const MEDIA_CHUNK_BYTES = 480000;
+
+async function putMedia(name, data, contentType = mimeFor(name)) {
+  await ensureSchema();
+  const safe = path.basename(String(name || ""));
+  if (!safe || safe !== name) throw new Error("invalid-media-name");
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  const chunks = [];
+  for (let offset = 0; offset < buf.length; offset += MEDIA_CHUNK_BYTES) {
+    chunks.push(buf.subarray(offset, Math.min(offset + MEDIA_CHUNK_BYTES, buf.length)).toString("base64"));
+  }
+  await env.DB.prepare("DELETE FROM media_chunks WHERE name = ?").bind(safe).run();
+  await env.DB.prepare("DELETE FROM media_meta WHERE name = ?").bind(safe).run();
+  await env.DB.prepare(
+    "INSERT INTO media_meta(name,content_type,size,chunk_count,updated_at) VALUES(?,?,?,?,datetime('now'))"
+  ).bind(safe, contentType, buf.length, chunks.length).run();
+  for (let i = 0; i < chunks.length; i++) {
+    await env.DB.prepare(
+      "INSERT INTO media_chunks(name,chunk_index,chunk_data) VALUES(?,?,?)"
+    ).bind(safe, i, chunks[i]).run();
+  }
+}
+
+async function getMedia(name) {
+  await ensureSchema();
+  const safe = path.basename(String(name || ""));
+  if (!safe || safe !== name) return null;
+  const meta = await env.DB.prepare(
+    "SELECT name,content_type,size,chunk_count FROM media_meta WHERE name = ? LIMIT 1"
+  ).bind(safe).first();
+  if (!meta) return null;
+  const rows = await env.DB.prepare(
+    "SELECT chunk_data FROM media_chunks WHERE name = ? ORDER BY chunk_index ASC"
+  ).bind(safe).all();
+  const parts = (rows.results || []).map(r => Buffer.from(String(r.chunk_data || ""), "base64"));
+  return {
+    name: safe,
+    contentType: String(meta.content_type || mimeFor(safe)),
+    size: Number(meta.size || 0),
+    data: Buffer.concat(parts)
+  };
+}
+
+async function listMedia() {
+  await ensureSchema();
+  const rows = await env.DB.prepare(
+    "SELECT name,content_type,size,chunk_count FROM media_meta ORDER BY name ASC"
+  ).all();
+  return rows.results || [];
+}
+
+async function deleteMedia(names) {
+  await ensureSchema();
+  for (const raw of Array.isArray(names) ? names : [names]) {
+    const safe = path.basename(String(raw || ""));
+    if (!safe || safe !== raw) continue;
+    await env.DB.prepare("DELETE FROM media_chunks WHERE name = ?").bind(safe).run();
+    await env.DB.prepare("DELETE FROM media_meta WHERE name = ?").bind(safe).run();
+  }
+}
+
+async function clearMedia() {
+  await ensureSchema();
+  await env.DB.prepare("DELETE FROM media_chunks").run();
+  await env.DB.prepare("DELETE FROM media_meta").run();
+}
+
 async function hydrateState({ includeUploads = false } = {}) {
   ensureDirs();
   const [dbText, analyticsText] = await Promise.all([
@@ -113,17 +188,12 @@ async function hydrateState({ includeUploads = false } = {}) {
   if (analyticsText) fs.writeFileSync(ANALYTICS_FILE, analyticsText, "utf8");
 
   if (includeUploads) {
-    let cursor;
-    do {
-      const page = await env.UPLOADS.list({ cursor });
-      for (const item of page.objects) {
-        const obj = await env.UPLOADS.get(item.key);
-        if (!obj) continue;
-        const data = Buffer.from(await obj.arrayBuffer());
-        fs.writeFileSync(path.join(UPLOAD_DIR, path.basename(item.key)), data);
-      }
-      cursor = page.truncated ? page.cursor : undefined;
-    } while (cursor);
+    const items = await listMedia();
+    for (const item of items) {
+      const media = await getMedia(item.name);
+      if (!media) continue;
+      fs.writeFileSync(path.join(UPLOAD_DIR, path.basename(item.name)), media.data);
+    }
   }
   return { dbText: dbText || "", analyticsText: analyticsText || "" };
 }
@@ -136,21 +206,10 @@ async function uploadTempFiles() {
     const file = path.join(UPLOAD_DIR, name);
     if (!fs.statSync(file).isFile()) continue;
     const data = fs.readFileSync(file);
-    await env.UPLOADS.put(name, data, { httpMetadata: { contentType: mimeFor(name) } });
+    await putMedia(name, data, mimeFor(name));
     count++;
   }
   return count;
-}
-
-async function clearR2() {
-  let cursor;
-  do {
-    const page = await env.UPLOADS.list({ cursor });
-    if (page.objects.length) {
-      await env.UPLOADS.delete(page.objects.map(x => x.key));
-    }
-    cursor = page.truncated ? page.cursor : undefined;
-  } while (cursor);
 }
 
 async function flushState(before, request, response) {
@@ -167,14 +226,14 @@ async function flushState(before, request, response) {
     response.status >= 300 && response.status < 400 &&
     String(response.headers.get("location") || "").includes("restored=1");
 
-  if (restored) await clearR2();
+  if (restored) await clearMedia();
   await uploadTempFiles();
 
   if (before.dbText && afterDbText) {
     const oldRefs = uploadRefsFromText(before.dbText);
     const newRefs = uploadRefsFromText(afterDbText);
     const removed = [...oldRefs].filter(x => !newRefs.has(x));
-    if (removed.length) await env.UPLOADS.delete(removed);
+    if (removed.length) await deleteMedia(removed);
   }
 
   return { beforeDb: safeJson(before.dbText, {}), afterDb: safeJson(afterDbText, {}) };
@@ -219,14 +278,14 @@ async function importBackup(request) {
   }
 
   await putState("db", JSON.stringify(payload.db, null, 2));
-  await clearR2();
+  await clearMedia();
 
   let uploaded = 0;
   for (const item of Array.isArray(payload.uploads) ? payload.uploads : []) {
     const name = path.basename(String(item.name || ""));
     if (!name || name !== item.name || !item.data) continue;
     const data = Buffer.from(item.data, "base64");
-    await env.UPLOADS.put(name, data, { httpMetadata: { contentType: mimeFor(name) } });
+    await putMedia(name, data, mimeFor(name));
     uploaded++;
   }
 
@@ -248,20 +307,15 @@ async function exportBackup(request) {
   if (!db) return Response.json({ ok: false, error: "no-db" }, { status: 404 });
 
   const uploads = [];
-  let cursor;
-  do {
-    const page = await env.UPLOADS.list({ cursor });
-    for (const item of page.objects) {
-      if (item.size > 12 * 1024 * 1024) continue;
-      const obj = await env.UPLOADS.get(item.key);
-      if (!obj) continue;
-      uploads.push({
-        name: item.key,
-        data: Buffer.from(await obj.arrayBuffer()).toString("base64")
-      });
-    }
-    cursor = page.truncated ? page.cursor : undefined;
-  } while (cursor);
+  for (const item of await listMedia()) {
+    if (Number(item.size || 0) > 12 * 1024 * 1024) continue;
+    const media = await getMedia(item.name);
+    if (!media) continue;
+    uploads.push({
+      name: item.name,
+      data: media.data.toString("base64")
+    });
+  }
 
   return Response.json({
     format: "nabezsardo-full-backup",
@@ -275,24 +329,32 @@ async function exportBackup(request) {
 async function serveUpload(name) {
   const safe = path.basename(name);
   if (!safe || safe !== name) return new Response("Not found", { status: 404 });
-  const obj = await env.UPLOADS.get(safe);
-  if (!obj) return new Response("Not found", { status: 404 });
-  const headers = new Headers();
-  obj.writeHttpMetadata(headers);
-  headers.set("etag", obj.httpEtag);
-  headers.set("cache-control", "public, max-age=31536000, immutable");
-  return new Response(obj.body, { headers });
+  const cache = caches.default;
+  const cacheKey = new Request("https://media.nabzesardo.invalid/uploads/" + encodeURIComponent(safe));
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+  const media = await getMedia(safe);
+  if (!media) return new Response("Not found", { status: 404 });
+  const headers = new Headers({
+    "content-type": media.contentType,
+    "content-length": String(media.data.length),
+    "cache-control": "public, max-age=31536000, immutable"
+  });
+  const response = new Response(media.data, { headers });
+  await cache.put(cacheKey, response.clone());
+  return response;
 }
 
 async function serveAsset(request, pathname) {
   if (pathname === "/hero-mosque.jpg") {
-    const persisted = await env.UPLOADS.get("hero-mosque-hq.jpg");
+    const persisted = await getMedia("hero-mosque-hq.jpg");
     if (persisted) {
-      const headers = new Headers();
-      persisted.writeHttpMetadata(headers);
-      headers.set("etag", persisted.httpEtag);
-      headers.set("cache-control", "public, max-age=3600");
-      return new Response(persisted.body, { headers });
+      const headers = new Headers({
+        "content-type": persisted.contentType,
+        "content-length": String(persisted.data.length),
+        "cache-control": "public, max-age=3600"
+      });
+      return new Response(persisted.data, { headers });
     }
   }
   const u = new URL(request.url);
