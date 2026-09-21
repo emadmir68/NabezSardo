@@ -196,6 +196,185 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   }
 
+
+  // Long-press Story sharing for Latest News cards.
+  const latestStoryCards=[...document.querySelectorAll('.latest-grid [data-story-card]')];
+  if(latestStoryCards.length){
+    const storySheet=document.createElement('div');
+    storySheet.className='story-share-sheet news-story-sheet';
+    storySheet.hidden=true;
+    storySheet.innerHTML=`
+      <button class="story-sheet-backdrop" type="button" data-news-story-close aria-label="بستن"></button>
+      <div class="story-sheet-card" role="dialog" aria-modal="true" aria-label="اشتراک خبر در استوری">
+        <span class="story-sheet-handle"></span>
+        <h3><span class="lang-fa">استوری این خبر</span><span class="lang-en">Story this news</span></h3>
+        <p data-news-story-status><span class="lang-fa">در حال آماده‌سازی تصویر استوری…</span><span class="lang-en">Preparing story image…</span></p>
+        <div class="news-story-preview" data-news-story-preview></div>
+        <button class="btn primary" type="button" data-news-story-native disabled><span class="lang-fa">اشتراک در استوری / اینستاگرام</span><span class="lang-en">Share to Story / Instagram</span></button>
+        <button class="btn ghost" type="button" data-news-story-download disabled><span class="lang-fa">ذخیره تصویر استوری</span><span class="lang-en">Save story image</span></button>
+        <button class="story-sheet-cancel" type="button" data-news-story-close><span class="lang-fa">انصراف</span><span class="lang-en">Cancel</span></button>
+      </div>`;
+    document.body.appendChild(storySheet);
+
+    const storyStatus=storySheet.querySelector('[data-news-story-status]');
+    const storyPreview=storySheet.querySelector('[data-news-story-preview]');
+    const shareBtn=storySheet.querySelector('[data-news-story-native]');
+    const downloadBtn=storySheet.querySelector('[data-news-story-download]');
+    let activeStoryCard=null,preparedStoryFile=null,preparedStoryUrl='';
+
+    const rr=(ctx,x,y,w,h,r)=>{
+      const q=Math.min(r,w/2,h/2);
+      ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+w,y,x+w,y+h,q);ctx.arcTo(x+w,y+h,x,y+h,q);ctx.arcTo(x,y+h,x,y,q);ctx.arcTo(x,y,x+w,y,q);ctx.closePath();
+    };
+    const wrapStoryLines=(ctx,value,maxWidth)=>{
+      const words=String(value||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+      words.forEach(word=>{
+        const test=line?line+' '+word:word;
+        if(line&&ctx.measureText(test).width>maxWidth){lines.push(line);line=word}else line=test;
+      });
+      if(line)lines.push(line);
+      return lines;
+    };
+    const loadStoryImage=src=>new Promise(resolve=>{
+      const img=new Image();
+      img.decoding='async';
+      img.onload=()=>resolve(img);
+      img.onerror=()=>resolve(null);
+      img.src=src.startsWith('http')?src:new URL(src,location.origin).href;
+    });
+    const drawContain=(ctx,img,x,y,w,h)=>{
+      ctx.fillStyle='#0d1219';rr(ctx,x,y,w,h,34);ctx.fill();
+      if(!img)return;
+      const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight);
+      const dw=img.naturalWidth*scale,dh=img.naturalHeight*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;
+      ctx.save();rr(ctx,x,y,w,h,34);ctx.clip();ctx.drawImage(img,dx,dy,dw,dh);ctx.restore();
+    };
+    const makeNewsStory=async card=>{
+      try{if(document.fonts&&document.fonts.ready)await document.fonts.ready}catch{}
+      const lang=root.dataset.lang==='en'?'en':'fa';
+      const title=card.dataset[lang==='en'?'storyTitleEn':'storyTitleFa']||card.dataset.storyTitleFa||'Nabez Sardo';
+      const lead=card.dataset[lang==='en'?'storyLeadEn':'storyLeadFa']||card.dataset.storyLeadFa||'';
+      const category=card.dataset[lang==='en'?'storyCategoryEn':'storyCategoryFa']||card.dataset.storyCategoryFa||'News';
+      const articleUrl=new URL(card.dataset.storyUrl||'/',location.origin).href;
+      const img=await loadStoryImage(card.dataset.storyImage||'');
+      const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+      const ctx=canvas.getContext('2d');
+      const bg=ctx.createLinearGradient(0,0,1080,1920);
+      bg.addColorStop(0,'#070b11');bg.addColorStop(.48,'#111925');bg.addColorStop(1,'#080b10');
+      ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1920);
+      const glow=ctx.createRadialGradient(860,250,20,860,250,620);
+      glow.addColorStop(0,'rgba(151,34,70,.30)');glow.addColorStop(.48,'rgba(207,166,91,.12)');glow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=glow;ctx.fillRect(0,0,1080,930);
+
+      ctx.strokeStyle='rgba(213,173,100,.25)';ctx.lineWidth=3;rr(ctx,66,72,948,1776,48);ctx.stroke();
+      ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+      ctx.fillStyle='#e0b86d';ctx.font='800 38px Vazirmatn, sans-serif';ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',lang==='en'?100:980,150);
+      ctx.fillStyle='rgba(227,233,241,.62)';ctx.font='500 21px Vazirmatn, sans-serif';ctx.fillText(lang==='en'?'LOCAL NEWS / SOUTH KERMAN':'رسانه محلی ساردوئیه و جنوب کرمان',lang==='en'?100:980,194);
+
+      drawContain(ctx,img,90,250,900,720);
+      ctx.strokeStyle='rgba(213,173,100,.24)';ctx.lineWidth=3;rr(ctx,90,250,900,720,34);ctx.stroke();
+
+      const pillText=category;
+      ctx.font='800 24px Vazirmatn, sans-serif';
+      const pillW=Math.min(330,Math.max(150,ctx.measureText(pillText).width+70));
+      const pillX=lang==='en'?90:990-pillW;
+      ctx.fillStyle='rgba(132,29,61,.85)';rr(ctx,pillX,1015,pillW,58,29);ctx.fill();
+      ctx.fillStyle='#f0d49a';ctx.textAlign='center';ctx.fillText(pillText,pillX+pillW/2,1053);
+
+      ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+      const titleFont=title.length>95?58:title.length>62?64:72;
+      ctx.fillStyle='#f7f1e8';ctx.font='900 '+titleFont+'px Vazirmatn, sans-serif';
+      const titleLines=wrapStoryLines(ctx,title,880);
+      let y=1175;titleLines.slice(0,4).forEach(line=>{ctx.fillText(line,lang==='en'?100:980,y);y+=titleFont*1.38;});
+
+      const ruleY=Math.min(y+10,1510);
+      const rule=ctx.createLinearGradient(100,0,980,0);rule.addColorStop(0,'rgba(217,176,99,0)');rule.addColorStop(.15,'#d9b063');rule.addColorStop(.85,'#d9b063');rule.addColorStop(1,'rgba(217,176,99,0)');
+      ctx.fillStyle=rule;ctx.fillRect(100,ruleY,880,3);
+
+      ctx.fillStyle='#c8d0da';ctx.font='500 30px Vazirmatn, sans-serif';
+      const leadLines=wrapStoryLines(ctx,lead,870);
+      let ly=ruleY+62;leadLines.slice(0,4).forEach(line=>{ctx.fillText(line,lang==='en'?105:975,ly);ly+=50;});
+
+      ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle='rgba(230,235,242,.58)';ctx.font='700 22px Arial, sans-serif';
+      ctx.fillText('NABZESARDO.IR',540,1770);
+      ctx.fillStyle='#d7ae63';ctx.fillRect(390,1807,300,3);
+
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+      if(!blob)throw new Error('story-render-failed');
+      return {file:new File([blob],'nabez-sardo-news-story.png',{type:'image/png'}),articleUrl,title};
+    };
+
+    const closeNewsStory=()=>{
+      storySheet.hidden=true;
+      document.body.classList.remove('story-sheet-open');
+      if(preparedStoryUrl){URL.revokeObjectURL(preparedStoryUrl);preparedStoryUrl='';}
+      storyPreview.innerHTML='';
+      activeStoryCard=null;preparedStoryFile=null;
+    };
+    storySheet.querySelectorAll('[data-news-story-close]').forEach(btn=>btn.addEventListener('click',closeNewsStory));
+
+    const openNewsStory=card=>{
+      activeStoryCard=card;preparedStoryFile=null;
+      if(preparedStoryUrl){URL.revokeObjectURL(preparedStoryUrl);preparedStoryUrl='';}
+      storyPreview.innerHTML='';
+      shareBtn.disabled=true;downloadBtn.disabled=true;
+      storyStatus.innerHTML=root.dataset.lang==='en'?'Preparing story image…':'در حال آماده‌سازی تصویر استوری…';
+      storySheet.hidden=false;document.body.classList.add('story-sheet-open');
+      if(navigator.vibrate)navigator.vibrate(25);
+      makeNewsStory(card).then(result=>{
+        if(activeStoryCard!==card)return;
+        preparedStoryFile=result.file;
+        preparedStoryUrl=URL.createObjectURL(result.file);
+        const previewImg=document.createElement('img');previewImg.src=preparedStoryUrl;previewImg.alt='';
+        storyPreview.replaceChildren(previewImg);
+        storyStatus.textContent=root.dataset.lang==='en'?'Image + headline are ready for Story.':'عکس و متن خبر برای استوری آماده شد.';
+        shareBtn.disabled=false;downloadBtn.disabled=false;
+      }).catch(err=>{
+        console.warn('news story render failed',err);
+        storyStatus.textContent=root.dataset.lang==='en'?'Could not prepare the story image.':'ساخت تصویر استوری انجام نشد.';
+      });
+    };
+
+    shareBtn.addEventListener('click',async()=>{
+      if(!preparedStoryFile||!activeStoryCard)return;
+      const lang=root.dataset.lang==='en'?'en':'fa';
+      const title=activeStoryCard.dataset[lang==='en'?'storyTitleEn':'storyTitleFa']||activeStoryCard.dataset.storyTitleFa||'Nabez Sardo';
+      const url=new URL(activeStoryCard.dataset.storyUrl||'/',location.origin).href;
+      try{
+        if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[preparedStoryFile]}))){
+          await navigator.share({files:[preparedStoryFile],title,text:(lang==='en'?'Nabez Sardo — ':'نبض ساردو — ')+title+'\n'+url});
+          closeNewsStory();
+        }else{
+          const a=document.createElement('a');a.href=preparedStoryUrl;a.download=preparedStoryFile.name;a.click();
+        }
+      }catch(err){if(err&&err.name!=='AbortError')console.warn('news story share failed',err);}
+    });
+    downloadBtn.addEventListener('click',()=>{
+      if(!preparedStoryFile)return;
+      const a=document.createElement('a');a.href=preparedStoryUrl;a.download=preparedStoryFile.name;a.click();
+    });
+
+    latestStoryCards.forEach(card=>{
+      let timer=null,startX=0,startY=0,triggered=false,lastPointerType='';
+      const cancel=()=>{if(timer){clearTimeout(timer);timer=null;}card.classList.remove('story-holding');};
+      card.addEventListener('pointerdown',ev=>{
+        if(ev.button!==undefined&&ev.button!==0)return;
+        lastPointerType=ev.pointerType||'';
+        startX=ev.clientX;startY=ev.clientY;triggered=false;
+        cancel();card.classList.add('story-holding');
+        timer=setTimeout(()=>{timer=null;triggered=true;card.dataset.storySuppressUntil=String(Date.now()+900);card.classList.remove('story-holding');openNewsStory(card);},680);
+      });
+      card.addEventListener('pointermove',ev=>{if(Math.hypot(ev.clientX-startX,ev.clientY-startY)>13)cancel();});
+      ['pointerup','pointercancel','pointerleave'].forEach(name=>card.addEventListener(name,cancel));
+      card.addEventListener('click',ev=>{
+        if(Number(card.dataset.storySuppressUntil||0)>Date.now()){
+          ev.preventDefault();ev.stopPropagation();
+        }
+      },true);
+      card.addEventListener('contextmenu',ev=>{if(lastPointerType==='touch'||triggered)ev.preventDefault();});
+    });
+  }
+
   // Desktop breaking ticker: measure the viewport before animation starts so the
   // first headline emerges from behind the fixed badge and duplicate sets line up exactly.
   const desktopTickerMQ=matchMedia('(min-width: 621px)');
