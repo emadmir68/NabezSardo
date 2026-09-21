@@ -296,6 +296,8 @@ const server=http.createServer(async(req,res)=>{
       db.settings=db.settings||{};
       db.settings.breakingText=String(f.breakingText||'').trim().slice(0,500)||'مهم‌ترین رویدادهای ساردوئیه و جنوب کرمان؛ سریع، دقیق و محلی.';
       db.settings.breakingTextEn=String(f.breakingTextEn||'').trim().slice(0,500)||'Top local developments from Sardouiyeh and South Kerman — fast, accurate and local.';
+      db.settings.liveDeskEnabled=f.liveDeskEnabled==='1';
+      db.settings.breakingUpdatedAt=now();
       save(db);
       return redirect(res,'/admin?breakingSaved=1');
     }
