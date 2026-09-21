@@ -63,6 +63,16 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
     box.querySelectorAll('[data-weight]').forEach(btn=>btn.addEventListener('click',()=>applyWeight(btn.dataset.weight)));
 
+    const fontPicker=box.querySelector('[data-font-family]');
+    if(fontPicker){
+      fontPicker.addEventListener('change',()=>{
+        focus();
+        const family=fontPicker.value||'Vazirmatn';
+        document.execCommand('fontName',false,family);
+        sync();saveRange();
+      });
+    }
+
     area.addEventListener('keyup',saveRange);area.addEventListener('mouseup',saveRange);area.addEventListener('input',()=>{sync();saveRange()});
     if(inlineBtn&&inlineFile){
       inlineBtn.addEventListener('click',()=>{saveRange();inlineFile.click();});
