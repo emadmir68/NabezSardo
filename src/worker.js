@@ -76,7 +76,7 @@ function safeJson(text, fallback = null) {
 
 function uploadRefsFromText(text = "") {
   const out = new Set();
-  const re = /\\/uploads\\/([a-zA-Z0-9._-]+)/g;
+  const re = /\/uploads\/([a-zA-Z0-9._-]+)/g;
   let m;
   while ((m = re.exec(String(text)))) out.add(m[1]);
   return out;
