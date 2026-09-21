@@ -861,3 +861,33 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
 @media(prefers-reduced-motion:reduce){
   .breaking-track{animation:none;transform:none}
 }
+
+/* Desktop ticker stabilization: start under the fixed badge, then loop with no visual jump */
+@keyframes breakingTickerDesktopLoop{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+@media(min-width:621px){
+  .breaking-row{column-gap:0}
+  .breaking-label{z-index:5}
+  .breaking-marquee{
+    position:relative;
+    margin-right:-20px;
+    padding-right:20px;
+    mask-image:linear-gradient(90deg,transparent,#000 5%,#000 92%,transparent);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 92%,transparent);
+  }
+  .breaking-track{
+    visibility:hidden;
+    animation:none;
+    transform:translate3d(0,0,0);
+  }
+  .breaking-track.desktop-ticker-ready{
+    visibility:visible;
+    animation:breakingTickerDesktopLoop 20s linear infinite;
+  }
+  .breaking-loop-set{
+    flex:0 0 auto;
+    justify-content:flex-end;
+    box-sizing:border-box;
+  }
+  .breaking-live{margin-right:14px}
+  .breaking:hover .breaking-track.desktop-ticker-ready{animation-play-state:paused}
+}
