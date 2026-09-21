@@ -1000,3 +1000,65 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
   .archive-grid .card p{display:none}
   .archive-grid .more{display:none}
 }
+
+
+/* Compact latest-news cards — homepage only */
+.latest-section{padding-top:46px;padding-bottom:50px}
+.latest-section .sectionhead{margin-bottom:20px}
+.latest-section .sectionhead h2{font-size:34px}
+.latest-grid{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+  align-items:stretch;
+}
+.latest-grid .card{
+  border-radius:17px;
+  box-shadow:0 14px 30px rgba(0,0,0,.24);
+}
+.latest-grid .card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 20px 38px rgba(0,0,0,.3);
+}
+.latest-grid .pad{padding:14px 15px 15px}
+.latest-grid .eyebrow{font-size:8px;letter-spacing:1.15px}
+.latest-grid .view-badge{font-size:9px}
+.latest-grid .news-date{font-size:9px;color:#7f8792}
+.latest-grid .card h3{
+  margin:7px 0 5px;
+  font-size:16px;
+  line-height:1.65;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  min-height:53px;
+}
+.latest-grid .card p{
+  margin:4px 0 9px;
+  font-size:10.5px;
+  line-height:1.75;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  min-height:37px;
+}
+.latest-grid .more{font-size:9.5px}
+@media(max-width:1100px){
+  .latest-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:820px){
+  .latest-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:620px){
+  .latest-section{padding-top:36px;padding-bottom:42px}
+  .latest-section .sectionhead h2{font-size:29px}
+  .latest-grid{grid-template-columns:1fr!important;gap:12px!important}
+  .latest-grid .card{display:grid;grid-template-columns:145px minmax(0,1fr)}
+  .latest-grid .card>a.card-media,
+  .latest-grid .card>a:first-child{height:100%;aspect-ratio:auto}
+  .latest-grid .card .pad{padding:11px 12px}
+  .latest-grid .card h3{font-size:14px;min-height:auto;margin:5px 0}
+  .latest-grid .card p{display:none}
+  .latest-grid .more{display:none}
+}
