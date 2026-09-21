@@ -4864,3 +4864,41 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     background:rgba(7,12,20,.8)!important;
   }
 }
+
+
+/* ===== Story sheet stacking fix for mobile browsers ===== */
+.story-sheet-open .promo-slot[data-home-banner]{
+  position:relative!important;
+  z-index:7000!important;
+  overflow:visible!important;
+}
+.story-sheet-open .promo-slot[data-home-banner] .story-share-sheet{
+  z-index:7100!important;
+}
+.story-sheet-open .promo-slot[data-home-banner] .story-sheet-card{
+  max-height:calc(100dvh - 20px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+@media(max-width:820px){
+  .story-sheet-open .promo-slot[data-home-banner]{
+    isolation:isolate!important;
+  }
+  .story-sheet-open .promo-slot[data-home-banner] .story-share-sheet{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    display:grid!important;
+    align-items:end!important;
+  }
+  .story-sheet-open .promo-slot[data-home-banner] .story-sheet-backdrop{
+    position:absolute!important;
+    inset:0!important;
+  }
+  .story-sheet-open .promo-slot[data-home-banner] .story-sheet-card{
+    width:calc(100% - 20px)!important;
+    margin:0 auto 10px!important;
+  }
+}
