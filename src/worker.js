@@ -5,6 +5,7 @@ import { handleAsNodeRequest } from "cloudflare:node";
 import http from "node:http";
 import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
+const originalDispatchAndPersist = articleTools.dispatchAndPersist;
 
 const PORT = 3000;
 let appReady = false;
@@ -24,6 +25,7 @@ async function ensureAppServer() {
   globalThis.setTimeout = () => 0;
   globalThis.setInterval = () => 0;
   try {
+    articleTools.dispatchAndPersist = async () => {};
     await import("../app.js");
     appReady = true;
   } finally {
@@ -253,6 +255,16 @@ async function serveUpload(name) {
 }
 
 async function serveAsset(request, pathname) {
+  if (pathname === "/hero-mosque.jpg") {
+    const persisted = await env.UPLOADS.get("hero-mosque-hq.jpg");
+    if (persisted) {
+      const headers = new Headers();
+      persisted.writeHttpMetadata(headers);
+      headers.set("etag", persisted.httpEtag);
+      headers.set("cache-control", "public, max-age=3600");
+      return new Response(persisted.body, { headers });
+    }
+  }
   const u = new URL(request.url);
   if (pathname.startsWith("/assets/")) u.pathname = pathname.slice("/assets".length);
   if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
@@ -265,7 +277,7 @@ async function maybeDistribute(beforeDb, afterDb) {
     a.status === "published" && before.get(a.id)?.status !== "published"
   );
   for (const a of newlyPublished) {
-    try { await articleTools.dispatchAndPersist(a.id); } catch (err) { console.error("distribution", err); }
+    try { await originalDispatchAndPersist(a.id); } catch (err) { console.error("distribution", err); }
   }
   if (newlyPublished.length && fs.existsSync(DB_FILE)) {
     await putState("db", fs.readFileSync(DB_FILE, "utf8"));
