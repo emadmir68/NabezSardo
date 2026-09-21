@@ -8,7 +8,7 @@
     "start": "node app.js",
     "cf:dev": "wrangler dev",
     "cf:deploy": "wrangler deploy",
-    "cf:d1:init": "wrangler d1 execute nabzesardo-db --remote --file=./cloudflare/schema.sql"
+    "cf:d1:init": "wrangler d1 execute DB --remote --file=./cloudflare/schema.sql"
   },
   "engines": {
     "node": ">=20"
