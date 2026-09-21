@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   });
 
+  const cleanSingleLine=value=>String(value||'').replace(/\u00a0/g,' ').replace(/[\t\r\n]+/g,' ').replace(/ {2,}/g,' ').trim();
+  const escapeEditorHtml=value=>String(value||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const plainToParagraphHtml=text=>{
+    const normalized=String(text||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
+    const chunks=normalized.split(/\n\s*\n+/).map(part=>cleanSingleLine(part.replace(/\n+/g,' '))).filter(Boolean);
+    return chunks.map(part=>'<p>'+escapeEditorHtml(part)+'</p>').join('');
+  };
+
   async function uploadImage(file,statusEl){
     if(!file)throw new Error('فایلی انتخاب نشده است');
     if(file.size>10*1024*1024)throw new Error('حجم عکس باید کمتر از ۱۰ مگابایت باشد.');
@@ -32,6 +40,29 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(sel&&sel.rangeCount&&area.contains(sel.anchorNode))savedRange=sel.getRangeAt(0).cloneRange();
     };
     const focus=()=>{area.focus();};
+    function normalizeEditorDom(){
+      const walker=document.createTreeWalker(area,NodeFilter.SHOW_TEXT);
+      const nodes=[];
+      while(walker.nextNode())nodes.push(walker.currentNode);
+      nodes.forEach(node=>{
+        node.nodeValue=String(node.nodeValue||'').replace(/\u00a0/g,' ').replace(/[\t\r\n]+/g,' ').replace(/ {2,}/g,' ');
+      });
+      area.querySelectorAll('p,div,li,blockquote,h2,h3').forEach(block=>{
+        block.removeAttribute('align');
+        block.style.removeProperty('margin-left');
+        block.style.removeProperty('margin-right');
+        block.style.removeProperty('padding-left');
+        block.style.removeProperty('padding-right');
+        if(block.getAttribute('dir')!=='ltr')block.setAttribute('dir','rtl');
+        if(block.style.textAlign==='left'||block.style.textAlign==='center'||block.style.textAlign==='right'||block.style.textAlign==='justify')block.style.removeProperty('text-align');
+      });
+      area.querySelectorAll('p,div').forEach(block=>{
+        const meaningful=block.querySelector('img')||cleanSingleLine(block.textContent||'');
+        if(!meaningful&&block!==area)block.remove();
+      });
+      area.querySelectorAll('br + br').forEach(br=>br.remove());
+      area.normalize();
+    }
 
     box.querySelectorAll('[data-cmd]').forEach(btn=>{
       btn.addEventListener('click',()=>{
@@ -74,6 +105,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
 
     area.addEventListener('keyup',saveRange);area.addEventListener('mouseup',saveRange);area.addEventListener('input',()=>{sync();saveRange()});
+    area.addEventListener('paste',event=>{
+      const text=event.clipboardData&&event.clipboardData.getData('text/plain');
+      if(!text)return;
+      event.preventDefault();
+      const html=plainToParagraphHtml(text);
+      if(html)document.execCommand('insertHTML',false,html);
+      normalizeEditorDom();sync();saveRange();
+    });
     if(inlineBtn&&inlineFile){
       inlineBtn.addEventListener('click',()=>{saveRange();inlineFile.click();});
       inlineFile.addEventListener('change',async()=>{
@@ -93,7 +132,17 @@ document.addEventListener('DOMContentLoaded',()=>{
         finally{inlineBtn.disabled=false;inlineFile.value='';setTimeout(()=>{if(inlineStatus)inlineStatus.hidden=true},2500);}
       });
     }
-    const form=area.closest('form');if(form)form.addEventListener('submit',sync);sync();
+    const form=area.closest('form');if(form)form.addEventListener('submit',()=>{normalizeEditorDom();sync();});sync();
+  });
+
+  const autoTextFields=document.querySelectorAll('input[name="title"],textarea[name="lead"],input[name="author"],input[name="location"]');
+  const normalizeField=field=>{field.value=cleanSingleLine(field.value);};
+  autoTextFields.forEach(field=>{
+    field.addEventListener('blur',()=>normalizeField(field));
+    field.addEventListener('paste',()=>setTimeout(()=>normalizeField(field),0));
+  });
+  document.querySelectorAll('form[data-rich-form]').forEach(form=>{
+    form.addEventListener('submit',()=>autoTextFields.forEach(normalizeField));
   });
 
   document.querySelectorAll('[data-image-input]').forEach(input=>{
