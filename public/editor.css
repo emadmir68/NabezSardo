@@ -86,3 +86,63 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
   .rich-font-picker{width:100%;order:3}
   .rich-font-picker select{flex:1;min-width:0}
 }
+
+
+/* Automatic clean newsroom editor typography */
+.editor-form input[name="title"],
+.editor-form textarea[name="lead"],
+.editor-form input[name="author"],
+.editor-form input[name="location"]{
+  direction:rtl;
+  text-align:right;
+  unicode-bidi:plaintext;
+  white-space:normal;
+}
+.editor-form input[name="title"]{
+  font-weight:800;
+  line-height:1.8;
+}
+.editor-form textarea[name="lead"]{
+  line-height:2;
+  resize:vertical;
+}
+.rich-area{
+  direction:rtl;
+  text-align:right;
+  unicode-bidi:plaintext;
+  white-space:normal;
+}
+.rich-area p,
+.rich-area>div,
+.rich-area li,
+.rich-area blockquote{
+  direction:rtl!important;
+  text-align:justify!important;
+  text-align-last:right!important;
+  text-justify:inter-word;
+  text-indent:0!important;
+  white-space:normal!important;
+  word-spacing:normal;
+  letter-spacing:normal;
+  padding-inline:0!important;
+}
+.rich-area p,
+.rich-area>div{
+  margin:0 0 1.05em!important;
+}
+.rich-area p:empty,
+.rich-area>div:empty{display:none!important}
+.rich-area br+br{display:none}
+.rich-area h2,
+.rich-area h3{
+  direction:rtl!important;
+  text-align:right!important;
+  text-indent:0!important;
+}
+.rich-area ul,
+.rich-area ol{
+  direction:rtl!important;
+  text-align:right!important;
+  padding-right:1.6em!important;
+  padding-left:0!important;
+}
