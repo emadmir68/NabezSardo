@@ -10,16 +10,53 @@
 .cover-frame .cover{width:100%;height:100%;max-height:none;object-fit:cover;object-position:center center;border-radius:0;box-shadow:none;display:block}
 
 
-/* Adaptive featured image layout — follows real uploaded aspect ratio */
-.grid.news{align-items:start}
-.card>a.card-media{display:block;width:100%;aspect-ratio:var(--image-ratio,1.77778);overflow:hidden;background:#20252d}
-.card>a.card-media img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#10141a}
-.cover-frame{width:100%;aspect-ratio:var(--image-ratio,1.77778);overflow:hidden;border-radius:22px;background:#10141a;box-shadow:0 18px 45px rgba(0,0,0,.34);margin:0 auto 26px}
-.cover-frame.portrait{max-width:560px}
-.cover-frame.square{max-width:760px}
-.cover-frame.landscape{max-width:100%}
-.cover-frame .cover{display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center;border-radius:0;box-shadow:none}
-@media(max-width:620px){.cover-frame.portrait,.cover-frame.square,.cover-frame.landscape{max-width:100%}}
+/* Uniform newsroom media system — fixed layout without destructive crop */
+.grid.news{align-items:stretch}
+.grid.news>.card{height:100%;display:flex;flex-direction:column}
+.grid.news>.card .pad{flex:1}
+.card>a.card-media,
+.card>a:first-child{
+  display:block;
+  width:100%;
+  aspect-ratio:16/9;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 45%,#252b35 0%,#171c24 48%,#10141a 100%);
+}
+.card>a.card-media img,
+.card>a:first-child img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center center;
+  background:transparent;
+}
+.cover-frame,
+.cover-frame.portrait,
+.cover-frame.square,
+.cover-frame.landscape{
+  width:100%;
+  max-width:100%;
+  aspect-ratio:16/9;
+  overflow:hidden;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 50% 45%,#252b35 0%,#171c24 48%,#10141a 100%);
+  box-shadow:0 18px 45px rgba(0,0,0,.34);
+  margin:0 auto 26px;
+}
+.cover-frame .cover{
+  display:block;
+  width:100%;
+  height:100%;
+  max-height:none;
+  object-fit:contain;
+  object-position:center center;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+}
 
 
 /* Premium header brand + global search + view counters */
