@@ -24,3 +24,11 @@ jobs:
           node --check lib/view-admin.js
           node --check lib/view-common.js
           node --check lib/article-tools.js
+
+      - name: Production short-news smoke test
+        run: |
+          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/health -o /tmp/health.json
+          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/briefs -o /tmp/briefs.html
+          grep -q "خبر کوتاه" /tmp/briefs.html
+          echo "health=$(cat /tmp/health.json)"
+          echo "briefs_bytes=$(wc -c < /tmp/briefs.html)"
