@@ -283,6 +283,24 @@ const server=http.createServer(async(req,res)=>{
     }
 
     if(p.startsWith('/admin')&&!authed(req))return redirect(res,'/admin/login');
+    if(p==='/admin/briefs/new'){
+      const title=String(f.title||'').replace(/\s+/g,' ').trim().slice(0,180);
+      const lead=String(f.lead||'').replace(/\s+/g,' ').trim().slice(0,360);
+      if(!title)return redirect(res,'/admin?briefError=1');
+      const categoryId=db.categories.some(c=>c.id===f.categoryId)?f.categoryId:(db.categories[0]?.id||'');
+      const location=String(f.location||'ساردوئیه').replace(/\s+/g,' ').trim().slice(0,120)||'ساردوئیه';
+      const a={
+        id:id(),createdAt:now(),updatedAt:now(),publishedAt:now(),
+        title,slug:uniqueSlug(db,title),categoryId,lead,
+        bodyHtml:'',body:'',author:'تحریریه نبض ساردو',location,
+        status:'published',featured:false,shortNews:true,
+        autoCoverEnabled:false,image:'',imageWidth:null,imageHeight:null,imageRatio:null,imageOrientation:'landscape',
+        gallery:[],socialTelegram:false,socialRubika:false,socialWhatsApp:false,views:0
+      };
+      db.articles.unshift(a);
+      save(db);
+      return redirect(res,'/admin?briefSaved=1');
+    }
     if(p==='/admin/upload/image'){
       const file=files.image||files.imageFile;
       if(!file||!file.data||!file.data.length)return send(res,400,JSON.stringify({ok:false,error:'فایلی انتخاب نشده است'}),'application/json; charset=utf-8');
