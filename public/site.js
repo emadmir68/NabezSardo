@@ -198,8 +198,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
   // Long-press Story sharing for Latest News cards.
-  const latestStoryCards=[...document.querySelectorAll('.latest-grid [data-story-card]')];
-  if(latestStoryCards.length){
+  const newsStoryCards=[...document.querySelectorAll('.latest-grid [data-story-card], .archive-grid [data-story-card]')];
+  if(newsStoryCards.length){
     const storySheet=document.createElement('div');
     storySheet.className='story-share-sheet news-story-sheet';
     storySheet.hidden=true;
@@ -254,6 +254,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       const lang=root.dataset.lang==='en'?'en':'fa';
       const title=card.dataset[lang==='en'?'storyTitleEn':'storyTitleFa']||card.dataset.storyTitleFa||'Nabez Sardo';
       const lead=card.dataset[lang==='en'?'storyLeadEn':'storyLeadFa']||card.dataset.storyLeadFa||'';
+      const body=card.dataset[lang==='en'?'storyBodyEn':'storyBodyFa']||card.dataset.storyBodyFa||'';
       const category=card.dataset[lang==='en'?'storyCategoryEn':'storyCategoryFa']||card.dataset.storyCategoryFa||'News';
       const articleUrl=new URL(card.dataset.storyUrl||'/',location.origin).href;
       const img=await loadStoryImage(card.dataset.storyImage||'');
@@ -268,8 +269,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 
       ctx.strokeStyle='rgba(213,173,100,.25)';ctx.lineWidth=3;rr(ctx,66,72,948,1776,48);ctx.stroke();
       ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
-      ctx.fillStyle='#e0b86d';ctx.font='800 38px Vazirmatn, sans-serif';ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',lang==='en'?100:980,150);
-      ctx.fillStyle='rgba(227,233,241,.62)';ctx.font='500 21px Vazirmatn, sans-serif';ctx.fillText(lang==='en'?'LOCAL NEWS / SOUTH KERMAN':'رسانه محلی ساردوئیه و جنوب کرمان',lang==='en'?100:980,194);
+      ctx.fillStyle='#f2c978';ctx.font='900 48px Vazirmatn, sans-serif';ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',lang==='en'?100:980,150);
+      ctx.fillStyle='rgba(232,237,244,.68)';ctx.font='600 22px Vazirmatn, sans-serif';ctx.fillText(lang==='en'?'LOCAL NEWS / SOUTH KERMAN':'رسانه محلی ساردوئیه و جنوب کرمان',lang==='en'?100:980,194);
+      ctx.fillStyle='#d7ae63';ctx.fillRect(lang==='en'?100:800,216,180,4);
 
       drawContain(ctx,img,90,250,900,720);
       ctx.strokeStyle='rgba(213,173,100,.24)';ctx.lineWidth=3;rr(ctx,90,250,900,720,34);ctx.stroke();
@@ -291,9 +293,13 @@ document.addEventListener('DOMContentLoaded',()=>{
       const rule=ctx.createLinearGradient(100,0,980,0);rule.addColorStop(0,'rgba(217,176,99,0)');rule.addColorStop(.15,'#d9b063');rule.addColorStop(.85,'#d9b063');rule.addColorStop(1,'rgba(217,176,99,0)');
       ctx.fillStyle=rule;ctx.fillRect(100,ruleY,880,3);
 
-      ctx.fillStyle='#c8d0da';ctx.font='500 30px Vazirmatn, sans-serif';
+      ctx.fillStyle='#d8dee7';ctx.font='600 30px Vazirmatn, sans-serif';
       const leadLines=wrapStoryLines(ctx,lead,870);
-      let ly=ruleY+62;leadLines.slice(0,4).forEach(line=>{ctx.fillText(line,lang==='en'?105:975,ly);ly+=50;});
+      let ly=ruleY+60;leadLines.slice(0,3).forEach(line=>{ctx.fillText(line,lang==='en'?105:975,ly);ly+=48;});
+
+      ctx.fillStyle='rgba(226,231,238,.86)';ctx.font='500 25px Vazirmatn, sans-serif';
+      const bodyLines=wrapStoryLines(ctx,body,860);
+      let by=ly+14;bodyLines.slice(0,5).forEach(line=>{if(by<1710){ctx.fillText(line,lang==='en'?110:970,by);by+=42;}});
 
       ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle='rgba(230,235,242,.58)';ctx.font='700 22px Arial, sans-serif';
       ctx.fillText('NABZESARDO.IR',540,1770);
@@ -354,7 +360,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       const a=document.createElement('a');a.href=preparedStoryUrl;a.download=preparedStoryFile.name;a.click();
     });
 
-    latestStoryCards.forEach(card=>{
+    newsStoryCards.forEach(card=>{
       let timer=null,startX=0,startY=0,triggered=false,lastPointerType='';
       const cancel=()=>{if(timer){clearTimeout(timer);timer=null;}card.classList.remove('story-holding');};
       card.addEventListener('pointerdown',ev=>{
