@@ -202,3 +202,18 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
   font:700 8px/1 Arial,sans-serif;
   direction:ltr;
 }
+
+
+/* Quick short-news publisher */
+.quick-brief-admin{position:relative;overflow:hidden;border:1px solid rgba(216,179,109,.18);background:linear-gradient(135deg,rgba(216,179,109,.055),rgba(139,28,61,.045),rgba(13,17,24,.96))}
+.quick-brief-admin::after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;inset-inline-end:-110px;top:-150px;background:radial-gradient(circle,rgba(216,179,109,.14),transparent 68%);pointer-events:none}
+.quick-brief-form{position:relative;z-index:1}
+.quick-brief-form textarea{min-height:88px}
+.quick-brief-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:4px}
+.quick-brief-actions small{color:var(--muted);line-height:1.8}
+.quick-brief-actions .btn{min-width:150px}
+@media(max-width:720px){
+  .quick-brief-admin .panel-head{align-items:flex-start;flex-direction:column}
+  .quick-brief-actions{align-items:stretch;flex-direction:column}
+  .quick-brief-actions .btn{width:100%}
+}
