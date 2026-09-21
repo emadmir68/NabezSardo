@@ -9,6 +9,7 @@ const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
 
 const PORT=Number(process.env.PORT||3000);
+const IS_CLOUDFLARE=process.env.CLOUDFLARE_WORKER==='1';
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
 const ADMIN_PASS=process.env.ADMIN_PASS||'change-this';
 const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
@@ -181,6 +182,7 @@ const HERO_HQ_CHUNKS=['hero-hq-00.txt','hero-hq-01.txt','hero-hq-02.txt','hero-h
 const HERO_SEED_TOKEN=process.env.HERO_SEED_TOKEN||'';
 
 function loadHeroImage(){
+  if(IS_CLOUDFLARE)return Buffer.from([0xff,0xd8,0xff,0xd9]);
   try{
     const persisted=path.join(UPLOAD_DIR,'hero-mosque-hq.jpg');
     if(fs.existsSync(persisted)){
@@ -365,7 +367,9 @@ const server=http.createServer(async(req,res)=>{
  }
 });
 server.listen(PORT,'0.0.0.0',()=>console.log('Nabez Sardo running on :'+PORT));
-articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('Featured image metadata backfilled');}).catch(err=>console.error('featured image metadata',err));
-articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
-setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
-setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
+if(!IS_CLOUDFLARE){
+  articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('Featured image metadata backfilled');}).catch(err=>console.error('featured image metadata',err));
+  articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
+  setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
+  setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
+}
