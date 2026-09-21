@@ -13,7 +13,8 @@
     "DATA_DIR": "/tmp/nabzesardo",
     "NODE_ENV": "production",
     "PUBLIC_BASE_URL": "https://nabzesardo.ir",
-    "PREVIEW_READONLY": "1"
+    "PREVIEW_READONLY": "1",
+    "SYNC_SOURCE_URL": "https://nabzesardo.ir"
   },
   "d1_databases": [
     {
@@ -24,7 +25,7 @@
   ],
   "triggers": {
     "crons": [
-      "* * * * *"
+      "*/5 * * * *"
     ]
   }
 }
