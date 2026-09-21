@@ -176,8 +176,26 @@ function articlePayload(db,f,files,current={}){
 }
 
 const HERO_MOSQUE_PATH=path.join(ROOT,'public','header-mosque-fixed.jpg');
+const HERO_HQ_CHUNKS=['hero-hq-00.txt','hero-hq-01.txt','hero-hq-02.txt','hero-hq-03.txt','hero-hq-04.txt'];
 const HERO_SEED_TOKEN='9f3c7d2a8b6e41d7b5a4c9e2f81763ab';
-const HERO_MOSQUE_JPG=fs.readFileSync(HERO_MOSQUE_PATH);
+
+function loadHeroImage(){
+  try{
+    const persisted=path.join(UPLOAD_DIR,'hero-mosque-hq.jpg');
+    if(fs.existsSync(persisted)){
+      const buf=fs.readFileSync(persisted);
+      if(buf.length>20000&&buf[0]===0xff&&buf[1]===0xd8)return buf;
+    }
+  }catch(err){console.warn('hero persisted image unavailable',err.message);}
+  try{
+    const b64=HERO_HQ_CHUNKS.map(name=>fs.readFileSync(path.join(ROOT,'lib',name),'utf8')).join('').replace(/\s+/g,'');
+    const buf=Buffer.from(b64,'base64');
+    if(buf.length>30000&&buf[0]===0xff&&buf[1]===0xd8)return buf;
+  }catch(err){console.warn('hero HQ chunks unavailable',err.message);}
+  return fs.readFileSync(HERO_MOSQUE_PATH);
+}
+
+const HERO_MOSQUE_JPG=loadHeroImage();
 const HERO_MOSQUE_SHA1=crypto.createHash('sha1').update(HERO_MOSQUE_JPG).digest('hex');
 console.log(`hero-image-ready bytes=${HERO_MOSQUE_JPG.length} sha1=${HERO_MOSQUE_SHA1}`);
 
