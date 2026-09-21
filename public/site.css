@@ -1583,3 +1583,115 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
     font-size:6.5px;
   }
 }
+
+
+/* Final special-message frame sizing — shrink the whole card, not its content */
+.promo-slot.promo-mehr{
+  width:calc(100% - 40px);
+  max-width:900px;
+  margin:16px auto 8px;
+  min-height:168px;
+  grid-template-columns:minmax(0,1fr) 190px;
+  gap:18px;
+  padding:18px 22px 20px;
+  border-radius:20px;
+}
+.promo-mehr .promo-copy h2{
+  margin:8px 0 5px;
+  font-size:27px;
+  line-height:1.35;
+}
+.promo-mehr .promo-copy p{
+  max-width:560px;
+  font-size:12px;
+  line-height:1.7;
+}
+.promo-mehr .promo-kicker{
+  padding:5px 8px;
+  font-size:8px;
+}
+.promo-mehr .promo-tags{
+  display:flex;
+  gap:6px;
+  margin-top:10px;
+}
+.promo-mehr .promo-tags>span{
+  padding:5px 8px;
+  font-size:9px;
+}
+.promo-mehr .promo-tags b{display:inline;font-size:8px}
+.promo-mehr .promo-visual{min-height:118px}
+.promo-mehr .school-card{
+  width:180px;
+  border-radius:20px;
+}
+.promo-mehr .school-card svg{width:74%}
+.promo-mehr .school-sun{
+  width:44px;
+  height:44px;
+  right:16px;
+  top:11px;
+}
+.promo-mehr .promo-book{
+  width:26px;
+  height:35px;
+  bottom:10px;
+  font-size:10px;
+}
+.promo-mehr .pbook-1{left:12px}
+.promo-mehr .pbook-2{left:32px;bottom:8px}
+.promo-mehr .promo-pencil{
+  right:12px;
+  bottom:14px;
+  width:44px;
+  height:5px;
+}
+.promo-mehr .promo-story-btn{
+  left:12px;
+  bottom:9px;
+  padding:6px 8px;
+  font-size:8px;
+}
+.promo-mehr .story-longpress-hint{display:none}
+
+@media(max-width:900px){
+  .promo-slot.promo-mehr{
+    width:calc(100% - 28px);
+    max-width:760px;
+    min-height:154px;
+    grid-template-columns:minmax(0,1fr) 160px;
+    gap:14px;
+    padding:15px 18px 17px;
+  }
+  .promo-mehr .promo-copy h2{font-size:23px}
+  .promo-mehr .promo-copy p{font-size:11px}
+  .promo-mehr .school-card{width:150px}
+  .promo-mehr .promo-visual{min-height:100px}
+}
+
+@media(max-width:620px){
+  .promo-slot.promo-mehr{
+    width:calc(100% - 20px);
+    max-width:none;
+    min-height:132px;
+    grid-template-columns:minmax(0,1fr) 105px;
+    gap:10px;
+    padding:12px 13px 14px;
+    border-radius:16px;
+  }
+  .promo-mehr .promo-copy h2{
+    font-size:18px;
+    margin:5px 0 3px;
+  }
+  .promo-mehr .promo-copy p{
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+    font-size:9.5px;
+    line-height:1.5;
+  }
+  .promo-mehr .promo-tags{display:none}
+  .promo-mehr .school-card{width:96px}
+  .promo-mehr .promo-visual{min-height:72px}
+}
