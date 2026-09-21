@@ -48,6 +48,58 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateDateTime();
   setInterval(updateDateTime,1000);
 
+  // Premium article reading tools: progress, native share and copy link.
+  const articleRoot=document.querySelector('[data-article-root]');
+  const articleProgress=document.querySelector('[data-article-progress] i');
+  if(articleRoot&&articleProgress){
+    let articleProgressTick=false;
+    const syncArticleProgress=()=>{
+      articleProgressTick=false;
+      const rect=articleRoot.getBoundingClientRect();
+      const total=Math.max(1,rect.height-innerHeight*.72);
+      const done=Math.max(0,Math.min(1,(innerHeight*.18-rect.top)/total));
+      articleProgress.style.width=(done*100).toFixed(2)+'%';
+    };
+    syncArticleProgress();
+    addEventListener('scroll',()=>{
+      if(articleProgressTick)return;
+      articleProgressTick=true;
+      requestAnimationFrame(syncArticleProgress);
+    },{passive:true});
+    addEventListener('resize',syncArticleProgress,{passive:true});
+
+    const shareBtn=articleRoot.querySelector('[data-article-share]');
+    const copyBtn=articleRoot.querySelector('[data-article-copy]');
+    const title=articleRoot.dataset.articleTitle||document.title;
+    const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
+    const copyArticleLink=async()=>{
+      try{
+        if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(shareUrl);
+        else{
+          const ta=document.createElement('textarea');ta.value=shareUrl;ta.style.position='fixed';ta.style.opacity='0';
+          document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+        }
+        if(copyBtn){
+          copyBtn.classList.add('is-copied');
+          const label=copyBtn.querySelector('[data-copy-label]');
+          if(label)label.textContent=root.dataset.lang==='en'?'Copied':'لینک کپی شد';
+          setTimeout(()=>{
+            copyBtn.classList.remove('is-copied');
+            const label2=copyBtn.querySelector('[data-copy-label]');
+            if(label2)label2.innerHTML='<span class="lang-fa">کپی لینک</span><span class="lang-en">Copy link</span>';
+          },1700);
+        }
+      }catch(err){console.warn('article copy failed',err);}
+    };
+    if(copyBtn)copyBtn.addEventListener('click',copyArticleLink);
+    if(shareBtn)shareBtn.addEventListener('click',async()=>{
+      try{
+        if(navigator.share)await navigator.share({title,text:(root.dataset.lang==='en'?'Nabez Sardo — ':'نبض ساردو — ')+title,url:shareUrl});
+        else await copyArticleLink();
+      }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
+    });
+  }
+
   // Compact glass newsroom navigation after the full masthead scrolls away.
   let navScrollTick=false;
   const syncCompactNav=()=>{
