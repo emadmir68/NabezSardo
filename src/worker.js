@@ -8,6 +8,7 @@ import articleTools from "../lib/article-tools.js";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
 
 const PORT = 3000;
+const EXPECTED_BACKUP_SHA256 = "b93b59e5a9dde845a2f4ae50674b44ea7f6e8d84ee42013f7593adfddb5f4619";
 let appReady = false;
 
 async function ensureAppServer() {
@@ -185,9 +186,34 @@ function isAuthorizedMigration(request) {
   return request.headers.get("authorization") === "Bearer " + token;
 }
 
+async function sha256Hex(buffer) {
+  const hash = await crypto.subtle.digest("SHA-256", buffer);
+  return [...new Uint8Array(hash)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+
+async function migrationPage() {
+  const done = await getState("migration_complete");
+  const disabled = done === "1";
+  const body = `<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>انتقال آزمایشی نبض ساردو</title><style>body{font-family:system-ui;background:#0d1015;color:#f5f1e8;margin:0;padding:32px}.box{max-width:720px;margin:auto;background:#151922;border:1px solid #343b49;border-radius:20px;padding:24px}h1{font-size:24px}.ok{color:#9fe3b1}.warn{color:#f2cd78}input,button{width:100%;box-sizing:border-box;margin-top:14px;padding:14px;border-radius:12px;border:1px solid #394152;background:#0f131a;color:#fff}button{background:#b48a3c;border:0;font-weight:700;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}pre{white-space:pre-wrap;background:#0b0e13;padding:12px;border-radius:10px;min-height:48px}</style></head><body><div class="box"><h1>انتقال آزمایشی نبض ساردو به Cloudflare</h1><p>این صفحه فقط فایل بکاپ تأییدشده امروز را می‌پذیرد. سایت Railway هیچ تغییری نمی‌کند.</p>${disabled?'<p class="ok">انتقال این نسخه قبلاً انجام شده و مسیر Import بسته است.</p>':'<p class="warn">فایل nabezsardo-backup-2026-09-21.json را انتخاب کن و «انتقال کپی» را بزن.</p><input id="file" type="file" accept=".json,application/json"><button id="go">انتقال کپی</button>'}<pre id="out"></pre></div><script>const go=document.getElementById("go"),file=document.getElementById("file"),out=document.getElementById("out");if(go)go.onclick=async()=>{if(!file.files[0]){out.textContent="فایل را انتخاب کن.";return}go.disabled=true;out.textContent="در حال انتقال کپی...";try{const b=await file.files[0].arrayBuffer();const r=await fetch("/__migration/import",{method:"POST",headers:{"content-type":"application/json"},body:b});const j=await r.json().catch(()=>({ok:false,error:"HTTP "+r.status}));out.textContent=j.ok?("انجام شد — خبرها: "+j.articles+" | فایل‌ها: "+j.uploads):("خطا: "+(j.error||r.status));}catch(e){out.textContent="خطا: "+e.message}finally{go.disabled=false}};</script></body></html>`;
+  return new Response(body, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+}
+
 async function importBackup(request) {
-  if (!isAuthorizedMigration(request)) return new Response("Unauthorized", { status: 401 });
-  const payload = await request.json();
+  const done = await getState("migration_complete");
+  if (done === "1") return Response.json({ ok: false, error: "migration-already-complete" }, { status: 409 });
+
+  const raw = await request.arrayBuffer();
+  const digest = await sha256Hex(raw);
+  if (digest !== EXPECTED_BACKUP_SHA256) {
+    return Response.json({ ok: false, error: "backup-checksum-mismatch" }, { status: 403 });
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(new TextDecoder().decode(raw));
+  } catch {
+    return Response.json({ ok: false, error: "invalid-json" }, { status: 400 });
+  }
   if (!payload || payload.format !== "nabezsardo-full-backup" || payload.version !== 1 || !payload.db) {
     return Response.json({ ok: false, error: "invalid-backup" }, { status: 400 });
   }
@@ -204,10 +230,14 @@ async function importBackup(request) {
     uploaded++;
   }
 
+  await putState("migration_complete", "1");
+  await putState("migration_source_sha256", digest);
+
   return Response.json({
     ok: true,
     articles: Array.isArray(payload.db.articles) ? payload.db.articles.length : 0,
-    uploads: uploaded
+    uploads: uploaded,
+    checksum: digest
   });
 }
 
@@ -286,6 +316,9 @@ async function maybeDistribute(beforeDb, afterDb) {
 
 async function handleApp(request) {
   const url = new URL(request.url);
+  if (String(env.PREVIEW_READONLY || "") === "1" && url.pathname.startsWith("/admin")) {
+    return new Response("Preview admin is disabled until migration verification is complete.", { status: 403 });
+  }
   const includeUploads = request.method === "GET" && url.pathname === "/admin/backup/download";
   const before = await hydrateState({ includeUploads });
   await ensureAppServer();
@@ -300,6 +333,7 @@ export default {
     const url = new URL(request.url);
     const p = decodeURIComponent(url.pathname);
 
+    if (p === "/__migration" && request.method === "GET") return migrationPage();
     if (p === "/__migration/import" && request.method === "POST") return importBackup(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
 
@@ -315,6 +349,7 @@ export default {
   },
 
   async scheduled() {
+    if (String(env.PREVIEW_READONLY || "") === "1") return;
     const before = await hydrateState();
     await articleTools.schedulerTick();
     const fakeReq = new Request("https://nabzesardo.ir/__cron", { method: "GET" });
