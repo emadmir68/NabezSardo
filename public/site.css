@@ -1274,7 +1274,7 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
 }
 .promo-mehr .promo-tags{
   gap:7px;
-  margin-top:12px;
+  margin-top:16px;
 }
 .promo-mehr .promo-tags>span{
   gap:6px;
@@ -3998,10 +3998,11 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
 
 /* ===== Citizen newsroom reward banner ===== */
 .promo-slot.promo-citizen{
-  min-height:300px;
-  grid-template-columns:minmax(0,1.2fr) minmax(270px,.8fr);
-  gap:30px;
-  padding:28px 34px 30px;
+  min-height:350px;
+  grid-template-columns:minmax(0,1.18fr) minmax(310px,.82fr);
+  gap:34px;
+  padding:34px 40px 36px;
+  font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
   margin-top:22px;
   margin-bottom:10px;
   border-radius:28px;
@@ -4029,20 +4030,21 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
 }
 .promo-citizen .promo-copy{
   min-width:0;
-  padding-bottom:38px;
+  padding-bottom:42px;
 }
 .promo-citizen .promo-kicker{
-  padding:6px 11px;
+  padding:7px 12px;
   color:#f0c979;
   border-color:rgba(238,198,116,.34);
   background:rgba(8,13,21,.56);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
 .promo-citizen .promo-copy h2{
-  margin:12px 0 7px;
-  font-size:36px;
-  line-height:1.32;
-  letter-spacing:-.2px;
+  margin:14px 0 9px;
+  font-size:42px;
+  line-height:1.38;
+  letter-spacing:-.35px;
+  font-weight:950;
   color:#fff8ea;
 }
 .promo-citizen .promo-copy p{
@@ -4050,15 +4052,15 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
   margin:0;
 }
 .promo-citizen .citizen-promo-lead{
-  font-size:14px;
-  line-height:1.9;
+  font-size:16px;
+  line-height:1.95;
   font-weight:800;
   color:#e2e7ee;
 }
 .promo-citizen .citizen-promo-text{
-  margin-top:3px;
-  font-size:12.4px;
-  line-height:1.8;
+  margin-top:5px;
+  font-size:14px;
+  line-height:1.9;
   color:#abb5c2;
 }
 .citizen-promo-foot{
@@ -4071,8 +4073,8 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
 .citizen-promo-note{
   flex:1 1 330px;
   color:#e4bd70;
-  font-size:11.5px;
-  line-height:1.75;
+  font-size:13px;
+  line-height:1.85;
   font-weight:800;
 }
 .citizen-promo-cta{
@@ -4081,13 +4083,13 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
   align-items:center;
   justify-content:center;
   gap:8px;
-  padding:10px 15px;
+  padding:12px 18px;
   border-radius:14px;
   border:1px solid rgba(239,199,119,.48);
   background:linear-gradient(135deg,#d7a950,#f0cc83);
   color:#10151c;
   text-decoration:none;
-  font-size:11px;
+  font-size:12.5px;
   font-weight:950;
   box-shadow:0 12px 28px rgba(0,0,0,.28),0 0 24px rgba(220,173,84,.08);
   transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
@@ -4107,7 +4109,7 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
   font-size:14px;
 }
 .citizen-promo-visual{
-  min-height:225px;
+  min-height:270px;
   isolation:isolate;
 }
 .citizen-orbit{
@@ -4131,8 +4133,8 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
 .citizen-device{
   position:relative;
   z-index:3;
-  width:155px;
-  height:218px;
+  width:178px;
+  height:248px;
   padding:10px;
   border-radius:29px;
   background:linear-gradient(155deg,#1a2029,#0a0d12 70%);
@@ -4169,7 +4171,7 @@ html[data-lang="en"] .topic-terminal-row:hover .topic-terminal-arrow{
   background:#05070a;
 }
 .citizen-device-screen{
-  height:165px;
+  height:191px;
   padding:14px 10px 10px;
   display:flex;
   flex-direction:column;
@@ -4303,66 +4305,67 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
 
 @media(max-width:900px){
   .promo-slot.promo-citizen{
-    grid-template-columns:minmax(0,1fr) 230px;
-    min-height:280px;
-    gap:18px;
-    padding:24px 25px 28px;
+    grid-template-columns:minmax(0,1fr) 260px;
+    min-height:320px;
+    gap:20px;
+    padding:28px 28px 31px;
   }
-  .promo-citizen .promo-copy h2{font-size:30px}
-  .promo-citizen .citizen-promo-text{font-size:11.5px}
-  .citizen-device{width:142px;height:200px}
-  .citizen-device-screen{height:149px}
+  .promo-citizen .promo-copy h2{font-size:34px}
+  .promo-citizen .citizen-promo-text{font-size:12.5px}
+  .citizen-device{width:158px;height:222px}
+  .citizen-device-screen{height:168px}
   .citizen-gift{transform:scale(.88);transform-origin:left bottom}
   .citizen-cash-chip{right:-4px}
 }
 
 @media(max-width:620px){
   .promo-slot.promo-citizen{
-    grid-template-columns:minmax(0,1fr) 106px;
+    grid-template-columns:minmax(0,1fr) 118px;
     align-items:center;
-    gap:8px;
-    min-height:282px;
-    margin-top:15px;
-    padding:15px 13px 18px;
+    gap:10px;
+    min-height:330px;
+    margin-top:16px;
+    padding:18px 15px 21px;
     border-radius:20px;
   }
   .promo-citizen .promo-copy{
     padding-bottom:0;
   }
   .promo-citizen .promo-kicker{
-    padding:4px 7px;
-    font-size:7.2px;
+    padding:5px 8px;
+    font-size:8px;
     letter-spacing:.3px;
   }
   .promo-citizen .promo-copy h2{
-    margin:8px 0 5px;
-    font-size:19px;
-    line-height:1.43;
+    margin:10px 0 6px;
+    font-size:22px;
+    line-height:1.5;
+    font-weight:950;
   }
   .promo-citizen .citizen-promo-lead{
-    font-size:10px;
-    line-height:1.65;
+    font-size:11.2px;
+    line-height:1.75;
   }
   .promo-citizen .citizen-promo-text{
-    margin-top:3px;
-    font-size:9px;
-    line-height:1.62;
+    margin-top:4px;
+    font-size:9.8px;
+    line-height:1.72;
     color:#aab4c1;
   }
   .citizen-promo-foot{
-    margin-top:8px;
-    gap:7px;
+    margin-top:10px;
+    gap:8px;
   }
   .citizen-promo-note{
     flex-basis:100%;
-    font-size:8.5px;
-    line-height:1.55;
+    font-size:9.4px;
+    line-height:1.68;
   }
   .citizen-promo-cta{
     width:100%;
-    padding:8px 9px;
-    border-radius:11px;
-    font-size:8.7px;
+    padding:9px 10px;
+    border-radius:12px;
+    font-size:9.7px;
     gap:5px;
   }
   .citizen-promo-cta-icon{
@@ -4372,13 +4375,13 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     font-size:11px;
   }
   .citizen-promo-visual{
-    min-height:190px;
+    min-height:214px;
   }
   .citizen-orbit-a{width:132px;height:132px}
   .citizen-orbit-b{width:145px;height:78px}
   .citizen-device{
-    width:84px;
-    height:126px;
+    width:94px;
+    height:142px;
     padding:6px;
     border-radius:18px;
     transform:rotate(-4deg);
@@ -4390,7 +4393,7 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
   }
   .citizen-device-top i{width:20px;height:4px}
   .citizen-device-screen{
-    height:94px;
+    height:107px;
     padding:8px 6px 6px;
     border-radius:12px;
     gap:7px;
