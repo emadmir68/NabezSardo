@@ -107,8 +107,17 @@ async function handlePublicPreview(request, url, pathname) {
   if (pathname === "/health") {
     return Response.json({ ok: true, name: "nabzesardo-cloudflare", migrated: true });
   }
-  if (pathname === "/") return html(views.home(db));
-  if (pathname === "/all-news") return html(views.archive(db, url.searchParams.get("q") || ""));
+  if (pathname === "/") {
+    const snapshot = await getState("snapshot_home");
+    return html(snapshot || views.home(db));
+  }
+  if (pathname === "/all-news") {
+    if (!url.searchParams.get("q")) {
+      const snapshot = await getState("snapshot_archive");
+      if (snapshot) return html(snapshot);
+    }
+    return html(views.archive(db, url.searchParams.get("q") || ""));
+  }
   if (pathname === "/search") return html(views.search(db, url.searchParams.get("q") || ""));
   if (pathname === "/about") return html(views.simple(db, "about"));
   if (pathname === "/contact") return html(views.simple(db, "contact", url.searchParams.get("ok") === "1"));
@@ -116,8 +125,11 @@ async function handlePublicPreview(request, url, pathname) {
 
   let m = pathname.match(/^\/news\/(.+)$/);
   if (m) {
-    const a = (db.articles || []).find(x => x.status === "published" && x.slug === m[1]);
-    return a ? html(views.article(db, a)) : html("خبر یافت نشد", 404);
+    const slug = m[1];
+    const a = (db.articles || []).find(x => x.status === "published" && x.slug === slug);
+    if (!a) return html("خبر یافت نشد", 404);
+    const snapshot = await getState("snapshot_article:" + slug);
+    return html(snapshot || views.article(db, a));
   }
 
   m = pathname.match(/^\/category\/(.+)$/);
@@ -455,6 +467,195 @@ async function serveAsset(request, pathname) {
   return env.ASSETS.fetch(new Request(u, request));
 }
 
+function decodeHtml(v = "") {
+  return String(v)
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function articleLinksFromHtml(html = "") {
+  const out = [];
+  const seen = new Set();
+  const re = /href=["'](\/news\/[^"'?#]+)["']/g;
+  let m;
+  while ((m = re.exec(String(html)))) {
+    const pathValue = m[1];
+    if (seen.has(pathValue)) continue;
+    seen.add(pathValue);
+    out.push(pathValue);
+  }
+  return out;
+}
+
+function uploadLinksFromHtml(html = "") {
+  const out = new Set();
+  const re = /(?:src|href)=["'](\/uploads\/[^"'?#]+)["']/g;
+  let m;
+  while ((m = re.exec(String(html)))) out.add(m[1]);
+  return [...out];
+}
+
+function newsSchemaFromHtml(html = "") {
+  const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let m;
+  while ((m = re.exec(String(html)))) {
+    try {
+      const data = JSON.parse(decodeHtml(m[1]));
+      const list = Array.isArray(data) ? data : [data];
+      const news = list.find(x => x && x["@type"] === "NewsArticle");
+      if (news) return news;
+    } catch {}
+  }
+  return null;
+}
+
+function categoryIdFromArticleHtml(html = "") {
+  const nav = String(html).match(/<nav[^>]*class=["'][^"']*article-breadcrumbs[^"']*["'][^>]*>([\s\S]*?)<\/nav>/i);
+  const hay = nav ? nav[1] : "";
+  const m = hay.match(/href=["']\/category\/([^"']+)["']/i);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
+async function syncPublicMedia(sourceBase, paths) {
+  let count = 0;
+  for (const raw of [...new Set(paths)].slice(0, 24)) {
+    try {
+      const u = new URL(raw, sourceBase);
+      const name = path.basename(decodeURIComponent(u.pathname));
+      if (!name) continue;
+      const res = await fetch(u.toString(), { headers: { "user-agent": "NabezSardo-Cloudflare-Sync/1.0" } });
+      if (!res.ok) continue;
+      const data = Buffer.from(await res.arrayBuffer());
+      if (!data.length || data.length > 12 * 1024 * 1024) continue;
+      await putMedia(name, data, res.headers.get("content-type") || mimeFor(name));
+      count++;
+    } catch {}
+  }
+  return count;
+}
+
+async function publicPull() {
+  const sourceBase = String(env.SYNC_SOURCE_URL || "https://nabzesardo.ir").replace(/\/+$/, "");
+  const previous = await getState("last_public_sync_at");
+  if (previous && Date.now() - Date.parse(previous) < 60000) {
+    return { ok: true, skipped: true, syncedAt: previous };
+  }
+
+  const common = { headers: { "user-agent": "NabezSardo-Cloudflare-Sync/1.0", "cache-control": "no-cache" } };
+  const [homeRes, archiveRes] = await Promise.all([
+    fetch(sourceBase + "/", common),
+    fetch(sourceBase + "/all-news", common)
+  ]);
+  if (!homeRes.ok || !archiveRes.ok) {
+    throw new Error("source-http-" + homeRes.status + "-" + archiveRes.status);
+  }
+
+  const [homeHtml, archiveHtml] = await Promise.all([homeRes.text(), archiveRes.text()]);
+  if (!homeHtml.includes("نبض ساردو") || !archiveHtml.includes("نبض ساردو")) {
+    throw new Error("source-content-validation-failed");
+  }
+
+  await putState("snapshot_home", homeHtml);
+  await putState("snapshot_archive", archiveHtml);
+
+  const db = await loadDbObject();
+  db.settings = db.settings || {};
+  db.categories = Array.isArray(db.categories) ? db.categories : [];
+  db.articles = Array.isArray(db.articles) ? db.articles : [];
+  db.contacts = Array.isArray(db.contacts) ? db.contacts : [];
+  db.citizens = Array.isArray(db.citizens) ? db.citizens : [];
+
+  const links = [...new Set([
+    ...articleLinksFromHtml(homeHtml),
+    ...articleLinksFromHtml(archiveHtml)
+  ])].slice(0, 15);
+
+  const mediaPaths = new Set([
+    ...uploadLinksFromHtml(homeHtml),
+    ...uploadLinksFromHtml(archiveHtml)
+  ]);
+
+  let syncedArticles = 0;
+  for (const articlePath of links) {
+    try {
+      const articleUrl = new URL(articlePath, sourceBase);
+      const res = await fetch(articleUrl.toString(), common);
+      if (!res.ok) continue;
+      const articleHtml = await res.text();
+      const schema = newsSchemaFromHtml(articleHtml);
+      if (!schema || !schema.headline) continue;
+
+      const slugEncoded = articleUrl.pathname.replace(/^\/news\//, "");
+      const slug = decodeURIComponent(slugEncoded);
+      const categoryId = categoryIdFromArticleHtml(articleHtml);
+      const existing = db.articles.find(a => a.slug === slug);
+      const id = existing?.id || ("sync-" + (await sha256Hex(new TextEncoder().encode(slug))).slice(0, 16));
+      const schemaImage = Array.isArray(schema.image) ? schema.image[0] : schema.image;
+      let image = existing?.image || "";
+      if (schemaImage) {
+        try {
+          const iu = new URL(String(schemaImage), sourceBase);
+          image = iu.hostname === new URL(sourceBase).hostname ? iu.pathname : iu.toString();
+        } catch {}
+      }
+
+      const next = {
+        ...(existing || {}),
+        id,
+        slug,
+        title: String(schema.headline || existing?.title || ""),
+        lead: String(schema.description || existing?.lead || ""),
+        body: existing?.body || String(schema.description || ""),
+        bodyHtml: existing?.bodyHtml || "",
+        categoryId: categoryId || existing?.categoryId || "",
+        author: String(schema.author?.name || existing?.author || "تحریریه نبض ساردو"),
+        status: "published",
+        image,
+        publishedAt: schema.datePublished || existing?.publishedAt || existing?.createdAt || new Date().toISOString(),
+        updatedAt: schema.dateModified || new Date().toISOString(),
+        createdAt: existing?.createdAt || schema.datePublished || new Date().toISOString(),
+        featured: existing?.featured === true,
+        views: Number(existing?.views || 0)
+      };
+
+      if (existing) Object.assign(existing, next);
+      else db.articles.unshift(next);
+
+      await putState("snapshot_article:" + slug, articleHtml);
+      for (const p of uploadLinksFromHtml(articleHtml)) mediaPaths.add(p);
+      syncedArticles++;
+    } catch (err) {
+      console.error("public-sync-article", articlePath, String(err?.message || err));
+    }
+  }
+
+  await putState("db", JSON.stringify(db, null, 2));
+  const syncedMedia = await syncPublicMedia(sourceBase, [...mediaPaths]);
+  const stamp = new Date().toISOString();
+  await putState("last_public_sync_at", stamp);
+  await putState("last_public_sync_articles", String(syncedArticles));
+  await putState("last_public_sync_media", String(syncedMedia));
+  return { ok: true, syncedAt: stamp, articles: syncedArticles, media: syncedMedia, discovered: links.length };
+}
+
+async function publicSyncStatus() {
+  const [at, articles, media] = await Promise.all([
+    getState("last_public_sync_at"),
+    getState("last_public_sync_articles"),
+    getState("last_public_sync_media")
+  ]);
+  return {
+    ok: true,
+    source: String(env.SYNC_SOURCE_URL || "https://nabzesardo.ir"),
+    syncedAt: at || null,
+    articles: Number(articles || 0),
+    media: Number(media || 0)
+  };
+}
+
 async function maybeDistribute(beforeDb, afterDb) {
   const before = new Map((beforeDb?.articles || []).map(a => [a.id, a]));
   const newlyPublished = (afterDb?.articles || []).filter(a =>
@@ -491,6 +692,11 @@ export default {
     if (p === "/__migration/import" && request.method === "POST") return importBackup(request);
     if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
+    if (p === "/__sync/status" && request.method === "GET") return Response.json(await publicSyncStatus());
+    if (p === "/__sync/public-pull" && request.method === "POST") {
+      try { return Response.json(await publicPull()); }
+      catch (err) { return Response.json({ ok: false, error: String(err?.message || err) }, { status: 502 }); }
+    }
 
     if (p.startsWith("/uploads/") && request.method === "GET") {
       return serveUpload(path.basename(p));
@@ -511,7 +717,10 @@ export default {
   },
 
   async scheduled() {
-    if (String(env.PREVIEW_READONLY || "") === "1") return;
+    if (String(env.PREVIEW_READONLY || "") === "1") {
+      try { await publicPull(); } catch (err) { console.error("public-sync", String(err?.message || err)); }
+      return;
+    }
     const before = await hydrateState();
     await articleTools.schedulerTick();
     const fakeReq = new Request("https://nabzesardo.ir/__cron", { method: "GET" });
