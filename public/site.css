@@ -4660,9 +4660,13 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
     grid-template-rows:auto auto!important;
+    grid-auto-rows:auto!important;
     align-items:stretch!important;
     gap:0!important;
+    aspect-ratio:auto!important;
     min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
     width:min(100% - 24px,1240px)!important;
     padding:16px 17px 18px!important;
     margin:16px auto 10px!important;
@@ -4687,13 +4691,22 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
   }
   .promo-citizen .promo-copy{
     order:2!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
     width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    max-height:none!important;
     padding:0!important;
     position:relative!important;
     z-index:3!important;
     overflow:visible!important;
   }
   .promo-citizen .promo-kicker{
+    display:inline-flex!important;
+    visibility:visible!important;
     padding:5px 9px!important;
     font-size:8px!important;
     line-height:1.5!important;
@@ -4711,6 +4724,10 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     overflow-wrap:anywhere!important;
   }
   .promo-citizen .citizen-promo-lead{
+    display:block!important;
+    -webkit-line-clamp:unset!important;
+    -webkit-box-orient:initial!important;
+    overflow:visible!important;
     font-size:12.2px!important;
     line-height:1.9!important;
     font-weight:800!important;
@@ -4718,6 +4735,10 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     white-space:normal!important;
   }
   .promo-citizen .citizen-promo-text{
+    display:block!important;
+    -webkit-line-clamp:unset!important;
+    -webkit-box-orient:initial!important;
+    overflow:visible!important;
     margin-top:4px!important;
     font-size:10.8px!important;
     line-height:1.9!important;
