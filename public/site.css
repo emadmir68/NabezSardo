@@ -1062,3 +1062,11 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
   .latest-grid .card p{display:none}
   .latest-grid .more{display:none}
 }
+
+
+/* Fonts authored in newsroom rich text: use installed Persian font when available, then safe fallbacks */
+.rich-content font[face="B Nazanin"]{font-family:"B Nazanin","Vazirmatn",Tahoma,sans-serif}
+.rich-content font[face="B Lotus"]{font-family:"B Lotus","Vazirmatn",Tahoma,sans-serif}
+.rich-content font[face="B Titr"]{font-family:"B Titr","Vazirmatn",Tahoma,sans-serif}
+.rich-content font[face="IranNastaliq"]{font-family:"IranNastaliq","Iran Nastaliq","Noto Naskh Arabic","Vazirmatn",serif}
+.rich-content font[face="Vazirmatn"]{font-family:"Vazirmatn",Tahoma,sans-serif}
