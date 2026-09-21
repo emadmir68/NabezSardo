@@ -196,6 +196,36 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   }
 
+  // Desktop breaking ticker: measure the viewport before animation starts so the
+  // first headline emerges from behind the fixed badge and duplicate sets line up exactly.
+  const desktopTickerMQ=matchMedia('(min-width: 621px)');
+  const setupBreakingTicker=()=>{
+    document.querySelectorAll('.breaking-marquee').forEach(view=>{
+      const track=view.querySelector('.breaking-track');
+      const sets=[...view.querySelectorAll('.breaking-loop-set')];
+      if(!track||sets.length<2)return;
+      if(!desktopTickerMQ.matches){
+        sets.forEach(set=>set.style.removeProperty('min-width'));
+        track.classList.remove('desktop-ticker-ready');
+        return;
+      }
+      const viewportWidth=Math.max(1,Math.ceil(view.getBoundingClientRect().width));
+      track.classList.remove('desktop-ticker-ready');
+      sets.forEach(set=>set.style.minWidth=viewportWidth+'px');
+      // Force the initial frame before making the track visible; this prevents
+      // the desktop browser from painting the text at a mid-track position.
+      void track.offsetWidth;
+      requestAnimationFrame(()=>track.classList.add('desktop-ticker-ready'));
+    });
+  };
+  setupBreakingTicker();
+  let tickerResizeTimer=0;
+  addEventListener('resize',()=>{
+    clearTimeout(tickerResizeTimer);
+    tickerResizeTimer=setTimeout(setupBreakingTicker,120);
+  },{passive:true});
+  if(desktopTickerMQ.addEventListener)desktopTickerMQ.addEventListener('change',setupBreakingTicker);
+
   const syncAdaptiveMedia=frame=>{
     const img=frame.querySelector('img');
     if(!img)return;
