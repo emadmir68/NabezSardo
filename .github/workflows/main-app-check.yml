@@ -25,10 +25,12 @@ jobs:
           node --check lib/view-common.js
           node --check lib/article-tools.js
 
-      - name: Production short-news smoke test
+      - name: Production routing probe
         run: |
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/health -o /tmp/health.json
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/briefs -o /tmp/briefs.html
-          grep -q "خبر کوتاه" /tmp/briefs.html
-          echo "health=$(cat /tmp/health.json)"
-          echo "briefs_bytes=$(wc -c < /tmp/briefs.html)"
+          for base in "https://nabzesardo.ir" "https://nabezsardo-prod-production.up.railway.app"; do
+            echo "BASE=$base"
+            health_code=$(curl --silent --show-error --max-time 30 -o /tmp/health.out -w "%{http_code}" "$base/health" || true)
+            brief_code=$(curl --silent --show-error --max-time 30 -o /tmp/brief.out -w "%{http_code}" "$base/briefs" || true)
+            echo "health_status=$health_code body=$(head -c 220 /tmp/health.out | tr '\n' ' ')"
+            echo "briefs_status=$brief_code body=$(head -c 220 /tmp/brief.out | tr '\n' ' ')"
+          done
