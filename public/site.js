@@ -563,7 +563,9 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(!w||!h)return;
       const ratio=w/h;
       frame.style.setProperty('--image-ratio',String(ratio));
-      frame.style.aspectRatio=w+' / '+h;
+      // Keep newsroom display frames fixed. Natural image ratio is metadata only
+      // and must never resize cards or article covers.
+      frame.style.removeProperty('aspect-ratio');
       frame.classList.remove('portrait','square','landscape');
       frame.classList.add(ratio<.92?'portrait':ratio>1.08?'landscape':'square');
     };
