@@ -382,7 +382,7 @@ try{
   const __db=load();
   const __a=__db.articles.find(x=>String(x.title||'').includes('عطاالله منوچهری'));
   if(__a)console.log('TEMP-ARTICLE-DIAG',JSON.stringify({id:__a.id,title:__a.title,lead:__a.lead,bodyHtml:__a.bodyHtml,body:__a.body}));
-  const __files=fs.readdirSync(store.BACKUP_DIR).filter(x=>x.startsWith('before-typography-normalize')&&x.endsWith('.json')).sort().reverse();
+  const __files=fs.readdirSync(store.BACKUP_DIR).filter(x=>x.startsWith('before-typography')&&x.endsWith('.json')).sort().reverse();
   if(__files[0]){
     const __old=JSON.parse(fs.readFileSync(path.join(store.BACKUP_DIR,__files[0]),'utf8'));
     const __oa=(__old.articles||[]).find(x=>String(x.title||'').includes('عطاالله منوچهری'));
