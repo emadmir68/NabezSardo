@@ -2743,9 +2743,9 @@ button.article-action{font-family:inherit}
   color:#dedfe3!important;
   font-family:"Noto Naskh Arabic",Tahoma,Arial,sans-serif!important;
   font-size:19px!important;
-  line-height:2.35!important;
+  line-height:1.9!important;
 }
-.article-body p{margin:0 0 1.35em}
+.article-body p{margin:0 0 .9em}
 .article-body h2,
 .article-body h3{
   color:#f4efe6;
@@ -2846,7 +2846,7 @@ html[data-lang="en"] .article-body blockquote{
   .article-reading-zone{display:block;padding:25px 18px 34px}
   .article-reading-label{position:static;flex-direction:row;align-items:center;margin-bottom:17px}
   .article-reading-line{width:35px}
-  .article-body{font-size:17px!important;line-height:2.25!important}
+  .article-body{font-size:17px!important;line-height:1.75!important}
   .article-body h2{font-size:23px}
   .article-body h3{font-size:20px}
   .premium-gallery{margin:0 14px 23px!important;padding:17px!important;border-radius:16px}
