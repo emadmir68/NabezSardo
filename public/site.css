@@ -5085,9 +5085,15 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
 }
 .article-body .lang-fa > p,
 .article-body .lang-fa > div,
+.article-body .lang-fa > blockquote{
+  direction:rtl!important;
+  text-align:justify!important;
+  text-align-last:right!important;
+  text-justify:inter-word;
+  unicode-bidi:plaintext;
+}
 .article-body .lang-fa > h2,
 .article-body .lang-fa > h3,
-.article-body .lang-fa > blockquote,
 .article-body .lang-fa > ul,
 .article-body .lang-fa > ol{
   direction:rtl!important;
