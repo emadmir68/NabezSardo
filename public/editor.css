@@ -545,3 +545,15 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
   .adminbar>a[href="/"]{display:none}
   .admin-sidebar-nav a{padding-inline:9px}
 }
+
+/* Article save reliability / mobile feedback */
+[hidden]{display:none!important}
+.editor-save-status{
+  min-height:20px;
+  margin:10px 0 2px;
+  color:#aab1bb;
+  font-size:12px;
+  text-align:left;
+}
+.editor-save-status.is-saving{color:#e0b66d}
+[data-save-news][disabled]{opacity:.7;cursor:wait;transform:none}
