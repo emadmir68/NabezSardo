@@ -815,6 +815,25 @@ async function maybeDistribute(beforeDb, afterDb) {
     a.status === "published" && before.get(a.id)?.status !== "published"
   );
   for (const a of newlyPublished) {
+    try {
+      if (a.autoCoverEnabled === true && (a.imageAuto === true || isFallbackSourceImage(a.image || ""))) {
+        const category = (afterDb.categories || []).find(x => x.id === a.categoryId) || {};
+        const smart = await ensureSmartCover({
+          article: a,
+          category,
+          sourceImage: a.image || "",
+          env,
+          getMedia,
+          putMedia,
+          sha256Hex
+        });
+        Object.assign(a, smart, { updatedAt: new Date().toISOString() });
+        fs.writeFileSync(DB_FILE, JSON.stringify(afterDb, null, 2), "utf8");
+        await putState("db", JSON.stringify(afterDb, null, 2));
+      }
+    } catch (err) {
+      console.error("smart-cover-publish", a.id, String(err?.message || err));
+    }
     try { await originalDispatchAndPersist(a.id); } catch (err) { console.error("distribution", err); }
   }
   if (newlyPublished.length && fs.existsSync(DB_FILE)) {
