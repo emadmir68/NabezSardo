@@ -4906,11 +4906,6 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
 
 
 /* ===== Media integrity lock: never crop or distort newsroom photos/videos ===== */
-img{
-  object-fit:contain!important;
-  object-position:center center!important;
-  max-width:100%;
-}
 .card-media,
 .front-lead-media,
 .front-brief-media,
@@ -4980,10 +4975,6 @@ img{
 }
 .card-media-video{position:relative}
 .card-media-video .card-story-badge{left:auto;right:8px}
-.ns-hero-final__media img{
-  object-fit:contain!important;
-  object-position:center center!important;
-}
 @media(max-width:620px){
   .front-video-badge,.card-video-badge{padding:4px 7px;font-size:7px}
 }
