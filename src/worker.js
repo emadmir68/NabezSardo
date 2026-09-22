@@ -26,23 +26,26 @@ async function runtimeAuth() {
   return auth;
 }
 
+async function constantTimeTextEqual(a, b) {
+  const enc = new TextEncoder();
+  const [ha, hb] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(String(a || ""))),
+    crypto.subtle.digest("SHA-256", enc.encode(String(b || "")))
+  ]);
+  const aa = new Uint8Array(ha), bb = new Uint8Array(hb);
+  if (aa.length !== bb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aa.length; i++) diff |= aa[i] ^ bb[i];
+  return diff === 0;
+}
+
 async function verifyRuntimePassword(user, password) {
-  const auth = await runtimeAuth();
-  if (!auth || String(user || "") !== String(auth.user)) return false;
-  const material = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(String(password || "")),
-    "PBKDF2",
-    false,
-    ["deriveBits"]
-  );
-  const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", hash: "SHA-256", salt: new TextEncoder().encode(String(auth.salt)), iterations: Number(auth.iterations || 210000) },
-    material,
-    256
-  );
-  const verifier = [...new Uint8Array(bits)].map(x => x.toString(16).padStart(2, "0")).join("");
-  return verifier === String(auth.verifier);
+  const runtime = await decryptRuntimeSecrets();
+  const expectedUser = String(runtime.ADMIN_USER || "");
+  const expectedPass = String(runtime.ADMIN_PASS || "");
+  if (!expectedUser || !expectedPass) return false;
+  if (!(await constantTimeTextEqual(user, expectedUser))) return false;
+  return constantTimeTextEqual(password, expectedPass);
 }
 
 function base64Bytes(value = "") {
@@ -438,10 +441,6 @@ async function syncPush(request) {
   if (suppliedHash !== SYNC_TOKEN_SHA256) {
     return Response.json({ ok: false, error: "invalid-sync-token" }, { status: 403 });
   }
-  if (isPrimary()) {
-    return Response.json({ ok: true, skipped: true, primary: true, syncedAt: new Date().toISOString() });
-  }
-
   let payload;
   try {
     payload = await request.json();
@@ -452,15 +451,19 @@ async function syncPush(request) {
     return Response.json({ ok: false, error: "invalid-backup" }, { status: 400 });
   }
 
-  await putState("db", JSON.stringify(payload.db, null, 2));
-  if (typeof payload.analytics === "string" && payload.analytics.trim()) {
-    await putState("analytics", payload.analytics);
-  }
   if (payload.runtimeAuth && payload.runtimeAuth.version === 1 && payload.runtimeAuth.user && payload.runtimeAuth.salt && payload.runtimeAuth.verifier) {
     await putState("admin_auth", JSON.stringify(payload.runtimeAuth));
   }
   if (payload.runtimeSecrets && payload.runtimeSecrets.version === 1 && payload.runtimeSecrets.wrappedKey && payload.runtimeSecrets.data) {
     await putState("runtime_secrets", JSON.stringify(payload.runtimeSecrets));
+  }
+  if (isPrimary()) {
+    return Response.json({ ok: true, skippedData: true, refreshedRuntime: true, primary: true, syncedAt: new Date().toISOString() });
+  }
+
+  await putState("db", JSON.stringify(payload.db, null, 2));
+  if (typeof payload.analytics === "string" && payload.analytics.trim()) {
+    await putState("analytics", payload.analytics);
   }
   await clearMedia();
 
@@ -811,6 +814,7 @@ async function publicSyncStatus() {
       whatsapp: Boolean(runtimeSecrets.WHATSAPP_ACCESS_TOKEN && runtimeSecrets.WHATSAPP_PHONE_NUMBER_ID && runtimeSecrets.WHATSAPP_TO),
       googleVerification: Boolean(runtimeSecrets.GOOGLE_SITE_VERIFICATION)
     },
+    fastLoginReady: Boolean(runtimeSecrets.ADMIN_USER && runtimeSecrets.ADMIN_PASS),
     primary: isPrimary()
   };
 }
