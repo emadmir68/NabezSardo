@@ -154,7 +154,27 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareBtn=articleRoot.querySelector('[data-article-share]');
     const copyBtn=articleRoot.querySelector('[data-article-copy]');
     const title=articleRoot.dataset.articleTitle||document.title;
+    const lead=(articleRoot.dataset.articleLead||'').replace(/\s+/g,' ').trim();
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
+    const imageRaw=articleRoot.dataset.articleImage||'';
+    const imageUrl=imageRaw?new URL(imageRaw,location.origin).href:'';
+    const shareText=()=>{
+      const lines=['📰 '+title];
+      if(lead)lines.push(lead);
+      lines.push('🔗 '+shareUrl,'نبض ساردو');
+      return lines.join('\n\n');
+    };
+    const getShareImageFile=async()=>{
+      if(!imageUrl||typeof File==='undefined')return null;
+      try{
+        const res=await fetch(imageUrl,{cache:'force-cache',credentials:'same-origin'});
+        if(!res.ok)return null;
+        const blob=await res.blob();
+        if(!blob.type||!blob.type.startsWith('image/'))return null;
+        const ext=blob.type.includes('png')?'png':blob.type.includes('webp')?'webp':blob.type.includes('gif')?'gif':'jpg';
+        return new File([blob],'nabez-sardo-news.'+ext,{type:blob.type,lastModified:Date.now()});
+      }catch{return null;}
+    };
     const copyArticleLink=async()=>{
       try{
         if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(shareUrl);
@@ -177,8 +197,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(copyBtn)copyBtn.addEventListener('click',copyArticleLink);
     if(shareBtn)shareBtn.addEventListener('click',async()=>{
       try{
-        if(navigator.share)await navigator.share({title,text:(root.dataset.lang==='en'?'Nabez Sardo — ':'نبض ساردو — ')+title,url:shareUrl});
-        else await copyArticleLink();
+        if(!navigator.share){await copyArticleLink();return;}
+        const payload={title,text:shareText()};
+        const imageFile=await getShareImageFile();
+        if(imageFile&&navigator.canShare&&navigator.canShare({files:[imageFile]}))payload.files=[imageFile];
+        await navigator.share(payload);
       }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
     });
   }
