@@ -29,7 +29,7 @@ jobs:
           timeout 25s npx wrangler tail nabzesardo-cloudflare --format=json > /tmp/tail.log 2>&1 &
           TAIL_PID=$!
           sleep 5
-          curl --silent --show-error --max-time 60 -H 'x-nabzesardo-debug: multipartdbg-4b0a642c' -D /tmp/headers -o /tmp/body https://nabzesardo.ir/__debug/article-multipart
+          curl --silent --show-error --max-time 20 -D /tmp/headers -o /tmp/body https://nabzesardo.ir/robots.txt
           echo "---- response ----"
           cat /tmp/headers || true
           cat /tmp/body || true
