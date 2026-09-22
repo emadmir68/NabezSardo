@@ -16,7 +16,8 @@
     "PREVIEW_READONLY": "0",
     "SYNC_SOURCE_URL": "https://nabezsardo-prod-production.up.railway.app",
     "RAILWAY_ORIGIN": "https://nabezsardo-prod-production.up.railway.app",
-    "CLOUDFLARE_PRIMARY": "1"
+    "CLOUDFLARE_PRIMARY": "1",
+    "CLOUDFLARE_ASSET_VERSION": "20260922-1934-editor-save-v1"
   },
   "d1_databases": [
     {
