@@ -89,6 +89,9 @@ function sitemapXml(db){
     {loc:publicUrl('/all-news'),lastmod:null},
     {loc:publicUrl('/about'),lastmod:null},
     {loc:publicUrl('/contact'),lastmod:null},
+    {loc:publicUrl('/local/sardouiyeh'),lastmod:null},
+    {loc:publicUrl('/local/jiroft'),lastmod:null},
+    {loc:publicUrl('/local/south-kerman'),lastmod:null},
     ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null})),
     ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt}))
   ];
@@ -234,7 +237,10 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/admin/login')return send(res,200,views.login(u.searchParams.get('error')==='1'));
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
-  let m=p.match(/^\/news\/(.+)$/);
+  let m=p.match(/^\/local\/(sardouiyeh|jiroft|south-kerman)$/);
+  if(req.method==='GET'&&m){const page=views.localHub(db,m[1]);if(!page)return send(res,404,'صفحه پیدا نشد');analytics.track(req,p);return send(res,200,page);}
+
+  m=p.match(/^\/news\/(.+)$/);
   if(req.method==='GET'&&m){
     const a=published(db).find(x=>x.slug===m[1]);
     if(!a)return send(res,404,'خبر یافت نشد');
