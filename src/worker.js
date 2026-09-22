@@ -44,12 +44,64 @@ async function verifyRuntimePassword(user, password) {
   return verifier === String(auth.verifier);
 }
 
+function base64Bytes(value = "") {
+  const bin = atob(String(value));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function pemPkcs8Bytes(pem = "") {
+  const b64 = String(pem).replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s+/g, "");
+  return base64Bytes(b64);
+}
+
+async function decryptRuntimeSecrets() {
+  const raw = await getState("runtime_secrets");
+  const envelope = safeJson(raw, null);
+  const privatePem = String(env.RUNTIME_PRIVATE_KEY || "");
+  if (!envelope || envelope.version !== 1 || !privatePem) return {};
+  try {
+    const privateKey = await crypto.subtle.importKey(
+      "pkcs8",
+      pemPkcs8Bytes(privatePem),
+      { name: "RSA-OAEP", hash: "SHA-256" },
+      false,
+      ["decrypt"]
+    );
+    const aesRaw = await crypto.subtle.decrypt(
+      { name: "RSA-OAEP" },
+      privateKey,
+      base64Bytes(envelope.wrappedKey)
+    );
+    const aesKey = await crypto.subtle.importKey("raw", aesRaw, { name: "AES-GCM" }, false, ["decrypt"]);
+    const data = base64Bytes(envelope.data);
+    const tag = base64Bytes(envelope.tag);
+    const combined = new Uint8Array(data.length + tag.length);
+    combined.set(data, 0);
+    combined.set(tag, data.length);
+    const plain = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: base64Bytes(envelope.iv), tagLength: 128 },
+      aesKey,
+      combined
+    );
+    return safeJson(new TextDecoder().decode(plain), {}) || {};
+  } catch (err) {
+    console.error("runtime-secrets-decrypt", String(err?.message || err));
+    return {};
+  }
+}
+
 async function applyRuntimeEnv() {
   const auth = await runtimeAuth();
   if (!auth) return false;
   process.env.ADMIN_USER = String(auth.user);
   process.env.ADMIN_PASS = String(auth.verifier);
   process.env.SESSION_SECRET = await sha256Hex(new TextEncoder().encode("nabzesardo-cf-session|" + String(auth.verifier)));
+  const runtime = await decryptRuntimeSecrets();
+  for (const [key, value] of Object.entries(runtime || {})) {
+    if (value !== undefined && value !== null && String(value).length) process.env[key] = String(value);
+  }
   if (env.GOOGLE_SITE_VERIFICATION) process.env.GOOGLE_SITE_VERIFICATION = String(env.GOOGLE_SITE_VERIFICATION);
   return true;
 }
@@ -403,6 +455,9 @@ async function syncPush(request) {
   if (payload.runtimeAuth && payload.runtimeAuth.version === 1 && payload.runtimeAuth.user && payload.runtimeAuth.salt && payload.runtimeAuth.verifier) {
     await putState("admin_auth", JSON.stringify(payload.runtimeAuth));
   }
+  if (payload.runtimeSecrets && payload.runtimeSecrets.version === 1 && payload.runtimeSecrets.wrappedKey && payload.runtimeSecrets.data) {
+    await putState("runtime_secrets", JSON.stringify(payload.runtimeSecrets));
+  }
   await clearMedia();
 
   let uploaded = 0;
@@ -733,6 +788,7 @@ async function publicSyncStatus() {
     getState("last_public_sync_media")
   ]);
   const db = await loadDbObject();
+  const runtimeSecrets = await decryptRuntimeSecrets();
   const auto = (db.articles || []).filter(a => a.imageAuto === true);
   return {
     ok: true,
@@ -743,6 +799,12 @@ async function publicSyncStatus() {
     aiCovers: auto.filter(a => a.autoCoverSource === "ai").length,
     fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length,
     adminReady: Boolean(await runtimeAuth()),
+    integrationsReady: {
+      telegram: Boolean(runtimeSecrets.TELEGRAM_BOT_TOKEN && runtimeSecrets.TELEGRAM_CHAT_ID),
+      rubika: Boolean(runtimeSecrets.RUBIKA_BOT_TOKEN && runtimeSecrets.RUBIKA_CHAT_ID),
+      whatsapp: Boolean(runtimeSecrets.WHATSAPP_ACCESS_TOKEN && runtimeSecrets.WHATSAPP_PHONE_NUMBER_ID && runtimeSecrets.WHATSAPP_TO),
+      googleVerification: Boolean(runtimeSecrets.GOOGLE_SITE_VERIFICATION)
+    },
     primary: isPrimary()
   };
 }
