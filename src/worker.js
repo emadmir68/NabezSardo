@@ -883,6 +883,16 @@ async function proxyRailway(request) {
   return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: outHeaders });
 }
 
+async function ensureCutoverBackup() {
+  const done = await getState("cutover_backup_created");
+  if (done === "1") return;
+  const dbText = await getState("db");
+  if (!dbText) return;
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  await putState("backup:cutover-" + stamp + ".json", dbText);
+  await putState("cutover_backup_created", "1");
+}
+
 async function handleApp(request) {
   const url = new URL(request.url);
   if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1" && url.pathname.startsWith("/admin")) {
@@ -931,7 +941,10 @@ export default {
       return serveAsset(request, p);
     }
 
-    if (isPrimary()) return handleApp(request);
+    if (isPrimary()) {
+      await ensureCutoverBackup();
+      return handleApp(request);
+    }
 
     const publicResponse = await handlePublicPreview(request, url, p);
     if (publicResponse) return publicResponse;
