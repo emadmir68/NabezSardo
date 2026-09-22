@@ -4978,3 +4978,33 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
 @media(max-width:620px){
   .front-video-badge,.card-video-badge{padding:4px 7px;font-size:7px}
 }
+
+/* ===== Fixed newsroom image geometry =====
+   News images always live inside a 16:9 frame. Their original aspect ratio
+   may affect contain/letterboxing, but can never change card dimensions.
+   The homepage hero is isolated in header-fix.css and is intentionally excluded. */
+.card-media,
+.grid.news .card > .card-media,
+.archive-grid .card > .card-media,
+.latest-grid .card > .card-media,
+.cover-frame,
+.cover-frame.portrait,
+.cover-frame.square,
+.cover-frame.landscape{
+  width:100%!important;
+  aspect-ratio:16 / 9!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+.card-media img,
+.grid.news .card > .card-media img,
+.archive-grid .card > .card-media img,
+.latest-grid .card > .card-media img,
+.cover-frame img,
+.cover-frame .cover{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+}
