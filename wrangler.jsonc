@@ -13,9 +13,10 @@
     "DATA_DIR": "/tmp/nabzesardo",
     "NODE_ENV": "production",
     "PUBLIC_BASE_URL": "https://nabzesardo.ir",
-    "PREVIEW_READONLY": "1",
+    "PREVIEW_READONLY": "0",
     "SYNC_SOURCE_URL": "https://nabezsardo-prod-production.up.railway.app",
-    "RAILWAY_ORIGIN": "https://nabezsardo-prod-production.up.railway.app"
+    "RAILWAY_ORIGIN": "https://nabezsardo-prod-production.up.railway.app",
+    "CLOUDFLARE_PRIMARY": "1"
   },
   "d1_databases": [
     {
@@ -26,7 +27,7 @@
   ],
   "triggers": {
     "crons": [
-      "0 */6 * * *"
+      "*/1 * * * *"
     ]
   },
   "ai": {
