@@ -28,7 +28,7 @@ async function multipart(req){
   const m=ct.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
   if(!m)throw new Error('missing-boundary');
   const boundary=m[1]||m[2];
-  const raw=await readRaw(req,60*1024*1024);
+  const raw=await readRaw(req,80*1024*1024);
   const text=raw.toString('latin1');
   const parts=text.split('--'+boundary);
   const fields={},files={};
@@ -362,13 +362,13 @@ const server=http.createServer(async(req,res)=>{
       return redirect(res,'/admin');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/delete$/);
-    if(m){const a=db.articles.find(x=>x.id===m[1]);if(a)deleteUpload(a.image);db.articles=db.articles.filter(x=>x.id!==m[1]);save(db);return redirect(res,'/admin');}
+    if(m){const a=db.articles.find(x=>x.id===m[1]);if(a){deleteUpload(a.image);deleteUpload(a.videoUrl);}db.articles=db.articles.filter(x=>x.id!==m[1]);save(db);return redirect(res,'/admin');}
   }
   return send(res,404,'صفحه پیدا نشد');
  }catch(err){
   console.error(err);
   if(!res.headersSent){
-    const msg=err.message==='too-large'?'حجم فایل یا درخواست بیش از حد مجاز است.':err.message==='image-too-large'?'حجم عکس باید کمتر از ۱۰ مگابایت باشد.':err.message==='invalid-image'?'فرمت عکس پشتیبانی نمی‌شود.':'خطای داخلی سرور';
+    const msg=err.message==='too-large'?'حجم فایل یا درخواست بیش از حد مجاز است.':err.message==='image-too-large'?'حجم عکس باید کمتر از ۱۰ مگابایت باشد.':err.message==='invalid-image'?'فرمت عکس پشتیبانی نمی‌شود.':err.message==='video-too-large'?'حجم ویدئو باید کمتر از ۵۰ مگابایت باشد.':err.message==='invalid-video'?'فرمت ویدئو باید MP4، WebM یا MOV باشد.':'خطای داخلی سرور';
     send(res,500,msg);
   }
  }
