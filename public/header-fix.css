@@ -17,7 +17,16 @@
   overflow:hidden;
   background:#0b1018;
 }
-.ns-hero-final__media img{
+/* Component isolation: homepage hero media is intentionally independent from newsroom/card media rules. */
+.ns-hero-final__image{
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+.ns-hero-final__media > .ns-hero-final__image{
   width:100%!important;
   height:100%!important;
   display:block;
@@ -204,7 +213,7 @@ html[data-lang="en"] .ns-hero-final__badge{
     padding:88px 21px 38px;
     justify-content:flex-end;
   }
-  .ns-hero-final__media img{
+  .ns-hero-final__media > .ns-hero-final__image{
     width:100%!important;
     height:100%!important;
     object-fit:cover!important;
@@ -262,7 +271,7 @@ html[data-lang="en"] .ns-hero-final__badge{
 }
 
 @media(prefers-reduced-motion:reduce){
-  .ns-hero-final__media img,
+  .ns-hero-final__media > .ns-hero-final__image,
   .ns-hero-final__badge,
   .ns-hero-final__copy h1,
   .ns-hero-final__copy p,
