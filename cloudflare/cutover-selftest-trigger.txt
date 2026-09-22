@@ -1,1 +1,1 @@
-Run persistence diagnostic Cloudflare cutover self-test — 2026-09-22T18:37Z
+Run repaired Cloudflare cutover self-test — 2026-09-22T18:38Z
