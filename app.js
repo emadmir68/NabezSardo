@@ -7,7 +7,6 @@ const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullB
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
-const social=require('./lib/social');
 
 const PORT=Number(process.env.PORT||3000);
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
@@ -379,9 +378,3 @@ articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('F
 articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
 setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
 setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
-
-if(process.env.RUBIKA_TEST_ON_START==='1'){
-  setTimeout(()=>social.testRubikaConnection().then(result=>{
-    console.log('rubika-test-result '+JSON.stringify(result));
-  }).catch(err=>console.error('rubika-test-error',String(err&&err.message||err))),7000);
-}
