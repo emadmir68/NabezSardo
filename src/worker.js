@@ -257,7 +257,7 @@ function mimeFor(name = "") {
   })[ext] || "application/octet-stream";
 }
 
-const MEDIA_CHUNK_BYTES = 480000;
+const MEDIA_CHUNK_BYTES = 1350000;
 
 async function putMedia(name, data, contentType = mimeFor(name)) {
   await ensureSchema();
