@@ -14,7 +14,8 @@
     "NODE_ENV": "production",
     "PUBLIC_BASE_URL": "https://nabzesardo.ir",
     "PREVIEW_READONLY": "1",
-    "SYNC_SOURCE_URL": "https://nabzesardo.ir"
+    "SYNC_SOURCE_URL": "https://nabzesardo.ir",
+    "RAILWAY_ORIGIN": "https://nabezsardo-prod-production.up.railway.app"
   },
   "d1_databases": [
     {
@@ -25,10 +26,16 @@
   ],
   "triggers": {
     "crons": [
-      "*/5 * * * *"
+      "0 */6 * * *"
     ]
   },
   "ai": {
     "binding": "AI"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "nabzesardo.ir/*",
+      "zone_name": "nabzesardo.ir"
+    }
+  ]
 }
