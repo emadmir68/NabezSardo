@@ -18,11 +18,11 @@
   background:#0b1018;
 }
 .ns-hero-final__media img{
-  width:100%;
-  height:100%;
+  width:100%!important;
+  height:100%!important;
   display:block;
-  object-fit:cover;
-  object-position:center 46%;
+  object-fit:cover!important;
+  object-position:center 46%!important;
   transform:scale(1.025);
   animation:nsHeroCamera 14s ease-in-out infinite alternate;
   will-change:transform;
@@ -205,7 +205,10 @@ html[data-lang="en"] .ns-hero-final__badge{
     justify-content:flex-end;
   }
   .ns-hero-final__media img{
-    object-position:center center;
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center center!important;
     transform:scale(1.025);
     transform-origin:center 46%;
     animation:nsHeroCameraMobile 13s ease-in-out infinite alternate;
