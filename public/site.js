@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateDateTime();
   setInterval(updateDateTime,1000);
 
-  // Premium article reading tools: progress, image + text native share and copy link.
+  // Premium article reading tools: progress, native share and copy link.
   const articleRoot=document.querySelector('[data-article-root]');
   const articleProgress=document.querySelector('[data-article-progress] i');
   if(articleRoot&&articleProgress){
@@ -110,42 +110,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     const shareBtn=articleRoot.querySelector('[data-article-share]');
     const copyBtn=articleRoot.querySelector('[data-article-copy]');
+    const title=articleRoot.dataset.articleTitle||document.title;
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
-
-    const articleShareCopy=()=>{
-      const lang=root.dataset.lang==='en'?'en':'fa';
-      const titleNode=articleRoot.querySelector('.article-head h1 .lang-'+lang)||articleRoot.querySelector('.article-head h1');
-      const leadNode=articleRoot.querySelector('.article-deck .lang-'+lang)||articleRoot.querySelector('.article-deck');
-      const title=String(titleNode?.textContent||articleRoot.dataset.articleTitle||document.title).replace(/\s+/g,' ').trim();
-      let lead=String(leadNode?.textContent||'').replace(/\s+/g,' ').trim();
-      if(lead.length>280)lead=lead.slice(0,277).trim()+'…';
-      const text=[title,lead,shareUrl].filter(Boolean).join('\n\n');
-      return {lang,title,lead,text};
-    };
-
-    // Prepare the visible article image ahead of the user gesture so native
-    // file-sharing can be invoked immediately (important on Android browsers).
-    let articleShareFile=null;
-    const articleShareImage=articleRoot.querySelector('.article-cover-wrap img,.cover-frame img,img.cover');
-    if(articleShareImage){
-      const prepareArticleShareFile=async()=>{
-        try{
-          const src=articleShareImage.currentSrc||articleShareImage.src;
-          if(!src)return;
-          const response=await fetch(src,{credentials:'same-origin'});
-          if(!response.ok)return;
-          const blob=await response.blob();
-          if(!String(blob.type||'').startsWith('image/'))return;
-          const ext=(blob.type.split('/')[1]||'jpg').replace('jpeg','jpg').replace(/[^a-z0-9]/gi,'')||'jpg';
-          articleShareFile=new File([blob],'nabez-sardo-news.'+ext,{type:blob.type||'image/jpeg'});
-        }catch(err){
-          // Cross-origin images can fail to become Files; text+URL sharing remains available.
-          console.warn('article share image prepare failed',err);
-        }
-      };
-      prepareArticleShareFile();
-    }
-
     const copyArticleLink=async()=>{
       try{
         if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(shareUrl);
@@ -166,35 +132,10 @@ document.addEventListener('DOMContentLoaded',()=>{
       }catch(err){console.warn('article copy failed',err);}
     };
     if(copyBtn)copyBtn.addEventListener('click',copyArticleLink);
-
     if(shareBtn)shareBtn.addEventListener('click',async()=>{
-      const share=articleShareCopy();
       try{
-        if(navigator.share){
-          // Instagram Direct and some Android share targets may ignore text when
-          // a file is attached, so keep the exact news copy + link ready to Paste.
-          if(navigator.clipboard&&window.isSecureContext){
-            navigator.clipboard.writeText(share.text).catch(()=>{});
-          }
-
-          const canShareImage=!!articleShareFile&&(!navigator.canShare||navigator.canShare({files:[articleShareFile]}));
-          if(canShareImage){
-            await navigator.share({
-              files:[articleShareFile],
-              title:share.title,
-              text:[share.title,share.lead,shareUrl].filter(Boolean).join('\n\n'),
-              url:shareUrl
-            });
-          }else{
-            await navigator.share({
-              title:share.title,
-              text:[share.title,share.lead].filter(Boolean).join('\n\n'),
-              url:shareUrl
-            });
-          }
-        }else{
-          await copyArticleLink();
-        }
+        if(navigator.share)await navigator.share({title,text:(root.dataset.lang==='en'?'Nabez Sardo — ':'نبض ساردو — ')+title,url:shareUrl});
+        else await copyArticleLink();
       }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
     });
   }
