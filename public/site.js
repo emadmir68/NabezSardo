@@ -43,46 +43,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     new MutationObserver(()=>{if(liveViewsValue!==null)paintLiveViews(liveViewsValue,false)}).observe(root,{attributes:true,attributeFilter:['data-lang']});
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshLiveViews();});
   }
-  const pageBuildVersion=document.querySelector('meta[name="nabez-build"]')?.content||'';
-  let buildReloading=false;
-  const autoReloadAllowed=!location.pathname.startsWith('/admin')&&!['/send-news','/contact'].includes(location.pathname);
-  const cleanBuildParam=()=>{
-    try{
-      const u=new URL(location.href);
-      if(u.searchParams.has('__build')){
-        u.searchParams.delete('__build');
-        history.replaceState(history.state,'',u.pathname+(u.search||'')+u.hash);
-      }
-    }catch{}
-  };
-  cleanBuildParam();
-  const reloadForBuild=version=>{
-    if(buildReloading||!autoReloadAllowed)return;
-    buildReloading=true;
-    try{
-      const u=new URL(location.href);
-      u.searchParams.set('__build',String(version||Date.now()).slice(0,24));
-      location.replace(u.href);
-    }catch{
-      location.reload();
-    }
-  };
-  const checkBuildVersion=async()=>{
-    if(!autoReloadAllowed||buildReloading||document.visibilityState==='hidden')return;
-    try{
-      const res=await fetch('/__version?_='+Date.now(),{cache:'no-store',credentials:'same-origin',headers:{'Cache-Control':'no-cache'}});
-      if(!res.ok)return;
-      const data=await res.json();
-      const remote=String(data?.version||'');
-      if(!remote)return;
-      if(!pageBuildVersion||remote!==pageBuildVersion)reloadForBuild(remote);
-    }catch{}
-  };
-  setTimeout(checkBuildVersion,2500);
-  setInterval(checkBuildVersion,12000);
-  addEventListener('pageshow',()=>setTimeout(checkBuildVersion,300),{passive:true});
-  addEventListener('online',()=>setTimeout(checkBuildVersion,300),{passive:true});
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(checkBuildVersion,300);});
+  // Automatic page reloads are intentionally disabled. Deploys must never refresh readers' pages.
   const themeKey='nabez-theme';
   const savedTheme=localStorage.getItem(themeKey)||'gold';
   root.dataset.theme=savedTheme;
