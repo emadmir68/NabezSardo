@@ -683,6 +683,26 @@ async function maybeDistribute(beforeDb, afterDb) {
   }
 }
 
+async function proxyRailway(request) {
+  const origin = String(env.RAILWAY_ORIGIN || "").replace(/\/+$/, "");
+  if (!origin) return new Response("Railway bridge is not configured.", { status: 503 });
+  const incoming = new URL(request.url);
+  const target = new URL(incoming.pathname + incoming.search, origin + "/");
+  const headers = new Headers(request.headers);
+  headers.delete("host");
+  headers.set("x-nabzesardo-edge", "cloudflare-bridge");
+  const init = {
+    method: request.method,
+    headers,
+    redirect: "manual"
+  };
+  if (request.method !== "GET" && request.method !== "HEAD") init.body = request.body;
+  const upstream = await fetch(target.toString(), init);
+  const outHeaders = new Headers(upstream.headers);
+  outHeaders.set("x-nabzesardo-origin", "railway-bridge");
+  return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: outHeaders });
+}
+
 async function handleApp(request) {
   const url = new URL(request.url);
   if (String(env.PREVIEW_READONLY || "") === "1" && url.pathname.startsWith("/admin")) {
@@ -712,6 +732,10 @@ export default {
       catch (err) { return Response.json({ ok: false, error: String(err?.message || err) }, { status: 502 }); }
     }
 
+    if (p.startsWith("/admin") || (request.method !== "GET" && request.method !== "HEAD")) {
+      return proxyRailway(request);
+    }
+
     if (p.startsWith("/uploads/") && request.method === "GET") {
       return serveUpload(path.basename(p));
     }
@@ -724,7 +748,8 @@ export default {
     if (publicResponse) return publicResponse;
 
     if (String(env.PREVIEW_READONLY || "") === "1") {
-      return new Response("Preview is read-only during migration verification.", { status: 403 });
+      if (request.method === "GET" || request.method === "HEAD") return handleApp(request);
+      return proxyRailway(request);
     }
 
     return handleApp(request);
