@@ -44,12 +44,30 @@ jobs:
           curl --fail --silent --show-error --max-time 30 https://nabzesardo-cloudflare.emadmir1368.workers.dev/__sync/status -o /tmp/sync-status.json
           curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/health -o /tmp/custom-health.json
           curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/ -o /tmp/custom-home.html
+          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/robots.txt -o /tmp/robots.txt
+          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/sitemap.xml -o /tmp/sitemap.xml
+          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/news-sitemap.xml -o /tmp/news-sitemap.xml
+          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/feed.xml -o /tmp/feed.xml
+          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/api/live-stats -o /tmp/live-stats.json
           curl --fail --silent --show-error --max-time 30 "https://nabzesardo-cloudflare.emadmir1368.workers.dev/news/%D8%B3%D8%A7%D8%B9%D8%AA-%D9%81%D8%B9%D8%A7%D9%84%DB%8C%D8%AA-%D9%85%D8%AF%D8%A7%D8%B1%D8%B3-%DA%A9%D8%B1%D9%85%D8%A7%D9%86-%D8%AF%D8%B1-%D8%AF%D9%88-%D9%87%D9%81%D8%AA%D9%87-%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%DB%8C%DB%8C-%D9%85%D9%87%D8%B1-%D8%A7%D8%B9%D9%84%D8%A7%D9%85-%D8%B4%D8%AF" -o /tmp/article.html
           curl --fail --silent --show-error --max-time 30 https://nabzesardo-cloudflare.emadmir1368.workers.dev/uploads/featured-mub33kth-7751091527b8.webp -o /tmp/media.webp
           grep -q '"ok":true' /tmp/public-pull.json
           grep -q '"ok":true' /tmp/sync-status.json
-          grep -q '"name":"nabzesardo-cloudflare"' /tmp/custom-health.json
+          grep -Eq '"name":"(nabzesardo-cloudflare|nabezsardo)"' /tmp/custom-health.json
           grep -q "نبض ساردو" /tmp/custom-home.html
+          grep -q "Sitemap: https://nabzesardo.ir/sitemap.xml" /tmp/robots.txt
+          grep -q "https://nabzesardo.ir/" /tmp/sitemap.xml
+          grep -q "<rss" /tmp/feed.xml
+          grep -q '"totalPageViews"' /tmp/live-stats.json
+          if grep -q '"primary":true' /tmp/sync-status.json; then
+            grep -q '"adminReady":true' /tmp/sync-status.json
+            grep -q '"telegram":true' /tmp/sync-status.json
+            grep -q '"rubika":true' /tmp/sync-status.json
+            curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/admin/login -o /tmp/admin-login.html
+            grep -q "ورود" /tmp/admin-login.html
+            curl --silent --show-error --max-time 30 -D /tmp/admin-bad.headers -o /dev/null -X POST -H "content-type: application/x-www-form-urlencoded" --data "username=__migration_test__&password=__migration_test__" https://nabzesardo.ir/admin/login
+            grep -qi "admin/login?error=1" /tmp/admin-bad.headers
+          fi
           grep -q "نبض ساردو" /tmp/home.html
           grep -q "migration" /tmp/migration.html || grep -q "انتقال" /tmp/migration.html
           echo "home_bytes=$(wc -c < /tmp/home.html)"
@@ -61,5 +79,9 @@ jobs:
           echo "sync_status=$(cat /tmp/sync-status.json)"
           echo "custom_health=$(cat /tmp/custom-health.json)"
           echo "custom_home_bytes=$(wc -c < /tmp/custom-home.html)"
+          echo "robots_bytes=$(wc -c < /tmp/robots.txt)"
+          echo "sitemap_bytes=$(wc -c < /tmp/sitemap.xml)"
+          echo "feed_bytes=$(wc -c < /tmp/feed.xml)"
+          echo "live_stats=$(cat /tmp/live-stats.json)"
           echo "article_bytes=$(wc -c < /tmp/article.html)"
           echo "media_bytes=$(wc -c < /tmp/media.webp)"
