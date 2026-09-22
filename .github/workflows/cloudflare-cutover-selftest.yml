@@ -1,0 +1,29 @@
+name: Cloudflare Cutover Selftest
+
+on:
+  push:
+    branches:
+      - cloudflare-migration
+    paths:
+      - "cloudflare/cutover-selftest-trigger.txt"
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run full Cloudflare admin self-test
+        shell: bash
+        run: |
+          set -euo pipefail
+          body=$(curl --fail --silent --show-error --max-time 90 \
+            -H 'x-nabzesardo-cutover: cutover-7d4c43e2a9f641fd9b2d' \
+            https://nabzesardo.ir/__cutover/selftest)
+          echo "$body"
+          echo "$body" | grep -q '"ok":true'
+          echo "$body" | grep -q '"login":true'
+          echo "$body" | grep -q '"dashboard":true'
+          echo "$body" | grep -q '"draftCreate":true'
+          echo "$body" | grep -q '"draftDelete":true'
+          echo "$body" | grep -q '"mediaUpload":true'
+          echo "$body" | grep -q '"mediaDelete":true'
