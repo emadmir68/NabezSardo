@@ -142,7 +142,22 @@ document.addEventListener('DOMContentLoaded',()=>{
     field.addEventListener('paste',()=>setTimeout(()=>normalizeField(field),0));
   });
   document.querySelectorAll('form[data-rich-form]').forEach(form=>{
-    form.addEventListener('submit',()=>autoTextFields.forEach(normalizeField));
+    form.addEventListener('submit',e=>{
+      if(form.dataset.saving==='1'){e.preventDefault();return;}
+      autoTextFields.forEach(normalizeField);
+      form.dataset.saving='1';
+      const btn=form.querySelector('[data-save-news]');
+      const status=form.querySelector('[data-save-status]');
+      if(btn){
+        btn.disabled=true;
+        btn.dataset.originalText=btn.textContent;
+        btn.textContent='در حال ذخیره خبر…';
+      }
+      if(status){
+        status.textContent='در حال ارسال و ذخیره خبر…';
+        status.classList.add('is-saving');
+      }
+    });
   });
 
   document.querySelectorAll('[data-image-input]').forEach(input=>{
