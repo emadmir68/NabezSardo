@@ -1,2 +1,2 @@
-Cloudflare preview re-verification trigger — 2026-09-22
-Railway production remains untouched until preview smoke tests pass.
+Cloudflare admin readiness recheck — 2026-09-22T17:59Z
+Railway remains online until full Cloudflare primary validation passes.
