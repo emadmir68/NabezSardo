@@ -378,20 +378,3 @@ articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('F
 articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
 setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
 setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
-
-setTimeout(async()=>{
-  try{
-    const t=process.env.RUBIKA_BOT_TOKEN, ch=process.env.RUBIKA_CHAT_ID;
-    if(!t||!ch){console.log('rubika-retest-result '+JSON.stringify({status:'NOT_CONFIGURED'}));return;}
-    const res=await fetch('https://botapi.rubika.ir/v3/'+encodeURIComponent(t)+'/sendMessage',{
-      method:'POST',
-      headers:{'content-type':'application/json'},
-      body:JSON.stringify({chat_id:ch,text:'تست اتصال نبض ساردو'})
-    });
-    let data=null;try{data=await res.json()}catch{data=await res.text()}
-    const status=data&&typeof data==='object'?String(data.status||''):String(data||'');
-    console.log('rubika-retest-result '+JSON.stringify({httpStatus:res.status,status}));
-  }catch(err){
-    console.log('rubika-retest-result '+JSON.stringify({status:'EXCEPTION'}));
-  }
-},7000);
