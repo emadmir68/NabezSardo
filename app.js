@@ -244,6 +244,15 @@ const server=http.createServer(async(req,res)=>{
   let m=p.match(/^\/local\/(sardouiyeh|jiroft|south-kerman)$/);
   if(req.method==='GET'&&m){const page=views.localHub(db,m[1]);if(!page)return send(res,404,'صفحه پیدا نشد');analytics.track(req,p);return send(res,200,page);}
 
+  m=p.match(/^\/n\/([^/]+)$/);
+  if(req.method==='GET'&&m){
+    const a=published(db).find(x=>String(x.id)===m[1]);
+    if(!a)return send(res,404,'خبر یافت نشد');
+    analytics.track(req,p);
+    const viewCookie=trackView(req,db,a);
+    return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
+  }
+
   m=p.match(/^\/news\/(.+)$/);
   if(req.method==='GET'&&m){
     const a=published(db).find(x=>x.slug===m[1]);
