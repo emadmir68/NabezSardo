@@ -1,0 +1,41 @@
+name: Cloudflare Route Probe
+
+on:
+  push:
+    branches:
+      - cloudflare-migration
+    paths:
+      - "cloudflare/probe-trigger.txt"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe public and system routes
+        shell: bash
+        run: |
+          probe() {
+            name="$1"
+            url="$2"
+            code=$(curl --silent --show-error --max-time 30 -o "/tmp/$name.out" -w "%{http_code}" "$url" || true)
+            bytes=$(wc -c < "/tmp/$name.out" 2>/dev/null || echo 0)
+            echo "$name status=$code bytes=$bytes"
+            if [ "$code" != "200" ]; then
+              echo "---- $name body ----"
+              head -c 800 "/tmp/$name.out" || true
+              echo
+            fi
+          }
+          probe worker_home "https://nabzesardo-cloudflare.emadmir1368.workers.dev/"
+          probe worker_archive "https://nabzesardo-cloudflare.emadmir1368.workers.dev/all-news"
+          probe worker_migration "https://nabzesardo-cloudflare.emadmir1368.workers.dev/__migration"
+          probe worker_status "https://nabzesardo-cloudflare.emadmir1368.workers.dev/__sync/status"
+          probe custom_health "https://nabzesardo.ir/health"
+          probe custom_home "https://nabzesardo.ir/"
+          probe robots "https://nabzesardo.ir/robots.txt"
+          probe sitemap "https://nabzesardo.ir/sitemap.xml"
+          probe news_sitemap "https://nabzesardo.ir/news-sitemap.xml"
+          probe feed "https://nabzesardo.ir/feed.xml"
+          probe live_stats "https://nabzesardo.ir/api/live-stats"
+          probe admin_login "https://nabzesardo.ir/admin/login"
