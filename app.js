@@ -15,12 +15,13 @@ const ADMIN_PASS=process.env.ADMIN_PASS||'change-this';
 const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
 const ROOT=__dirname;
 const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
+const APP_VERSION=String(process.env.RAILWAY_GIT_COMMIT_SHA||process.env.RAILWAY_DEPLOYMENT_ID||process.env.RAILWAY_REPLICA_ID||'dev').slice(0,80);
 
 function headers(type='text/html; charset=utf-8'){
   return {'Content-Type':type,'X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'};
 }
-function send(res,status,body,type,extra={}){res.writeHead(status,{...headers(type),...extra});res.end(body);}
-function redirect(res,to,cookie){const h={...headers(),Location:to};if(cookie)h['Set-Cookie']=cookie;res.writeHead(302,h);res.end();}
+function send(res,status,body,type,extra={}){const h={...headers(type),...extra};const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
+function redirect(res,to,cookie){const h={...headers(),Location:to,'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'};if(cookie)h['Set-Cookie']=cookie;res.writeHead(302,h);res.end();}
 function readRaw(req,max=14*1024*1024){return new Promise((resolve,reject)=>{const chunks=[];let size=0;req.on('data',c=>{size+=c.length;if(size>max){reject(new Error('too-large'));req.destroy();return;}chunks.push(c)});req.on('end',()=>resolve(Buffer.concat(chunks)));req.on('error',reject);});}
 async function urlBody(req){const raw=await readRaw(req,2*1024*1024);return Object.fromEntries(new URLSearchParams(raw.toString('utf8')));}
 async function multipart(req){
@@ -28,7 +29,7 @@ async function multipart(req){
   const m=ct.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
   if(!m)throw new Error('missing-boundary');
   const boundary=m[1]||m[2];
-  const raw=await readRaw(req,60*1024*1024);
+  const raw=await readRaw(req,80*1024*1024);
   const text=raw.toString('latin1');
   const parts=text.split('--'+boundary);
   const fields={},files={};
@@ -85,14 +86,17 @@ function xmlEsc(v=''){return String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':
 function publicUrl(p='/'){return PUBLIC_BASE+(p.startsWith('/')?p:'/'+p);}
 function sitemapXml(db){
   const urls=[
-    {loc:publicUrl('/'),lastmod:null},
-    {loc:publicUrl('/all-news'),lastmod:null},
-    {loc:publicUrl('/about'),lastmod:null},
-    {loc:publicUrl('/contact'),lastmod:null},
-    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null})),
-    ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt}))
+    {loc:publicUrl('/'),lastmod:null,image:''},
+    {loc:publicUrl('/all-news'),lastmod:null,image:''},
+    {loc:publicUrl('/about'),lastmod:null,image:''},
+    {loc:publicUrl('/contact'),lastmod:null,image:''},
+    {loc:publicUrl('/local/sardouiyeh'),lastmod:null,image:''},
+    {loc:publicUrl('/local/jiroft'),lastmod:null,image:''},
+    {loc:publicUrl('/local/south-kerman'),lastmod:null,image:''},
+    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null,image:''})),
+    ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt,image:a.image?publicUrl(a.image):''}))
   ];
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+'</url>').join('\n')+'\n</urlset>';
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+(x.image?'<image:image><image:loc>'+xmlEsc(x.image)+'</image:loc></image:image>':'')+'</url>').join('\n')+'\n</urlset>';
 }
 function newsSitemapXml(db){
   const cutoff=Date.now()-48*60*60*1000;
@@ -215,9 +219,14 @@ const server=http.createServer(async(req,res)=>{
     return send(res,200,JSON.stringify({ok:true,bytes:raw.length,sha1:sum}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   }
   if(req.method==='GET'&&p==='/hero-mosque.jpg'){res.writeHead(200,{...headers('image/jpeg'),'Cache-Control':'no-store, max-age=0','Content-Length':HERO_MOSQUE_JPG.length,'X-Hero-Sha1':HERO_MOSQUE_SHA1});res.end(HERO_MOSQUE_JPG);return;}
-  if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'no-cache, max-age=0, must-revalidate':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
+  if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'public,max-age=604800,stale-while-revalidate=86400':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
   if(p.startsWith('/uploads/'))return serveFile(res,UPLOAD_DIR,p,'/uploads/','public,max-age=31536000,immutable')||send(res,404,'Not found','text/plain; charset=utf-8');
-  if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',time:now()}),'application/json; charset=utf-8');
+  if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',version:APP_VERSION,time:now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
+  if(req.method==='GET'&&p==='/__version')return send(res,200,JSON.stringify({version:APP_VERSION,time:Date.now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'});
+  if(req.method==='GET'&&p==='/api/live-stats'){
+    const stats=analytics.snapshot();
+    return send(res,200,JSON.stringify({totalPageViews:stats.totalPageViews,todayPageViews:stats.today.pageViews,updatedAt:stats.updatedAt}),'application/json; charset=utf-8',{'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'});
+  }
 
   const db=load();
   if(req.method==='GET'&&p==='/robots.txt')return send(res,200,robotsTxt(),'text/plain; charset=utf-8',{'Cache-Control':'no-cache, max-age=0, must-revalidate'});
@@ -226,6 +235,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/feed.xml')return send(res,200,rssXml(db),'application/rss+xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/'){analytics.track(req,p);return send(res,200,views.home(db));}
   if(req.method==='GET'&&p==='/all-news'){analytics.track(req,p);return send(res,200,views.archive(db,u.searchParams.get('q')||''));}
+  if(req.method==='GET'&&p==='/briefs')return redirect(res,'/category/short-news');
   if(req.method==='GET'&&p==='/search'){analytics.track(req,p);return send(res,200,views.search(db,u.searchParams.get('q')||''));}
   if(req.method==='GET'&&p==='/about'){analytics.track(req,p);return send(res,200,views.simple(db,'about'));}
   if(req.method==='GET'&&p==='/contact'){analytics.track(req,p);return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));}
@@ -233,7 +243,19 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/admin/login')return send(res,200,views.login(u.searchParams.get('error')==='1'));
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
-  let m=p.match(/^\/news\/(.+)$/);
+  let m=p.match(/^\/local\/(sardouiyeh|jiroft|south-kerman)$/);
+  if(req.method==='GET'&&m){const page=views.localHub(db,m[1]);if(!page)return send(res,404,'صفحه پیدا نشد');analytics.track(req,p);return send(res,200,page);}
+
+  m=p.match(/^\/n\/([^/]+)$/);
+  if(req.method==='GET'&&m){
+    const a=published(db).find(x=>String(x.id)===m[1]);
+    if(!a)return send(res,404,'خبر یافت نشد');
+    analytics.track(req,p);
+    const viewCookie=trackView(req,db,a);
+    return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
+  }
+
+  m=p.match(/^\/news\/(.+)$/);
   if(req.method==='GET'&&m){
     const a=published(db).find(x=>x.slug===m[1]);
     if(!a)return send(res,404,'خبر یافت نشد');
@@ -355,13 +377,13 @@ const server=http.createServer(async(req,res)=>{
       return redirect(res,'/admin');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/delete$/);
-    if(m){const a=db.articles.find(x=>x.id===m[1]);if(a)deleteUpload(a.image);db.articles=db.articles.filter(x=>x.id!==m[1]);save(db);return redirect(res,'/admin');}
+    if(m){const a=db.articles.find(x=>x.id===m[1]);if(a){deleteUpload(a.image);deleteUpload(a.videoUrl);}db.articles=db.articles.filter(x=>x.id!==m[1]);save(db);return redirect(res,'/admin');}
   }
   return send(res,404,'صفحه پیدا نشد');
  }catch(err){
   console.error(err);
   if(!res.headersSent){
-    const msg=err.message==='too-large'?'حجم فایل یا درخواست بیش از حد مجاز است.':err.message==='image-too-large'?'حجم عکس باید کمتر از ۱۰ مگابایت باشد.':err.message==='invalid-image'?'فرمت عکس پشتیبانی نمی‌شود.':'خطای داخلی سرور';
+    const msg=err.message==='too-large'?'حجم فایل یا درخواست بیش از حد مجاز است.':err.message==='image-too-large'?'حجم عکس باید کمتر از ۱۰ مگابایت باشد.':err.message==='invalid-image'?'فرمت عکس پشتیبانی نمی‌شود.':err.message==='video-too-large'?'حجم ویدئو باید کمتر از ۵۰ مگابایت باشد.':err.message==='invalid-video'?'فرمت ویدئو باید MP4، WebM یا MOV باشد.':'خطای داخلی سرور';
     send(res,500,msg);
   }
  }
