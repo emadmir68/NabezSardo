@@ -13,7 +13,7 @@ const IS_CLOUDFLARE=process.env.CLOUDFLARE_WORKER==='1';
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
 const ADMIN_PASS=process.env.ADMIN_PASS||'change-this';
 const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
-const ROOT=__dirname;
+const ROOT=(typeof __dirname!=='undefined'?__dirname:process.cwd());
 const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
 const APP_VERSION=String(process.env.RAILWAY_GIT_COMMIT_SHA||process.env.RAILWAY_DEPLOYMENT_ID||process.env.RAILWAY_REPLICA_ID||'dev').slice(0,80);
 
