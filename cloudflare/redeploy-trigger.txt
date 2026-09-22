@@ -1,0 +1,2 @@
+Cloudflare preview re-verification trigger — 2026-09-22
+Railway production remains untouched until preview smoke tests pass.
