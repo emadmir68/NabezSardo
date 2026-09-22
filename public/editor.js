@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const escapeEditorHtml=value=>String(value||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const plainToParagraphHtml=text=>{
     const normalized=String(text||'').replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ');
-    const chunks=normalized.split(/\n\s*\n+/).map(part=>cleanSingleLine(part.replace(/\n+/g,' '))).filter(Boolean);
-    return chunks.map(part=>'<p>'+escapeEditorHtml(part)+'</p>').join('');
+    const lines=normalized.split(/\n+/).map(part=>cleanSingleLine(part)).filter(Boolean);
+    return lines.map(part=>'<p>'+escapeEditorHtml(part)+'</p>').join('');
   };
 
   async function uploadImage(file,statusEl){
