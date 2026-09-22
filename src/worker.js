@@ -886,23 +886,6 @@ async function proxyRailway(request) {
   return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: outHeaders });
 }
 
-async function runAdminDebug(request) {
-  if (request.headers.get("x-nabzesardo-debug") !== "admdbg-9f13c7b0f4e643e8") return new Response("Not found", {status:404});
-  const auth=await runtimeAuth();
-  if(!auth) return Response.json({ok:false,step:"auth",error:"not-ready"},{status:500});
-  await applyRuntimeEnv();
-  await ensureAppServer();
-  const base=new URL(request.url);
-  const body=new URLSearchParams({username:String(auth.user),password:String(auth.verifier)}).toString();
-  const login=await handleApp(new Request(new URL("/admin/login",base),{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body,redirect:"manual"}));
-  const setCookie=String(login.headers.get("set-cookie")||"");
-  const cookie=setCookie.split(";")[0];
-  if(login.status!==302||!cookie) return Response.json({ok:false,step:"login",status:login.status,location:login.headers.get("location")||""},{status:500});
-  const dash=await handleApp(new Request(new URL("/admin",base),{headers:{cookie}}));
-  const text=await dash.text();
-  return Response.json({ok:dash.status===200,status:dash.status,bytes:text.length,hasDashboard:/داشبورد|مدیریت|خبر/.test(text)});
-}
-
 async function ensureCutoverBackup() {
   const done = await getState("cutover_backup_created");
   if (done === "1") return;
@@ -939,7 +922,6 @@ export default {
     if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
     if (p === "/__sync/status" && request.method === "GET") return Response.json(await publicSyncStatus());
-    if (p === "/__debug/admin" && request.method === "GET") return runAdminDebug(request);
     if (p === "/__sync/public-pull" && request.method === "POST") {
       if (isPrimary()) return Response.json({ ok: true, skipped: true, primary: true });
       try { return Response.json(await publicPull()); }
