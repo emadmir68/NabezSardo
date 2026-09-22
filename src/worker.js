@@ -104,6 +104,7 @@ async function applyRuntimeEnv() {
   process.env.SESSION_SECRET = await sha256Hex(new TextEncoder().encode("nabzesardo-cf-session|" + String(auth.verifier)));
   const runtime = await decryptRuntimeSecrets();
   for (const [key, value] of Object.entries(runtime || {})) {
+    if (key === "ADMIN_USER" || key === "ADMIN_PASS" || key === "SESSION_SECRET") continue;
     if (value !== undefined && value !== null && String(value).length) process.env[key] = String(value);
   }
   if (env.GOOGLE_SITE_VERIFICATION) process.env.GOOGLE_SITE_VERIFICATION = String(env.GOOGLE_SITE_VERIFICATION);
