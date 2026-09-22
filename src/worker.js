@@ -890,6 +890,27 @@ async function proxyRailway(request) {
   return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: outHeaders });
 }
 
+async function runRealLoginDebug(request) {
+  if (request.headers.get("x-nabzesardo-debug") !== "reallogin-2db6c4a79f4e4f4f") return new Response("Not found",{status:404});
+  const runtime=await decryptRuntimeSecrets();
+  const user=String(runtime.ADMIN_USER||"");
+  const pass=String(runtime.ADMIN_PASS||"");
+  if(!user||!pass)return Response.json({ok:false,step:"runtime-secret",fastLoginReady:false},{status:500});
+  const base=new URL(request.url);
+  const body=new URLSearchParams({username:user,password:pass}).toString();
+  const login=await handleCloudflareAdminLogin(new Request(new URL("/admin/login",base),{
+    method:"POST",
+    headers:{"content-type":"application/x-www-form-urlencoded"},
+    body,
+    redirect:"manual"
+  }));
+  const cookie=String(login.headers.get("set-cookie")||"").split(";")[0];
+  if(login.status!==302||!cookie)return Response.json({ok:false,step:"real-login",status:login.status,location:login.headers.get("location")||""},{status:500});
+  const dash=await handleApp(new Request(new URL("/admin",base),{headers:{cookie}}));
+  const html=await dash.text();
+  return Response.json({ok:dash.status===200,fastLoginReady:true,loginStatus:login.status,dashboardStatus:dash.status,bytes:html.length,hasDashboard:/داشبورد|مدیریت|خبر/.test(html)});
+}
+
 async function ensureCutoverBackup() {
   const done = await getState("cutover_backup_created");
   if (done === "1") return;
@@ -926,6 +947,7 @@ export default {
     if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
     if (p === "/__sync/status" && request.method === "GET") return Response.json(await publicSyncStatus());
+    if (p === "/__debug/real-login" && request.method === "GET") return runRealLoginDebug(request);
     if (p === "/__sync/public-pull" && request.method === "POST") {
       if (isPrimary()) return Response.json({ ok: true, skipped: true, primary: true });
       try { return Response.json(await publicPull()); }
