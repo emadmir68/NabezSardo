@@ -452,6 +452,9 @@ async function syncPush(request) {
   }
 
   await putState("db", JSON.stringify(payload.db, null, 2));
+  if (typeof payload.analytics === "string" && payload.analytics.trim()) {
+    await putState("analytics", payload.analytics);
+  }
   if (payload.runtimeAuth && payload.runtimeAuth.version === 1 && payload.runtimeAuth.user && payload.runtimeAuth.salt && payload.runtimeAuth.verifier) {
     await putState("admin_auth", JSON.stringify(payload.runtimeAuth));
   }
