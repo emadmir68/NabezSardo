@@ -4902,3 +4902,88 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     margin:0 auto 10px!important;
   }
 }
+
+
+
+/* ===== Media integrity lock: never crop or distort newsroom photos/videos ===== */
+img{
+  object-fit:contain!important;
+  object-position:center center!important;
+  max-width:100%;
+}
+.card-media,
+.front-lead-media,
+.front-brief-media,
+.cover-frame,
+.article-gallery-grid,
+.citizen-media,
+.home-ad-device{
+  background:
+    radial-gradient(circle at 50% 45%,#252b35 0%,#171c24 48%,#10141a 100%)!important;
+}
+.card-media img,
+.front-lead-media img,
+.front-brief-media img,
+.cover-frame img,
+.cover-frame .cover,
+.article-gallery-grid img,
+.citizen-media img,
+.home-ad-device img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:transparent!important;
+}
+.card-media video,
+.front-lead-media video,
+.front-brief-media video,
+.article-video,
+.citizen-media video{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:#05070a!important;
+}
+.front-lead-media,
+.card-media{
+  aspect-ratio:16/9;
+}
+.front-brief-media{
+  min-height:100%;
+}
+.front-brief-video{
+  display:grid!important;
+  place-items:center;
+}
+.front-video-badge,
+.card-video-badge{
+  position:absolute;
+  z-index:5;
+  left:8px;
+  bottom:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:5px 8px;
+  border-radius:999px;
+  border:1px solid rgba(232,190,109,.34);
+  background:rgba(7,10,15,.86);
+  color:#f0c979;
+  font-size:8px;
+  font-weight:900;
+  text-decoration:none;
+  backdrop-filter:blur(8px);
+  box-shadow:0 8px 20px rgba(0,0,0,.32);
+}
+.card-media-video{position:relative}
+.card-media-video .card-story-badge{left:auto;right:8px}
+.ns-hero-final__media img{
+  object-fit:contain!important;
+  object-position:center center!important;
+}
+@media(max-width:620px){
+  .front-video-badge,.card-video-badge{padding:4px 7px;font-size:7px}
+}
