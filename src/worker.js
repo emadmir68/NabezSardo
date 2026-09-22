@@ -5,6 +5,7 @@ import { handleAsNodeRequest } from "cloudflare:node";
 import http from "node:http";
 import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
+import store from "../lib/store.js";
 import views from "../lib/view-public.js";
 import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
@@ -922,6 +923,46 @@ async function runCutoverSelfTest(request) {
     if (!checks.dashboard) throw new Error("admin-dashboard-selftest-failed");
 
     const marker = "__CF_CUTOVER_TEST__" + Date.now();
+
+    try {
+      const localDb = store.load();
+      store.save(localDb, false);
+      checks.storeSave = true;
+    } catch (err) {
+      checks.storeSave = false;
+      checks.storeSaveError = String(err?.message || err);
+    }
+
+    try {
+      const probeDb = await loadDbObject();
+      const probeFields = {
+        title: marker,
+        slug: "cf-cutover-test-" + Date.now(),
+        categoryId: "",
+        lead: "Cloudflare cutover self-test",
+        bodyHtml: "<p>Cloudflare cutover self-test</p>",
+        author: "Cutover Test",
+        location: "",
+        status: "draft",
+        featured: "0",
+        autoCover: "0",
+        galleryJson: "[]",
+        socialTelegram: "0",
+        socialRubika: "0",
+        socialWhatsApp: "0"
+      };
+      const unique = (db, raw, currentId) => {
+        let base = store.slug(raw), candidate = base, i = 2;
+        while ((db.articles || []).some(a => a.slug === candidate && a.id !== currentId)) candidate = base + "-" + i++;
+        return candidate;
+      };
+      const probePayload = await articleTools.articlePayload(probeDb, probeFields, {}, {}, unique);
+      checks.articlePayload = Boolean(probePayload && probePayload.status === "draft");
+    } catch (err) {
+      checks.articlePayload = false;
+      checks.articlePayloadError = String(err?.message || err);
+    }
+
     const draftBody = new URLSearchParams({
       title: marker,
       slug: "cf-cutover-test-" + Date.now(),
