@@ -891,65 +891,6 @@ async function proxyRailway(request) {
   return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: outHeaders });
 }
 
-async function runArticleMultipartDebug(request) {
-  if (request.headers.get("x-nabzesardo-debug") !== "multipartdbg-4b0a642c") return new Response("Not found",{status:404});
-  const runtime=await decryptRuntimeSecrets();
-  const user=String(runtime.ADMIN_USER||"");
-  const pass=String(runtime.ADMIN_PASS||"");
-  if(!user||!pass)return Response.json({ok:false,step:"runtime-secret"},{status:500});
-  const base=new URL(request.url);
-  const loginBody=new URLSearchParams({username:user,password:pass}).toString();
-  const login=await handleCloudflareAdminLogin(new Request(new URL("/admin/login",base),{
-    method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:loginBody,redirect:"manual"
-  }));
-  const cookie=String(login.headers.get("set-cookie")||"").split(";")[0];
-  if(login.status!==302||!cookie)return Response.json({ok:false,step:"login",status:login.status},{status:500});
-
-  const marker="__CF_MULTIPART_TEST__"+Date.now();
-  const form=new FormData();
-  form.set("title",marker);
-  form.set("slug","cf-multipart-test-"+Date.now());
-  form.set("categoryId","");
-  form.set("lead","تست انتشار فرم واقعی");
-  form.set("bodyHtml","<p>تست فرم واقعی انتشار خبر</p>");
-  form.set("author","Cutover Test");
-  form.set("location","ساردوئیه");
-  form.set("status","published");
-  form.set("featured","0");
-  form.set("autoCover","1");
-  form.set("galleryJson","[]");
-  form.set("socialTelegram","0");
-  form.set("socialRubika","0");
-  form.set("socialWhatsApp","0");
-
-  let saveRes;
-  try{
-    saveRes=await handleApp(new Request(new URL("/admin/articles/new",base),{
-      method:"POST",headers:{cookie},body:form,redirect:"manual"
-    }));
-  }catch(err){
-    return Response.json({ok:false,step:"multipart-post",error:String(err?.stack||err?.message||err)},{status:500});
-  }
-  const saveText=await saveRes.clone().text().catch(()=> "");
-  let db=await loadDbObject();
-  const created=(db.articles||[]).find(a=>a.title===marker);
-  const result={
-    ok:saveRes.status===302&&Boolean(created),
-    status:saveRes.status,
-    location:saveRes.headers.get("location")||"",
-    body:saveText.slice(0,300),
-    created:Boolean(created),
-    createdStatus:created?.status||"",
-    image:created?.image||""
-  };
-  if(created){
-    db.articles=(db.articles||[]).filter(a=>a.id!==created.id);
-    await putState("db",JSON.stringify(db,null,2));
-    if(created.image)await deleteMedia(path.basename(created.image));
-  }
-  return Response.json(result,{status:result.ok?200:500});
-}
-
 async function ensureCutoverBackup() {
   const done = await getState("cutover_backup_created");
   if (done === "1") return;
@@ -986,7 +927,6 @@ export default {
     if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
     if (p === "/__sync/status" && request.method === "GET") return Response.json(await publicSyncStatus());
-    if (p === "/__debug/article-multipart" && request.method === "GET") return runArticleMultipartDebug(request);
     if (p === "/__sync/public-pull" && request.method === "POST") {
       if (isPrimary()) return Response.json({ ok: true, skipped: true, primary: true });
       try { return Response.json(await publicPull()); }
