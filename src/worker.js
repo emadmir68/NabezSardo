@@ -14,8 +14,50 @@ const EXPECTED_BACKUP_SHA256 = "b93b59e5a9dde845a2f4ae50674b44ea7f6e8d84ee42013f
 const SYNC_TOKEN_SHA256 = "7959554b9a3f35cb94b38c33827254d4c36eb7a94c6f03690a2b201711513c63";
 let appReady = false;
 
+function isPrimary() {
+  return String(env.CLOUDFLARE_PRIMARY || "") === "1";
+}
+
+async function runtimeAuth() {
+  const raw = await getState("admin_auth");
+  const auth = safeJson(raw, null);
+  if (!auth || auth.version !== 1 || !auth.user || !auth.salt || !auth.verifier) return null;
+  return auth;
+}
+
+async function verifyRuntimePassword(user, password) {
+  const auth = await runtimeAuth();
+  if (!auth || String(user || "") !== String(auth.user)) return false;
+  const material = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(String(password || "")),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: new TextEncoder().encode(String(auth.salt)), iterations: Number(auth.iterations || 210000) },
+    material,
+    256
+  );
+  const verifier = [...new Uint8Array(bits)].map(x => x.toString(16).padStart(2, "0")).join("");
+  return verifier === String(auth.verifier);
+}
+
+async function applyRuntimeEnv() {
+  const auth = await runtimeAuth();
+  if (!auth) return false;
+  process.env.ADMIN_USER = String(auth.user);
+  process.env.ADMIN_PASS = String(auth.verifier);
+  process.env.SESSION_SECRET = await sha256Hex(new TextEncoder().encode("nabzesardo-cf-session|" + String(auth.verifier)));
+  if (env.GOOGLE_SITE_VERIFICATION) process.env.GOOGLE_SITE_VERIFICATION = String(env.GOOGLE_SITE_VERIFICATION);
+  return true;
+}
+
 async function ensureAppServer() {
   if (appReady) return;
+  const authReady = await applyRuntimeEnv();
+  if (isPrimary() && !authReady) throw new Error("cloudflare-admin-auth-not-ready");
   const originalListen = http.Server.prototype.listen;
   const originalSetTimeout = globalThis.setTimeout;
   const originalSetInterval = globalThis.setInterval;
@@ -29,7 +71,7 @@ async function ensureAppServer() {
   globalThis.setTimeout = () => 0;
   globalThis.setInterval = () => 0;
   try {
-    articleTools.dispatchAndPersist = async () => {};
+    if (!isPrimary()) articleTools.dispatchAndPersist = async () => {};
     await import("../app.js");
     appReady = true;
   } finally {
@@ -230,7 +272,33 @@ async function clearMedia() {
   await env.DB.prepare("DELETE FROM media_meta").run();
 }
 
-async function hydrateState({ includeUploads = false } = {}) {
+async function hydrateBackups() {
+  ensureDirs();
+  const rows = await env.DB.prepare("SELECT key,value FROM app_state WHERE key LIKE 'backup:%' ORDER BY updated_at DESC LIMIT 30").all();
+  for (const row of rows.results || []) {
+    const name = String(row.key || "").slice("backup:".length);
+    const safe = path.basename(name);
+    if (!safe || safe !== name || !safe.endsWith(".json")) continue;
+    fs.writeFileSync(path.join(BACKUP_DIR, safe), String(row.value || ""), "utf8");
+  }
+}
+
+async function persistBackups() {
+  ensureDirs();
+  const names = fs.readdirSync(BACKUP_DIR).filter(x => x.endsWith(".json")).slice(-30);
+  const keep = new Set(names.map(x => "backup:" + x));
+  const existing = await env.DB.prepare("SELECT key FROM app_state WHERE key LIKE 'backup:%'").all();
+  for (const row of existing.results || []) {
+    const key = String(row.key || "");
+    if (!keep.has(key)) await env.DB.prepare("DELETE FROM app_state WHERE key = ?").bind(key).run();
+  }
+  for (const name of names) {
+    const value = fs.readFileSync(path.join(BACKUP_DIR, name), "utf8");
+    await putState("backup:" + name, value);
+  }
+}
+
+async function hydrateState({ includeUploads = false, includeBackups = false } = {}) {
   ensureDirs();
   const [dbText, analyticsText] = await Promise.all([
     getState("db"),
@@ -238,6 +306,7 @@ async function hydrateState({ includeUploads = false } = {}) {
   ]);
   if (dbText) fs.writeFileSync(DB_FILE, dbText, "utf8");
   if (analyticsText) fs.writeFileSync(ANALYTICS_FILE, analyticsText, "utf8");
+  if (includeBackups) await hydrateBackups();
 
   if (includeUploads) {
     const items = await listMedia();
@@ -316,6 +385,9 @@ async function syncPush(request) {
   if (suppliedHash !== SYNC_TOKEN_SHA256) {
     return Response.json({ ok: false, error: "invalid-sync-token" }, { status: 403 });
   }
+  if (isPrimary()) {
+    return Response.json({ ok: true, skipped: true, primary: true, syncedAt: new Date().toISOString() });
+  }
 
   let payload;
   try {
@@ -328,6 +400,9 @@ async function syncPush(request) {
   }
 
   await putState("db", JSON.stringify(payload.db, null, 2));
+  if (payload.runtimeAuth && payload.runtimeAuth.version === 1 && payload.runtimeAuth.user && payload.runtimeAuth.salt && payload.runtimeAuth.verifier) {
+    await putState("admin_auth", JSON.stringify(payload.runtimeAuth));
+  }
   await clearMedia();
 
   let uploaded = 0;
@@ -666,7 +741,9 @@ async function publicSyncStatus() {
     articles: Number(articles || 0),
     media: Number(media || 0),
     aiCovers: auto.filter(a => a.autoCoverSource === "ai").length,
-    fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length
+    fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length,
+    adminReady: Boolean(await runtimeAuth()),
+    primary: isPrimary()
   };
 }
 
@@ -681,6 +758,25 @@ async function maybeDistribute(beforeDb, afterDb) {
   if (newlyPublished.length && fs.existsSync(DB_FILE)) {
     await putState("db", fs.readFileSync(DB_FILE, "utf8"));
   }
+}
+
+async function handleCloudflareAdminLogin(request) {
+  const auth = await runtimeAuth();
+  if (!auth) return new Response("Cloudflare admin authentication is not ready.", { status: 503 });
+  const clone = request.clone();
+  let fields;
+  try {
+    fields = new URLSearchParams(await clone.text());
+  } catch {
+    return new Response("Invalid login request.", { status: 400 });
+  }
+  const ok = await verifyRuntimePassword(fields.get("username"), fields.get("password"));
+  if (!ok) return Response.redirect(new URL("/admin/login?error=1", request.url).toString(), 302);
+  const body = new URLSearchParams({ username: String(auth.user), password: String(auth.verifier) }).toString();
+  const headers = new Headers(request.headers);
+  headers.set("content-type", "application/x-www-form-urlencoded");
+  headers.delete("content-length");
+  return handleApp(new Request(request.url, { method: "POST", headers, body, redirect: "manual" }));
 }
 
 async function proxyRailway(request) {
@@ -705,14 +801,16 @@ async function proxyRailway(request) {
 
 async function handleApp(request) {
   const url = new URL(request.url);
-  if (String(env.PREVIEW_READONLY || "") === "1" && url.pathname.startsWith("/admin")) {
+  if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1" && url.pathname.startsWith("/admin")) {
     return new Response("Preview admin is disabled until migration verification is complete.", { status: 403 });
   }
   const includeUploads = request.method === "GET" && url.pathname === "/admin/backup/download";
-  const before = await hydrateState({ includeUploads });
+  const includeBackups = url.pathname.startsWith("/admin");
+  const before = await hydrateState({ includeUploads, includeBackups });
   await ensureAppServer();
   const response = await handleAsNodeRequest(PORT, request);
   const states = await flushState(before, request, response);
+  if (includeBackups) await persistBackups();
   await maybeDistribute(states.beforeDb, states.afterDb);
   return response;
 }
@@ -732,7 +830,11 @@ export default {
       catch (err) { return Response.json({ ok: false, error: String(err?.message || err) }, { status: 502 }); }
     }
 
-    if (p.startsWith("/admin") || (request.method !== "GET" && request.method !== "HEAD")) {
+    if (isPrimary() && p === "/admin/login" && request.method === "POST") {
+      return handleCloudflareAdminLogin(request);
+    }
+
+    if (!isPrimary() && (p.startsWith("/admin") || (request.method !== "GET" && request.method !== "HEAD"))) {
       return proxyRailway(request);
     }
 
@@ -743,6 +845,8 @@ export default {
     if ((p.startsWith("/assets/") || p === "/hero-mosque.jpg") && request.method === "GET") {
       return serveAsset(request, p);
     }
+
+    if (isPrimary()) return handleApp(request);
 
     const publicResponse = await handlePublicPreview(request, url, p);
     if (publicResponse) return publicResponse;
@@ -756,14 +860,15 @@ export default {
   },
 
   async scheduled() {
-    if (String(env.PREVIEW_READONLY || "") === "1") {
+    if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1") {
       try { await publicPull(); } catch (err) { console.error("public-sync", String(err?.message || err)); }
       return;
     }
-    const before = await hydrateState();
+    const before = await hydrateState({ includeBackups: true });
     await articleTools.schedulerTick();
     const fakeReq = new Request("https://nabzesardo.ir/__cron", { method: "GET" });
     const fakeRes = new Response(null, { status: 204 });
     await flushState(before, fakeReq, fakeRes);
+    await persistBackups();
   }
 };
