@@ -33,5 +33,11 @@
     "binding": "AI"
   },
   "workers_dev": true,
-  "preview_urls": true
+  "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "nabzesardo.ir/*",
+      "zone_name": "nabzesardo.ir"
+    }
+  ]
 }
