@@ -262,13 +262,150 @@ function mimeFor(name = "") {
   })[ext] || "application/octet-stream";
 }
 
+
+function arvanConfig() {
+  const accessKey = String(env.ARVAN_ACCESS_KEY || "").trim();
+  const secretKey = String(env.ARVAN_SECRET_KEY || "").trim();
+  const endpoint = String(env.ARVAN_ENDPOINT || "").trim().replace(/\/+$/, "");
+  const bucket = String(env.ARVAN_BUCKET || "").trim();
+  if (!accessKey || !secretKey || !endpoint || !bucket) return null;
+  let url;
+  try { url = new URL(endpoint); } catch { return null; }
+  const inferred = url.hostname.match(/^s3\.([^.]+)\.arvanstorage\.ir$/i);
+  const region = String(env.ARVAN_REGION || inferred?.[1] || "ir-thr-at1").trim();
+  return { accessKey, secretKey, endpoint, bucket, region, host: url.host };
+}
+
+function awsUriEncode(value = "") {
+  return encodeURIComponent(String(value)).replace(/[!'()*]/g, ch =>
+    "%" + ch.charCodeAt(0).toString(16).toUpperCase()
+  );
+}
+
+function bytesToHex(bytes) {
+  return [...new Uint8Array(bytes)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+
+async function hmacSha256(key, value) {
+  const rawKey = typeof key === "string" ? new TextEncoder().encode(key) : key;
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", rawKey, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  return new Uint8Array(await crypto.subtle.sign(
+    "HMAC", cryptoKey, new TextEncoder().encode(String(value))
+  ));
+}
+
+function amzTimestamp(date = new Date()) {
+  return date.toISOString().replace(/[:-]|\.\d{3}/g, "");
+}
+
+async function arvanRequest(method, name = null, { body = null, contentType = "" } = {}) {
+  const cfg = arvanConfig();
+  if (!cfg) throw new Error("arvan-not-configured");
+
+  const hasObject = name !== null && name !== undefined && String(name).length > 0;
+  let safe = "";
+  if (hasObject) {
+    safe = path.basename(String(name || ""));
+    if (!safe || safe !== name) throw new Error("invalid-media-name");
+  }
+
+  const canonicalUri = "/" + awsUriEncode(cfg.bucket) + (hasObject ? "/" + awsUriEncode(safe) : "");
+  const url = cfg.endpoint + canonicalUri;
+  const payload = body == null
+    ? new Uint8Array()
+    : (Buffer.isBuffer(body) ? new Uint8Array(body) : (body instanceof Uint8Array ? body : new Uint8Array(body)));
+  const payloadHash = await sha256Hex(payload);
+  const stamp = amzTimestamp();
+  const dateStamp = stamp.slice(0, 8);
+  const canonicalHeaders =
+    "host:" + cfg.host + "\n" +
+    "x-amz-content-sha256:" + payloadHash + "\n" +
+    "x-amz-date:" + stamp + "\n";
+  const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+  const canonicalRequest = [
+    method.toUpperCase(),
+    canonicalUri,
+    "",
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash
+  ].join("\n");
+  const scope = dateStamp + "/" + cfg.region + "/s3/aws4_request";
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    stamp,
+    scope,
+    await sha256Hex(new TextEncoder().encode(canonicalRequest))
+  ].join("\n");
+
+  const kDate = await hmacSha256("AWS4" + cfg.secretKey, dateStamp);
+  const kRegion = await hmacSha256(kDate, cfg.region);
+  const kService = await hmacSha256(kRegion, "s3");
+  const kSigning = await hmacSha256(kService, "aws4_request");
+  const signature = bytesToHex(await hmacSha256(kSigning, stringToSign));
+
+  const headers = new Headers({
+    "x-amz-date": stamp,
+    "x-amz-content-sha256": payloadHash,
+    "authorization": "AWS4-HMAC-SHA256 Credential=" + cfg.accessKey + "/" + scope + ", SignedHeaders=" + signedHeaders + ", Signature=" + signature
+  });
+  if (contentType) headers.set("content-type", contentType);
+
+  return fetch(url, {
+    method: method.toUpperCase(),
+    headers,
+    body: method.toUpperCase() === "PUT" ? payload : undefined
+  });
+}
+
+async function putArvanObject(name, data, contentType) {
+  const res = await arvanRequest("PUT", name, { body: data, contentType });
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).slice(0, 300);
+    throw new Error("arvan-put-" + res.status + (detail ? ":" + detail : ""));
+  }
+}
+
+async function getArvanObject(name) {
+  const res = await arvanRequest("GET", name);
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).slice(0, 300);
+    throw new Error("arvan-get-" + res.status + (detail ? ":" + detail : ""));
+  }
+  const data = Buffer.from(await res.arrayBuffer());
+  return {
+    data,
+    contentType: res.headers.get("content-type") || mimeFor(name),
+    size: data.length
+  };
+}
+
+async function deleteArvanObject(name) {
+  const res = await arvanRequest("DELETE", name);
+  if (res.status === 404) return;
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).slice(0, 300);
+    throw new Error("arvan-delete-" + res.status + (detail ? ":" + detail : ""));
+  }
+}
+
+async function probeArvan() {
+  const cfg = arvanConfig();
+  if (!cfg) return { configured: false, authenticated: false, status: null };
+  try {
+    const res = await arvanRequest("HEAD", null);
+    return { configured: true, authenticated: res.ok, status: res.status };
+  } catch (err) {
+    return { configured: true, authenticated: false, status: null, error: String(err?.message || err).slice(0, 180) };
+  }
+}
+
 const MEDIA_CHUNK_BYTES = 1350000;
 
-async function putMedia(name, data, contentType = mimeFor(name)) {
-  await ensureSchema();
-  const safe = path.basename(String(name || ""));
-  if (!safe || safe !== name) throw new Error("invalid-media-name");
-  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+async function putMediaD1(safe, buf, contentType) {
   const chunks = [];
   for (let offset = 0; offset < buf.length; offset += MEDIA_CHUNK_BYTES) {
     chunks.push(buf.subarray(offset, Math.min(offset + MEDIA_CHUNK_BYTES, buf.length)).toString("base64"));
@@ -285,6 +422,33 @@ async function putMedia(name, data, contentType = mimeFor(name)) {
   }
 }
 
+async function putMedia(name, data, contentType = mimeFor(name)) {
+  await ensureSchema();
+  const safe = path.basename(String(name || ""));
+  if (!safe || safe !== name) throw new Error("invalid-media-name");
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+
+  if (arvanConfig()) {
+    try {
+      await putArvanObject(safe, buf, contentType);
+      await env.DB.prepare("DELETE FROM media_chunks WHERE name = ?").bind(safe).run();
+      await env.DB.prepare("DELETE FROM media_meta WHERE name = ?").bind(safe).run();
+      await env.DB.prepare(
+        "INSERT INTO media_meta(name,content_type,size,chunk_count,updated_at) VALUES(?,?,?,?,datetime('now'))"
+      ).bind(safe, contentType, buf.length, 0).run();
+      await putState("arvan_last_success", new Date().toISOString());
+      await putState("arvan_last_error", "");
+      return;
+    } catch (err) {
+      const message = String(err?.message || err).slice(0, 500);
+      console.error("arvan-put-fallback", safe, message);
+      await putState("arvan_last_error", message);
+    }
+  }
+
+  await putMediaD1(safe, buf, contentType);
+}
+
 async function getMedia(name) {
   await ensureSchema();
   const safe = path.basename(String(name || ""));
@@ -293,6 +457,23 @@ async function getMedia(name) {
     "SELECT name,content_type,size,chunk_count FROM media_meta WHERE name = ? LIMIT 1"
   ).bind(safe).first();
   if (!meta) return null;
+
+  if (Number(meta.chunk_count || 0) === 0 && arvanConfig()) {
+    try {
+      const remote = await getArvanObject(safe);
+      if (!remote) return null;
+      return {
+        name: safe,
+        contentType: String(meta.content_type || remote.contentType || mimeFor(safe)),
+        size: Number(remote.size || meta.size || 0),
+        data: remote.data
+      };
+    } catch (err) {
+      console.error("arvan-get", safe, String(err?.message || err));
+      return null;
+    }
+  }
+
   const rows = await env.DB.prepare(
     "SELECT chunk_data FROM media_chunks WHERE name = ? ORDER BY chunk_index ASC"
   ).bind(safe).all();
@@ -318,6 +499,10 @@ async function deleteMedia(names) {
   for (const raw of Array.isArray(names) ? names : [names]) {
     const safe = path.basename(String(raw || ""));
     if (!safe || safe !== raw) continue;
+    if (arvanConfig()) {
+      try { await deleteArvanObject(safe); }
+      catch (err) { console.error("arvan-delete", safe, String(err?.message || err)); }
+    }
     await env.DB.prepare("DELETE FROM media_chunks WHERE name = ?").bind(safe).run();
     await env.DB.prepare("DELETE FROM media_meta WHERE name = ?").bind(safe).run();
   }
@@ -325,8 +510,54 @@ async function deleteMedia(names) {
 
 async function clearMedia() {
   await ensureSchema();
+  if (arvanConfig()) {
+    const rows = await env.DB.prepare("SELECT name FROM media_meta ORDER BY name ASC").all();
+    for (const row of rows.results || []) {
+      const safe = path.basename(String(row.name || ""));
+      if (!safe) continue;
+      try { await deleteArvanObject(safe); }
+      catch (err) { console.error("arvan-clear-delete", safe, String(err?.message || err)); }
+    }
+  }
   await env.DB.prepare("DELETE FROM media_chunks").run();
   await env.DB.prepare("DELETE FROM media_meta").run();
+}
+
+async function migrateLegacyMediaBatch(limit = 2) {
+  await ensureSchema();
+  if (!arvanConfig()) return { migrated: 0, pending: null };
+  const rows = await env.DB.prepare(
+    "SELECT name,content_type,size,chunk_count FROM media_meta WHERE chunk_count > 0 ORDER BY updated_at ASC LIMIT ?"
+  ).bind(Math.max(1, Math.min(10, Number(limit || 2)))).all();
+  let migrated = 0;
+  for (const row of rows.results || []) {
+    const safe = path.basename(String(row.name || ""));
+    if (!safe) continue;
+    try {
+      const media = await getMedia(safe);
+      if (!media || !media.data?.length) continue;
+      await putArvanObject(safe, media.data, media.contentType || mimeFor(safe));
+      await env.DB.prepare("DELETE FROM media_chunks WHERE name = ?").bind(safe).run();
+      await env.DB.prepare(
+        "UPDATE media_meta SET chunk_count = 0, updated_at = datetime('now') WHERE name = ?"
+      ).bind(safe).run();
+      migrated++;
+      await putState("arvan_last_success", new Date().toISOString());
+      await putState("arvan_last_error", "");
+    } catch (err) {
+      const message = String(err?.message || err).slice(0, 500);
+      console.error("arvan-migrate", safe, message);
+      await putState("arvan_last_error", message);
+    }
+  }
+  const pendingRow = await env.DB.prepare(
+    "SELECT COUNT(*) AS count FROM media_meta WHERE chunk_count > 0"
+  ).first();
+  const pending = Number(pendingRow?.count || 0);
+  await putState("arvan_media_pending", String(pending));
+  await putState("arvan_media_last_migrated", String(migrated));
+  if (migrated) await putState("arvan_media_last_run", new Date().toISOString());
+  return { migrated, pending };
 }
 
 async function hydrateBackups() {
@@ -799,6 +1030,13 @@ async function publicSyncStatus() {
   const runtimeSecrets = await decryptRuntimeSecrets();
   const analyticsState = safeJson(await getState("analytics"), {});
   const auto = (db.articles || []).filter(a => a.imageAuto === true);
+  const storageCfg = arvanConfig();
+  const storageProbe = await probeArvan();
+  const legacyRow = await env.DB.prepare("SELECT COUNT(*) AS count FROM media_meta WHERE chunk_count > 0").first();
+  const [arvanLastSuccess, arvanLastError] = await Promise.all([
+    getState("arvan_last_success"),
+    getState("arvan_last_error")
+  ]);
   return {
     ok: true,
     source: String(env.SYNC_SOURCE_URL || "https://nabzesardo.ir"),
@@ -816,6 +1054,17 @@ async function publicSyncStatus() {
       googleVerification: Boolean(runtimeSecrets.GOOGLE_SITE_VERIFICATION)
     },
     fastLoginReady: Boolean(runtimeSecrets.ADMIN_USER && runtimeSecrets.ADMIN_PASS),
+    storage: {
+      provider: storageCfg ? "arvan" : "d1",
+      arvanConfigured: Boolean(storageCfg),
+      arvanAuthenticated: Boolean(storageProbe.authenticated),
+      probeStatus: storageProbe.status,
+      bucket: storageCfg?.bucket || null,
+      region: storageCfg?.region || null,
+      legacyPending: Number(legacyRow?.count || 0),
+      lastSuccessAt: arvanLastSuccess || null,
+      lastError: arvanLastError || null
+    },
     primary: isPrimary()
   };
 }
@@ -971,7 +1220,11 @@ export default {
       return;
     }
     const before = await hydrateState({ includeBackups: true });
-    if (isPrimary()) await applyRuntimeEnv();
+    if (isPrimary()) {
+      await applyRuntimeEnv();
+      try { await migrateLegacyMediaBatch(2); }
+      catch (err) { console.error("arvan-migrate-batch", String(err?.message || err)); }
+    }
     await articleTools.schedulerTick();
     const fakeReq = new Request("https://nabzesardo.ir/__cron", { method: "GET" });
     const fakeRes = new Response(null, { status: 204 });
