@@ -944,9 +944,19 @@ async function runCutoverSelfTest(request) {
       body: draftBody,
       redirect: "manual"
     }));
+    const createStatus = createRes.status;
+    const createLocation = String(createRes.headers.get("location") || "");
+    const createBody = await createRes.clone().text().catch(() => "");
     let db = await loadDbObject();
     const created = (db.articles || []).find(a => a.title === marker);
-    checks.draftCreate = createRes.status === 302 && Boolean(created && created.id);
+    checks.draftCreate = createStatus === 302 && Boolean(created && created.id);
+    checks.draftCreateDebug = {
+      status: createStatus,
+      location: createLocation,
+      body: createBody.slice(0, 300),
+      articleCount: (db.articles || []).length,
+      markerFound: Boolean(created)
+    };
     if (!checks.draftCreate) throw new Error("draft-create-selftest-failed");
     tempArticleId = String(created.id);
 
