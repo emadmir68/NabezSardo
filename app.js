@@ -7,6 +7,7 @@ const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullB
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
+const social=require('./lib/social');
 
 const PORT=Number(process.env.PORT||3000);
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
@@ -378,3 +379,11 @@ articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('F
 articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
 setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
 setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
+
+if(process.env.RUBIKA_BOT_TOKEN&&!process.env.RUBIKA_CHAT_ID){
+  const probeRubika=()=>social.discoverRubikaChatIds().then(ids=>{
+    if(ids.length)console.log('rubika-discovery '+JSON.stringify(ids));
+  }).catch(err=>console.warn('rubika discovery',String(err&&err.message||err)));
+  setTimeout(probeRubika,7000);
+  setInterval(probeRubika,30000);
+}
