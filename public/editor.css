@@ -217,3 +217,11 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
   .quick-brief-actions{align-items:stretch;flex-direction:column}
   .quick-brief-actions .btn{width:100%}
 }
+
+
+/* Article video uploader */
+.video-upload-panel{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:center;padding:20px;margin:18px 0;border:1px dashed #3a414e;border-radius:18px;background:#0d1117}
+.video-upload-panel p{font-size:12px;color:#959ca7;line-height:1.8}
+.video-preview{min-height:200px;border-radius:15px;overflow:hidden;background:#080b0f;border:1px solid #2d333d;display:grid;place-items:center}
+.video-preview video{display:block;width:100%;max-height:320px;background:#05070a}
+@media(max-width:760px){.video-upload-panel{grid-template-columns:1fr}.video-preview{width:100%}}
