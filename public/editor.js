@@ -172,6 +172,25 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   });
 
+  document.querySelectorAll('[data-video-input]').forEach(input=>{
+    input.addEventListener('change',()=>{
+      const file=input.files&&input.files[0];if(!file)return;
+      const allowed=new Set(['video/mp4','video/webm','video/quicktime']);
+      if(!allowed.has(file.type)){alert('فرمت ویدئو باید MP4، WebM یا MOV باشد.');input.value='';return;}
+      if(file.size>50*1024*1024){alert('حجم ویدئو باید کمتر از ۵۰ مگابایت باشد.');input.value='';return;}
+      const root=input.closest('.video-upload-panel');
+      const video=root?.querySelector('[data-video-preview]');
+      const empty=root?.querySelector('[data-video-empty]');
+      if(!video)return;
+      const url=URL.createObjectURL(file);
+      const old=video.dataset.previewUrl;
+      if(old)URL.revokeObjectURL(old);
+      video.dataset.previewUrl=url;
+      video.src=url;video.hidden=false;
+      if(empty)empty.hidden=true;
+    });
+  });
+
   document.querySelectorAll('[data-gallery]').forEach(box=>{
     const input=box.querySelector('[data-gallery-input]'),list=box.querySelector('[data-gallery-list]');
     const hidden=box.querySelector('[data-gallery-json]'),status=box.querySelector('[data-gallery-status]');
