@@ -792,6 +792,7 @@ async function publicSyncStatus() {
   ]);
   const db = await loadDbObject();
   const runtimeSecrets = await decryptRuntimeSecrets();
+  const analyticsState = safeJson(await getState("analytics"), {});
   const auto = (db.articles || []).filter(a => a.imageAuto === true);
   return {
     ok: true,
@@ -802,6 +803,7 @@ async function publicSyncStatus() {
     aiCovers: auto.filter(a => a.autoCoverSource === "ai").length,
     fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length,
     adminReady: Boolean(await runtimeAuth()),
+    analyticsTotal: Number(analyticsState.allTimePageViews || 0),
     integrationsReady: {
       telegram: Boolean(runtimeSecrets.TELEGRAM_BOT_TOKEN && runtimeSecrets.TELEGRAM_CHAT_ID),
       rubika: Boolean(runtimeSecrets.RUBIKA_BOT_TOKEN && runtimeSecrets.RUBIKA_CHAT_ID),
