@@ -1222,7 +1222,7 @@ export default {
     const before = await hydrateState({ includeBackups: true });
     if (isPrimary()) {
       await applyRuntimeEnv();
-      try { await migrateLegacyMediaBatch(2); }
+      try { await migrateLegacyMediaBatch(10); }
       catch (err) { console.error("arvan-migrate-batch", String(err?.message || err)); }
     }
     await articleTools.schedulerTick();
