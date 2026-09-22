@@ -378,6 +378,11 @@ const server=http.createServer(async(req,res)=>{
  }
 });
 server.listen(PORT,'0.0.0.0',()=>console.log('Nabez Sardo running on :'+PORT));
+try{
+  const __db=load();
+  const __a=__db.articles.find(x=>String(x.title||'').includes('عطاالله منوچهری'));
+  if(__a)console.log('TEMP-ARTICLE-DIAG',JSON.stringify({id:__a.id,title:__a.title,lead:__a.lead,bodyHtml:__a.bodyHtml,body:__a.body}));
+}catch(err){console.error('TEMP-ARTICLE-DIAG-ERR',String(err&&err.message||err));}
 articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('Featured image metadata backfilled');}).catch(err=>console.error('featured image metadata',err));
 articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
 setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
