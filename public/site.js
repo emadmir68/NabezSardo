@@ -1,5 +1,48 @@
 document.addEventListener('DOMContentLoaded',()=>{
   const root=document.documentElement;
+  const liveViewsEl=document.querySelector('[data-live-views]');
+  let liveViewsValue=null,liveViewsAnim=null;
+  const formatLiveViews=value=>new Intl.NumberFormat(root.dataset.lang==='en'?'en-US':'fa-IR').format(Number(value||0));
+  const paintLiveViews=(value,bump=false)=>{
+    if(!liveViewsEl)return;
+    liveViewsValue=Math.max(0,Math.floor(Number(value||0)));
+    liveViewsEl.textContent=formatLiveViews(liveViewsValue);
+    if(bump){
+      liveViewsEl.classList.remove('count-bump');
+      void liveViewsEl.offsetWidth;
+      liveViewsEl.classList.add('count-bump');
+      setTimeout(()=>liveViewsEl.classList.remove('count-bump'),260);
+    }
+  };
+  const animateLiveViews=target=>{
+    if(!liveViewsEl)return;
+    target=Math.max(0,Math.floor(Number(target||0)));
+    if(liveViewsAnim){clearTimeout(liveViewsAnim);liveViewsAnim=null;}
+    if(liveViewsValue===null||target<=liveViewsValue){paintLiveViews(target,false);return;}
+    const diff=target-liveViewsValue;
+    const delay=Math.max(28,Math.min(140,Math.floor(900/Math.max(1,diff))));
+    const step=()=>{
+      if(liveViewsValue>=target){liveViewsAnim=null;return;}
+      paintLiveViews(liveViewsValue+1,true);
+      liveViewsAnim=setTimeout(step,delay);
+    };
+    step();
+  };
+  const refreshLiveViews=async()=>{
+    if(!liveViewsEl||document.visibilityState==='hidden')return;
+    try{
+      const res=await fetch('/api/live-stats?_='+Date.now(),{cache:'no-store',credentials:'same-origin',headers:{'Cache-Control':'no-cache'}});
+      if(!res.ok)return;
+      const data=await res.json();
+      if(Number.isFinite(Number(data?.totalPageViews)))animateLiveViews(Number(data.totalPageViews));
+    }catch{}
+  };
+  if(liveViewsEl){
+    refreshLiveViews();
+    setInterval(refreshLiveViews,4000);
+    new MutationObserver(()=>{if(liveViewsValue!==null)paintLiveViews(liveViewsValue,false)}).observe(root,{attributes:true,attributeFilter:['data-lang']});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshLiveViews();});
+  }
   const pageBuildVersion=document.querySelector('meta[name="nabez-build"]')?.content||'';
   let buildReloading=false;
   const autoReloadAllowed=!location.pathname.startsWith('/admin')&&!['/send-news','/contact'].includes(location.pathname);
