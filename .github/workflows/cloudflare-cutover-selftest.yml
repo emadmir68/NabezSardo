@@ -16,10 +16,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          body=$(curl --fail --silent --show-error --max-time 90 \
+          code=$(curl --silent --show-error --max-time 90 -o /tmp/selftest.json -w "%{http_code}" \
             -H 'x-nabzesardo-cutover: cutover-7d4c43e2a9f641fd9b2d' \
-            https://nabzesardo.ir/__cutover/selftest)
+            https://nabzesardo.ir/__cutover/selftest || true)
+          body=$(cat /tmp/selftest.json)
+          echo "http=$code"
           echo "$body"
+          test "$code" = "200"
           echo "$body" | grep -q '"ok":true'
           echo "$body" | grep -q '"login":true'
           echo "$body" | grep -q '"dashboard":true'
