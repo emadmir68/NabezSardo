@@ -221,6 +221,10 @@ const server=http.createServer(async(req,res)=>{
   if(p.startsWith('/uploads/'))return serveFile(res,UPLOAD_DIR,p,'/uploads/','public,max-age=31536000,immutable')||send(res,404,'Not found','text/plain; charset=utf-8');
   if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',version:APP_VERSION,time:now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   if(req.method==='GET'&&p==='/__version')return send(res,200,JSON.stringify({version:APP_VERSION,time:Date.now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'});
+  if(req.method==='GET'&&p==='/api/live-stats'){
+    const stats=analytics.snapshot();
+    return send(res,200,JSON.stringify({totalPageViews:stats.totalPageViews,todayPageViews:stats.today.pageViews,updatedAt:stats.updatedAt}),'application/json; charset=utf-8',{'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'});
+  }
 
   const db=load();
   if(req.method==='GET'&&p==='/robots.txt')return send(res,200,robotsTxt(),'text/plain; charset=utf-8',{'Cache-Control':'no-cache, max-age=0, must-revalidate'});
