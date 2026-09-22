@@ -5066,3 +5066,38 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
 @media(prefers-reduced-motion:reduce){
   .live-view-dot,.live-view-counter b.count-bump{animation:none!important}
 }
+
+
+/* Nabez Sardo canonical news typography v2 */
+.article-premium h1,
+.article-deck,
+.article-body .lang-fa,
+.card h3,
+.card h3 a,
+.card p{
+  direction:rtl;
+  text-align:right;
+  unicode-bidi:plaintext;
+}
+.article-premium h1,
+.article-deck{
+  text-wrap:pretty;
+}
+.article-body .lang-fa > p,
+.article-body .lang-fa > div,
+.article-body .lang-fa > h2,
+.article-body .lang-fa > h3,
+.article-body .lang-fa > blockquote,
+.article-body .lang-fa > ul,
+.article-body .lang-fa > ol{
+  direction:rtl!important;
+  text-align:right!important;
+  unicode-bidi:plaintext;
+}
+.article-body .lang-fa > div{
+  margin:0 0 1.35em;
+}
+.article-body .lang-fa > p:last-child,
+.article-body .lang-fa > div:last-child{
+  margin-bottom:0;
+}
