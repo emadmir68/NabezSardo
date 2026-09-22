@@ -123,7 +123,7 @@ async function ensureAppServer() {
   globalThis.setTimeout = () => 0;
   globalThis.setInterval = () => 0;
   try {
-    if (!isPrimary()) articleTools.dispatchAndPersist = async () => {};
+    articleTools.dispatchAndPersist = async () => {};
     await import("../app.js");
     appReady = true;
   } finally {
@@ -888,6 +888,7 @@ export default {
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
     if (p === "/__sync/status" && request.method === "GET") return Response.json(await publicSyncStatus());
     if (p === "/__sync/public-pull" && request.method === "POST") {
+      if (isPrimary()) return Response.json({ ok: true, skipped: true, primary: true });
       try { return Response.json(await publicPull()); }
       catch (err) { return Response.json({ ok: false, error: String(err?.message || err) }, { status: 502 }); }
     }
@@ -927,6 +928,7 @@ export default {
       return;
     }
     const before = await hydrateState({ includeBackups: true });
+    if (isPrimary()) await applyRuntimeEnv();
     await articleTools.schedulerTick();
     const fakeReq = new Request("https://nabzesardo.ir/__cron", { method: "GET" });
     const fakeRes = new Response(null, { status: 204 });
