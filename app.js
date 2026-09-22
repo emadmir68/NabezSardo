@@ -85,17 +85,17 @@ function xmlEsc(v=''){return String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':
 function publicUrl(p='/'){return PUBLIC_BASE+(p.startsWith('/')?p:'/'+p);}
 function sitemapXml(db){
   const urls=[
-    {loc:publicUrl('/'),lastmod:null},
-    {loc:publicUrl('/all-news'),lastmod:null},
-    {loc:publicUrl('/about'),lastmod:null},
-    {loc:publicUrl('/contact'),lastmod:null},
-    {loc:publicUrl('/local/sardouiyeh'),lastmod:null},
-    {loc:publicUrl('/local/jiroft'),lastmod:null},
-    {loc:publicUrl('/local/south-kerman'),lastmod:null},
-    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null})),
-    ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt}))
+    {loc:publicUrl('/'),lastmod:null,image:''},
+    {loc:publicUrl('/all-news'),lastmod:null,image:''},
+    {loc:publicUrl('/about'),lastmod:null,image:''},
+    {loc:publicUrl('/contact'),lastmod:null,image:''},
+    {loc:publicUrl('/local/sardouiyeh'),lastmod:null,image:''},
+    {loc:publicUrl('/local/jiroft'),lastmod:null,image:''},
+    {loc:publicUrl('/local/south-kerman'),lastmod:null,image:''},
+    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null,image:''})),
+    ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt,image:a.image?publicUrl(a.image):''}))
   ];
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+'</url>').join('\n')+'\n</urlset>';
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+(x.image?'<image:image><image:loc>'+xmlEsc(x.image)+'</image:loc></image:image>':'')+'</url>').join('\n')+'\n</urlset>';
 }
 function newsSitemapXml(db){
   const cutoff=Date.now()-48*60*60*1000;
@@ -217,7 +217,7 @@ const server=http.createServer(async(req,res)=>{
     return send(res,200,JSON.stringify({ok:true,bytes:raw.length,sha1:sum}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   }
   if(req.method==='GET'&&p==='/hero-mosque.jpg'){res.writeHead(200,{...headers('image/jpeg'),'Cache-Control':'no-store, max-age=0','Content-Length':HERO_MOSQUE_JPG.length,'X-Hero-Sha1':HERO_MOSQUE_SHA1});res.end(HERO_MOSQUE_JPG);return;}
-  if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'no-store, no-cache, max-age=0, must-revalidate':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
+  if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'public,max-age=604800,stale-while-revalidate=86400':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
   if(p.startsWith('/uploads/'))return serveFile(res,UPLOAD_DIR,p,'/uploads/','public,max-age=31536000,immutable')||send(res,404,'Not found','text/plain; charset=utf-8');
   if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',version:APP_VERSION,time:now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   if(req.method==='GET'&&p==='/__version')return send(res,200,JSON.stringify({version:APP_VERSION,time:Date.now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'});
