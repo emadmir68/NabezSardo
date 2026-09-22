@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareText=()=>{
       const lines=['📰 '+title];
       if(lead)lines.push(lead);
-      lines.push('🔗 '+shareUrl,'نبض ساردو');
+      lines.push('📌 ادامه خبر را در سایت نبض ساردو بخوانید 👇','🔗 '+shareUrl,'نبض ساردو');
       return lines.join('\n\n');
     };
     const getShareImageFile=async()=>{
