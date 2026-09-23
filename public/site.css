@@ -7105,3 +7105,42 @@ svg{
   .home-glass .breaking-live{display:none!important}
 }
 @media(max-width:390px){.home-glass .breaking-label-pulse{display:none}}
+
+
+/* Approved smoky glass news cards — homepage cards only. */
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card){
+  position:relative;isolation:isolate;overflow:hidden;
+  border:1px solid rgba(143,117,74,.4)!important;
+  border-radius:20px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.03),transparent 38%),linear-gradient(160deg,rgba(37,33,39,.94),rgba(23,22,27,.93))!important;
+  box-shadow:0 18px 35px rgba(0,0,0,.19),inset 0 1px 0 rgba(255,255,255,.05)!important;
+  transition:border-color .25s,box-shadow .25s!important;
+  transform:none!important;
+}
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card)::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:5;
+  background:linear-gradient(115deg,transparent 33%,rgba(255,230,185,.09) 46%,rgba(255,230,185,.19) 50%,rgba(255,230,185,.08) 54%,transparent 67%)!important;
+  transform:translateX(-150%);mix-blend-mode:normal;animation:none;opacity:1;
+}
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card)::after{display:none!important}
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card).ns-card-shine::before{animation:nsLuxuryCardSheen .85s ease-out}
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card):is(:hover,:focus-within){
+  border-color:rgba(211,177,118,.69)!important;
+  box-shadow:0 22px 42px rgba(0,0,0,.27),inset 0 1px 0 rgba(231,209,166,.14)!important;
+}
+.home-glass .latest-grid .card .card-media{padding:12px 12px 0!important;background:transparent!important}
+.home-glass :is(.front-lead-media,.front-brief-media,.latest-grid .card-media) :is(img,video){object-fit:contain!important;transform:none!important;filter:none!important}
+.home-glass .latest-grid .card .card-media :is(img,video){border-radius:10px!important;background:#111216!important}
+.home-glass .latest-grid .card .pad{padding:18px!important}
+.home-glass .latest-grid .card h3{font-size:17px!important;line-height:1.95!important;font-weight:700!important;color:#f5eee6!important}
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card) :is(h2,h3) a{color:#f5eee6!important}
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card) .eyebrow{color:#dcc494!important}
+.home-glass .latest-grid .card .more{display:flex;align-items:center;min-height:44px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(218,195,147,.14);color:#ead4aa!important;background:transparent!important;font-size:11px}
+.home-glass .front-lead-bottom{border-top-color:rgba(218,195,147,.14)!important}
+.home-glass :is(.front-lead,.front-brief,.latest-grid .card) .news-date{color:#b6acaa!important}
+@keyframes nsLuxuryCardSheen{to{transform:translateX(150%)}}
+@media(max-width:620px){.home-glass .latest-grid .card h3{font-size:18px!important}}
+@media(prefers-reduced-motion:reduce){
+  .home-glass :is(.front-lead,.front-brief,.latest-grid .card){transition:none!important}
+  .home-glass :is(.front-lead,.front-brief,.latest-grid .card).ns-card-shine::before{animation:none!important}
+}
