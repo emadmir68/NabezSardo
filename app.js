@@ -90,6 +90,7 @@ function sitemapXml(db){
     {loc:publicUrl('/all-news'),lastmod:null,image:''},
     {loc:publicUrl('/about'),lastmod:null,image:''},
     {loc:publicUrl('/contact'),lastmod:null,image:''},
+    {loc:publicUrl('/follow-up'),lastmod:null,image:''},
     {loc:publicUrl('/local/sardouiyeh'),lastmod:null,image:''},
     {loc:publicUrl('/local/jiroft'),lastmod:null,image:''},
     {loc:publicUrl('/local/south-kerman'),lastmod:null,image:''},
@@ -181,6 +182,31 @@ function articlePayload(db,f,files,current={}){
   };
 }
 
+function safeTrackerLink(v=''){
+  const s=String(v||'').trim().slice(0,500);
+  if(!s)return '';
+  if(/^https:\/\//i.test(s)||/^\/(?!\/)/.test(s))return s;
+  return '';
+}
+function followupPayload(f,current={}){
+  const allowed=new Set(['announced','started','progress','completed','paused','closed']);
+  const status=allowed.has(String(f.status||''))?String(f.status):'announced';
+  return {
+    title:String(f.title||'').trim().slice(0,180),
+    promise:String(f.promise||'').trim().slice(0,1200),
+    promisor:String(f.promisor||'').trim().slice(0,160),
+    location:String(f.location||'').trim().slice(0,120),
+    promisedAt:String(f.promisedAt||'').trim().slice(0,10),
+    deadline:String(f.deadline||'').trim().slice(0,10),
+    status,
+    note:String(f.note||'').trim().slice(0,1600),
+    sourceLabel:String(f.sourceLabel||'').trim().slice(0,160),
+    sourceUrl:safeTrackerLink(f.sourceUrl),
+    featured:f.featured==='1',
+    updatedAt:now(),
+    completedAt:status==='completed'?(current.completedAt||now()):null
+  };
+}
 const HERO_MOSQUE_PATH=path.join(ROOT,'public','header-mosque-fixed.jpg');
 const HERO_HQ_CHUNKS=['hero-hq-00.txt','hero-hq-01.txt','hero-hq-02.txt','hero-hq-03.txt','hero-hq-04.txt'];
 const HERO_SEED_TOKEN=process.env.HERO_SEED_TOKEN||'';
@@ -241,6 +267,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/about'){analytics.track(req,p);return send(res,200,views.simple(db,'about'));}
   if(req.method==='GET'&&p==='/contact'){analytics.track(req,p);return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));}
   if(req.method==='GET'&&p==='/send-news'){analytics.track(req,p);return send(res,200,views.simple(db,'send-news',u.searchParams.get('ok')==='1',u.searchParams.get('uploadError')||''));}
+  if(req.method==='GET'&&p==='/follow-up'){analytics.track(req,p);return send(res,200,views.followup(db));}
   if(req.method==='GET'&&p==='/admin/login')return send(res,200,views.login(u.searchParams.get('error')==='1'));
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
@@ -270,8 +297,11 @@ const server=http.createServer(async(req,res)=>{
   if(p.startsWith('/admin')&&p!=='/admin/login'&&!authed(req))return redirect(res,'/admin/login');
   if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams,articleTools.socialStatus(),analytics.snapshot()));
   if(req.method==='GET'&&p==='/admin/articles/new')return send(res,200,views.editor(db));
+  if(req.method==='GET'&&p==='/admin/followups/new')return send(res,200,views.followupEditor(db));
   m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
   if(req.method==='GET'&&m){const a=db.articles.find(x=>x.id===m[1]);return a?send(res,200,views.editor(db,a,'/admin/articles/'+a.id+'/edit','ویرایش خبر')):send(res,404,'یافت نشد');}
+  m=p.match(/^\/admin\/followups\/([^/]+)\/edit$/);
+  if(req.method==='GET'&&m){const x=(db.followups||[]).find(v=>v.id===m[1]);return x?send(res,200,views.followupEditor(db,x,'/admin/followups/'+x.id+'/edit','ویرایش پرونده پیگیری')):send(res,404,'یافت نشد');}
   if(req.method==='GET'&&p==='/admin/backup/download'){
     const payload=JSON.stringify(fullBackup());
     const name='nabezsardo-backup-'+new Date().toISOString().slice(0,10)+'.json';
@@ -360,6 +390,28 @@ const server=http.createServer(async(req,res)=>{
       if(!files.backupFile||!files.backupFile.data.length)return redirect(res,'/admin?restoreError=1');
       try{restoreFullBackup(JSON.parse(files.backupFile.data.toString('utf8')));return redirect(res,'/admin?restored=1');}
       catch{return redirect(res,'/admin?restoreError=1');}
+    }
+    if(p==='/admin/followups/new'){
+      const payload=followupPayload(f,{});
+      if(!payload.title||!payload.promise)return redirect(res,'/admin/followups/new?error=1');
+      db.followups=db.followups||[];
+      db.followups.unshift({id:id(),createdAt:now(),...payload});
+      save(db);
+      return redirect(res,'/admin?followupSaved=1#followups');
+    }
+    m=p.match(/^\/admin\/followups\/([^/]+)\/edit$/);
+    if(m){
+      db.followups=db.followups||[];
+      const x=db.followups.find(v=>v.id===m[1]);if(!x)return send(res,404,'یافت نشد');
+      const payload=followupPayload(f,x);
+      if(!payload.title||!payload.promise)return redirect(res,'/admin/followups/'+x.id+'/edit?error=1');
+      Object.assign(x,payload);save(db);
+      return redirect(res,'/admin?followupSaved=1#followups');
+    }
+    m=p.match(/^\/admin\/followups\/([^/]+)\/delete$/);
+    if(m){
+      db.followups=(db.followups||[]).filter(v=>v.id!==m[1]);save(db);
+      return redirect(res,'/admin?followupDeleted=1#followups');
     }
     if(p==='/admin/articles/new'){
       const payload=await articleTools.articlePayload(db,f,files,{},uniqueSlug);
