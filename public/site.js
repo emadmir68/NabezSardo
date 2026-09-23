@@ -694,6 +694,73 @@ document.addEventListener('DOMContentLoaded',()=>{
   },{passive:true});
   if(desktopTickerMQ.addEventListener)desktopTickerMQ.addEventListener('change',setupBreakingTicker);
 
+
+  // Nabez 60 — immersive glass newsroom stories.
+  const n60Root=document.querySelector('[data-n60-root]');
+  if(n60Root){
+    const slides=[...n60Root.querySelectorAll('[data-n60-slide]')];
+    const bars=[...n60Root.querySelectorAll('[data-n60-progress]')];
+    const prevBtn=n60Root.querySelector('[data-n60-prev]');
+    const nextBtn=n60Root.querySelector('[data-n60-next]');
+    const pauseBtn=n60Root.querySelector('[data-n60-pause]');
+    let index=0,paused=false,started=performance.now(),raf=0;
+    const duration=11000;
+    const render=next=>{
+      if(!slides.length)return;
+      index=(next+slides.length)%slides.length;
+      slides.forEach((slide,i)=>{
+        const on=i===index;
+        slide.classList.toggle('is-active',on);
+        slide.setAttribute('aria-hidden',on?'false':'true');
+      });
+      bars.forEach((bar,i)=>{
+        bar.classList.toggle('is-done',i<index);
+        bar.classList.toggle('is-current',i===index);
+        const fill=bar.querySelector('i');
+        if(fill)fill.style.width=i<index?'100%':'0%';
+      });
+      started=performance.now();
+    };
+    const frame=now=>{
+      if(!paused&&slides.length){
+        const elapsed=now-started;
+        const fill=bars[index]?.querySelector('i');
+        if(fill)fill.style.width=Math.min(100,(elapsed/duration)*100)+'%';
+        if(elapsed>=duration){render(index+1);}
+      }
+      raf=requestAnimationFrame(frame);
+    };
+    render(0);raf=requestAnimationFrame(frame);
+    prevBtn?.addEventListener('click',()=>render(index-1));
+    nextBtn?.addEventListener('click',()=>render(index+1));
+    pauseBtn?.addEventListener('click',()=>{
+      paused=!paused;
+      pauseBtn.textContent=paused?'▶':'Ⅱ';
+      pauseBtn.setAttribute('aria-label',paused?'ادامه پخش':'توقف پخش');
+      if(!paused)started=performance.now();
+    });
+    addEventListener('keydown',ev=>{
+      if(ev.key==='ArrowDown'||ev.key==='ArrowRight')render(index+1);
+      if(ev.key==='ArrowUp'||ev.key==='ArrowLeft')render(index-1);
+      if(ev.key===' '){ev.preventDefault();pauseBtn?.click();}
+      if(ev.key==='Escape')location.href='/';
+    });
+    let sy=0,sx=0;
+    n60Root.addEventListener('touchstart',ev=>{
+      const t=ev.touches[0];if(!t)return;sy=t.clientY;sx=t.clientX;
+    },{passive:true});
+    n60Root.addEventListener('touchend',ev=>{
+      const t=ev.changedTouches[0];if(!t)return;
+      const dy=t.clientY-sy,dx=t.clientX-sx;
+      if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){render(index+(dy<0?1:-1));}
+    },{passive:true});
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='hidden')paused=true;
+      else{paused=false;started=performance.now();if(pauseBtn)pauseBtn.textContent='Ⅱ';}
+    });
+    addEventListener('beforeunload',()=>cancelAnimationFrame(raf),{once:true});
+  }
+
   const syncAdaptiveMedia=frame=>{
     const img=frame.querySelector('img');
     if(!img)return;
