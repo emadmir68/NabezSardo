@@ -38,8 +38,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     }catch{}
   };
   if(liveViewsEl){
-    refreshLiveViews();
-    setInterval(refreshLiveViews,4000);
+    const startLiveViews=()=>{
+      refreshLiveViews();
+      setInterval(refreshLiveViews,10000);
+    };
+    if('requestIdleCallback' in window)requestIdleCallback(startLiveViews,{timeout:2200});
+    else setTimeout(startLiveViews,1200);
     new MutationObserver(()=>{if(liveViewsValue!==null)paintLiveViews(liveViewsValue,false)}).observe(root,{attributes:true,attributeFilter:['data-lang']});
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshLiveViews();});
   }
@@ -826,6 +830,27 @@ document.addEventListener('DOMContentLoaded',()=>{
   };
   document.querySelectorAll('[data-adaptive-media]').forEach(syncAdaptiveMedia);
 
+  // Video cards load/play only near the viewport so they do not compete with
+  // the hero, CSS and article images during initial mobile/desktop rendering.
+  const cardVideos=[...document.querySelectorAll('video[data-card-video]')];
+  if(cardVideos.length){
+    const videoReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(!videoReduced&&'IntersectionObserver' in window){
+      const videoObserver=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          const video=entry.target;
+          if(entry.isIntersecting&&entry.intersectionRatio>=.18){
+            if(video.preload==='none')video.preload='metadata';
+            const p=video.play();
+            if(p&&typeof p.catch==='function')p.catch(()=>{});
+          }else{
+            video.pause();
+          }
+        });
+      },{rootMargin:'180px 0px',threshold:[0,.18,.6]});
+      cardVideos.forEach(video=>videoObserver.observe(video));
+    }
+  }
 
   const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!reduceMotion){
@@ -861,7 +886,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       },{passive:true});
     }
   }
-  if(reduceMotion)return;
+  if(reduceMotion||matchMedia('(pointer:coarse)').matches)return;
   document.querySelectorAll('.tilt').forEach(el=>{
     el.addEventListener('pointermove',ev=>{
       const b=el.getBoundingClientRect();
