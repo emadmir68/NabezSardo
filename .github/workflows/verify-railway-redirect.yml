@@ -1,0 +1,34 @@
+name: Verify Railway Canonical Redirect
+
+on:
+  push:
+    branches:
+      - seo-day1-image-local-links
+    paths:
+      - .github/workflows/verify-railway-redirect.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify 301 redirects and health
+        run: |
+          set -euo pipefail
+          old="https://nabezsardo-prod-production.up.railway.app"
+          check_redirect() {
+            path="$1"
+            curl -sS -D headers.txt -o /dev/null --max-time 30 "$old$path"
+            code=$(awk 'toupper($1) ~ /^HTTP\// {c=$2} END{print c}' headers.txt)
+            loc=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/,""); print substr($0,11)}' headers.txt | tail -1)
+            echo "REDIRECT path=$path code=$code location=$loc"
+            test "$code" = "301"
+            test "$loc" = "https://nabzesardo.ir$path"
+          }
+          check_redirect "/"
+          check_redirect "/all-news"
+          code=$(curl -sS -o health.json -w "%{http_code}" --max-time 30 "$old/health")
+          echo "HEALTH code=$code body=$(cat health.json)"
+          test "$code" = "200"
