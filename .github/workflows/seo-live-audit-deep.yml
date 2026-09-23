@@ -1,0 +1,88 @@
+name: Deep SEO Live Audit
+
+on:
+  push:
+    branches:
+      - seo-day1-image-local-links
+    paths:
+      - .github/workflows/seo-live-audit-deep.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Audit live search surfaces
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import urllib.request, urllib.parse, xml.etree.ElementTree as ET, re, json
+          BASE="https://nabzesardo.ir"
+          def get(path):
+              req=urllib.request.Request(BASE+path,headers={"User-Agent":"NabezSEOAudit/1.0"})
+              with urllib.request.urlopen(req,timeout=30) as r:
+                  return r.status, r.read().decode("utf-8","replace"), dict(r.headers)
+          for path in ["/","/robots.txt","/sitemap.xml","/news-sitemap.xml","/local/sardouiyeh","/local/jiroft","/local/anbarabad","/local/kahnuj","/local/south-kerman"]:
+              status,body,headers=get(path)
+              print(f"ENDPOINT {path} status={status} bytes={len(body.encode())}")
+          _,sm,_=get("/sitemap.xml")
+          root=ET.fromstring(sm)
+          ns={"s":"http://www.sitemaps.org/schemas/sitemap/0.9","i":"http://www.google.com/schemas/sitemap-image/1.1"}
+          urls=root.findall("s:url",ns)
+          imgs=root.findall(".//i:image",ns)
+          lastmods=root.findall(".//s:lastmod",ns)
+          print(f"SITEMAP urls={len(urls)} images={len(imgs)} lastmods={len(lastmods)}")
+          bad=[]
+          image_urls=[]
+          article_urls=[]
+          for u in urls:
+              loc=u.find("s:loc",ns)
+              if loc is not None and "/news/" in (loc.text or ""): article_urls.append(loc.text)
+              for im in u.findall("i:image",ns):
+                  il=im.find("i:loc",ns)
+                  if il is not None and il.text:
+                      image_urls.append(il.text)
+                      if not il.text.startswith("http"): bad.append(il.text)
+                      if "nabzesardo.irhttps://" in il.text: bad.append(il.text)
+          print("BAD_IMAGE_URLS",len(bad))
+          ok=0
+          for url in image_urls[:20]:
+              try:
+                  req=urllib.request.Request(url,method="HEAD",headers={"User-Agent":"NabezSEOAudit/1.0"})
+                  with urllib.request.urlopen(req,timeout=15) as r:
+                      if 200 <= r.status < 400: ok+=1
+              except Exception:
+                  try:
+                      req=urllib.request.Request(url,headers={"Range":"bytes=0-1024","User-Agent":"NabezSEOAudit/1.0"})
+                      with urllib.request.urlopen(req,timeout=15) as r:
+                          if 200 <= r.status < 400: ok+=1
+                  except Exception: pass
+          print(f"IMAGE_SAMPLE_OK {ok}/{min(20,len(image_urls))}")
+          local_links=0
+          schema_multi=0
+          checked=0
+          for url in article_urls[:20]:
+              try:
+                  req=urllib.request.Request(url,headers={"User-Agent":"NabezSEOAudit/1.0"})
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      html=r.read().decode("utf-8","replace")
+                  checked+=1
+                  if "article-local-link" in html: local_links+=1
+                  if '"@type":"NewsArticle"' in html and html.count("https://nabzesardo.ir/uploads/")>=2: schema_multi+=1
+              except Exception: pass
+          print(f"ARTICLE_SAMPLE checked={checked} local_links={local_links} multi_image_schema={schema_multi}")
+          try:
+              _,stats,_=get("/api/live-stats")
+              print("LIVE_STATS",stats[:1200])
+          except Exception as e:
+              print("LIVE_STATS unavailable",repr(e))
+          _,robots,_=get("/robots.txt")
+          print("ROBOTS_HAS_MAIN", "Sitemap: https://nabzesardo.ir/sitemap.xml" in robots)
+          print("ROBOTS_HAS_NEWS", "Sitemap: https://nabzesardo.ir/news-sitemap.xml" in robots)
+          for key in ["sardouiyeh","jiroft","anbarabad","kahnuj","south-kerman"]:
+              _,html,_=get("/local/"+key)
+              m=re.search(r"<title>(.*?)</title>",html,re.I|re.S)
+              print("LOCAL_TITLE",key,(m.group(1).strip() if m else "MISSING"))
+          PY
