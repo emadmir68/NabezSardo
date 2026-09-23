@@ -6951,3 +6951,47 @@ svg{
     grid-template-columns:88px minmax(0,1fr)!important;
   }
 }
+
+
+/* ==================== PUBLIC RENDER PERFORMANCE / V1 ====================
+   Skip rendering below-the-fold sections until the browser approaches them.
+   Visual geometry is preserved with intrinsic-size placeholders.
+========================================================================= */
+@supports (content-visibility:auto){
+  .home-glass .frontpage-desk,
+  .home-glass .home-short-news-section,
+  .home-glass .promo-slot.promo-citizen,
+  .home-glass .topic-terminal-section,
+  .home-glass .today-pulse-section,
+  .home-glass .home-ad-slot,
+  .home-glass .latest-section,
+  .home-glass .popular-section,
+  .home-glass .focus,
+  .home-glass .citizen,
+  .home-glass .fu-home,
+  .archive-grid .card,
+  .category-page .grid.news .card,
+  .search-page .grid.news .card,
+  .article-gallery,
+  footer{
+    content-visibility:auto;
+    contain-intrinsic-size:auto 520px;
+  }
+
+  .home-glass .frontpage-desk,
+  .home-glass .latest-section,
+  .home-glass .focus{
+    contain-intrinsic-size:auto 760px;
+  }
+
+  footer{
+    contain-intrinsic-size:auto 320px;
+  }
+}
+
+/* Reduce paint work for offscreen card layers without changing appearance. */
+.archive-grid .card,
+.category-page .grid.news .card,
+.search-page .grid.news .card{
+  contain:layout paint style;
+}
