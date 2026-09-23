@@ -859,7 +859,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const cardVideos=[...document.querySelectorAll('video[data-card-video]')];
   if(cardVideos.length){
     const videoReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(!videoReduced&&'IntersectionObserver' in window){
+    const cardVideoAutoplay=matchMedia('(hover:hover) and (pointer:fine)').matches;
+    if(cardVideoAutoplay&&!videoReduced&&'IntersectionObserver' in window){
       const videoObserver=new IntersectionObserver(entries=>{
         entries.forEach(entry=>{
           const video=entry.target;
