@@ -98,11 +98,21 @@ function sitemapXml(db){
     kahnuj:['کهنوج'],
     'south-kerman':['جنوب کرمان','کرمان جنوبی','جیرفت','عنبرآباد','عنبر اباد','عنبر آباد','کهنوج','ساردوئیه','ساردویه','ساردو']
   };
-  const localLastmod=key=>{
-    const terms=localTerms[key]||[];
-    const found=latestOf(articles.filter(a=>terms.some(t=>[a.location,a.title,a.lead,a.body].filter(Boolean).join(' ').includes(t))));
-    return stamp(found);
+  const seoLocation=a=>{
+    const raw=String(a&&a.location||'').trim();
+    if(!raw)return '';
+    if(raw==='ساردوئیه'){
+      const content=[a&&a.title,a&&a.lead,a&&a.body].filter(Boolean).join(' ');
+      if(a&&a.categoryId!=='sardouiyeh'&&!/ساردوئیه|ساردویه|ساردو/.test(content))return '';
+    }
+    return raw;
   };
+  const localMatches=(a,key)=>{
+    const terms=localTerms[key]||[];
+    const hay=[seoLocation(a),a.title,a.lead,a.body].filter(Boolean).join(' ');
+    return terms.some(t=>hay.includes(t));
+  };
+  const localLastmod=key=>stamp(latestOf(articles.filter(a=>localMatches(a,key))));
   const latestArticle=latestOf(articles);
   const latestFollowup=(db.followups||[]).reduce((best,x)=>new Date(x.updatedAt||x.createdAt||0)>new Date(best?.updatedAt||best?.createdAt||0)?x:best,null);
   const articleImages=a=>{
@@ -115,11 +125,9 @@ function sitemapXml(db){
     {loc:publicUrl('/about'),lastmod:null,images:[]},
     {loc:publicUrl('/contact'),lastmod:null,images:[]},
     {loc:publicUrl('/follow-up'),lastmod:latestFollowup&&(latestFollowup.updatedAt||latestFollowup.createdAt),images:[]},
-    {loc:publicUrl('/local/sardouiyeh'),lastmod:localLastmod('sardouiyeh'),images:[]},
-    {loc:publicUrl('/local/jiroft'),lastmod:localLastmod('jiroft'),images:[]},
-    {loc:publicUrl('/local/anbarabad'),lastmod:localLastmod('anbarabad'),images:[]},
-    {loc:publicUrl('/local/kahnuj'),lastmod:localLastmod('kahnuj'),images:[]},
-    {loc:publicUrl('/local/south-kerman'),lastmod:localLastmod('south-kerman'),images:[]},
+    ...['sardouiyeh','jiroft','anbarabad','kahnuj','south-kerman']
+      .map(key=>({loc:publicUrl('/local/'+key),lastmod:localLastmod(key),images:[]}))
+      .filter(x=>x.lastmod),
     ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:stamp(latestOf(articles.filter(a=>a.categoryId===x.id))),images:[]})),
     ...articles.map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:stamp(a),images:articleImages(a)}))
   ];
