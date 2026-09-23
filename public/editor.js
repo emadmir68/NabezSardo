@@ -6,6 +6,129 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   });
 
+
+  // ==================== UNIFIED ADMIN DRAWERS / V1 ====================
+  // Keep every dashboard section compact by default without changing its forms or data.
+  const dashboard=document.querySelector('.admin-dashboard-content');
+  if(dashboard){
+    const configs={
+      overview:{no:'01',title:'نمای کلی',desc:'خلاصه وضعیت تحریریه و آمار سایت'},
+      news:{no:'02',title:'مدیریت خبرها',desc:'ویرایش، حذف و بررسی وضعیت انتشار'},
+      followups:{no:'03',title:'پیگیری تا نتیجه',desc:'وعده‌ها، پروژه‌ها و پرونده‌های پیگیری'},
+      live:{no:'04',title:'نبض فوری',desc:'متن فوری و وضعیت LIVE DESK'},
+      ads:{no:'05',title:'مدیریت تبلیغات',desc:'عنوان، تصویر و لینک جایگاه تبلیغاتی'},
+      social:{no:'06',title:'شبکه‌های اجتماعی',desc:'وضعیت اتصال و انتشار هم‌زمان'},
+      citizens:{no:'07',title:'خبرهای مردمی',desc:'گزارش‌ها و فایل‌های ارسالی مخاطبان'},
+      messages:{no:'08',title:'پیام‌ها',desc:'پیام‌های دریافتی از فرم تماس'},
+      backup:{no:'09',title:'پشتیبان‌گیری',desc:'دانلود، ساخت و بازیابی نسخه پشتیبان'}
+    };
+    const sidebarCount=id=>document.querySelector('.admin-sidebar-nav a[href="#'+id+'"] i')?.textContent?.trim()||'';
+    const metaFor=(id,node)=>{
+      if(id==='overview')return (sidebarCount('news')||'۰')+' خبر';
+      if(id==='news')return (sidebarCount('news')||'۰')+' خبر';
+      if(id==='followups')return (sidebarCount('followups')||'۰')+' پرونده';
+      if(id==='live')return node.querySelector('.live-desk-admin-state b')?.textContent?.trim()||'وضعیت خبر فوری';
+      if(id==='ads')return node.querySelector('input[name="adEnabled"]')?.checked?'فعال':'خاموش';
+      if(id==='social')return String(node.querySelectorAll('.integration-card.ready').length)+' اتصال آماده';
+      if(id==='citizens')return (sidebarCount('citizens')||'۰')+' مورد';
+      if(id==='messages')return (sidebarCount('messages')||'۰')+' پیام';
+      if(id==='backup')return String(node.querySelectorAll('.backup-list span').length)+' نسخه اخیر';
+      return '';
+    };
+    const makeSummary=(cfg,meta)=>{
+      const summary=document.createElement('summary');
+      summary.className='admin-drawer-summary';
+
+      const main=document.createElement('div');
+      main.className='admin-drawer-summary-main';
+      const no=document.createElement('span');
+      no.className='admin-section-no';
+      no.textContent=cfg.no;
+      const copy=document.createElement('div');
+      const h=document.createElement('h2');
+      h.textContent=cfg.title;
+      const p=document.createElement('p');
+      p.textContent=cfg.desc;
+      copy.append(h,p);
+      main.append(no,copy);
+
+      const metaEl=document.createElement('span');
+      metaEl.className='admin-drawer-meta';
+      metaEl.textContent=meta||'';
+
+      const toggle=document.createElement('span');
+      toggle.className='admin-drawer-toggle';
+      const open=document.createElement('span');
+      open.className='admin-drawer-open';
+      open.textContent='باز کردن';
+      const close=document.createElement('span');
+      close.className='admin-drawer-close';
+      close.textContent='بستن';
+      const arrow=document.createElement('i');
+      arrow.textContent='⌄';
+      toggle.append(open,close,arrow);
+      summary.append(main,metaEl,toggle);
+      return summary;
+    };
+
+    [...dashboard.querySelectorAll('.admin-section-block')].forEach(node=>{
+      const id=node.id;
+      const cfg=configs[id];
+      if(!cfg)return;
+      if(node.tagName==='DETAILS'){
+        node.classList.add('admin-drawer');
+        node.setAttribute('data-admin-drawer','');
+        node.open=false;
+        const no=node.querySelector('.admin-section-no');
+        if(no)no.textContent=cfg.no;
+        return;
+      }
+
+      const details=document.createElement('details');
+      details.id=id;
+      details.className=node.className+' admin-drawer';
+      details.setAttribute('data-admin-drawer','');
+
+      const meta=metaFor(id,node);
+      const summary=makeSummary(cfg,meta);
+      const body=document.createElement('div');
+      body.className='admin-drawer-body';
+
+      const header=node.querySelector(':scope > .admin-section-title, :scope > .panel-head');
+      if(header){
+        const first=header.querySelector(':scope > div:first-child');
+        if(first&&first.querySelector('h2'))first.remove();
+        if(!header.children.length)header.remove();
+      }
+
+      while(node.firstChild)body.appendChild(node.firstChild);
+      details.append(summary,body);
+      node.replaceWith(details);
+    });
+
+    const drawers=[...dashboard.querySelectorAll('details[data-admin-drawer]')];
+    drawers.forEach(drawer=>{
+      drawer.addEventListener('toggle',()=>{
+        if(!drawer.open)return;
+        drawers.forEach(other=>{if(other!==drawer)other.open=false;});
+      });
+    });
+
+    const openDrawer=id=>{
+      const drawer=dashboard.querySelector('details#'+CSS.escape(id)+'[data-admin-drawer]');
+      if(!drawer)return;
+      drawer.open=true;
+      requestAnimationFrame(()=>drawer.scrollIntoView({behavior:'smooth',block:'start'}));
+    };
+    document.querySelectorAll('.admin-sidebar-nav a[href^="#"]').forEach(link=>{
+      link.addEventListener('click',()=>{
+        const id=(link.getAttribute('href')||'').slice(1);
+        if(id)setTimeout(()=>openDrawer(id),0);
+      });
+    });
+    if(location.hash)setTimeout(()=>openDrawer(location.hash.slice(1)),0);
+  }
+
   const cleanSingleLine=value=>String(value||'').replace(/\u00a0/g,' ').replace(/[\t\r\n]+/g,' ').replace(/ {2,}/g,' ').trim();
   const escapeEditorHtml=value=>String(value||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const plainToParagraphHtml=text=>{
@@ -239,16 +362,5 @@ document.addEventListener('DOMContentLoaded',()=>{
     select.addEventListener('change',refresh);refresh();
   });
 
-  // Open the compact news drawer when the admin navigation targets #news.
-  const newsDrawer=document.querySelector('details.admin-news-collapsible#news');
-  const openNewsDrawer=()=>{
-    if(!newsDrawer)return;
-    newsDrawer.open=true;
-    requestAnimationFrame(()=>newsDrawer.scrollIntoView({behavior:'smooth',block:'start'}));
-  };
-  document.querySelectorAll('a[href="#news"]').forEach(link=>link.addEventListener('click',()=>{
-    setTimeout(openNewsDrawer,0);
-  }));
-  if(location.hash==='#news')setTimeout(openNewsDrawer,0);
 
 });
