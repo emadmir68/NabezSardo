@@ -1095,3 +1095,238 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
     align-items:flex-start;
   }
 }
+
+
+/* ==================== UNIFIED ADMIN DRAWERS / V1 ====================
+   All top-level dashboard sections use one compact accordion language.
+==================================================================== */
+.admin-dashboard-content{
+  min-width:0;
+}
+.admin-dashboard-content .admin-drawer{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  margin:0 0 11px;
+  padding:0!important;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:18px;
+  background:linear-gradient(145deg,#11161e,#0b0f15);
+  box-shadow:0 12px 30px rgba(0,0,0,.15);
+}
+.admin-drawer>summary{
+  list-style:none;
+}
+.admin-drawer>summary::-webkit-details-marker{
+  display:none;
+}
+.admin-drawer-summary,
+.admin-news-summary{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:14px;
+  min-height:74px;
+  padding:13px 16px!important;
+  cursor:pointer;
+  user-select:none;
+  background:transparent;
+  transition:background .18s ease,border-color .18s ease;
+}
+.admin-drawer-summary:hover,
+.admin-news-summary:hover{
+  background:rgba(255,255,255,.018);
+}
+.admin-drawer[open]>.admin-drawer-summary,
+.admin-drawer[open]>.admin-news-summary{
+  border-bottom:1px solid rgba(255,255,255,.055);
+  background:linear-gradient(180deg,rgba(213,169,91,.025),transparent);
+}
+.admin-drawer-summary-main,
+.admin-news-summary-main{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.admin-drawer-summary-main>div,
+.admin-news-summary-main>div{
+  min-width:0;
+}
+.admin-drawer-summary h2,
+.admin-news-summary h2{
+  margin:0;
+  color:#ede9e1;
+  font-size:16px;
+  line-height:1.45;
+}
+.admin-drawer-summary p,
+.admin-news-summary p{
+  margin:3px 0 0;
+  color:#6f7884;
+  font-size:8.5px;
+  line-height:1.65;
+}
+.admin-drawer-meta{
+  min-width:82px;
+  max-width:180px;
+  padding:7px 10px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:999px;
+  background:rgba(255,255,255,.018);
+  color:#b89558;
+  font-size:8px;
+  font-weight:850;
+  text-align:center;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.admin-drawer-toggle,
+.admin-news-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:92px;
+  padding:7px 10px;
+  border:1px solid rgba(213,169,91,.16);
+  border-radius:999px;
+  color:#c9a15c;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.admin-drawer-toggle i,
+.admin-news-toggle i{
+  font-style:normal;
+  font-size:13px;
+  transition:transform .18s ease;
+}
+.admin-drawer-close{
+  display:none;
+}
+.admin-drawer[open] .admin-drawer-open{
+  display:none;
+}
+.admin-drawer[open] .admin-drawer-close{
+  display:inline;
+}
+.admin-drawer[open] .admin-drawer-toggle i,
+.admin-drawer[open] .admin-news-toggle i{
+  transform:rotate(180deg);
+}
+.admin-drawer-body{
+  min-width:0;
+  padding:15px 16px 16px;
+}
+.admin-drawer-body>.admin-section-title,
+.admin-drawer-body>.panel-head{
+  min-height:0;
+  margin:0 0 12px;
+  padding:0;
+  justify-content:flex-end;
+}
+.admin-drawer-body>.admin-section-title:empty,
+.admin-drawer-body>.panel-head:empty{
+  display:none;
+}
+.admin-drawer-body>.admin-section-title>.btn{
+  margin-inline-start:auto;
+}
+.admin-drawer-body>.panel-head>.actions{
+  margin-inline-start:auto;
+}
+.admin-drawer-body>.live-desk-admin-state{
+  margin-inline-start:auto;
+}
+.admin-drawer-body>.admin-fold:first-child,
+.admin-drawer-body>.stats:first-child,
+.admin-drawer-body>.form:first-child,
+.admin-drawer-body>.integration-grid:first-child,
+.admin-drawer-body>.backup-list:first-child{
+  margin-top:0;
+}
+.admin-drawer .admin-scroll-list{
+  max-height:520px;
+  overflow:auto;
+}
+.admin-inbox-grid{
+  grid-template-columns:1fr!important;
+  gap:11px!important;
+}
+.admin-inbox-grid>.admin-drawer{
+  margin:0;
+}
+
+/* Existing news drawer adopts the same compact footprint. */
+.admin-news-collapsible.admin-drawer{
+  border-radius:18px;
+  box-shadow:0 12px 30px rgba(0,0,0,.15);
+}
+.admin-news-collapsible .admin-news-summary-stats{
+  gap:5px;
+}
+.admin-news-collapsible .admin-news-summary-stats span{
+  min-width:58px;
+  padding:6px 8px;
+}
+.admin-news-collapsible .admin-news-tools{
+  margin:0;
+}
+
+@media(max-width:760px){
+  .admin-dashboard-content .admin-drawer{
+    margin-bottom:8px;
+    border-radius:15px;
+  }
+  .admin-drawer-summary,
+  .admin-news-summary{
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:9px;
+    min-height:68px;
+    padding:11px 12px!important;
+  }
+  .admin-drawer-meta,
+  .admin-news-summary-stats{
+    grid-column:1/-1;
+  }
+  .admin-drawer-meta{
+    width:max-content;
+    min-width:0;
+    max-width:100%;
+  }
+  .admin-drawer-toggle,
+  .admin-news-toggle{
+    min-width:0;
+    padding-inline:8px;
+  }
+  .admin-drawer-body{
+    padding:12px;
+  }
+  .admin-drawer .admin-scroll-list{
+    max-height:none;
+  }
+}
+
+@media(max-width:430px){
+  .admin-drawer-summary,
+  .admin-news-summary{
+    grid-template-columns:1fr;
+  }
+  .admin-drawer-summary-main,
+  .admin-news-summary-main{
+    align-items:flex-start;
+  }
+  .admin-drawer-toggle,
+  .admin-news-toggle{
+    width:100%;
+  }
+  .admin-drawer-meta{
+    width:100%;
+  }
+  .admin-news-summary-stats{
+    width:100%;
+  }
+}
