@@ -7144,3 +7144,6 @@ svg{
   .home-glass :is(.front-lead,.front-brief,.latest-grid .card){transition:none!important}
   .home-glass :is(.front-lead,.front-brief,.latest-grid .card).ns-card-shine::before{animation:none!important}
 }
+
+.home-glass .latest-grid .card > .card-media img,
+.home-glass .latest-grid .card > .card-media video{object-fit:contain!important;object-position:center!important;transform:none!important}
