@@ -1,0 +1,48 @@
+name: SEO Live Audit Day 1
+
+on:
+  push:
+    branches:
+      - seo-first-pass-day1
+    paths:
+      - .github/workflows/seo-live-audit-day1.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Audit live SEO endpoints
+        run: |
+          set -euo pipefail
+          base="https://nabzesardo.ir"
+          for path in / /robots.txt /sitemap.xml /news-sitemap.xml /local/sardouiyeh /local/jiroft /local/anbarabad /local/kahnuj /local/south-kerman; do
+            code=$(curl -L -sS -o "out$(echo "$path" | tr '/' '_').txt" -w "%{http_code}" "$base$path")
+            echo "$path HTTP=$code"
+            test "$code" = "200"
+          done
+          echo "--- HOMEPAGE SEO ---"
+          grep -o '<title>[^<]*</title>' out_.txt | head -1
+          grep -o '<meta name="robots" content="[^"]*"' out_.txt | head -1
+          grep -o '<link rel="canonical" href="[^"]*"' out_.txt | head -1
+          echo "--- ROBOTS ---"
+          cat out_robots.txt.txt
+          echo "--- SITEMAP COUNTS ---"
+          echo "urls=$(grep -o '<url>' out_sitemap.xml.txt | wc -l)"
+          echo "images=$(grep -o '<image:image>' out_sitemap.xml.txt | wc -l)"
+          echo "news48h=$(grep -o '<news:news>' out_news-sitemap.xml.txt | wc -l)"
+          echo "--- LOCAL HUBS ---"
+          for f in out_local_sardouiyeh.txt out_local_jiroft.txt out_local_anbarabad.txt out_local_kahnuj.txt out_local_south-kerman.txt; do
+            grep -o '<title>[^<]*</title>' "$f" | head -1
+          done
+          echo "--- BAD SITEMAP IMAGE URL CHECK ---"
+          if grep -q 'https://nabzesardo.irhttps://' out_sitemap.xml.txt; then
+            echo "BAD_ABSOLUTE_IMAGE_URL=YES"
+            exit 1
+          else
+            echo "BAD_ABSOLUTE_IMAGE_URL=NO"
+          fi
+          echo "--- SAMPLE IMAGE LOCS ---"
+          grep -o '<image:loc>[^<]*</image:loc>' out_sitemap.xml.txt | head -5 || true
