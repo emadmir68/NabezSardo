@@ -807,67 +807,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     addEventListener('beforeunload',()=>cancelAnimationFrame(raf),{once:true});
   }
 
-
-  // NABEZ STORY DEPTH / V1 — user-controlled reading depth.
-  document.querySelectorAll('[data-story-depth]').forEach(depth=>{
-    const range=depth.querySelector('[data-depth-range]');
-    const options=[...depth.querySelectorAll('[data-depth-option]')];
-    const previews=[...depth.querySelectorAll('[data-depth-preview]')];
-    const big=depth.querySelector('[data-depth-big]');
-    const caption=depth.querySelector('[data-depth-caption]');
-    if(!range||!options.length)return;
-
-    const labelMarkup=[
-      ['<span class="lang-fa">۵ ثانیه</span><span class="lang-en">5 SEC</span>','<span class="lang-fa">فقط اصل خبر</span><span class="lang-en">Just the essentials</span>'],
-      ['<span class="lang-fa">۳۰ ثانیه</span><span class="lang-en">30 SEC</span>','<span class="lang-fa">خلاصه سریع</span><span class="lang-en">Quick brief</span>'],
-      ['<span class="lang-fa">کامل</span><span class="lang-en">FULL</span>','<span class="lang-fa">خبر کامل</span><span class="lang-en">Full story</span>']
-    ];
-    const paint=value=>{
-      const v=Math.max(0,Math.min(2,Number(value)||0));
-      depth.dataset.depthMode=String(v);
-      range.value=String(v);
-      depth.style.setProperty('--depth-progress',(v*50)+'%');
-      options.forEach((btn,i)=>{
-        const on=i===v;
-        btn.classList.toggle('is-active',on);
-        btn.setAttribute('aria-selected',on?'true':'false');
-        btn.tabIndex=on?0:-1;
-      });
-      previews.forEach(panel=>{panel.hidden=Number(panel.dataset.depthPreview)!==v;});
-      if(big)big.innerHTML=labelMarkup[v][0];
-      if(caption)caption.innerHTML=labelMarkup[v][1];
-      try{sessionStorage.setItem('nabez-story-depth',String(v));}catch{}
-      depth.classList.remove('depth-pulse');
-      void depth.offsetWidth;
-      depth.classList.add('depth-pulse');
-      setTimeout(()=>depth.classList.remove('depth-pulse'),360);
-    };
-
-    let initial=2;
-    try{
-      const saved=Number(sessionStorage.getItem('nabez-story-depth'));
-      if([0,1,2].includes(saved))initial=saved;
-    }catch{}
-    paint(initial);
-
-    range.addEventListener('input',()=>paint(Number(range.value)));
-    options.forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const v=Number(btn.dataset.depthOption);
-        paint(v);
-        range.focus({preventScroll:true});
-      });
-      btn.addEventListener('keydown',ev=>{
-        if(ev.key!=='ArrowLeft'&&ev.key!=='ArrowRight')return;
-        ev.preventDefault();
-        const current=Number(btn.dataset.depthOption);
-        const next=ev.key==='ArrowRight'?Math.min(2,current+1):Math.max(0,current-1);
-        paint(next);
-        options[next]?.focus();
-      });
-    });
-  });
-
   const syncAdaptiveMedia=frame=>{
     const img=frame.querySelector('img');
     if(!img)return;
