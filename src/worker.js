@@ -919,7 +919,20 @@ async function serveAsset(request, pathname) {
   const u = new URL(request.url);
   if (pathname.startsWith("/assets/")) u.pathname = pathname.slice("/assets".length);
   if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
-  return env.ASSETS.fetch(new Request(u, request));
+  const assetResponse = await env.ASSETS.fetch(new Request(u, request));
+  if (request.method !== "GET" || !assetResponse.ok) return assetResponse;
+  const headers = new Headers(assetResponse.headers);
+  if (u.searchParams.has("v")) {
+    headers.set("cache-control", "public, max-age=31536000, immutable");
+  } else {
+    headers.set("cache-control", "public, max-age=86400, stale-while-revalidate=604800");
+  }
+  headers.set("x-content-type-options", "nosniff");
+  return new Response(assetResponse.body, {
+    status: assetResponse.status,
+    statusText: assetResponse.statusText,
+    headers
+  });
 }
 
 function decodeHtml(v = "") {
