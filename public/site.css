@@ -7041,3 +7041,67 @@ svg{
   .footer-local-links a{font-size:9px;padding:5px 8px}
   .footer-local-links{justify-content:flex-start}
 }
+
+/* Nabz Fori newsroom ribbon */
+.home-glass .breaking{
+  padding:5px 0 7px;
+  border:0;
+  background:linear-gradient(180deg,#100c11 0%,#150e16 100%);
+  box-shadow:none;
+}
+.home-glass .breaking::before{display:none}
+.home-glass .breaking-row{
+  position:relative;
+  min-height:64px;
+  margin:8px auto 10px;
+  padding:10px 14px;
+  gap:16px;
+  border:1px solid rgba(229,194,134,.25);
+  border-radius:20px;
+  background:linear-gradient(110deg,rgba(58,28,43,.75),rgba(24,23,30,.95) 44%,rgba(24,21,27,.92));
+  box-shadow:0 15px 34px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.09);
+  overflow:hidden;
+}
+.home-glass .breaking-row::before{
+  content:"";
+  position:absolute;
+  inset:0 auto auto 15%;
+  width:65%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(239,203,139,.65),transparent);
+  pointer-events:none;
+}
+.home-glass .breaking-label{
+  min-height:40px;
+  padding:0 15px;
+  gap:8px;
+  border:1px solid rgba(255,212,169,.25);
+  border-radius:12px;
+  background:linear-gradient(135deg,#a32a50,#691a37 72%,#541329);
+  box-shadow:0 7px 18px rgba(83,13,38,.34),inset 0 1px 0 rgba(255,255,255,.18);
+  color:#fff8f3;
+  font-size:12px;
+  font-weight:900;
+}
+.home-glass .breaking-item{color:#f1e9e5;font-size:13px;font-weight:750}
+.home-glass .breaking-sep{color:#edca8c}
+.home-glass .breaking-live{
+  min-height:30px;
+  padding-inline:10px;
+  border-color:rgba(231,192,119,.21);
+  background:rgba(231,192,119,.07);
+  color:#e9cd9e;
+}
+@media(max-width:620px){
+  .home-glass .breaking-row{
+    grid-template-columns:auto minmax(0,1fr);
+    min-height:60px;
+    gap:10px;
+    padding:8px 9px;
+    border-radius:17px;
+  }
+  .home-glass .breaking-label{min-height:38px;padding:0 10px;font-size:11px}
+  .home-glass .breaking-label-pulse{width:25px}
+  .home-glass .breaking-item{font-size:12px}
+  .home-glass .breaking-live{display:none!important}
+}
+@media(max-width:390px){.home-glass .breaking-label-pulse{display:none}}
