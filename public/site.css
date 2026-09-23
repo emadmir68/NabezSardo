@@ -6765,3 +6765,189 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
   .home-short-news-copy p{display:none}
   .home-short-news-row{padding:13px 12px}
 }
+
+
+/* ==================== MOBILE STABILITY GUARD / V1 ====================
+   Purpose: eliminate horizontal overflow and heavy mobile rendering.
+   Header + homepage Hero visual rules are intentionally untouched.
+====================================================================== */
+html,
+body{
+  max-width:100%;
+  overflow-x:clip;
+}
+@supports not (overflow:clip){
+  html,
+  body{overflow-x:hidden}
+}
+img,
+video,
+iframe,
+canvas,
+svg{
+  max-width:100%;
+}
+
+@media(max-width:620px){
+  main,
+  footer,
+  .home-glass,
+  .page,
+  .article,
+  .archive-page,
+  .search-page,
+  .category-page{
+    max-width:100%;
+    min-width:0;
+    overflow-x:clip;
+  }
+
+  .home-glass .frontpage-desk,
+  .home-glass .home-short-news-section,
+  .home-glass .promo-citizen,
+  .home-glass .topic-terminal-section,
+  .home-glass .today-pulse-section,
+  .home-glass .home-ad-slot,
+  .home-glass .latest-section,
+  .home-glass .popular-section,
+  .home-glass .focus,
+  .home-glass .citizen,
+  .home-glass .fu-home{
+    max-width:100%;
+    min-width:0;
+  }
+
+  /* Decorative glow layers were extending beyond the phone viewport. */
+  .home-glass .frontpage-desk::before,
+  .home-glass .latest-section::before,
+  .home-glass .home-short-news-section::before,
+  .home-glass .topic-terminal-section::before,
+  .home-glass .today-pulse-section::before,
+  .home-glass .promo-citizen::after,
+  .home-glass .home-ad-slot::before,
+  .home-glass .popular-section::before,
+  .home-glass .focus::before,
+  .home-glass .citizen::before{
+    display:none!important;
+  }
+
+  /* Disable costly frosted-glass passes on phones; keep the same geometry. */
+  .home-glass .front-lead,
+  .home-glass .front-brief,
+  .home-glass .latest-grid .card,
+  .home-glass .home-short-news-shell,
+  .home-glass .topic-terminal-shell,
+  .home-glass .today-pulse-shell,
+  .home-glass .promo-citizen,
+  .home-glass .home-ad-card,
+  .home-glass .popular-list,
+  .home-glass .focusgrid,
+  .home-glass .citizen{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+  }
+
+  .home-glass .front-lead::after,
+  .home-glass .front-brief::after,
+  .home-glass .latest-grid .card::after{
+    display:none!important;
+  }
+
+  .frontpage-grid,
+  .front-briefs,
+  .latest-grid,
+  .popular-list,
+  .topics,
+  .topic-terminal-screen,
+  .topic-terminal-list,
+  .today-pulse-shell,
+  .today-pulse-timeline,
+  .home-short-news-shell,
+  .home-short-news-list,
+  .home-ad-card,
+  .promo-slot.promo-citizen,
+  .focusgrid,
+  .fu-home,
+  .fu-home-grid,
+  .grid.news{
+    max-width:100%;
+    min-width:0;
+  }
+
+  .front-lead,
+  .front-brief,
+  .latest-grid .card,
+  .popular-row,
+  .topic,
+  .topic-terminal-row,
+  .today-pulse-item,
+  .home-short-news-row,
+  .home-ad-card,
+  .promo-slot.promo-citizen,
+  .fu-card,
+  .article-shell,
+  .article article,
+  .form,
+  .panel{
+    max-width:100%;
+    min-width:0;
+  }
+
+  .front-lead-copy,
+  .front-brief-copy,
+  .latest-grid .card .pad,
+  .topic-terminal-main,
+  .today-pulse-content,
+  .home-short-news-copy,
+  .promo-citizen .promo-copy,
+  .citizen-copy{
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+
+  .card-media,
+  .front-lead-media,
+  .front-brief-media,
+  .cover-frame,
+  .article-video,
+  .article-gallery-grid img{
+    max-width:100%!important;
+  }
+
+  .search,
+  .archive-search,
+  .search-large{
+    max-width:100%;
+    min-width:0;
+  }
+  .search input,
+  .archive-search input,
+  .search-large input{
+    min-width:0;
+    max-width:100%;
+  }
+
+  .article-body,
+  .article-deck,
+  .article-premium h1,
+  .body,
+  .lead{
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+}
+
+@media(max-width:380px){
+  .wrap{
+    width:calc(100% - 20px);
+  }
+  .latest-grid .magazine-card,
+  .latest-grid .magazine-card-1,
+  .latest-grid .magazine-card-4,
+  .latest-grid .magazine-card-6{
+    grid-template-columns:100px minmax(0,1fr)!important;
+  }
+  .front-brief{
+    grid-template-columns:88px minmax(0,1fr)!important;
+  }
+}
