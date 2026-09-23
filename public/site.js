@@ -866,6 +866,11 @@ document.addEventListener('DOMContentLoaded',()=>{
         entries.forEach(entry=>{
           const video=entry.target;
           if(entry.isIntersecting&&entry.intersectionRatio>=.18){
+            const source=video.querySelector('source[data-src]');
+            if(source&&!source.src){
+              source.src=source.dataset.src||'';
+              video.load();
+            }
             if(video.preload==='none')video.preload='metadata';
             const p=video.play();
             if(p&&typeof p.catch==='function')p.catch(()=>{});
