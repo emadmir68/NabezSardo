@@ -93,6 +93,8 @@ function sitemapXml(db){
     {loc:publicUrl('/follow-up'),lastmod:null,image:''},
     {loc:publicUrl('/local/sardouiyeh'),lastmod:null,image:''},
     {loc:publicUrl('/local/jiroft'),lastmod:null,image:''},
+    {loc:publicUrl('/local/anbarabad'),lastmod:null,image:''},
+    {loc:publicUrl('/local/kahnuj'),lastmod:null,image:''},
     {loc:publicUrl('/local/south-kerman'),lastmod:null,image:''},
     ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null,image:''})),
     ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt,image:a.image?publicUrl(a.image):''}))
@@ -271,7 +273,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/admin/login')return send(res,200,views.login(u.searchParams.get('error')==='1'));
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
-  let m=p.match(/^\/local\/(sardouiyeh|jiroft|south-kerman)$/);
+  let m=p.match(/^\/local\/(sardouiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/);
   if(req.method==='GET'&&m){const page=views.localHub(db,m[1]);if(!page)return send(res,404,'صفحه پیدا نشد');analytics.track(req,p);return send(res,200,page);}
 
   m=p.match(/^\/n\/([^/]+)$/);
