@@ -129,6 +129,154 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(location.hash)setTimeout(()=>openDrawer(location.hash.slice(1)),0);
   }
 
+
+  // ==================== PUBLICATION KIT / V1 ====================
+  const copyAdminText=async value=>{
+    const text=String(value||'');
+    if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(text);
+    else{
+      const ta=document.createElement('textarea');
+      ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+    }
+  };
+  document.querySelectorAll('[data-share-copy]').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const box=btn.closest('.share-kit-copy'),field=box&&box.querySelector('[data-share-copy-text]');
+      if(!field)return;
+      try{
+        await copyAdminText(field.value);
+        const old=btn.textContent;btn.textContent='کپی شد ✓';btn.classList.add('is-copied');
+        setTimeout(()=>{btn.textContent=old;btn.classList.remove('is-copied');},1500);
+      }catch{}
+    });
+  });
+  document.querySelectorAll('[data-copy-value]').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      try{
+        await copyAdminText(btn.dataset.copyValue||'');
+        const old=btn.textContent;btn.textContent='کپی شد ✓';
+        setTimeout(()=>btn.textContent=old,1400);
+      }catch{}
+    });
+  });
+
+  const shareStoryRoot=document.querySelector('[data-share-kit-story]');
+  if(shareStoryRoot){
+    const preview=shareStoryRoot.querySelector('[data-share-kit-story-preview]');
+    const shareBtn=shareStoryRoot.querySelector('[data-share-kit-story-share]');
+    const downloadBtn=shareStoryRoot.querySelector('[data-share-kit-story-download]');
+    let storyFile=null,storyObjectUrl='';
+
+    const roundRect=(ctx,x,y,w,h,r)=>{
+      const q=Math.min(r,w/2,h/2);
+      ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+w,y,x+w,y+h,q);ctx.arcTo(x+w,y+h,x,y+h,q);ctx.arcTo(x,y+h,x,y,q);ctx.arcTo(x,y,x+w,y,q);ctx.closePath();
+    };
+    const wrapLines=(ctx,value,maxWidth)=>{
+      const words=String(value||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+      words.forEach(word=>{
+        const test=line?line+' '+word:word;
+        if(line&&ctx.measureText(test).width>maxWidth){lines.push(line);line=word}else line=test;
+      });
+      if(line)lines.push(line);
+      return lines;
+    };
+    const loadKitImage=src=>new Promise(resolve=>{
+      if(!src){resolve(null);return;}
+      const img=new Image();img.decoding='async';img.crossOrigin='anonymous';
+      img.onload=()=>resolve(img);img.onerror=()=>resolve(null);
+      try{img.src=new URL(src,location.origin).href}catch{resolve(null)}
+    });
+    const drawContain=(ctx,img,x,y,w,h)=>{
+      ctx.fillStyle='#0b1118';roundRect(ctx,x,y,w,h,36);ctx.fill();
+      if(!img)return;
+      const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight);
+      const dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
+      ctx.save();roundRect(ctx,x,y,w,h,36);ctx.clip();
+      ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore();
+    };
+    const buildStory=async()=>{
+      try{if(document.fonts&&document.fonts.ready)await document.fonts.ready}catch{}
+      const title=shareStoryRoot.dataset.storyTitle||'نبض ساردو';
+      const lead=shareStoryRoot.dataset.storyLead||'';
+      const category=shareStoryRoot.dataset.storyCategory||'خبر';
+      const place=shareStoryRoot.dataset.storyLocation||'';
+      const url=shareStoryRoot.dataset.storyUrl||location.origin;
+      const img=await loadKitImage(shareStoryRoot.dataset.storyImage||'');
+      const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+      const ctx=canvas.getContext('2d');if(!ctx)throw new Error('canvas');
+
+      const bg=ctx.createLinearGradient(0,0,1080,1920);
+      bg.addColorStop(0,'#070b11');bg.addColorStop(.55,'#111923');bg.addColorStop(1,'#080b10');
+      ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1920);
+      const glow=ctx.createRadialGradient(860,180,20,860,180,620);
+      glow.addColorStop(0,'rgba(146,31,68,.34)');glow.addColorStop(.5,'rgba(210,169,92,.11)');glow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=glow;ctx.fillRect(0,0,1080,850);
+
+      ctx.strokeStyle='rgba(218,177,99,.25)';ctx.lineWidth=3;roundRect(ctx,60,65,960,1790,46);ctx.stroke();
+      ctx.direction='rtl';ctx.textAlign='right';
+      ctx.fillStyle='#f0c978';ctx.font='900 50px Vazirmatn, Tahoma, sans-serif';ctx.fillText('نبض ساردو',980,145);
+      ctx.fillStyle='rgba(230,235,242,.66)';ctx.font='600 22px Vazirmatn, Tahoma, sans-serif';ctx.fillText('رسانه محلی ساردوئیه و جنوب کرمان',980,190);
+      ctx.fillStyle='#d7ae63';ctx.fillRect(800,215,180,4);
+
+      drawContain(ctx,img,90,255,900,710);
+      ctx.strokeStyle='rgba(218,177,99,.22)';ctx.lineWidth=3;roundRect(ctx,90,255,900,710,36);ctx.stroke();
+
+      ctx.font='800 24px Vazirmatn, Tahoma, sans-serif';
+      const pillW=Math.min(340,Math.max(160,ctx.measureText(category).width+70));
+      ctx.fillStyle='rgba(130,29,60,.88)';roundRect(ctx,990-pillW,1012,pillW,58,29);ctx.fill();
+      ctx.fillStyle='#f0d49a';ctx.textAlign='center';ctx.fillText(category,990-pillW/2,1051);
+
+      ctx.textAlign='right';ctx.direction='rtl';
+      const titleFont=title.length>95?56:title.length>62?63:70;
+      ctx.fillStyle='#f7f1e8';ctx.font='900 '+titleFont+'px Vazirmatn, Tahoma, sans-serif';
+      let y=1172;
+      wrapLines(ctx,title,880).slice(0,4).forEach(line=>{ctx.fillText(line,980,y);y+=titleFont*1.36;});
+
+      if(lead){
+        y+=12;ctx.fillStyle='rgba(224,230,238,.78)';ctx.font='600 29px Vazirmatn, Tahoma, sans-serif';
+        wrapLines(ctx,lead,870).slice(0,4).forEach(line=>{if(y<1605){ctx.fillText(line,980,y);y+=47;}});
+      }
+      if(place){
+        ctx.fillStyle='rgba(224,230,238,.5)';ctx.font='700 22px Vazirmatn, Tahoma, sans-serif';ctx.fillText('📍 '+place,980,1650);
+      }
+
+      ctx.fillStyle='rgba(218,173,91,.08)';roundRect(ctx,90,1690,900,112,24);ctx.fill();
+      ctx.strokeStyle='rgba(224,182,109,.20)';ctx.lineWidth=2;roundRect(ctx,90,1690,900,112,24);ctx.stroke();
+      ctx.fillStyle='#efc77a';ctx.font='900 24px Vazirmatn, Tahoma, sans-serif';ctx.fillText('ادامه خبر در سایت نبض ساردو',955,1735);
+      ctx.direction='ltr';ctx.textAlign='right';ctx.fillStyle='#f2f5f8';ctx.font='700 19px Arial, sans-serif';ctx.fillText(url,955,1773);
+
+      ctx.textAlign='center';ctx.fillStyle='rgba(229,235,242,.42)';ctx.font='700 18px Arial, sans-serif';ctx.fillText('NABZESARDO.IR',540,1840);
+
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+      if(!blob)throw new Error('blob');
+      storyFile=new File([blob],'nabez-sardo-story.png',{type:'image/png',lastModified:Date.now()});
+      if(storyObjectUrl)URL.revokeObjectURL(storyObjectUrl);
+      storyObjectUrl=URL.createObjectURL(storyFile);
+      const imgPreview=document.createElement('img');imgPreview.src=storyObjectUrl;imgPreview.alt='پیش‌نمایش استوری خبر';
+      preview.replaceChildren(imgPreview);
+      shareBtn.disabled=false;downloadBtn.disabled=false;
+    };
+
+    buildStory().catch(()=>{
+      if(preview)preview.textContent='ساخت استوری انجام نشد؛ تصویر خبر را بررسی کن.';
+    });
+
+    downloadBtn.addEventListener('click',()=>{
+      if(!storyFile||!storyObjectUrl)return;
+      const a=document.createElement('a');a.href=storyObjectUrl;a.download=storyFile.name;a.click();
+    });
+    shareBtn.addEventListener('click',async()=>{
+      if(!storyFile)return;
+      try{
+        if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[storyFile]}))){
+          await navigator.share({files:[storyFile],title:shareStoryRoot.dataset.storyTitle||'نبض ساردو',text:shareStoryRoot.dataset.storyUrl||''});
+        }else downloadBtn.click();
+      }catch(err){if(err&&err.name!=='AbortError')downloadBtn.click();}
+    });
+    addEventListener('beforeunload',()=>{if(storyObjectUrl)URL.revokeObjectURL(storyObjectUrl);},{once:true});
+  }
+
   const cleanSingleLine=value=>String(value||'').replace(/\u00a0/g,' ').replace(/[\t\r\n]+/g,' ').replace(/ {2,}/g,' ').trim();
   const escapeEditorHtml=value=>String(value||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const plainToParagraphHtml=text=>{
