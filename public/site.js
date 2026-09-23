@@ -179,11 +179,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     const makeDirectShareCard=async()=>{
       if(typeof File==='undefined')return null;
       try{if(document.fonts&&document.fonts.ready)await document.fonts.ready}catch{}
-      const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
+      const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
       const ctx=canvas.getContext('2d');if(!ctx)return null;
-      const bg=ctx.createLinearGradient(0,0,1080,1350);
+      const bg=ctx.createLinearGradient(0,0,1080,1920);
       bg.addColorStop(0,'#081019');bg.addColorStop(.55,'#101823');bg.addColorStop(1,'#090d13');
-      ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
+      ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1920);
       const glow=ctx.createRadialGradient(860,130,20,860,130,520);
       glow.addColorStop(0,'rgba(139,31,67,.30)');glow.addColorStop(.55,'rgba(217,173,94,.10)');glow.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=glow;ctx.fillRect(360,0,720,620);
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       ctx.fillStyle='rgba(226,233,242,.62)';ctx.font='700 19px Vazirmatn, Tahoma, sans-serif';ctx.fillText('رسانه محلی ساردوئیه و جنوب کرمان',980,118);
       ctx.fillStyle='#d9ad61';ctx.fillRect(800,138,180,4);
 
-      const imgX=70,imgY=175,imgW=940,imgH=575;
+      const imgX=70,imgY=175,imgW=940,imgH=790;
       ctx.fillStyle='#0b1119';rr(ctx,imgX,imgY,imgW,imgH,32);ctx.fill();
       const img=await loadShareCardImage();
       if(img){
@@ -203,30 +203,30 @@ document.addEventListener('DOMContentLoaded',()=>{
         ctx.save();rr(ctx,imgX,imgY,imgW,imgH,32);ctx.clip();ctx.drawImage(img,dx,dy,dw,dh);ctx.restore();
       }else{
         ctx.textAlign='center';ctx.direction='rtl';ctx.fillStyle='rgba(240,201,122,.72)';
-        ctx.font='900 56px Vazirmatn, Tahoma, sans-serif';ctx.fillText('نبض ساردو',540,470);
+        ctx.font='900 64px Vazirmatn, Tahoma, sans-serif';ctx.fillText('نبض ساردو',540,570);
       }
       ctx.strokeStyle='rgba(224,182,109,.22)';ctx.lineWidth=3;rr(ctx,imgX,imgY,imgW,imgH,32);ctx.stroke();
 
       ctx.textAlign='right';ctx.direction='rtl';
-      const titleFont=title.length>95?46:title.length>62?52:58;
+      const titleFont=title.length>95?48:title.length>62?55:64;
       ctx.fillStyle='#f7f2ea';ctx.font='900 '+titleFont+'px Vazirmatn, Tahoma, sans-serif';
-      let y=830;
-      wrapCardLines(ctx,title,900).slice(0,3).forEach(line=>{ctx.fillText(line,980,y);y+=titleFont*1.35;});
+      let y=1065;
+      wrapCardLines(ctx,title,900).slice(0,4).forEach(line=>{ctx.fillText(line,980,y);y+=titleFont*1.34;});
 
       if(lead){
-        y+=8;ctx.fillStyle='rgba(224,230,238,.78)';ctx.font='600 27px Vazirmatn, Tahoma, sans-serif';
-        wrapCardLines(ctx,lead,900).slice(0,3).forEach(line=>{if(y<1110){ctx.fillText(line,980,y);y+=43;}});
+        y+=10;ctx.fillStyle='rgba(224,230,238,.78)';ctx.font='600 29px Vazirmatn, Tahoma, sans-serif';
+        wrapCardLines(ctx,lead,900).slice(0,4).forEach(line=>{if(y<1600){ctx.fillText(line,980,y);y+=47;}});
       }
 
-      const ctaY=1160;
-      ctx.fillStyle='rgba(218,173,91,.08)';rr(ctx,70,ctaY,940,124,24);ctx.fill();
-      ctx.strokeStyle='rgba(224,182,109,.22)';ctx.lineWidth=2;rr(ctx,70,ctaY,940,124,24);ctx.stroke();
+      const ctaY=1665;
+      ctx.fillStyle='rgba(218,173,91,.08)';rr(ctx,70,ctaY,940,150,26);ctx.fill();
+      ctx.strokeStyle='rgba(224,182,109,.22)';ctx.lineWidth=2;rr(ctx,70,ctaY,940,150,26);ctx.stroke();
       ctx.textAlign='right';ctx.direction='rtl';ctx.fillStyle='#efc77a';
-      ctx.font='900 27px Vazirmatn, Tahoma, sans-serif';ctx.fillText('ادامه خبر را در سایت نبض ساردو ببینید',970,1206);
-      ctx.direction='ltr';ctx.textAlign='right';ctx.fillStyle='#f2f5f8';ctx.font='800 23px Arial, sans-serif';ctx.fillText(shareUrl,970,1252);
+      ctx.font='900 29px Vazirmatn, Tahoma, sans-serif';ctx.fillText('ادامه خبر را در سایت نبض ساردو ببینید',970,1718);
+      ctx.direction='ltr';ctx.textAlign='right';ctx.fillStyle='#f2f5f8';ctx.font='800 23px Arial, sans-serif';ctx.fillText(shareUrl,970,1770);
 
-      ctx.direction='ltr';ctx.textAlign='center';ctx.fillStyle='rgba(229,235,242,.42)';ctx.font='700 17px Arial, sans-serif';
-      ctx.fillText('NABZESARDO.IR',540,1320);
+      ctx.direction='ltr';ctx.textAlign='center';ctx.fillStyle='rgba(229,235,242,.42)';ctx.font='700 18px Arial, sans-serif';
+      ctx.fillText('NABZESARDO.IR',540,1875);
 
       const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92));
       return blob?new File([blob],'nabez-sardo-direct.jpg',{type:'image/jpeg',lastModified:Date.now()}):null;
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         const cardFile=await makeDirectShareCard();
         if(cardFile&&(!navigator.canShare||navigator.canShare({files:[cardFile]}))){
           try{
-            await navigator.share({files:[cardFile],title,text:caption});
+            await navigator.share({files:[cardFile],title,text:caption,url:shareUrl});
             return;
           }catch(err){
             if(err&&err.name==='AbortError')return;
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded',()=>{
             try{await navigator.share({files:[cardFile],title});return;}catch(err2){if(err2&&err2.name==='AbortError')return;}
           }
         }
-        await navigator.share({title,text:caption});
+        await navigator.share({title,text:caption,url:shareUrl});
       }catch(err){
         if(err&&err.name!=='AbortError'){
           console.warn('article share failed',err);
