@@ -5785,3 +5785,266 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
   .n60-slide.enter-next .n60-glass-card,
   .n60-slide.enter-prev .n60-glass-card{animation:none!important}
 }
+
+
+/* ===== Homepage safe glass layer =====
+   Visual-only layer. Header/Hero geometry and media sizing are intentionally untouched. */
+.home-glass{
+  position:relative;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 10% 22%,rgba(118,28,57,.10),transparent 24%),
+    radial-gradient(circle at 88% 38%,rgba(210,169,92,.08),transparent 24%),
+    radial-gradient(circle at 50% 78%,rgba(48,81,111,.07),transparent 28%),
+    #090b0f;
+}
+
+/* Shared glass surface */
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .front-lead,
+  .home-glass .front-brief,
+  .home-glass .home-short-news-shell,
+  .home-glass .promo-citizen,
+  .home-glass .topic-terminal-shell,
+  .home-glass .today-pulse-shell,
+  .home-glass .home-ad-card,
+  .home-glass .latest-grid .card,
+  .home-glass .popular-list,
+  .home-glass .focusgrid,
+  .home-glass .citizen{
+    background:
+      linear-gradient(145deg,rgba(255,255,255,.072),rgba(255,255,255,.022))!important;
+    border-color:rgba(255,255,255,.13)!important;
+    box-shadow:
+      0 22px 54px rgba(0,0,0,.29),
+      inset 0 1px 0 rgba(255,255,255,.075)!important;
+    backdrop-filter:blur(18px) saturate(138%);
+    -webkit-backdrop-filter:blur(18px) saturate(138%);
+  }
+}
+
+/* Graceful fallback for browsers without backdrop-filter */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .front-lead,
+  .home-glass .front-brief,
+  .home-glass .home-short-news-shell,
+  .home-glass .promo-citizen,
+  .home-glass .topic-terminal-shell,
+  .home-glass .today-pulse-shell,
+  .home-glass .home-ad-card,
+  .home-glass .latest-grid .card,
+  .home-glass .popular-list,
+  .home-glass .focusgrid,
+  .home-glass .citizen{
+    background:linear-gradient(145deg,#141a22,#0e1218)!important;
+    border-color:#2b323c!important;
+  }
+}
+
+/* Important stories */
+.home-glass .frontpage-desk{
+  position:relative;
+}
+.home-glass .front-lead,
+.home-glass .front-brief{
+  border:1px solid rgba(255,255,255,.12)!important;
+}
+.home-glass .front-lead-copy,
+.home-glass .front-brief-copy{
+  background:transparent!important;
+}
+.home-glass .front-brief:hover,
+.home-glass .latest-grid .card:hover{
+  border-color:rgba(224,182,109,.22)!important;
+  box-shadow:
+    0 28px 62px rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(255,255,255,.09)!important;
+}
+
+/* Short news */
+.home-glass .home-short-news-shell{
+  overflow:hidden;
+}
+.home-glass .home-short-news-row{
+  background:rgba(255,255,255,.018)!important;
+  border-color:rgba(255,255,255,.055)!important;
+}
+.home-glass .home-short-news-row:hover{
+  background:rgba(255,255,255,.035)!important;
+}
+
+/* Citizen promo: retain its identity while making the panel glass */
+.home-glass .promo-citizen{
+  background:
+    radial-gradient(circle at 12% 16%,rgba(219,178,96,.11),transparent 30%),
+    radial-gradient(circle at 86% 24%,rgba(121,24,55,.12),transparent 32%),
+    linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.022))!important;
+}
+.home-glass .promo-citizen .promo-visual{
+  background:rgba(255,255,255,.026)!important;
+  border-color:rgba(255,255,255,.10)!important;
+}
+
+/* Topic terminal: keep terminal layout, soften it into glass */
+.home-glass .topic-terminal-shell{
+  background:
+    linear-gradient(145deg,rgba(16,22,30,.70),rgba(8,12,18,.50))!important;
+}
+.home-glass .topic-terminal-screen{
+  background:rgba(5,9,14,.48)!important;
+  border-color:rgba(255,255,255,.08)!important;
+}
+.home-glass .topic-terminal-row{
+  background:rgba(255,255,255,.012)!important;
+  border-color:rgba(255,255,255,.045)!important;
+}
+.home-glass .topic-terminal-row:hover{
+  background:rgba(255,255,255,.035)!important;
+}
+
+/* Today's pulse */
+.home-glass .today-pulse-shell{
+  background:
+    radial-gradient(circle at 10% 12%,rgba(224,182,109,.08),transparent 30%),
+    linear-gradient(145deg,rgba(255,255,255,.064),rgba(255,255,255,.018))!important;
+}
+.home-glass .today-pulse-item{
+  background:rgba(255,255,255,.014)!important;
+}
+
+/* Ad surface */
+.home-glass .home-ad-card{
+  background:
+    radial-gradient(circle at 82% 20%,rgba(220,177,93,.09),transparent 28%),
+    linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.02))!important;
+}
+
+/* Latest/news cards */
+.home-glass .latest-grid .card{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.066),rgba(255,255,255,.019))!important;
+}
+.home-glass .latest-grid .card .pad{
+  background:transparent!important;
+}
+
+/* Most read */
+.home-glass .popular-list{
+  overflow:hidden;
+}
+.home-glass .popular-row{
+  background:rgba(255,255,255,.012)!important;
+  border-color:rgba(255,255,255,.05)!important;
+}
+.home-glass .popular-row:hover{
+  background:rgba(255,255,255,.032)!important;
+}
+
+/* Focus section: preserve full-width band, glass only its content */
+.home-glass .focus{
+  background:
+    radial-gradient(circle at 14% 20%,rgba(122,26,56,.08),transparent 28%),
+    linear-gradient(180deg,rgba(9,12,17,.88),rgba(10,13,18,.94))!important;
+  border-color:rgba(255,255,255,.055)!important;
+}
+.home-glass .focusgrid{
+  padding:22px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:26px;
+}
+.home-glass .topic{
+  background:rgba(255,255,255,.038)!important;
+  border-color:rgba(255,255,255,.09)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 12px 28px rgba(0,0,0,.16)!important;
+}
+
+/* Final citizen CTA */
+.home-glass .citizen{
+  background:
+    radial-gradient(circle at 84% 22%,rgba(122,24,54,.10),transparent 33%),
+    linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018))!important;
+}
+
+/* Subtle glass highlights, scoped and non-interactive */
+.home-glass .front-lead,
+.home-glass .home-short-news-shell,
+.home-glass .promo-citizen,
+.home-glass .topic-terminal-shell,
+.home-glass .today-pulse-shell,
+.home-glass .home-ad-card,
+.home-glass .popular-list,
+.home-glass .focusgrid,
+.home-glass .citizen{
+  position:relative;
+}
+.home-glass .front-lead::after,
+.home-glass .home-short-news-shell::after,
+.home-glass .topic-terminal-shell::after,
+.home-glass .today-pulse-shell::after,
+.home-glass .popular-list::after,
+.home-glass .focusgrid::after,
+.home-glass .citizen::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(115deg,rgba(255,255,255,.055),transparent 22%,transparent 72%,rgba(224,182,109,.025));
+}
+.home-glass .front-lead>*,
+.home-glass .home-short-news-shell>*,
+.home-glass .topic-terminal-shell>*,
+.home-glass .today-pulse-shell>*,
+.home-glass .popular-list>*,
+.home-glass .focusgrid>*,
+.home-glass .citizen>*{
+  position:relative;
+  z-index:1;
+}
+
+/* Do not alter hero or breaking strip. */
+.home-glass .ns-hero-final,
+.home-glass .breaking{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* Mobile performance guard: lighter blur and shadows */
+@media(max-width:620px){
+  @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .home-glass .front-lead,
+    .home-glass .front-brief,
+    .home-glass .home-short-news-shell,
+    .home-glass .promo-citizen,
+    .home-glass .topic-terminal-shell,
+    .home-glass .today-pulse-shell,
+    .home-glass .home-ad-card,
+    .home-glass .latest-grid .card,
+    .home-glass .popular-list,
+    .home-glass .focusgrid,
+    .home-glass .citizen{
+      backdrop-filter:blur(11px) saturate(125%);
+      -webkit-backdrop-filter:blur(11px) saturate(125%);
+      box-shadow:0 14px 34px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.055)!important;
+    }
+  }
+  .home-glass .focusgrid{padding:14px;border-radius:20px}
+}
+@media(prefers-reduced-transparency:reduce){
+  .home-glass .front-lead,
+  .home-glass .front-brief,
+  .home-glass .home-short-news-shell,
+  .home-glass .promo-citizen,
+  .home-glass .topic-terminal-shell,
+  .home-glass .today-pulse-shell,
+  .home-glass .home-ad-card,
+  .home-glass .latest-grid .card,
+  .home-glass .popular-list,
+  .home-glass .focusgrid,
+  .home-glass .citizen{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    background:#11161d!important;
+  }
+}
