@@ -852,6 +852,20 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }
 
+  const editionShare=document.querySelector('[data-edition-share]');
+  if(editionShare){
+    editionShare.addEventListener('click',async()=>{
+      const data={title:'نسخه امروز نبض ساردو',text:'صفحه اول امروز نبض ساردو',url:location.href};
+      try{
+        if(navigator.share){await navigator.share(data);return;}
+        await navigator.clipboard.writeText(location.href);
+        const old=editionShare.textContent;
+        editionShare.textContent='لینک کپی شد ✓';
+        setTimeout(()=>editionShare.textContent=old,1600);
+      }catch{}
+    });
+  }
+
   const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(!reduceMotion){
     const hero=document.querySelector('.hero');
