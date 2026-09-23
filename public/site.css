@@ -5338,30 +5338,3 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
 @media(max-width:390px){
   .smart-signals{grid-template-columns:1fr}
 }
-
-
-/* ===== Nabez Now signature block ===== */
-.now-pulse-section{
-  padding-top:22px;
-  padding-bottom:12px;
-}
-.now-pulse-shell{
-  border-color:rgba(224,182,109,.24);
-  box-shadow:0 22px 54px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.025);
-}
-.now-pulse-all{
-  display:inline-flex;
-  align-items:center;
-  margin-top:14px;
-  color:#e1ba70;
-  font-size:9px;
-  font-weight:900;
-  text-decoration:none;
-  border-bottom:1px solid rgba(225,186,112,.28);
-  padding-bottom:3px;
-}
-.now-pulse-all:hover{color:#f0d393}
-@media(max-width:620px){
-  .now-pulse-section{padding-top:14px}
-  .now-pulse-all{margin-top:10px}
-}
