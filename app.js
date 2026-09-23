@@ -7,6 +7,7 @@ const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullB
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
+const social=require('./lib/social');
 
 const PORT=Number(process.env.PORT||3000);
 const IS_CLOUDFLARE=process.env.CLOUDFLARE_WORKER==='1';
@@ -252,6 +253,11 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/api/live-stats'){
     const stats=analytics.snapshot();
     return send(res,200,JSON.stringify({totalPageViews:stats.totalPageViews,todayPageViews:stats.today.pageViews,updatedAt:stats.updatedAt}),'application/json; charset=utf-8',{'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'});
+  }
+
+  if(req.method==='GET'&&p==='/__tmp_social_test_9f4c7d2a'){
+    const result=await social.liveConnectionTest();
+    return send(res,200,JSON.stringify({ok:true,result}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   }
 
   const db=load();
