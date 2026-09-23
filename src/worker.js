@@ -1090,7 +1090,7 @@ async function publicPull() {
         storedArticleHtml = storedArticleHtml.split(sourceImagePath).join(next.image);
         storedArticleHtml = storedArticleHtml.split(String(schemaImage)).join(next.image);
       } else if (!sourceImage && next.image) {
-        const figure = '<figure class="article-cover-wrap"><div class="cover-frame landscape" data-adaptive-media style="--image-ratio:1.77778"><img class="cover" src="' + next.image + '" alt="" loading="eager" decoding="async" fetchpriority="high"></div><figcaption><span class="lang-fa">تصویر هوشمند خبر · نبض ساردو</span><span class="lang-en">Smart news image · Nabez Sardo</span></figcaption></figure>';
+        const figure = '<figure class="article-cover-wrap"><div class="cover-frame landscape" data-adaptive-media style="--image-ratio:1.77778"><img class="cover" src="' + next.image + '" alt="" loading="eager" decoding="async" fetchpriority="high"></div><figcaption><span class="lang-fa">کاور خودکار خبر · نبض ساردو</span><span class="lang-en">Automatic news cover · Nabez Sardo</span></figcaption></figure>';
         storedArticleHtml = storedArticleHtml.replace('<div class="article-reading-zone">', figure + '<div class="article-reading-zone">');
       }
       await putState("snapshot_article:" + slug, storedArticleHtml);
@@ -1143,6 +1143,7 @@ async function publicSyncStatus() {
     articles: Number(articles || 0),
     media: Number(media || 0),
     aiCovers: auto.filter(a => a.autoCoverSource === "ai").length,
+    templateCovers: auto.filter(a => a.autoCoverSource === "template").length,
     fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length,
     adminReady: Boolean(await runtimeAuth()),
     analyticsTotal: Number(analyticsState.allTimePageViews || 0),
