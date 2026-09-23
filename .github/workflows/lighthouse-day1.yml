@@ -1,0 +1,35 @@
+name: Lighthouse Day 1
+
+on:
+  push:
+    branches:
+      - seo-day1-image-local-links
+    paths:
+      - .github/workflows/lighthouse-day1.yml
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mobile and desktop Lighthouse
+        run: |
+          set -euo pipefail
+          npx --yes lighthouse@12.2.1 https://nabzesardo.ir/             --quiet --chrome-flags="--headless --no-sandbox"             --output=json --output-path=mobile.json
+          npx --yes lighthouse@12.2.1 https://nabzesardo.ir/             --quiet --preset=desktop --chrome-flags="--headless --no-sandbox"             --output=json --output-path=desktop.json
+          python - <<'PY'
+          import json
+          for name in ["mobile","desktop"]:
+              d=json.load(open(name+".json"))
+              c=d["categories"]; a=d["audits"]
+              print("LIGHTHOUSE",name,
+                    "performance",round(c["performance"]["score"]*100),
+                    "seo",round(c["seo"]["score"]*100),
+                    "accessibility",round(c["accessibility"]["score"]*100),
+                    "best",round(c["best-practices"]["score"]*100))
+              for key in ["first-contentful-paint","largest-contentful-paint","speed-index","total-blocking-time","cumulative-layout-shift","server-response-time"]:
+                  x=a.get(key,{})
+                  print("METRIC",name,key,x.get("displayValue"),"score",x.get("score"))
+          PY
