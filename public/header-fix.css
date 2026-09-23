@@ -296,7 +296,7 @@ html[data-lang="en"] .ns-hero-final__badge{
 .hero-short-story-stack{
   position:absolute;
   z-index:8;
-  top:clamp(118px,17vh,174px);
+  top:clamp(160px,21vh,210px);
   left:max(20px,calc((100vw - 900px)/2));
   right:max(20px,calc((100vw - 900px)/2));
   display:flex;
@@ -497,7 +497,7 @@ html[data-lang="en"] .hero-short-story.is-active .hero-short-story-text>.lang-en
 }
 @media(max-width:700px){
   .hero-short-story-stack{
-    top:116px;
+    top:clamp(145px,20svh,175px);
     left:12px;
     right:12px;
     min-height:108px;
@@ -522,7 +522,7 @@ html[data-lang="en"] .hero-short-story.is-active .hero-short-story-text>.lang-en
 }
 @media(max-width:420px){
   .hero-short-story-stack{
-    top:110px;
+    top:clamp(140px,19svh,165px);
     left:10px;
     right:10px;
     min-height:104px;
