@@ -5625,3 +5625,163 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
   .n60-launch-dot{animation:none}
   .n60-slide{transition:none}
 }
+
+
+/* ===== Nabez 60 phase 2 cinematic glass ===== */
+.n60-page{
+  background:
+    radial-gradient(circle at 50% -10%,rgba(235,196,120,.10),transparent 32%),
+    #06090e;
+}
+.n60-page::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.025),transparent 28%,transparent 72%,rgba(255,255,255,.018)),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 72px);
+  mask-image:linear-gradient(#000,rgba(0,0,0,.35) 40%,transparent);
+  -webkit-mask-image:linear-gradient(#000,rgba(0,0,0,.35) 40%,transparent);
+}
+.n60-top,.n60-progress,.n60-hint,.n60-nav,.n60-hold-state{z-index:40}
+.n60-progress-seg{
+  height:4px;
+  background:rgba(255,255,255,.11);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.n60-progress-seg i{
+  background:linear-gradient(90deg,#c9994e,#f5d99c 55%,#fff0c9);
+  box-shadow:0 0 12px rgba(236,199,128,.25);
+}
+.n60-glass-card{
+  --n60-rx:0deg;
+  --n60-ry:0deg;
+  --n60-glow-x:50%;
+  --n60-glow-y:18%;
+  background:
+    radial-gradient(circle at var(--n60-glow-x) var(--n60-glow-y),rgba(255,255,255,.12),transparent 28%),
+    linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.024));
+  border-color:rgba(255,255,255,.22);
+  box-shadow:
+    0 44px 110px rgba(0,0,0,.58),
+    0 1px 0 rgba(255,255,255,.13) inset,
+    0 -1px 0 rgba(255,255,255,.035) inset;
+  backdrop-filter:blur(32px) saturate(165%) contrast(108%);
+  -webkit-backdrop-filter:blur(32px) saturate(165%) contrast(108%);
+  transform:perspective(1200px) rotateX(var(--n60-rx)) rotateY(var(--n60-ry));
+  transition:transform .18s ease,border-color .25s ease,box-shadow .25s ease;
+  isolation:isolate;
+}
+.n60-glass-card::before{
+  content:"";
+  position:absolute;
+  z-index:6;
+  inset:-40% auto -40% -26%;
+  width:28%;
+  pointer-events:none;
+  transform:rotate(18deg) translateX(-220%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),rgba(255,255,255,.025),transparent);
+  filter:blur(2px);
+  animation:n60GlassSweep 8s ease-in-out infinite;
+}
+.n60-glass-card::after{
+  z-index:5;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.12),transparent 24%,transparent 68%,rgba(221,177,91,.055)),
+    linear-gradient(180deg,transparent 72%,rgba(5,8,12,.17));
+}
+@keyframes n60GlassSweep{
+  0%,64%{transform:rotate(18deg) translateX(-240%);opacity:0}
+  72%{opacity:1}
+  89%,100%{transform:rotate(18deg) translateX(620%);opacity:0}
+}
+.n60-media{
+  box-shadow:0 16px 34px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.n60-slide.is-active .n60-media img{
+  animation:n60KenBurns 11s cubic-bezier(.16,.72,.24,1) both;
+}
+@keyframes n60KenBurns{
+  from{transform:scale(1.015);filter:saturate(.92) contrast(1.01)}
+  to{transform:scale(1.075);filter:saturate(1.05) contrast(1.04)}
+}
+.n60-slide.enter-next .n60-glass-card{animation:n60EnterNext .56s cubic-bezier(.16,.8,.22,1) both}
+.n60-slide.enter-prev .n60-glass-card{animation:n60EnterPrev .56s cubic-bezier(.16,.8,.22,1) both}
+@keyframes n60EnterNext{
+  from{opacity:.25;transform:perspective(1200px) translateY(34px) scale(.965) rotateX(1.5deg)}
+  to{opacity:1;transform:perspective(1200px) translateY(0) scale(1)}
+}
+@keyframes n60EnterPrev{
+  from{opacity:.25;transform:perspective(1200px) translateY(-34px) scale(.965) rotateX(-1.5deg)}
+  to{opacity:1;transform:perspective(1200px) translateY(0) scale(1)}
+}
+.n60-copy h2{
+  text-shadow:0 8px 26px rgba(0,0,0,.30);
+}
+.n60-read{
+  background:linear-gradient(135deg,rgba(232,192,113,.16),rgba(139,90,28,.08));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 10px 24px rgba(0,0,0,.13);
+}
+.n60-read:hover{
+  border-color:rgba(238,202,133,.38);
+  background:linear-gradient(135deg,rgba(239,201,127,.23),rgba(139,90,28,.11));
+}
+.n60-hold-state{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.88);
+  display:grid;
+  place-items:center;
+  gap:6px;
+  min-width:86px;
+  padding:14px 18px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:22px;
+  background:rgba(8,12,18,.42);
+  color:#f3e9d9;
+  backdrop-filter:blur(20px) saturate(150%);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  box-shadow:0 18px 50px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);
+  opacity:0;
+  visibility:hidden;
+  transition:.16s ease;
+  pointer-events:none;
+}
+.n60-hold-state span{font:900 17px/1 Arial,sans-serif;color:#efd08e}
+.n60-hold-state b{font-size:8px}
+.n60-page.is-hold-paused .n60-hold-state{
+  opacity:1;
+  visibility:visible;
+  transform:translate(-50%,-50%) scale(1);
+}
+.n60-page.is-hold-paused .n60-glass-card{
+  transform:perspective(1200px) scale(.992);
+  filter:brightness(.90);
+}
+.n60-page.is-hold-paused .n60-media img{animation-play-state:paused}
+.n60-back,.n60-pause,.n60-nav{
+  background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(10,14,20,.30));
+  border-color:rgba(255,255,255,.18);
+  box-shadow:0 14px 36px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.09);
+}
+.n60-back:hover,.n60-pause:hover,.n60-nav:hover{
+  border-color:rgba(236,198,124,.34);
+  background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(10,14,20,.38));
+}
+@media(max-width:620px){
+  .n60-glass-card{
+    backdrop-filter:blur(26px) saturate(155%);
+    -webkit-backdrop-filter:blur(26px) saturate(155%);
+  }
+  .n60-glass-card::before{width:36%}
+  .n60-copy h2{font-size:20.5px}
+  .n60-hold-state{min-width:78px;padding:12px 15px;border-radius:19px}
+}
+@media(prefers-reduced-motion:reduce){
+  .n60-glass-card::before,
+  .n60-slide.is-active .n60-media img,
+  .n60-slide.enter-next .n60-glass-card,
+  .n60-slide.enter-prev .n60-glass-card{animation:none!important}
+}
