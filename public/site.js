@@ -705,13 +705,20 @@ document.addEventListener('DOMContentLoaded',()=>{
     const pauseBtn=n60Root.querySelector('[data-n60-pause]');
     let index=0,paused=false,started=performance.now(),raf=0;
     const duration=11000;
-    const render=next=>{
+    const render=(next,dir=0)=>{
       if(!slides.length)return;
+      const old=index;
       index=(next+slides.length)%slides.length;
       slides.forEach((slide,i)=>{
         const on=i===index;
         slide.classList.toggle('is-active',on);
         slide.setAttribute('aria-hidden',on?'false':'true');
+        slide.classList.remove('enter-next','enter-prev');
+        if(on&&old!==index&&dir){
+          void slide.offsetWidth;
+          slide.classList.add(dir>0?'enter-next':'enter-prev');
+          setTimeout(()=>slide.classList.remove('enter-next','enter-prev'),620);
+        }
       });
       bars.forEach((bar,i)=>{
         bar.classList.toggle('is-done',i<index);
@@ -726,13 +733,13 @@ document.addEventListener('DOMContentLoaded',()=>{
         const elapsed=now-started;
         const fill=bars[index]?.querySelector('i');
         if(fill)fill.style.width=Math.min(100,(elapsed/duration)*100)+'%';
-        if(elapsed>=duration){render(index+1);}
+        if(elapsed>=duration){render(index+1,1);}
       }
       raf=requestAnimationFrame(frame);
     };
     render(0);raf=requestAnimationFrame(frame);
-    prevBtn?.addEventListener('click',()=>render(index-1));
-    nextBtn?.addEventListener('click',()=>render(index+1));
+    prevBtn?.addEventListener('click',()=>render(index-1,-1));
+    nextBtn?.addEventListener('click',()=>render(index+1,1));
     pauseBtn?.addEventListener('click',()=>{
       paused=!paused;
       pauseBtn.textContent=paused?'▶':'Ⅱ';
@@ -740,8 +747,8 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(!paused)started=performance.now();
     });
     addEventListener('keydown',ev=>{
-      if(ev.key==='ArrowDown'||ev.key==='ArrowRight')render(index+1);
-      if(ev.key==='ArrowUp'||ev.key==='ArrowLeft')render(index-1);
+      if(ev.key==='ArrowDown'||ev.key==='ArrowRight')render(index+1,1);
+      if(ev.key==='ArrowUp'||ev.key==='ArrowLeft')render(index-1,-1);
       if(ev.key===' '){ev.preventDefault();pauseBtn?.click();}
       if(ev.key==='Escape')location.href='/';
     });
@@ -752,8 +759,47 @@ document.addEventListener('DOMContentLoaded',()=>{
     n60Root.addEventListener('touchend',ev=>{
       const t=ev.changedTouches[0];if(!t)return;
       const dy=t.clientY-sy,dx=t.clientX-sx;
-      if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){render(index+(dy<0?1:-1));}
+      if(Math.abs(dy)>55&&Math.abs(dy)>Math.abs(dx)){const dir=dy<0?1:-1;render(index+dir,dir);}
     },{passive:true});
+    let holdPaused=false;
+    const stage=n60Root.querySelector('.n60-stage');
+    const holdStart=ev=>{
+      if(ev.target.closest('a,button'))return;
+      holdPaused=true;
+      paused=true;
+      n60Root.classList.add('is-hold-paused');
+    };
+    const holdEnd=()=>{
+      if(!holdPaused)return;
+      holdPaused=false;
+      paused=false;
+      started=performance.now();
+      n60Root.classList.remove('is-hold-paused');
+      if(pauseBtn)pauseBtn.textContent='Ⅱ';
+    };
+    stage?.addEventListener('pointerdown',holdStart);
+    ['pointerup','pointercancel','pointerleave'].forEach(name=>stage?.addEventListener(name,holdEnd));
+
+    const cardParallax=ev=>{
+      if(matchMedia('(pointer:coarse)').matches)return;
+      const card=slides[index]?.querySelector('.n60-glass-card');
+      if(!card)return;
+      const b=card.getBoundingClientRect();
+      const nx=Math.max(-.5,Math.min(.5,(ev.clientX-b.left)/Math.max(1,b.width)-.5));
+      const ny=Math.max(-.5,Math.min(.5,(ev.clientY-b.top)/Math.max(1,b.height)-.5));
+      card.style.setProperty('--n60-rx',(-ny*2.8).toFixed(2)+'deg');
+      card.style.setProperty('--n60-ry',(nx*3.8).toFixed(2)+'deg');
+      card.style.setProperty('--n60-glow-x',((nx+.5)*100).toFixed(1)+'%');
+      card.style.setProperty('--n60-glow-y',((ny+.5)*100).toFixed(1)+'%');
+    };
+    n60Root.addEventListener('pointermove',cardParallax,{passive:true});
+    n60Root.addEventListener('pointerleave',()=>{
+      slides.forEach(slide=>{
+        const card=slide.querySelector('.n60-glass-card');
+        if(card){card.style.removeProperty('--n60-rx');card.style.removeProperty('--n60-ry');}
+      });
+    });
+
     document.addEventListener('visibilitychange',()=>{
       if(document.visibilityState==='hidden')paused=true;
       else{paused=false;started=performance.now();if(pauseBtn)pauseBtn.textContent='Ⅱ';}
