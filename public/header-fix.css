@@ -293,6 +293,15 @@ html[data-lang="en"] .ns-hero-final__badge{
 
 
 /* ONE-HOUR SHORT NEWS HERO STORIES */
+.home-glass .frontpage-desk > .hero-short-story-stack{
+  position:relative;
+  top:auto;
+  left:auto;
+  right:auto;
+  width:100%;
+  max-width:900px;
+  margin:0 auto 28px;
+}
 .hero-short-story-stack{
   position:absolute;
   z-index:8;
@@ -496,6 +505,7 @@ html[data-lang="en"] .hero-short-story.is-active .hero-short-story-text>.lang-en
   50%{transform:scale(1.13);opacity:1}
 }
 @media(max-width:700px){
+  .home-glass .frontpage-desk > .hero-short-story-stack{margin-bottom:22px}
   .hero-short-story-stack{
     top:clamp(145px,20svh,175px);
     left:12px;
