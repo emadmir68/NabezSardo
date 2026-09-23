@@ -272,8 +272,6 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/admin/articles/new')return send(res,200,views.editor(db));
   m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
   if(req.method==='GET'&&m){const a=db.articles.find(x=>x.id===m[1]);return a?send(res,200,views.editor(db,a,'/admin/articles/'+a.id+'/edit','ویرایش خبر')):send(res,404,'یافت نشد');}
-  m=p.match(/^\/admin\/articles\/([^/]+)\/tv$/);
-  if(req.method==='GET'&&m){const a=db.articles.find(x=>x.id===m[1]);return a?send(res,200,views.tvStudio(db,a,u.searchParams)):send(res,404,'یافت نشد');}
   if(req.method==='GET'&&p==='/admin/backup/download'){
     const payload=JSON.stringify(fullBackup());
     const name='nabezsardo-backup-'+new Date().toISOString().slice(0,10)+'.json';
