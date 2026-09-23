@@ -2696,6 +2696,37 @@ button.article-action{font-family:inherit}
   border-color:rgba(91,179,117,.32);
   color:#8bd3a1;
 }
+
+.article-share-toast{
+  position:fixed;
+  left:50%;
+  bottom:22px;
+  z-index:9000;
+  width:min(620px,calc(100% - 28px));
+  padding:12px 15px;
+  border:1px solid rgba(91,179,117,.28);
+  border-radius:14px;
+  background:rgba(10,16,22,.96);
+  color:#cfe9d7;
+  box-shadow:0 18px 48px rgba(0,0,0,.46);
+  backdrop-filter:blur(14px);
+  font-size:10.5px;
+  font-weight:800;
+  line-height:1.9;
+  text-align:center;
+  transform:translate(-50%,18px);
+  opacity:0;
+  pointer-events:none;
+  transition:.22s ease;
+}
+.article-share-toast.show{transform:translate(-50%,0);opacity:1}
+.article-share-toast.warn{
+  border-color:rgba(222,176,91,.30);
+  color:#f0ce8d;
+}
+@media(max-width:620px){
+  .article-share-toast{bottom:12px;font-size:10px;padding:11px 12px}
+}
 .article-cover-wrap{margin:0;padding:28px 34px 7px}
 .article-cover-wrap .cover-frame{
   margin:0 auto;
