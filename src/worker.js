@@ -403,6 +403,100 @@ async function probeArvan() {
   }
 }
 
+function backupCryptoMaterial() {
+  const source = String(env.RUNTIME_PRIVATE_KEY || "");
+  return source ? new TextEncoder().encode("nabzesardo-arvan-backup-v1|" + source) : null;
+}
+
+async function encryptBackupPayload(text) {
+  const material = backupCryptoMaterial();
+  if (!material) throw new Error("backup-encryption-key-unavailable");
+  const rawKey = await crypto.subtle.digest("SHA-256", material);
+  const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["encrypt"]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const plain = new TextEncoder().encode(String(text));
+  const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plain));
+  return JSON.stringify({
+    format: "nabzesardo-encrypted-backup",
+    version: 1,
+    algorithm: "AES-256-GCM",
+    createdAt: new Date().toISOString(),
+    iv: Buffer.from(iv).toString("base64"),
+    data: Buffer.from(cipher).toString("base64"),
+    sha256: await sha256Hex(plain)
+  });
+}
+
+function utcDayOffset(days = 0) {
+  const d = new Date(Date.now() + Number(days || 0) * 86400000);
+  return d.toISOString().slice(0, 10);
+}
+
+async function createDailyArvanBackup() {
+  if (!arvanConfig()) return { ok: false, skipped: true, reason: "arvan-not-configured" };
+  const day = utcDayOffset(0);
+  if ((await getState("arvan_backup_day")) === day) {
+    return { ok: true, skipped: true, day, at: await getState("arvan_backup_at") };
+  }
+
+  try {
+    const [dbText, analyticsText] = await Promise.all([
+      getState("db"),
+      getState("analytics")
+    ]);
+    if (!dbText) throw new Error("backup-db-state-missing");
+
+    const payload = JSON.stringify({
+      format: "nabzesardo-database-backup",
+      version: 1,
+      createdAt: new Date().toISOString(),
+      db: safeJson(dbText, {}),
+      analytics: safeJson(analyticsText, {})
+    });
+    const encrypted = await encryptBackupPayload(payload);
+    const objectName = "db-backup-" + day + ".json.enc";
+    await putArvanObject(objectName, Buffer.from(encrypted, "utf8"), "application/octet-stream");
+
+    // Flat object names let us retain exactly 30 days without needing bucket listing permissions.
+    const expiredName = "db-backup-" + utcDayOffset(-31) + ".json.enc";
+    try { await deleteArvanObject(expiredName); } catch {}
+
+    const stamp = new Date().toISOString();
+    await putState("arvan_backup_day", day);
+    await putState("arvan_backup_at", stamp);
+    await putState("arvan_backup_object", objectName);
+    await putState("arvan_backup_bytes", String(Buffer.byteLength(encrypted)));
+    await putState("arvan_backup_error", "");
+    return { ok: true, day, at: stamp, object: objectName };
+  } catch (err) {
+    const message = String(err?.message || err).slice(0, 500);
+    await putState("arvan_backup_error", message);
+    console.error("arvan-daily-backup", message);
+    return { ok: false, error: message };
+  }
+}
+
+async function storageUsageStatus() {
+  await ensureSchema();
+  const [mediaRow, stateRow, chunkRow] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(size),0) AS bytes FROM media_meta").first(),
+    env.DB.prepare("SELECT COALESCE(SUM(LENGTH(key)+LENGTH(value)),0) AS bytes FROM app_state").first(),
+    env.DB.prepare("SELECT COALESCE(SUM(LENGTH(chunk_data)),0) AS bytes FROM media_chunks").first()
+  ]);
+  const mediaBytes = Number(mediaRow?.bytes || 0);
+  const stateBytes = Number(stateRow?.bytes || 0);
+  const chunkTextBytes = Number(chunkRow?.bytes || 0);
+  return {
+    mediaObjects: Number(mediaRow?.count || 0),
+    arvanMediaBytes: mediaBytes,
+    arvanFreeTierBytes: 5 * 1024 * 1024 * 1024,
+    arvanUsagePercentOfFreeTier: Number(((mediaBytes / (5 * 1024 * 1024 * 1024)) * 100).toFixed(2)),
+    d1TrackedBytesApprox: stateBytes + chunkTextBytes,
+    d1FreeTierDatabaseLimitBytes: 500 * 1024 * 1024,
+    d1UsagePercentApprox: Number((((stateBytes + chunkTextBytes) / (500 * 1024 * 1024)) * 100).toFixed(2))
+  };
+}
+
 const MEDIA_CHUNK_BYTES = 1350000;
 
 async function putMediaD1(safe, buf, contentType) {
@@ -1033,9 +1127,14 @@ async function publicSyncStatus() {
   const storageCfg = arvanConfig();
   const storageProbe = await probeArvan();
   const legacyRow = await env.DB.prepare("SELECT COUNT(*) AS count FROM media_meta WHERE chunk_count > 0").first();
-  const [arvanLastSuccess, arvanLastError] = await Promise.all([
+  const [arvanLastSuccess, arvanLastError, backupAt, backupObject, backupBytes, backupError, usage] = await Promise.all([
     getState("arvan_last_success"),
-    getState("arvan_last_error")
+    getState("arvan_last_error"),
+    getState("arvan_backup_at"),
+    getState("arvan_backup_object"),
+    getState("arvan_backup_bytes"),
+    getState("arvan_backup_error"),
+    storageUsageStatus()
   ]);
   return {
     ok: true,
@@ -1065,6 +1164,16 @@ async function publicSyncStatus() {
       lastSuccessAt: arvanLastSuccess || null,
       lastError: arvanLastError || null
     },
+    backup: {
+      enabled: Boolean(arvanConfig() && backupCryptoMaterial()),
+      encrypted: true,
+      retentionDays: 30,
+      lastAt: backupAt || null,
+      object: backupObject || null,
+      bytes: Number(backupBytes || 0),
+      lastError: backupError || null
+    },
+    usage,
     primary: isPrimary()
   };
 }
@@ -1224,6 +1333,8 @@ export default {
       await applyRuntimeEnv();
       try { await migrateLegacyMediaBatch(10); }
       catch (err) { console.error("arvan-migrate-batch", String(err?.message || err)); }
+      try { await createDailyArvanBackup(); }
+      catch (err) { console.error("arvan-backup-tick", String(err?.message || err)); }
     }
     await articleTools.schedulerTick();
     const fakeReq = new Request("https://nabzesardo.ir/__cron", { method: "GET" });
