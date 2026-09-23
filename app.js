@@ -85,19 +85,39 @@ function trackView(req,db,article){
 function xmlEsc(v=''){return String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[ch]));}
 function publicUrl(p='/'){const s=String(p||'');if(/^https?:\/\//i.test(s))return s;return PUBLIC_BASE+(s.startsWith('/')?s:'/'+s);}
 function sitemapXml(db){
+  const articles=published(db);
+  const stamp=a=>a&&(a.updatedAt||a.publishedAt||a.createdAt)||null;
+  const latestOf=list=>list.reduce((best,a)=>{
+    const t=new Date(stamp(a)||0).getTime();
+    return t>new Date(stamp(best)||0).getTime()?a:best;
+  },null);
+  const localTerms={
+    sardouiyeh:['ساردوئیه','ساردویه','ساردو'],
+    jiroft:['جیرفت'],
+    anbarabad:['عنبرآباد','عنبر اباد','عنبر آباد'],
+    kahnuj:['کهنوج'],
+    'south-kerman':['جنوب کرمان','کرمان جنوبی','جیرفت','عنبرآباد','عنبر اباد','عنبر آباد','کهنوج','ساردوئیه','ساردویه','ساردو']
+  };
+  const localLastmod=key=>{
+    const terms=localTerms[key]||[];
+    const found=latestOf(articles.filter(a=>terms.some(t=>[a.location,a.title,a.lead,a.body].filter(Boolean).join(' ').includes(t))));
+    return stamp(found);
+  };
+  const latestArticle=latestOf(articles);
+  const latestFollowup=(db.followups||[]).reduce((best,x)=>new Date(x.updatedAt||x.createdAt||0)>new Date(best?.updatedAt||best?.createdAt||0)?x:best,null);
   const urls=[
-    {loc:publicUrl('/'),lastmod:null,image:''},
-    {loc:publicUrl('/all-news'),lastmod:null,image:''},
+    {loc:publicUrl('/'),lastmod:stamp(latestArticle),image:''},
+    {loc:publicUrl('/all-news'),lastmod:stamp(latestArticle),image:''},
     {loc:publicUrl('/about'),lastmod:null,image:''},
     {loc:publicUrl('/contact'),lastmod:null,image:''},
-    {loc:publicUrl('/follow-up'),lastmod:null,image:''},
-    {loc:publicUrl('/local/sardouiyeh'),lastmod:null,image:''},
-    {loc:publicUrl('/local/jiroft'),lastmod:null,image:''},
-    {loc:publicUrl('/local/anbarabad'),lastmod:null,image:''},
-    {loc:publicUrl('/local/kahnuj'),lastmod:null,image:''},
-    {loc:publicUrl('/local/south-kerman'),lastmod:null,image:''},
-    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:null,image:''})),
-    ...published(db).map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:a.updatedAt||a.publishedAt||a.createdAt,image:a.image?publicUrl(a.image):''}))
+    {loc:publicUrl('/follow-up'),lastmod:latestFollowup&&(latestFollowup.updatedAt||latestFollowup.createdAt),image:''},
+    {loc:publicUrl('/local/sardouiyeh'),lastmod:localLastmod('sardouiyeh'),image:''},
+    {loc:publicUrl('/local/jiroft'),lastmod:localLastmod('jiroft'),image:''},
+    {loc:publicUrl('/local/anbarabad'),lastmod:localLastmod('anbarabad'),image:''},
+    {loc:publicUrl('/local/kahnuj'),lastmod:localLastmod('kahnuj'),image:''},
+    {loc:publicUrl('/local/south-kerman'),lastmod:localLastmod('south-kerman'),image:''},
+    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:stamp(latestOf(articles.filter(a=>a.categoryId===x.id))),image:''})),
+    ...articles.map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:stamp(a),image:a.image?publicUrl(a.image):''}))
   ];
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+(x.image?'<image:image><image:loc>'+xmlEsc(x.image)+'</image:loc></image:image>':'')+'</url>').join('\n')+'\n</urlset>';
 }
