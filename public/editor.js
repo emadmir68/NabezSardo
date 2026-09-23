@@ -115,8 +115,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
 
     const openDrawer=id=>{
-      const drawer=dashboard.querySelector('details#'+CSS.escape(id)+'[data-admin-drawer]');
-      if(!drawer)return;
+      const drawer=document.getElementById(id);
+      if(!drawer||!drawer.matches('details[data-admin-drawer]'))return;
       drawer.open=true;
       requestAnimationFrame(()=>drawer.scrollIntoView({behavior:'smooth',block:'start'}));
     };
