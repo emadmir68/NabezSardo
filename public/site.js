@@ -692,6 +692,57 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   }
 
+  // One-hour short-news stories on the homepage hero.
+  const shortStoryRoot=document.querySelector('[data-short-story-stack]');
+  if(shortStoryRoot){
+    let shortStoryItems=[...shortStoryRoot.querySelectorAll('[data-short-story]')];
+    const shortStoryCounter=shortStoryRoot.querySelector('[data-short-story-counter]');
+    let shortStoryIndex=0;
+    let shortStoryRotateTimer=0;
+    let shortStoryExpiryTimer=0;
+    const shortStoryNumber=n=>Number(n||0).toLocaleString(document.documentElement.dataset.lang==='en'?'en-US':'fa-IR');
+    const stopShortStoryTimers=()=>{
+      if(shortStoryRotateTimer)clearInterval(shortStoryRotateTimer);
+      if(shortStoryExpiryTimer)clearInterval(shortStoryExpiryTimer);
+      shortStoryRotateTimer=0;shortStoryExpiryTimer=0;
+    };
+    const cleanupShortStories=()=>{
+      const now=Date.now();
+      shortStoryItems.forEach(item=>{
+        const expires=Number(item.dataset.expires||0);
+        if(!expires||expires<=now)item.remove();
+      });
+      shortStoryItems=[...shortStoryRoot.querySelectorAll('[data-short-story]')];
+      if(!shortStoryItems.length){
+        stopShortStoryTimers();
+        shortStoryRoot.remove();
+        return false;
+      }
+      if(shortStoryIndex>=shortStoryItems.length)shortStoryIndex=0;
+      return true;
+    };
+    const showShortStory=next=>{
+      if(!cleanupShortStories())return;
+      shortStoryIndex=(next+shortStoryItems.length)%shortStoryItems.length;
+      shortStoryItems.forEach((item,i)=>{
+        const active=i===shortStoryIndex;
+        item.classList.toggle('is-active',active);
+        item.setAttribute('aria-hidden',active?'false':'true');
+        if(active){
+          const text=item.querySelector('.hero-short-story-text');
+          if(text){text.style.animation='none';void text.offsetWidth;text.style.removeProperty('animation');}
+        }
+      });
+      if(shortStoryCounter)shortStoryCounter.textContent=shortStoryNumber(shortStoryIndex+1)+' / '+shortStoryNumber(shortStoryItems.length);
+    };
+    showShortStory(0);
+    shortStoryRotateTimer=setInterval(()=>showShortStory(shortStoryIndex+1),6000);
+    shortStoryExpiryTimer=setInterval(()=>{
+      const oldLength=shortStoryItems.length;
+      if(cleanupShortStories()&&shortStoryItems.length!==oldLength)showShortStory(Math.min(shortStoryIndex,shortStoryItems.length-1));
+    },1000);
+  }
+
   // Desktop breaking ticker: measure the viewport before animation starts so the
   // first headline emerges from behind the fixed badge and duplicate sets line up exactly.
   const desktopTickerMQ=matchMedia('(min-width: 621px)');
