@@ -207,6 +207,13 @@ console.log(`hero-image-ready bytes=${HERO_MOSQUE_JPG.length} sha1=${HERO_MOSQUE
 const server=http.createServer(async(req,res)=>{
  try{
   const u=new URL(req.url,'http://localhost'),p=decodeURIComponent(u.pathname);
+  const incomingHost=String(req.headers.host||'').toLowerCase().split(':')[0];
+  if(incomingHost.endsWith('.up.railway.app')&&p!=='/health'){
+    const target=PUBLIC_BASE+(req.url||'/');
+    res.writeHead(301,{...headers(),Location:target,'Cache-Control':'public, max-age=3600'});
+    res.end();
+    return;
+  }
   if(HERO_SEED_TOKEN&&req.method==='POST'&&p==='/__hero_seed_'+HERO_SEED_TOKEN){
     const raw=await readRaw(req,2*1024*1024);
     if(!raw||raw.length<10000)return send(res,400,'bad-image','text/plain; charset=utf-8');
