@@ -8,6 +8,7 @@ import articleTools from "../lib/article-tools.js";
 import store from "../lib/store.js";
 import views from "../lib/view-public.js";
 import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
+import { handleAskNewsRequest } from "./ask-news.js";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
 
 const PORT = 3000;
@@ -1280,6 +1281,11 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const p = decodeURIComponent(url.pathname);
+
+    if (p === "/api/ask" && request.method === "POST") {
+      const db = await loadDbObject();
+      return handleAskNewsRequest(request, db, env.AI);
+    }
 
     if (p === "/__migration" && request.method === "GET") return migrationPage();
     if (p === "/__migration/import" && request.method === "POST") return importBackup(request);

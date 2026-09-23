@@ -872,3 +872,82 @@ document.addEventListener('DOMContentLoaded',()=>{
     el.addEventListener('pointerleave',()=>el.style.transform='');
   });
 });
+
+/* ==================== NABEZ ASK / V1 ==================== */
+(()=> {
+  const root=document.querySelector('[data-ns-ask]');
+  if(!root)return;
+  const form=root.querySelector('[data-ns-ask-form]');
+  const input=root.querySelector('[data-ns-ask-input]');
+  const submit=root.querySelector('[data-ns-ask-submit]');
+  const status=root.querySelector('[data-ns-ask-status]');
+  const result=root.querySelector('[data-ns-ask-result]');
+  const answer=root.querySelector('[data-ns-ask-answer]');
+  const sources=root.querySelector('[data-ns-ask-sources]');
+  const sourcesWrap=root.querySelector('[data-ns-ask-sources-wrap]');
+  let controller=null;
+
+  const setStatus=(text,loading=false)=>{
+    status.textContent=text||'';
+    status.classList.toggle('is-visible',Boolean(text));
+    status.classList.toggle('is-loading',Boolean(text&&loading));
+  };
+  const clearSources=()=>{while(sources.firstChild)sources.removeChild(sources.firstChild);};
+  const fmtDate=(value)=>{
+    if(!value)return '';
+    try{return new Intl.DateTimeFormat('fa-IR',{year:'numeric',month:'short',day:'numeric'}).format(new Date(value));}catch{return '';}
+  };
+  const sourceCard=(s,index)=>{
+    const a=document.createElement('a');
+    a.className='ns-ask-source';
+    a.href=s.url||'#';
+    const media=document.createElement('span');
+    media.className='ns-ask-source-media';
+    if(s.image){
+      const img=document.createElement('img');img.src=s.image;img.alt='';img.loading='lazy';img.decoding='async';
+      img.addEventListener('error',()=>{media.textContent=String(index+1).padStart(2,'0');},{once:true});
+      media.appendChild(img);
+    }else media.textContent=String(index+1).padStart(2,'0');
+    const copy=document.createElement('span');copy.className='ns-ask-source-copy';
+    const meta=document.createElement('span');meta.className='ns-ask-source-meta';
+    const cat=document.createElement('span');cat.textContent=s.category||'خبر';
+    const dot=document.createElement('i');
+    const date=document.createElement('span');date.textContent=fmtDate(s.date);
+    meta.append(cat,dot,date);
+    const h=document.createElement('h3');h.textContent=s.title||'خبر مرتبط';
+    const p=document.createElement('p');p.textContent=s.excerpt||s.location||'';
+    copy.append(meta,h,p);a.append(media,copy);return a;
+  };
+  const render=(data)=>{
+    result.hidden=false;
+    answer.textContent=data.answer||'پاسخی در آرشیو پیدا نشد.';
+    clearSources();
+    const list=Array.isArray(data.sources)?data.sources:[];
+    if(list.length){
+      list.slice(0,6).forEach((s,i)=>sources.appendChild(sourceCard(s,i)));
+      sourcesWrap.hidden=false;
+    }else sourcesWrap.hidden=true;
+    setStatus('');
+  };
+  const ask=async(q)=>{
+    q=String(q||'').trim();
+    if(q.length<2){setStatus('سؤال را کمی کامل‌تر بنویس.');input.focus();return;}
+    if(controller)controller.abort();
+    controller=new AbortController();
+    submit.disabled=true;result.hidden=true;setStatus('در حال بررسی آرشیو خبرها و ساخت پاسخ…',true);
+    try{
+      const r=await fetch('/api/ask',{method:'POST',headers:{'content-type':'application/json','accept':'application/json'},body:JSON.stringify({q}),signal:controller.signal,cache:'no-store'});
+      const data=await r.json().catch(()=>null);
+      if(!r.ok||!data)throw new Error((data&&data.error)||('HTTP '+r.status));
+      render(data);
+    }catch(err){
+      if(err&&err.name==='AbortError')return;
+      setStatus('فعلاً پاسخ هوشمند در دسترس نیست؛ چند لحظه بعد دوباره امتحان کن.');
+    }finally{submit.disabled=false;}
+  };
+  form.addEventListener('submit',e=>{e.preventDefault();ask(input.value);});
+  root.querySelectorAll('[data-ns-ask-example]').forEach(btn=>btn.addEventListener('click',()=>{
+    input.value=btn.getAttribute('data-ns-ask-example')||btn.textContent||'';
+    ask(input.value);
+  }));
+})();
