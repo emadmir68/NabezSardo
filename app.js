@@ -298,6 +298,8 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams,articleTools.socialStatus(),analytics.snapshot()));
   if(req.method==='GET'&&p==='/admin/articles/new')return send(res,200,views.editor(db));
   if(req.method==='GET'&&p==='/admin/followups/new')return send(res,200,views.followupEditor(db));
+  m=p.match(/^\/admin\/articles\/([^/]+)\/share-kit$/);
+  if(req.method==='GET'&&m){const a=db.articles.find(x=>x.id===m[1]);return a?send(res,200,views.shareKit(db,a,u.searchParams)):send(res,404,'یافت نشد');}
   m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
   if(req.method==='GET'&&m){const a=db.articles.find(x=>x.id===m[1]);return a?send(res,200,views.editor(db,a,'/admin/articles/'+a.id+'/edit','ویرایش خبر')):send(res,404,'یافت نشد');}
   m=p.match(/^\/admin\/followups\/([^/]+)\/edit$/);
@@ -412,6 +414,14 @@ const server=http.createServer(async(req,res)=>{
     if(m){
       db.followups=(db.followups||[]).filter(v=>v.id!==m[1]);save(db);
       return redirect(res,'/admin?followupDeleted=1#followups');
+    }
+    m=p.match(/^\/admin\/articles\/([^/]+)\/redistribute$/);
+    if(m){
+      const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
+      if(a.status!=='published')return send(res,400,'فقط خبر منتشرشده قابل ارسال است.');
+      try{await articleTools.dispatchAndPersist(a.id);}
+      catch(err){console.error('social redistribution',err);}
+      return redirect(res,'/admin/articles/'+a.id+'/share-kit?resent=1');
     }
     if(p==='/admin/articles/new'){
       const payload=await articleTools.articlePayload(db,f,files,{},uniqueSlug);
