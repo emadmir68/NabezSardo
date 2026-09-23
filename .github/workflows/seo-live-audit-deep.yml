@@ -85,4 +85,5 @@ jobs:
               _,html,_=get("/local/"+key)
               m=re.search(r"<title>(.*?)</title>",html,re.I|re.S)
               print("LOCAL_TITLE",key,(m.group(1).strip() if m else "MISSING"))
+              print("LOCAL_CARD_COUNT",key,html.count('class="card tilt'))
           PY
