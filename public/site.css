@@ -6995,3 +6995,49 @@ svg{
 .search-page .grid.news .card{
   contain:layout paint style;
 }
+
+
+/* ==================== LOCAL SEO LINKS / V1 ==================== */
+.local-hub-links,
+.footer-local-links{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+}
+.local-hub-links{
+  margin:18px 0 24px;
+  padding:12px 0;
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.local-hub-links a,
+.footer-local-links a{
+  padding:6px 10px;
+  border:1px solid rgba(211,169,91,.14);
+  border-radius:999px;
+  color:#c9a15d;
+  background:rgba(255,255,255,.012);
+  text-decoration:none;
+  font-size:10px;
+  font-weight:800;
+}
+.footer-local-links{
+  width:min(1180px,calc(100% - 32px));
+  margin:0 auto;
+  padding:16px 0 4px;
+  justify-content:center;
+  color:#6f7883;
+  font-size:9px;
+}
+.footer-local-links span{
+  margin-left:2px;
+  color:#8d96a0;
+  font-weight:800;
+}
+@media(max-width:620px){
+  .local-hub-links{gap:6px}
+  .local-hub-links a,
+  .footer-local-links a{font-size:9px;padding:5px 8px}
+  .footer-local-links{justify-content:flex-start}
+}
