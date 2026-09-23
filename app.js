@@ -417,7 +417,10 @@ const server=http.createServer(async(req,res)=>{
       const payload=await articleTools.articlePayload(db,f,files,{},uniqueSlug);
       const a={id:id(),createdAt:now(),...payload,publishedAt:payload.status==='published'?now():null};
       db.articles.unshift(a);save(db);
-      if(a.status==='published')articleTools.dispatchAndPersist(a.id).catch(err=>console.error('social distribution',err));
+      if(a.status==='published'){
+        try{await articleTools.dispatchAndPersist(a.id);}
+        catch(err){console.error('social distribution',err);}
+      }
       return redirect(res,'/admin');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
@@ -426,7 +429,10 @@ const server=http.createServer(async(req,res)=>{
       const was=a.status==='published',payload=await articleTools.articlePayload(db,f,files,a,uniqueSlug);Object.assign(a,payload);
       if(!was&&a.status==='published')a.publishedAt=now();
       save(db);
-      if(!was&&a.status==='published')articleTools.dispatchAndPersist(a.id).catch(err=>console.error('social distribution',err));
+      if(!was&&a.status==='published'){
+        try{await articleTools.dispatchAndPersist(a.id);}
+        catch(err){console.error('social distribution',err);}
+      }
       return redirect(res,'/admin');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/delete$/);
