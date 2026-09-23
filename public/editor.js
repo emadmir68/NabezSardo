@@ -238,4 +238,17 @@ document.addEventListener('DOMContentLoaded',()=>{
     const refresh=()=>{const on=select.value==='scheduled';if(wrap)wrap.hidden=!on;if(field)field.required=on;};
     select.addEventListener('change',refresh);refresh();
   });
+
+  // Open the compact news drawer when the admin navigation targets #news.
+  const newsDrawer=document.querySelector('details.admin-news-collapsible#news');
+  const openNewsDrawer=()=>{
+    if(!newsDrawer)return;
+    newsDrawer.open=true;
+    requestAnimationFrame(()=>newsDrawer.scrollIntoView({behavior:'smooth',block:'start'}));
+  };
+  document.querySelectorAll('a[href="#news"]').forEach(link=>link.addEventListener('click',()=>{
+    setTimeout(openNewsDrawer,0);
+  }));
+  if(location.hash==='#news')setTimeout(openNewsDrawer,0);
+
 });
