@@ -71,30 +71,54 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.querySelectorAll('[data-placeholder-fa]').forEach(el=>{
       el.placeholder=l==='en'?(el.dataset.placeholderEn||el.dataset.placeholderFa):(el.dataset.placeholderFa||'');
     });
-    updateDateTime();
+    renderStaticDates();
+    renderCurrentDate();
+    renderLiveClock();
   };
-  const formatJalali=(date,withTime=false)=>{
-    const lang=root.dataset.lang==='en'?'en-US-u-ca-persian':'fa-IR-u-ca-persian';
-    const opt=withTime
-      ? {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Tehran'}
-      : {year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Tehran'};
-    try{return new Intl.DateTimeFormat(lang,opt).format(date)}catch{return ''}
+  const formatterCache=new Map();
+  const getFormatter=(key,locale,opt)=>{
+    const cacheKey=locale+'|'+key;
+    if(formatterCache.has(cacheKey))return formatterCache.get(cacheKey);
+    try{
+      const fmt=new Intl.DateTimeFormat(locale,opt);
+      formatterCache.set(cacheKey,fmt);
+      return fmt;
+    }catch{return null}
   };
-  const updateDateTime=()=>{
-    const now=new Date();
-    const clockLocale=root.dataset.lang==='en'?'en-GB':'fa-IR';
-    document.querySelectorAll('[data-live-clock]').forEach(el=>el.textContent=new Intl.DateTimeFormat(clockLocale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Tehran'}).format(now));
-    document.querySelectorAll('[data-jalali-date]').forEach(el=>el.textContent=formatJalali(now,false));
-    document.querySelectorAll('[data-news-date]').forEach(el=>{
+  const liveClockEls=[...document.querySelectorAll('[data-live-clock]')];
+  const currentDateEls=[...document.querySelectorAll('[data-jalali-date]')];
+  const newsDateEls=[...document.querySelectorAll('[data-news-date]')];
+  const renderLiveClock=()=>{
+    if(!liveClockEls.length)return;
+    const locale=root.dataset.lang==='en'?'en-GB':'fa-IR';
+    const fmt=getFormatter('clock',locale,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Tehran'});
+    if(!fmt)return;
+    const value=fmt.format(new Date());
+    liveClockEls.forEach(el=>{if(el.textContent!==value)el.textContent=value;});
+  };
+  const renderCurrentDate=()=>{
+    if(!currentDateEls.length)return;
+    const locale=root.dataset.lang==='en'?'en-US-u-ca-persian':'fa-IR-u-ca-persian';
+    const fmt=getFormatter('current-date',locale,{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Tehran'});
+    if(!fmt)return;
+    const value=fmt.format(new Date());
+    currentDateEls.forEach(el=>{if(el.textContent!==value)el.textContent=value;});
+  };
+  const renderStaticDates=()=>{
+    if(!newsDateEls.length)return;
+    const locale=root.dataset.lang==='en'?'en-US-u-ca-persian':'fa-IR-u-ca-persian';
+    const fmt=getFormatter('news-date',locale,{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Tehran'});
+    if(!fmt)return;
+    newsDateEls.forEach(el=>{
       const d=new Date(el.dataset.newsDate);
-      if(!isNaN(d))el.textContent=formatJalali(d,true);
+      if(!isNaN(d))el.textContent=fmt.format(d);
     });
   };
   const savedLang=localStorage.getItem(langKey)||'fa';
   document.querySelectorAll('[data-lang-option]').forEach(btn=>btn.addEventListener('click',()=>setLang(btn.dataset.langOption)));
   setLang(savedLang);
-  updateDateTime();
-  setInterval(updateDateTime,1000);
+  setInterval(renderLiveClock,1000);
+  setInterval(renderCurrentDate,60000);
 
   // Premium article reading tools: progress, native share and copy link.
   const articleRoot=document.querySelector('[data-article-root]');
