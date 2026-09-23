@@ -122,27 +122,118 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareText=()=>{
       const lines=['📰 '+title];
       if(lead)lines.push(lead);
-      lines.push('📌 ادامه خبر را در سایت نبض ساردو بخوانید 👇','🔗 '+shareUrl,'نبض ساردو');
+      lines.push('ادامه خبر را در سایت نبض ساردو ببینید 👇','🔗 '+shareUrl);
       return lines.join('\n\n');
     };
-    const getShareImageFile=async()=>{
-      if(!imageUrl||typeof File==='undefined')return null;
+    const copyText=async value=>{
+      if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(value);
+      else{
+        const ta=document.createElement('textarea');
+        ta.value=value;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';
+        document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+      }
+    };
+    const showShareToast=(message,tone='ok')=>{
+      let toast=document.querySelector('[data-article-share-toast]');
+      if(!toast){
+        toast=document.createElement('div');
+        toast.className='article-share-toast';
+        toast.dataset.articleShareToast='1';
+        document.body.appendChild(toast);
+      }
+      toast.className='article-share-toast '+tone;
+      toast.textContent=message;
+      toast.classList.add('show');
+      clearTimeout(showShareToast.timer);
+      showShareToast.timer=setTimeout(()=>toast.classList.remove('show'),4200);
+    };
+    const rr=(ctx,x,y,w,h,r)=>{
+      const q=Math.min(r,w/2,h/2);
+      ctx.beginPath();ctx.moveTo(x+q,y);ctx.arcTo(x+w,y,x+w,y+h,q);ctx.arcTo(x+w,y+h,x,y+h,q);ctx.arcTo(x,y+h,x,y,q);ctx.arcTo(x,y,x+w,y,q);ctx.closePath();
+    };
+    const wrapCardLines=(ctx,value,maxWidth)=>{
+      const words=String(value||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+      words.forEach(word=>{
+        const test=line?line+' '+word:word;
+        if(line&&ctx.measureText(test).width>maxWidth){lines.push(line);line=word}else line=test;
+      });
+      if(line)lines.push(line);
+      return lines;
+    };
+    const loadShareCardImage=async()=>{
+      if(!imageUrl)return null;
       try{
         const res=await fetch(imageUrl,{cache:'force-cache',credentials:'same-origin'});
         if(!res.ok)return null;
         const blob=await res.blob();
-        if(!blob.type||!blob.type.startsWith('image/'))return null;
-        const ext=blob.type.includes('png')?'png':blob.type.includes('webp')?'webp':blob.type.includes('gif')?'gif':'jpg';
-        return new File([blob],'nabez-sardo-news.'+ext,{type:blob.type,lastModified:Date.now()});
+        if(!blob.type.startsWith('image/'))return null;
+        const objectUrl=URL.createObjectURL(blob);
+        const img=await new Promise(resolve=>{
+          const el=new Image();
+          el.onload=()=>resolve(el);el.onerror=()=>resolve(null);el.src=objectUrl;
+        });
+        URL.revokeObjectURL(objectUrl);
+        return img;
       }catch{return null;}
+    };
+    const makeDirectShareCard=async()=>{
+      if(typeof File==='undefined')return null;
+      try{if(document.fonts&&document.fonts.ready)await document.fonts.ready}catch{}
+      const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;
+      const ctx=canvas.getContext('2d');if(!ctx)return null;
+      const bg=ctx.createLinearGradient(0,0,1080,1350);
+      bg.addColorStop(0,'#081019');bg.addColorStop(.55,'#101823');bg.addColorStop(1,'#090d13');
+      ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1350);
+      const glow=ctx.createRadialGradient(860,130,20,860,130,520);
+      glow.addColorStop(0,'rgba(139,31,67,.30)');glow.addColorStop(.55,'rgba(217,173,94,.10)');glow.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=glow;ctx.fillRect(360,0,720,620);
+
+      ctx.textAlign='right';ctx.direction='rtl';
+      ctx.fillStyle='#f0c97a';ctx.font='900 42px Vazirmatn, Tahoma, sans-serif';ctx.fillText('نبض ساردو',980,82);
+      ctx.fillStyle='rgba(226,233,242,.62)';ctx.font='700 19px Vazirmatn, Tahoma, sans-serif';ctx.fillText('رسانه محلی ساردوئیه و جنوب کرمان',980,118);
+      ctx.fillStyle='#d9ad61';ctx.fillRect(800,138,180,4);
+
+      const imgX=70,imgY=175,imgW=940,imgH=575;
+      ctx.fillStyle='#0b1119';rr(ctx,imgX,imgY,imgW,imgH,32);ctx.fill();
+      const img=await loadShareCardImage();
+      if(img){
+        const scale=Math.min(imgW/img.naturalWidth,imgH/img.naturalHeight);
+        const dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
+        const dx=imgX+(imgW-dw)/2,dy=imgY+(imgH-dh)/2;
+        ctx.save();rr(ctx,imgX,imgY,imgW,imgH,32);ctx.clip();ctx.drawImage(img,dx,dy,dw,dh);ctx.restore();
+      }else{
+        ctx.textAlign='center';ctx.direction='rtl';ctx.fillStyle='rgba(240,201,122,.72)';
+        ctx.font='900 56px Vazirmatn, Tahoma, sans-serif';ctx.fillText('نبض ساردو',540,470);
+      }
+      ctx.strokeStyle='rgba(224,182,109,.22)';ctx.lineWidth=3;rr(ctx,imgX,imgY,imgW,imgH,32);ctx.stroke();
+
+      ctx.textAlign='right';ctx.direction='rtl';
+      const titleFont=title.length>95?46:title.length>62?52:58;
+      ctx.fillStyle='#f7f2ea';ctx.font='900 '+titleFont+'px Vazirmatn, Tahoma, sans-serif';
+      let y=830;
+      wrapCardLines(ctx,title,900).slice(0,3).forEach(line=>{ctx.fillText(line,980,y);y+=titleFont*1.35;});
+
+      if(lead){
+        y+=8;ctx.fillStyle='rgba(224,230,238,.78)';ctx.font='600 27px Vazirmatn, Tahoma, sans-serif';
+        wrapCardLines(ctx,lead,900).slice(0,3).forEach(line=>{if(y<1110){ctx.fillText(line,980,y);y+=43;}});
+      }
+
+      const ctaY=1160;
+      ctx.fillStyle='rgba(218,173,91,.08)';rr(ctx,70,ctaY,940,124,24);ctx.fill();
+      ctx.strokeStyle='rgba(224,182,109,.22)';ctx.lineWidth=2;rr(ctx,70,ctaY,940,124,24);ctx.stroke();
+      ctx.textAlign='right';ctx.direction='rtl';ctx.fillStyle='#efc77a';
+      ctx.font='900 27px Vazirmatn, Tahoma, sans-serif';ctx.fillText('ادامه خبر را در سایت نبض ساردو ببینید',970,1206);
+      ctx.direction='ltr';ctx.textAlign='right';ctx.fillStyle='#f2f5f8';ctx.font='800 23px Arial, sans-serif';ctx.fillText(shareUrl,970,1252);
+
+      ctx.direction='ltr';ctx.textAlign='center';ctx.fillStyle='rgba(229,235,242,.42)';ctx.font='700 17px Arial, sans-serif';
+      ctx.fillText('NABZESARDO.IR',540,1320);
+
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92));
+      return blob?new File([blob],'nabez-sardo-direct.jpg',{type:'image/jpeg',lastModified:Date.now()}):null;
     };
     const copyArticleLink=async()=>{
       try{
-        if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(shareUrl);
-        else{
-          const ta=document.createElement('textarea');ta.value=shareUrl;ta.style.position='fixed';ta.style.opacity='0';
-          document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
-        }
+        await copyText(shareUrl);
         if(copyBtn){
           copyBtn.classList.add('is-copied');
           const label=copyBtn.querySelector('[data-copy-label]');
@@ -157,13 +248,34 @@ document.addEventListener('DOMContentLoaded',()=>{
     };
     if(copyBtn)copyBtn.addEventListener('click',copyArticleLink);
     if(shareBtn)shareBtn.addEventListener('click',async()=>{
+      const caption=shareText();
       try{
-        if(!navigator.share){await copyArticleLink();return;}
-        const payload={title,text:shareText()};
-        const imageFile=await getShareImageFile();
-        if(imageFile&&navigator.canShare&&navigator.canShare({files:[imageFile]}))payload.files=[imageFile];
-        await navigator.share(payload);
-      }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
+        await copyText(caption);
+        showShareToast(root.dataset.lang==='en'?'Caption and short link copied. If Instagram sends only the image, paste the text in Direct.':'متن خبر و لینک کوتاه کپی شد؛ اگر اینستاگرام فقط عکس را گرفت، داخل دایرکت Paste کنید.');
+      }catch{}
+      try{
+        if(!navigator.share){
+          showShareToast(root.dataset.lang==='en'?'Sharing is not supported here; the text and link are already copied.':'اشتراک‌گذاری در این مرورگر پشتیبانی نمی‌شود؛ متن و لینک کپی شده است.','warn');
+          return;
+        }
+        const cardFile=await makeDirectShareCard();
+        if(cardFile&&(!navigator.canShare||navigator.canShare({files:[cardFile]}))){
+          try{
+            await navigator.share({files:[cardFile],title,text:caption});
+            return;
+          }catch(err){
+            if(err&&err.name==='AbortError')return;
+            console.warn('article file share fallback',err);
+            try{await navigator.share({files:[cardFile],title});return;}catch(err2){if(err2&&err2.name==='AbortError')return;}
+          }
+        }
+        await navigator.share({title,text:caption});
+      }catch(err){
+        if(err&&err.name!=='AbortError'){
+          console.warn('article share failed',err);
+          showShareToast(root.dataset.lang==='en'?'The text and short link are copied; paste them into Instagram Direct.':'متن و لینک کوتاه کپی شده؛ آن را داخل دایرکت اینستاگرام Paste کنید.','warn');
+        }
+      }
     });
   }
 
