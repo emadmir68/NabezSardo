@@ -564,3 +564,372 @@ body,button,input,textarea,select{font-family:"Vazirmatn",Tahoma,Arial,sans-seri
 .followup-admin-row>div:first-child{display:grid;gap:4px}.followup-admin-state{width:max-content;padding:4px 7px;border-radius:999px;border:1px solid rgba(222,177,91,.18);background:rgba(222,177,91,.05);color:#d6ae62;font-size:8px;font-weight:900}.followup-admin-state[data-status="completed"]{color:#78c391;border-color:rgba(120,195,145,.18);background:rgba(120,195,145,.05)}.followup-admin-state[data-status="overdue"]{color:#df7777;border-color:rgba(223,119,119,.18);background:rgba(223,119,119,.05)}
 .followup-editor-page{max-width:980px}.followup-editor-form{margin-top:18px}.followup-editor-form textarea[name="promise"]{min-height:145px}.followup-editor-form textarea[name="note"]{min-height:130px}.followup-featured-toggle{display:flex!important;gap:10px!important;align-items:flex-start!important;padding:13px!important;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.025)}.followup-featured-toggle input{width:auto!important;margin-top:3px}.followup-featured-toggle span{display:grid;gap:3px}.followup-featured-toggle b{color:#e0b66c}.followup-featured-toggle small{color:#7d8691}
 @media(max-width:640px){.followup-admin-summary{grid-template-columns:1fr 1fr 1fr}.followup-admin-summary span{padding:9px}.followup-admin-summary b{font-size:18px}.followup-editor-form .twocol{grid-template-columns:1fr}}
+
+
+/* ==================== ADMIN MOBILE STABILITY / V1 ====================
+   Scope: admin dashboard, editors and admin-only analytics.
+   Public homepage/article presentation is intentionally unaffected.
+===================================================================== */
+.admin,
+.followup-editor-page,
+.editor-form,
+.admin-dashboard-shell,
+.admin-dashboard-content,
+.admin-overview,
+.admin-dashboard-content>.panel,
+.admin-fold,
+.analytics-dashboard,
+.smart-desk,
+.form,
+.image-upload,
+.video-upload-panel,
+.gallery-editor,
+.integration-grid,
+.backup-panel,
+.restore-form{
+  min-width:0;
+  max-width:100%;
+}
+.admin img,
+.admin video,
+.admin iframe,
+.editor-form img,
+.editor-form video{
+  max-width:100%;
+}
+.adminrow>div,
+.admin-section-title>div,
+.panel-head>div,
+.admin-welcome>div,
+.analytics-head>div,
+.analytics-card,
+.analytics-rank-list a>div,
+.smart-desk-head>div{
+  min-width:0;
+}
+.adminrow b,
+.adminrow small,
+.admin-section-title h2,
+.admin-section-title p,
+.panel-head h2,
+.panel-head p,
+.admin-inbox-grid summary,
+.integration-card,
+.analytics-rank-list a div b,
+.analytics-rank-list a div small{
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+
+@media(max-width:760px){
+  .admin,
+  .followup-editor-page{
+    max-width:100%;
+    overflow-x:clip;
+  }
+
+  .admin-dashboard-shell,
+  .admin-dashboard-content,
+  .admin-overview,
+  .admin-dashboard-content>.panel,
+  .admin-fold,
+  .admin-fold-body,
+  .analytics-dashboard,
+  .analytics-grid,
+  .analytics-card,
+  .smart-desk,
+  .smart-signals,
+  .smart-insights,
+  .followup-admin-panel,
+  .admin-news-panel,
+  .admin-inbox-grid,
+  .form,
+  .image-upload,
+  .video-upload-panel,
+  .gallery-editor{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+  }
+
+  /* Keep the horizontal section menu usable without widening the document. */
+  .admin-sidebar{
+    max-width:100vw;
+    overflow:hidden;
+  }
+  .admin-sidebar-nav{
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+  }
+  .admin-sidebar-nav a{
+    scroll-snap-align:start;
+  }
+
+  /* Long list rows become compact touch-friendly cards. */
+  .admin-scroll-list{
+    overflow:visible;
+  }
+  .adminrow{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    gap:10px;
+  }
+  .adminrow>div:first-child{
+    width:100%;
+    min-width:0;
+  }
+  .adminrow>div:last-child{
+    display:flex;
+    flex-wrap:wrap;
+    width:100%;
+    gap:7px!important;
+  }
+  .adminrow>div:last-child>a,
+  .adminrow>div:last-child>button,
+  .adminrow>div:last-child>form,
+  .adminrow>div:last-child>form button{
+    min-height:36px;
+  }
+  .adminrow>div:last-child>a,
+  .adminrow>div:last-child>form button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:7px 11px;
+    border:1px solid rgba(213,169,91,.14);
+    border-radius:10px;
+    background:rgba(255,255,255,.018);
+  }
+
+  /* Admin forms must never keep desktop columns on a phone. */
+  .admin .twocol,
+  .followup-editor-form .twocol,
+  .ad-admin-grid,
+  .video-upload-panel,
+  .image-upload{
+    grid-template-columns:1fr!important;
+  }
+
+  .admin .form input,
+  .admin .form textarea,
+  .admin .form select,
+  .editor-form input,
+  .editor-form textarea,
+  .editor-form select,
+  .followup-editor-form input,
+  .followup-editor-form textarea,
+  .followup-editor-form select{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    font-size:16px;
+  }
+  .admin input[type="file"],
+  .editor-form input[type="file"],
+  .followup-editor-form input[type="file"]{
+    max-width:100%;
+    overflow:hidden;
+  }
+
+  .editor-heading{
+    width:100%;
+    max-width:100%;
+  }
+  .editor-heading h1{
+    overflow-wrap:anywhere;
+  }
+  .rich-editor,
+  .rich-area{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+  }
+  .rich-toolbar{
+    max-width:100%;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    overscroll-behavior-x:contain;
+    scrollbar-width:thin;
+  }
+  .rich-toolbar button,
+  .rich-toolbar label,
+  .rich-font-picker{
+    flex:0 0 auto;
+  }
+
+  .image-preview,
+  .video-preview{
+    min-width:0;
+    max-width:100%;
+  }
+
+  .gallery-list{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .gallery-item{
+    min-width:0;
+  }
+  .gallery-item img{
+    height:auto;
+    aspect-ratio:1/1;
+    object-fit:cover;
+  }
+
+  /* Analytics: keep charts and ranking rows inside the viewport. */
+  .analytics-dashboard{
+    overflow:hidden;
+  }
+  .analytics-kpis{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .analytics-card{
+    overflow:hidden;
+  }
+  .analytics-bars{
+    width:100%;
+    min-width:0;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:3px!important;
+  }
+  .analytics-bar-col{
+    min-width:0;
+  }
+  .analytics-bar-col>b,
+  .analytics-bar-col>small{
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .analytics-rank-list a{
+    min-width:0;
+    grid-template-columns:24px minmax(0,1fr) auto!important;
+  }
+  .analytics-rank-list a>strong{
+    max-width:72px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .smart-signals{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .smart-signal{
+    min-width:0;
+  }
+  .smart-signal em{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+  }
+
+  .integration-grid{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .integration-card{
+    min-width:0;
+  }
+
+  .backup-list{
+    width:100%;
+  }
+  .backup-list span{
+    overflow-wrap:anywhere;
+  }
+  .restore-form{
+    width:100%;
+  }
+  .restore-form label,
+  .restore-form input,
+  .restore-form button{
+    width:100%;
+    max-width:100%;
+  }
+
+  .followup-admin-summary{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  .followup-admin-summary span{
+    min-width:0;
+  }
+}
+
+@media(max-width:480px){
+  .admin{
+    width:calc(100% - 20px)!important;
+  }
+  .admin-dashboard-content>.panel,
+  .admin-overview{
+    padding:13px!important;
+    border-radius:16px;
+  }
+  .admin-welcome{
+    padding:14px!important;
+    border-radius:17px;
+  }
+  .admin-section-title{
+    gap:10px;
+  }
+  .admin-section-no{
+    flex:0 0 auto;
+  }
+
+  .analytics-kpis,
+  .smart-signals,
+  .integration-grid,
+  .followup-admin-summary{
+    grid-template-columns:1fr!important;
+  }
+  .analytics-kpi{
+    min-height:0;
+  }
+  .analytics-live{
+    width:100%;
+    max-width:100%;
+  }
+  .analytics-bars{
+    height:145px!important;
+  }
+  .analytics-bar-col>b{font-size:7px}
+  .analytics-bar-col>small{font-size:6.3px}
+
+  .gallery-list,
+  .article-gallery-grid{
+    grid-template-columns:1fr!important;
+  }
+
+  .editor-actions{
+    display:grid!important;
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .editor-actions .btn,
+  .editor-actions button,
+  .editor-actions a{
+    width:100%;
+  }
+
+  .social-options{
+    align-items:stretch;
+  }
+  .social-options label{
+    width:100%;
+  }
+
+  .admin-inbox-grid details,
+  .admin-inbox-grid summary{
+    max-width:100%;
+  }
+}
+
+@media(max-width:390px){
+  .adminbar{
+    gap:6px!important;
+  }
+  .adminbar .brand b{
+    font-size:15px!important;
+  }
+  .admin-sidebar-nav a{
+    font-size:8.5px!important;
+  }
+}
