@@ -5876,3 +5876,138 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     background:#12171e!important;
   }
 }
+
+
+/* ===== Safe glass pilot v2 visible depth =====
+   Makes the glass effect perceptible by adding light behind the cards only.
+   Hero/header/breaking remain untouched. */
+.home-glass .frontpage-desk,
+.home-glass .latest-section{
+  position:relative;
+  isolation:isolate;
+}
+.home-glass .frontpage-desk::before,
+.home-glass .latest-section::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:12% -5% 8%;
+  border-radius:48px;
+  filter:blur(44px);
+  opacity:.9;
+}
+.home-glass .frontpage-desk::before{
+  background:
+    radial-gradient(circle at 14% 28%,rgba(128,27,59,.34),transparent 32%),
+    radial-gradient(circle at 78% 22%,rgba(222,177,92,.26),transparent 28%),
+    radial-gradient(circle at 54% 82%,rgba(54,101,139,.20),transparent 34%);
+}
+.home-glass .latest-section::before{
+  background:
+    radial-gradient(circle at 86% 18%,rgba(125,27,58,.28),transparent 30%),
+    radial-gradient(circle at 22% 66%,rgba(213,170,90,.22),transparent 30%),
+    radial-gradient(circle at 58% 44%,rgba(48,91,126,.18),transparent 32%);
+}
+
+/* Stronger frosted transparency without changing sizes or spacing. */
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .front-lead,
+  .home-glass .front-brief,
+  .home-glass .latest-grid .card{
+    background:
+      linear-gradient(145deg,rgba(18,24,33,.48),rgba(10,14,20,.28))!important;
+    border:1px solid rgba(255,255,255,.22)!important;
+    box-shadow:
+      0 28px 70px rgba(0,0,0,.34),
+      inset 0 1px 0 rgba(255,255,255,.16),
+      inset 0 -1px 0 rgba(255,255,255,.035)!important;
+    backdrop-filter:blur(22px) saturate(155%);
+    -webkit-backdrop-filter:blur(22px) saturate(155%);
+  }
+}
+
+/* Fine glass rim and highlight. */
+.home-glass .front-lead,
+.home-glass .front-brief,
+.home-glass .latest-grid .card{
+  position:relative;
+  overflow:hidden;
+}
+.home-glass .front-lead::before,
+.home-glass .front-brief::before,
+.home-glass .latest-grid .card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:3;
+  pointer-events:none;
+  border-radius:inherit;
+  background:
+    linear-gradient(120deg,rgba(255,255,255,.11),transparent 19%,transparent 72%,rgba(226,183,103,.045));
+  mix-blend-mode:screen;
+}
+.home-glass .front-lead::after,
+.home-glass .front-brief::after,
+.home-glass .latest-grid .card::after{
+  content:"";
+  position:absolute;
+  z-index:3;
+  pointer-events:none;
+  top:-35%;
+  left:-28%;
+  width:24%;
+  height:170%;
+  transform:rotate(18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.09),transparent);
+  opacity:.45;
+}
+
+/* Keep all real card content above the decorative glass layers. */
+.home-glass .front-lead>*,
+.home-glass .front-brief>*,
+.home-glass .latest-grid .card>*{
+  position:relative;
+  z-index:4;
+}
+
+/* Headings become clearly frosted rails, still same layout. */
+.home-glass .frontpage-head,
+.home-glass .latest-section>.sectionhead{
+  background:
+    linear-gradient(145deg,rgba(18,24,33,.42),rgba(10,14,20,.22))!important;
+  border-color:rgba(255,255,255,.17)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 14px 36px rgba(0,0,0,.18)!important;
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+}
+
+@media(max-width:620px){
+  .home-glass .frontpage-desk::before,
+  .home-glass .latest-section::before{
+    inset:10% -12% 8%;
+    filter:blur(34px);
+    opacity:.82;
+  }
+  @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .home-glass .front-lead,
+    .home-glass .front-brief,
+    .home-glass .latest-grid .card{
+      background:linear-gradient(145deg,rgba(19,25,34,.52),rgba(10,14,20,.30))!important;
+      backdrop-filter:blur(14px) saturate(142%);
+      -webkit-backdrop-filter:blur(14px) saturate(142%);
+      border-color:rgba(255,255,255,.20)!important;
+    }
+  }
+  .home-glass .front-lead::after,
+  .home-glass .front-brief::after,
+  .home-glass .latest-grid .card::after{
+    opacity:.28;
+  }
+}
+@media(prefers-reduced-transparency:reduce){
+  .home-glass .frontpage-desk::before,
+  .home-glass .latest-section::before{display:none}
+}
