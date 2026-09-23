@@ -6265,3 +6265,258 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
     background:#12171e!important;
   }
 }
+
+
+/* ===== Safe glass final pass: remaining homepage =====
+   Completes the homepage below the hero. Header/nav/hero/breaking stay untouched. */
+
+/* ---- Citizen-news promo ---- */
+.home-glass .promo-citizen{
+  position:relative;
+  isolation:isolate;
+}
+.home-glass .promo-citizen::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:-8% -3%;
+  border-radius:44px;
+  background:
+    radial-gradient(circle at 14% 24%,rgba(128,27,60,.28),transparent 34%),
+    radial-gradient(circle at 84% 18%,rgba(219,176,94,.24),transparent 30%),
+    radial-gradient(circle at 52% 82%,rgba(50,93,132,.16),transparent 36%);
+  filter:blur(42px);
+  opacity:.84;
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .promo-citizen{
+    background:
+      radial-gradient(circle at 12% 10%,rgba(255,255,255,.06),transparent 28%),
+      linear-gradient(145deg,rgba(18,24,33,.46),rgba(9,13,19,.27))!important;
+    border-color:rgba(255,255,255,.19)!important;
+    box-shadow:
+      0 26px 62px rgba(0,0,0,.31),
+      inset 0 1px 0 rgba(255,255,255,.13),
+      inset 0 -1px 0 rgba(255,255,255,.03)!important;
+    backdrop-filter:blur(20px) saturate(150%);
+    -webkit-backdrop-filter:blur(20px) saturate(150%);
+  }
+}
+.home-glass .promo-citizen .promo-visual{
+  background:rgba(255,255,255,.022)!important;
+  border-color:rgba(255,255,255,.09)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.home-glass .promo-citizen .citizen-promo-note,
+.home-glass .promo-citizen .citizen-promo-cta,
+.home-glass .promo-citizen .promo-story-btn{
+  border-color:rgba(255,255,255,.12)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+/* ---- Advertisement ---- */
+.home-glass .home-ad-slot{
+  position:relative;
+  isolation:isolate;
+}
+.home-glass .home-ad-slot::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:3% -4%;
+  border-radius:42px;
+  background:
+    radial-gradient(circle at 84% 18%,rgba(219,176,94,.25),transparent 31%),
+    radial-gradient(circle at 18% 70%,rgba(124,27,58,.23),transparent 34%),
+    radial-gradient(circle at 54% 44%,rgba(48,89,126,.14),transparent 34%);
+  filter:blur(40px);
+  opacity:.82;
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .home-ad-card{
+    background:
+      linear-gradient(145deg,rgba(18,24,33,.46),rgba(9,13,19,.27))!important;
+    border-color:rgba(255,255,255,.18)!important;
+    box-shadow:
+      0 24px 58px rgba(0,0,0,.29),
+      inset 0 1px 0 rgba(255,255,255,.12)!important;
+    backdrop-filter:blur(18px) saturate(145%);
+    -webkit-backdrop-filter:blur(18px) saturate(145%);
+  }
+}
+.home-glass .home-ad-cta{
+  background:rgba(255,255,255,.028)!important;
+  border-color:rgba(255,255,255,.10)!important;
+}
+
+/* ---- Most read ---- */
+.home-glass .popular-section{
+  position:relative;
+  isolation:isolate;
+}
+.home-glass .popular-section::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:10% -5% 4%;
+  border-radius:48px;
+  background:
+    radial-gradient(circle at 14% 26%,rgba(124,27,58,.26),transparent 34%),
+    radial-gradient(circle at 82% 18%,rgba(218,174,91,.22),transparent 30%),
+    radial-gradient(circle at 54% 82%,rgba(48,90,128,.15),transparent 36%);
+  filter:blur(42px);
+  opacity:.84;
+}
+.home-glass .popular-section>.sectionhead{
+  padding:12px 14px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 10px 28px rgba(0,0,0,.14);
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .popular-list{
+    background:
+      linear-gradient(145deg,rgba(18,24,33,.43),rgba(9,13,19,.24))!important;
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:22px;
+    padding:10px;
+    box-shadow:
+      0 24px 58px rgba(0,0,0,.28),
+      inset 0 1px 0 rgba(255,255,255,.10);
+    backdrop-filter:blur(18px) saturate(145%);
+    -webkit-backdrop-filter:blur(18px) saturate(145%);
+  }
+  .home-glass .popular-row{
+    background:rgba(255,255,255,.018)!important;
+    border-color:rgba(255,255,255,.085)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+  }
+}
+.home-glass .popular-row:hover{
+  background:rgba(255,255,255,.045)!important;
+  border-color:rgba(224,182,109,.22)!important;
+}
+
+/* ---- Sardouiyeh focus ---- */
+.home-glass .focus{
+  position:relative;
+  isolation:isolate;
+  background:
+    linear-gradient(180deg,rgba(9,12,17,.86),rgba(9,12,17,.92))!important;
+  border-color:rgba(255,255,255,.055)!important;
+}
+.home-glass .focus::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:0;
+  background:
+    radial-gradient(circle at 14% 26%,rgba(124,27,58,.20),transparent 32%),
+    radial-gradient(circle at 82% 20%,rgba(218,174,91,.18),transparent 28%),
+    radial-gradient(circle at 54% 82%,rgba(48,90,128,.12),transparent 34%);
+  filter:blur(38px);
+  opacity:.80;
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .focusgrid{
+    padding:22px;
+    border:1px solid rgba(255,255,255,.17);
+    border-radius:26px;
+    background:
+      linear-gradient(145deg,rgba(18,24,33,.44),rgba(9,13,19,.25))!important;
+    box-shadow:
+      0 26px 62px rgba(0,0,0,.30),
+      inset 0 1px 0 rgba(255,255,255,.11)!important;
+    backdrop-filter:blur(18px) saturate(145%);
+    -webkit-backdrop-filter:blur(18px) saturate(145%);
+  }
+  .home-glass .focus .topic{
+    background:rgba(255,255,255,.025)!important;
+    border-color:rgba(255,255,255,.10)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 26px rgba(0,0,0,.14)!important;
+  }
+}
+.home-glass .focus .topic:hover{
+  background:rgba(255,255,255,.045)!important;
+  border-color:rgba(224,182,109,.20)!important;
+}
+
+/* ---- Final citizen CTA ---- */
+.home-glass .citizen{
+  position:relative;
+  isolation:isolate;
+}
+.home-glass .citizen::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:-12% -4%;
+  border-radius:42px;
+  background:
+    radial-gradient(circle at 84% 20%,rgba(124,27,58,.25),transparent 33%),
+    radial-gradient(circle at 16% 72%,rgba(218,174,91,.20),transparent 31%),
+    radial-gradient(circle at 52% 44%,rgba(48,90,128,.13),transparent 34%);
+  filter:blur(40px);
+  opacity:.82;
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .home-glass .citizen{
+    background:
+      linear-gradient(145deg,rgba(18,24,33,.46),rgba(9,13,19,.27))!important;
+    border-color:rgba(255,255,255,.18)!important;
+    box-shadow:
+      0 24px 58px rgba(0,0,0,.29),
+      inset 0 1px 0 rgba(255,255,255,.12)!important;
+    backdrop-filter:blur(18px) saturate(145%);
+    -webkit-backdrop-filter:blur(18px) saturate(145%);
+  }
+}
+
+/* ---- Mobile performance guard ---- */
+@media(max-width:620px){
+  .home-glass .promo-citizen::after,
+  .home-glass .home-ad-slot::before,
+  .home-glass .popular-section::before,
+  .home-glass .focus::before,
+  .home-glass .citizen::before{
+    filter:blur(30px);
+    opacity:.74;
+  }
+  .home-glass .popular-section>.sectionhead{padding:10px 11px;border-radius:15px}
+  @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .home-glass .promo-citizen,
+    .home-glass .home-ad-card,
+    .home-glass .popular-list,
+    .home-glass .focusgrid,
+    .home-glass .citizen{
+      backdrop-filter:blur(12px) saturate(132%);
+      -webkit-backdrop-filter:blur(12px) saturate(132%);
+      box-shadow:0 16px 38px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.075)!important;
+    }
+  }
+  .home-glass .focusgrid{padding:14px;border-radius:20px}
+}
+
+/* ---- Accessibility fallback ---- */
+@media(prefers-reduced-transparency:reduce){
+  .home-glass .promo-citizen::after,
+  .home-glass .home-ad-slot::before,
+  .home-glass .popular-section::before,
+  .home-glass .focus::before,
+  .home-glass .citizen::before{display:none}
+  .home-glass .promo-citizen,
+  .home-glass .home-ad-card,
+  .home-glass .popular-list,
+  .home-glass .focusgrid,
+  .home-glass .citizen{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    background:#12171e!important;
+  }
+}
