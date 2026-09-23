@@ -807,6 +807,48 @@ document.addEventListener('DOMContentLoaded',()=>{
     addEventListener('beforeunload',()=>cancelAnimationFrame(raf),{once:true});
   }
 
+
+  // IMMERSIVE SARDO / V1 — lightweight scroll-driven regional scene.
+  const immersiveScene=document.querySelector('[data-immersive-scene]');
+  if(immersiveScene){
+    const mobileSceneMQ=matchMedia('(max-width: 640px)');
+    const reduceSceneMQ=matchMedia('(prefers-reduced-motion: reduce)');
+    let sceneRaf=0;
+    const clampScene=v=>Math.max(0,Math.min(1,v));
+    const paintImmersiveScene=()=>{
+      sceneRaf=0;
+      if(mobileSceneMQ.matches||reduceSceneMQ.matches){
+        immersiveScene.style.setProperty('--scene-progress','1');
+        immersiveScene.style.setProperty('--scene-x','0');
+        return;
+      }
+      const rect=immersiveScene.getBoundingClientRect();
+      const travel=Math.max(1,rect.height-innerHeight);
+      const progress=clampScene((-rect.top)/travel);
+      immersiveScene.style.setProperty('--scene-progress',progress.toFixed(4));
+    };
+    const scheduleImmersiveScene=()=>{
+      if(sceneRaf)return;
+      sceneRaf=requestAnimationFrame(paintImmersiveScene);
+    };
+    paintImmersiveScene();
+    addEventListener('scroll',scheduleImmersiveScene,{passive:true});
+    addEventListener('resize',scheduleImmersiveScene,{passive:true});
+    mobileSceneMQ.addEventListener?.('change',paintImmersiveScene);
+    reduceSceneMQ.addEventListener?.('change',paintImmersiveScene);
+
+    const sticky=immersiveScene.querySelector('.ns-immersive__sticky');
+    sticky?.addEventListener('pointermove',ev=>{
+      if(mobileSceneMQ.matches||reduceSceneMQ.matches||ev.pointerType==='touch')return;
+      const b=sticky.getBoundingClientRect();
+      const x=Math.max(-1,Math.min(1,((ev.clientX-b.left)/Math.max(1,b.width)-.5)*2));
+      immersiveScene.style.setProperty('--scene-x',x.toFixed(3));
+    },{passive:true});
+    sticky?.addEventListener('pointerleave',()=>{
+      immersiveScene.style.setProperty('--scene-x','0');
+    },{passive:true});
+  }
+
   const syncAdaptiveMedia=frame=>{
     const img=frame.querySelector('img');
     if(!img)return;
