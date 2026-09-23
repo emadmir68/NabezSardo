@@ -58,4 +58,9 @@ jobs:
                   for i in items[:1]:
                       keep={k:i.get(k) for k in ["numRequests","numScripts","numStylesheets","numFonts","numTasks","numTasksOver10ms","numTasksOver25ms","numTasksOver50ms","numTasksOver100ms","numTasksOver500ms","totalByteWeight","mainDocumentTransferSize"]}
                       print("DIAGNOSTICS",keep)
+
+          reqs=a.get("network-requests",{}).get("details",{}).get("items",[])
+          reqs=sorted(reqs,key=lambda i:i.get("transferSize",0),reverse=True)[:15]
+          for i in reqs:
+              print("TOP_NETWORK",i.get("resourceType"),i.get("transferSize"),i.get("mimeType"),i.get("url"))
           PY
