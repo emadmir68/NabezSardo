@@ -83,7 +83,7 @@ function trackView(req,db,article){
   return 'nabez_seen='+value+'; Path=/; Max-Age=604800; SameSite=Lax'+secure;
 }
 function xmlEsc(v=''){return String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[ch]));}
-function publicUrl(p='/'){return PUBLIC_BASE+(p.startsWith('/')?p:'/'+p);}
+function publicUrl(p='/'){const s=String(p||'');if(/^https?:\/\//i.test(s))return s;return PUBLIC_BASE+(s.startsWith('/')?s:'/'+s);}
 function sitemapXml(db){
   const urls=[
     {loc:publicUrl('/'),lastmod:null,image:''},
@@ -111,7 +111,7 @@ function robotsTxt(){
 }
 function rssXml(db){
   const items=published(db).slice(0,30);
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>نبض ساردو</title><link>'+xmlEsc(publicUrl('/'))+'</link><description>اخبار ساردوئیه، جیرفت و جنوب کرمان</description><language>fa-ir</language>'+items.map(a=>'<item><title>'+xmlEsc(a.title)+'</title><link>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</link><guid isPermaLink="true">'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</guid><pubDate>'+new Date(a.publishedAt||a.createdAt).toUTCString()+'</pubDate><description>'+xmlEsc(a.lead||a.body||a.title)+'</description></item>').join('')+'</channel></rss>';
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>نبض ساردو</title><link>'+xmlEsc(publicUrl('/'))+'</link><description>اخبار ساردو، ساردوئیه، جیرفت، عنبرآباد، کهنوج و جنوب کرمان</description><language>fa-ir</language>'+items.map(a=>'<item><title>'+xmlEsc(a.title)+'</title><link>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</link><guid isPermaLink="true">'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</guid><pubDate>'+new Date(a.publishedAt||a.createdAt).toUTCString()+'</pubDate><description>'+xmlEsc(a.lead||a.body||a.title)+'</description></item>').join('')+'</channel></rss>';
 }
 function serveFile(res,base,pathname,prefix,cache='public,max-age=604800'){
   const rel=pathname.slice(prefix.length);
