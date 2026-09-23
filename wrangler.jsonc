@@ -17,7 +17,7 @@
     "SYNC_SOURCE_URL": "https://nabezsardo-prod-production.up.railway.app",
     "RAILWAY_ORIGIN": "https://nabezsardo-prod-production.up.railway.app",
     "CLOUDFLARE_PRIMARY": "1",
-    "CLOUDFLARE_ASSET_VERSION": "20260923-mobile-runtime-v2",
+    "CLOUDFLARE_ASSET_VERSION": "20260923-mobile-runtime-v3",
     "ARVAN_ENDPOINT": "https://s3.ir-thr-at1.arvanstorage.ir",
     "ARVAN_BUCKET": "nabzesardo",
     "ARVAN_REGION": "ir-thr-at1"
