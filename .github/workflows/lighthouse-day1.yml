@@ -64,3 +64,5 @@ jobs:
           for i in reqs:
               print("TOP_NETWORK",i.get("resourceType"),i.get("transferSize"),i.get("mimeType"),i.get("url"))
           PY
+
+# post-v2 measurement trigger
