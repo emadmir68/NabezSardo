@@ -33,3 +33,29 @@ jobs:
                   x=a.get(key,{})
                   print("METRIC",name,key,x.get("displayValue"),"score",x.get("score"))
           PY
+          python - <<'PY'
+          import json
+          d=json.load(open("mobile.json"))
+          a=d["audits"]
+          for key in ["mainthread-work-breakdown","bootup-time","long-tasks","unused-javascript","render-blocking-resources","network-requests","diagnostics"]:
+              x=a.get(key)
+              if not x: continue
+              print("AUDIT",key,"score",x.get("score"),"display",x.get("displayValue"))
+              details=x.get("details") or {}
+              items=details.get("items") or []
+              if key=="bootup-time":
+                  items=sorted(items,key=lambda i:i.get("total",0),reverse=True)[:10]
+                  for i in items: print("BOOT",i.get("url"),i.get("total"),i.get("scripting"),i.get("scriptParseCompile"))
+              elif key=="long-tasks":
+                  items=sorted(items,key=lambda i:i.get("duration",0),reverse=True)[:10]
+                  for i in items: print("LONG",i.get("url"),i.get("duration"),i.get("startTime"))
+              elif key=="unused-javascript":
+                  items=sorted(items,key=lambda i:i.get("wastedBytes",0),reverse=True)[:10]
+                  for i in items: print("UNUSED_JS",i.get("url"),i.get("totalBytes"),i.get("wastedBytes"),i.get("wastedPercent"))
+              elif key=="mainthread-work-breakdown":
+                  for i in items: print("MAINTHREAD",i.get("groupLabel"),i.get("duration"))
+              elif key=="diagnostics":
+                  for i in items[:1]:
+                      keep={k:i.get(k) for k in ["numRequests","numScripts","numStylesheets","numFonts","numTasks","numTasksOver10ms","numTasksOver25ms","numTasksOver50ms","numTasksOver100ms","numTasksOver500ms","totalByteWeight","mainDocumentTransferSize"]}
+                      print("DIAGNOSTICS",keep)
+          PY
