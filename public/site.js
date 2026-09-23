@@ -871,21 +871,4 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
     el.addEventListener('pointerleave',()=>el.style.transform='');
   });
-
-  // Public Nabez TV preview on article pages.
-  document.querySelectorAll('[data-article-tv]').forEach(tvRoot=>{
-    const modal=tvRoot.querySelector('[data-tv-modal]');
-    const frame=tvRoot.querySelector('[data-tv-frame]');
-    const seconds=tvRoot.querySelector('[data-tv-seconds]');
-    const durationButtons=[...tvRoot.querySelectorAll('[data-tv-duration]')];
-    if(!modal||!frame)return;
-    const restartPreview=()=>{frame.classList.add('tv-reset');void frame.offsetWidth;requestAnimationFrame(()=>frame.classList.remove('tv-reset'));};
-    const setDuration=value=>{const duration=String(value)==='30'?'30':'15';frame.dataset.duration=duration;frame.style.setProperty('--tv-total',duration+'s');if(seconds)seconds.textContent=duration+'s';durationButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.tvDuration===duration));restartPreview();};
-    const open=()=>{modal.hidden=false;modal.setAttribute('aria-hidden','false');document.body.classList.add('article-tv-open');setDuration(frame.dataset.duration||'15');const closeBtn=modal.querySelector('.article-tv-close');if(closeBtn)setTimeout(()=>closeBtn.focus(),30);};
-    const close=()=>{modal.hidden=true;modal.setAttribute('aria-hidden','true');document.body.classList.remove('article-tv-open');};
-    tvRoot.querySelectorAll('[data-tv-open]').forEach(btn=>btn.addEventListener('click',open));
-    tvRoot.querySelectorAll('[data-tv-close]').forEach(btn=>btn.addEventListener('click',close));
-    durationButtons.forEach(btn=>btn.addEventListener('click',()=>setDuration(btn.dataset.tvDuration)));
-    document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!modal.hidden)close();});
-  });
 });
