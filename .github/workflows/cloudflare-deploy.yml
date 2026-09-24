@@ -85,9 +85,30 @@ jobs:
             exit 1
           fi
           echo "short_article_path=$short_path"
-          curl -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
+
+          META_UA='facebookexternalhit/1.1 (+https://www.facebook.com/externalhit_uatext.php)'
+          curl -A "$META_UA" -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
           grep -q 'data-article-root' /tmp/short-article.html
           grep -Fq "data-article-url=\"$short_path\"" /tmp/short-article.html
+          grep -q 'property="og:type" content="article"' /tmp/short-article.html
+          grep -q 'property="og:title" content="[^"]\+"' /tmp/short-article.html
+          grep -q 'property="og:description" content="[^"]\+"' /tmp/short-article.html
+          grep -Fq "property=\"og:url\" content=\"$SITE$short_path\"" /tmp/short-article.html
+          grep -q 'rel="canonical" href="https://nabzesardo.ir/news/' /tmp/short-article.html
+          grep -q 'property="og:image" content="https://nabzesardo.ir/' /tmp/short-article.html
+          grep -q 'property="og:image:secure_url" content="https://nabzesardo.ir/' /tmp/short-article.html
+          grep -q 'property="og:image:alt" content="[^"]\+"' /tmp/short-article.html
+          grep -q 'name="twitter:card" content="summary_large_image"' /tmp/short-article.html
+
+          og_image=$(sed -n 's/.*property="og:image" content="\([^"]*\)".*/\1/p' /tmp/short-article.html | head -n 1)
+          if [ -z "$og_image" ]; then
+            echo "Missing social preview image"
+            exit 1
+          fi
+          image_code=$(curl -A "$META_UA" -sS -o /tmp/og-image.bin -w '%{http_code}' --max-time 45 "$og_image")
+          echo "social_preview_image=$og_image status=$image_code"
+          test "$image_code" = 200
+          test -s /tmp/og-image.bin
 
           node <<'NODE'
           const fs=require('fs');
