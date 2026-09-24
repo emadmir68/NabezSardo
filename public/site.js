@@ -257,17 +257,69 @@ document.addEventListener('DOMContentLoaded',()=>{
           shade.addColorStop(1,'rgba(7,9,14,.97)');
           ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
         }else{
+          // No real editorial photo: use a premium card derived from the site's
+          // dark burgundy + warm-gold visual language. Keep it intentionally
+          // editorial and minimal; no generic icons or unrelated illustrations.
           const bg=ctx.createLinearGradient(0,0,W,H);
-          bg.addColorStop(0,'#171b24');
-          bg.addColorStop(.56,'#0e1118');
-          bg.addColorStop(1,'#080a0f');
+          bg.addColorStop(0,'#090b0f');
+          bg.addColorStop(.50,'#0d1015');
+          bg.addColorStop(1,'#07090c');
           ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-          const glow=ctx.createRadialGradient(850,220,20,850,220,620);
-          glow.addColorStop(0,'rgba(245,166,35,.20)');
-          glow.addColorStop(1,'rgba(245,166,35,0)');
-          ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
-          ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=1;
-          for(let x=-H;x<W+H;x+=90){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x-H,H);ctx.stroke();}
+
+          // Burgundy hero glow, matching the site's brand/logo treatment.
+          const wine=ctx.createRadialGradient(870,235,30,870,235,720);
+          wine.addColorStop(0,'rgba(157,36,73,.42)');
+          wine.addColorStop(.43,'rgba(90,13,37,.20)');
+          wine.addColorStop(1,'rgba(90,13,37,0)');
+          ctx.fillStyle=wine;ctx.fillRect(0,0,W,H);
+
+          // Restrained warm-gold light from the opposite corner.
+          const gold=ctx.createRadialGradient(120,1120,20,120,1120,560);
+          gold.addColorStop(0,'rgba(224,182,109,.15)');
+          gold.addColorStop(1,'rgba(224,182,109,0)');
+          ctx.fillStyle=gold;ctx.fillRect(0,0,W,H);
+
+          // Subtle editorial geometry inspired by the site's hero/orbit motif.
+          ctx.save();
+          ctx.strokeStyle='rgba(224,182,109,.13)';ctx.lineWidth=2;
+          ctx.beginPath();ctx.arc(830,270,250,0,Math.PI*2);ctx.stroke();
+          ctx.strokeStyle='rgba(224,182,109,.07)';ctx.lineWidth=1;
+          ctx.beginPath();ctx.ellipse(830,270,310,160,-.30,0,Math.PI*2);ctx.stroke();
+          ctx.restore();
+
+          // Glass newsroom panel.
+          ctx.fillStyle='rgba(15,18,24,.72)';
+          roundRect(54,410,972,690,34);ctx.fill();
+          ctx.strokeStyle='rgba(224,182,109,.18)';ctx.lineWidth=1.5;
+          roundRect(54,410,972,690,34);ctx.stroke();
+
+          // Site-colored top rail: burgundy body with a fine gold highlight.
+          const rail=ctx.createLinearGradient(90,0,990,0);
+          rail.addColorStop(0,'rgba(90,13,37,.08)');
+          rail.addColorStop(.48,'rgba(157,36,73,.88)');
+          rail.addColorStop(1,'rgba(224,182,109,.42)');
+          ctx.fillStyle=rail;roundRect(92,446,896,5,3);ctx.fill();
+
+          // Small newsroom eyebrow and a very quiet wordmark watermark.
+          ctx.direction='ltr';ctx.textAlign='left';ctx.textBaseline='alphabetic';
+          ctx.fillStyle='rgba(208,166,95,.92)';
+          ctx.font='700 23px Arial, sans-serif';
+          ctx.fillText('NABEZ SARDO / NEWS REPORT',92,505);
+          ctx.fillStyle='rgba(255,255,255,.025)';
+          ctx.font='900 118px Arial, sans-serif';
+          ctx.fillText('NABEZ',88,1040);
+
+          // Small lower brand tile echoing the site's burgundy logo card.
+          const tile=ctx.createLinearGradient(145,1095,250,1205);
+          tile.addColorStop(0,'#9d2449');
+          tile.addColorStop(.58,'#5a0d25');
+          tile.addColorStop(1,'#18080e');
+          ctx.fillStyle=tile;roundRect(88,1116,118,118,30);ctx.fill();
+          ctx.strokeStyle='rgba(224,182,109,.48)';ctx.lineWidth=1.5;
+          roundRect(88,1116,118,118,30);ctx.stroke();
+          ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillStyle='#f1ce84';ctx.font='900 48px Tahoma, Arial, sans-serif';
+          ctx.fillText('ن',147,1177);
         }
 
         // Compact newsroom brand pill.
