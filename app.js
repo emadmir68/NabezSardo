@@ -126,7 +126,7 @@ function sitemapXml(db){
     {loc:publicUrl('/about'),lastmod:null,images:[]},
     {loc:publicUrl('/contact'),lastmod:null,images:[]},
     {loc:publicUrl('/editorial-policy'),lastmod:null,images:[]},
-    {loc:publicUrl('/follow-up'),lastmod:latestFollowup&&(latestFollowup.updatedAt||latestFollowup.createdAt),images:[]},
+    ...(latestFollowup?[{loc:publicUrl('/follow-up'),lastmod:latestFollowup.updatedAt||latestFollowup.createdAt,images:[]}]:[]),
     ...['sardouiyeh','jiroft','anbarabad','kahnuj','south-kerman']
       .map(key=>({loc:publicUrl('/local/'+key),lastmod:localLastmod(key),images:[]}))
       .filter(x=>x.lastmod),
