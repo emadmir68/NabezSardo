@@ -85,8 +85,95 @@ jobs:
             exit 1
           fi
           echo "short_article_path=$short_path"
+          echo "$short_path" | grep -Eq '^/news/[a-z0-9]{12}
+          grep -q 'data-article-root' /tmp/short-article.html
+          grep -Fq "data-article-url=\"$short_path\"" /tmp/short-article.html
+          grep -q 'property="og:type" content="article"' /tmp/short-article.html
+          grep -q 'property="og:title" content="[^"]\+"' /tmp/short-article.html
+          grep -q 'property="og:description" content="[^"]\+"' /tmp/short-article.html
+          grep -Fq "property=\"og:url\" content=\"$SITE$short_path\"" /tmp/short-article.html
+          grep -q 'rel="canonical" href="https://nabzesardo.ir/news/' /tmp/short-article.html
+          grep -q 'property="og:image" content="https://nabzesardo.ir/' /tmp/short-article.html
+          grep -q 'property="og:image:secure_url" content="https://nabzesardo.ir/' /tmp/short-article.html
+          grep -q 'property="og:image:alt" content="[^"]\+"' /tmp/short-article.html
+          grep -q 'name="twitter:card" content="summary_large_image"' /tmp/short-article.html
+
+          og_image=$(sed -n 's/.*property="og:image" content="\([^"]*\)".*/\1/p' /tmp/short-article.html | head -n 1)
+          if [ -z "$og_image" ]; then
+            echo "Missing social preview image"
+            exit 1
+          fi
+          case "$og_image" in
+            *.svg|*.svg\?*) echo "Social preview image must be raster, got SVG: $og_image"; exit 1 ;;
+          esac
+          image_code=$(curl -A "$META_UA" -sS -D /tmp/og-image.headers -o /tmp/og-image.bin -w '%{http_code}' --max-time 45 "$og_image")
+          image_type=$(tr -d '\r' < /tmp/og-image.headers | awk -F': ' 'tolower($1)=="content-type"{print tolower($2)}' | tail -n1)
+          echo "social_preview_image=$og_image status=$image_code type=$image_type"
+          test "$image_code" = 200
+          test -s /tmp/og-image.bin
+          echo "$image_type" | grep -Eq '^image/(png|jpeg|jpg|webp|gif)'
+
+          node <<'NODE'
+          const fs=require('fs');
+          const worker=JSON.parse(fs.readFileSync('/tmp/worker-health.json','utf8'));
+          const site=JSON.parse(fs.readFileSync('/tmp/site-health.json','utf8'));
+          const cut=JSON.parse(fs.readFileSync('/tmp/cutover.json','utf8'));
+          const problems=[];
+          if(worker.origin!=='cloudflare'||worker.railwayDependency!==false) problems.push('worker-health-not-independent');
+          if(site.origin!=='cloudflare'||site.railwayDependency!==false) problems.push('site-health-not-independent');
+          if(cut.cloudflarePrimary!==true) problems.push('cloudflare-not-primary');
+          if(cut.railwayDependency!==false) problems.push('railway-dependency-present');
+          if(cut.adminReady!==true) problems.push('admin-not-ready');
+          if(cut.storage?.arvanConfigured!==true) problems.push('arvan-not-configured');
+          if(cut.storage?.arvanAuthenticated!==true) problems.push('arvan-not-authenticated');
+          if(cut.storage?.lastError) problems.push('arvan-last-error:'+cut.storage.lastError);
+          if(cut.backup?.lastError) problems.push('backup-last-error:'+cut.backup.lastError);
+          const report={
+            testedAt:new Date().toISOString(),
+            commit:process.env.GITHUB_SHA,
+            workerHealth:worker,
+            siteHealth:site,
+            cutover:cut,
+            readyForRailwayShutdown:problems.length===0 && cut.readyForRailwayShutdown===true,
+            problems
+          };
+          fs.writeFileSync('cloudflare-deploy-status.json',JSON.stringify(report,null,2)+'\n');
+          if(problems.length){
+            console.error(JSON.stringify(report,null,2));
+            process.exit(1);
+          }
+          NODE
+
+      - name: Record verified cutover status
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "nabez-sardo-cloudflare-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add cloudflare-deploy-status.json
+          git commit -m "Record verified Cloudflare-only deployment [skip ci]" || exit 0
+          git push origin HEAD:cloudflare-migration
+
+          test ${#short_path} -le 32
 
           META_UA='facebookexternalhit/1.1 (+https://www.facebook.com/externalhit_uatext.php)'
+          INSTAGRAM_UA='Instagram 350.0.0.0 Android'
+          WHATSAPP_UA='WhatsApp/2.24 Android'
+          TELEGRAM_UA='TelegramBot'
+
+          for agent in "$META_UA" "$INSTAGRAM_UA" "$WHATSAPP_UA" "$TELEGRAM_UA"; do
+            head_code=$(curl -A "$agent" -sS -I -o /tmp/article-head.txt -w '%{http_code}' --max-time 30 "$SITE$short_path")
+            echo "crawler_head agent=$agent status=$head_code"
+            test "$head_code" = 200
+            grep -qi '^content-type: text/html' /tmp/article-head.txt
+            if grep -qi '^location:' /tmp/article-head.txt; then
+              echo "Compact article URL must not redirect for social crawlers"
+              cat /tmp/article-head.txt
+              exit 1
+            fi
+          done
+
           curl -A "$META_UA" -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
           grep -q 'data-article-root' /tmp/short-article.html
           grep -Fq "data-article-url=\"$short_path\"" /tmp/short-article.html
