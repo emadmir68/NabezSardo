@@ -265,7 +265,8 @@ const server=http.createServer(async(req,res)=>{
 
   m=p.match(/^\/news\/(.+)$/);
   if(req.method==='GET'&&m){
-    const a=published(db).find(x=>x.slug===m[1]);
+    const key=String(m[1]||'');
+    const a=published(db).find(x=>x.slug===key||shortArticleCode(x.id)===key);
     if(!a)return send(res,404,'خبر یافت نشد');
     analytics.track(req,p);
     const viewCookie=trackView(req,db,a);
