@@ -79,11 +79,22 @@ jobs:
           grep -q "<rss" /tmp/feed.xml
           grep -q "admin" /tmp/admin-login.html || grep -q "ورود" /tmp/admin-login.html
 
-          short_path=$(grep -oE 'data-story-url="/news/[a-z0-9]+"' /tmp/home.html | head -n 1 | cut -d'"' -f2 || true)
-          if [ -z "$short_path" ]; then
-            echo "Compact article URL missing from homepage"
-            exit 1
-          fi
+          node <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('/tmp/home.html','utf8');
+          const cards=[...html.matchAll(/<article\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
+          if(!cards.length)throw new Error('Compact article URL missing from homepage');
+          const seen=new Map();
+          for(const [,title,path] of cards){
+            if(seen.has(path)&&seen.get(path)!==title){
+              throw new Error('One compact URL points to multiple homepage titles: '+path);
+            }
+            seen.set(path,title);
+          }
+          fs.writeFileSync('/tmp/short-path.txt',cards[0][2]);
+          fs.writeFileSync('/tmp/short-title.txt',cards[0][1]);
+          NODE
+          short_path=$(cat /tmp/short-path.txt)
           echo "short_article_path=$short_path"
           case "$short_path" in
             /news/*) ;;
@@ -122,6 +133,14 @@ jobs:
           grep -Fq "data-article-url=\"$short_path\"" /tmp/short-article.html
           grep -q 'property="og:type" content="article"' /tmp/short-article.html
           grep -q 'property="og:title" content="[^"]\+"' /tmp/short-article.html
+          node <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('/tmp/short-article.html','utf8');
+          const expected=fs.readFileSync('/tmp/short-title.txt','utf8');
+          const match=html.match(/property="og:title" content="([^"]*)"/);
+          if(!match)throw new Error('Missing og:title on compact article');
+          if(match[1]!==expected)throw new Error('Compact URL/title mismatch: expected '+expected+' got '+match[1]);
+          NODE
           grep -q 'property="og:description" content="[^"]\+"' /tmp/short-article.html
           grep -Fq "property=\"og:url\" content=\"$SITE$short_path\"" /tmp/short-article.html
           grep -q 'rel="canonical" href="https://nabzesardo.ir/news/' /tmp/short-article.html
