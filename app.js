@@ -23,6 +23,16 @@ function headers(type='text/html; charset=utf-8'){
 }
 function send(res,status,body,type,extra={}){const h={...headers(type),...extra};const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
 function redirect(res,to,cookie){const h={...headers(),Location:to,'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'};if(cookie)h['Set-Cookie']=cookie;res.writeHead(302,h);res.end();}
+function sendArticleHead(res,a){
+  const canonical=PUBLIC_BASE+'/news/'+encodeURIComponent(a.slug||'');
+  res.writeHead(200,{
+    ...headers(),
+    'Cache-Control':'public,max-age=300,stale-while-revalidate=900',
+    'Link':'<'+canonical+'>; rel="canonical"',
+    'X-Robots-Tag':'index, follow, max-image-preview:large'
+  });
+  res.end();
+}
 function readRaw(req,max=14*1024*1024){return new Promise((resolve,reject)=>{const chunks=[];let size=0;req.on('data',c=>{size+=c.length;if(size>max){reject(new Error('too-large'));req.destroy();return;}chunks.push(c)});req.on('end',()=>resolve(Buffer.concat(chunks)));req.on('error',reject);});}
 async function urlBody(req){const raw=await readRaw(req,2*1024*1024);return Object.fromEntries(new URLSearchParams(raw.toString('utf8')));}
 async function multipart(req){
@@ -254,20 +264,22 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&m){const page=views.localHub(db,m[1]);if(!page)return send(res,404,'صفحه پیدا نشد');analytics.track(req,p);return send(res,200,page);}
 
   m=p.match(/^\/n\/([^/]+)$/);
-  if(req.method==='GET'&&m){
+  if((req.method==='GET'||req.method==='HEAD')&&m){
     const key=String(m[1]||'');
     const a=published(db).find(x=>String(x.id)===key||shortArticleCode(x.id)===key);
     if(!a)return send(res,404,'خبر یافت نشد');
+    if(req.method==='HEAD')return sendArticleHead(res,a);
     analytics.track(req,p);
     const viewCookie=trackView(req,db,a);
     return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
   }
 
   m=p.match(/^\/news\/(.+)$/);
-  if(req.method==='GET'&&m){
+  if((req.method==='GET'||req.method==='HEAD')&&m){
     const key=String(m[1]||'');
     const a=published(db).find(x=>x.slug===key||shortArticleCode(x.id)===key);
     if(!a)return send(res,404,'خبر یافت نشد');
+    if(req.method==='HEAD')return sendArticleHead(res,a);
     analytics.track(req,p);
     const viewCookie=trackView(req,db,a);
     return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
