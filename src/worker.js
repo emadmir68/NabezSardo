@@ -30,6 +30,55 @@ function isPrimary() {
   return String(env.CLOUDFLARE_PRIMARY || "") === "1";
 }
 
+function shortArticleCodeWorker(value=""){
+  const input=String(value||"").trim();
+  let a=0x811c9dc5>>>0,b=0x9e3779b9>>>0;
+  for(let i=0;i<input.length;i++){
+    const c=input.charCodeAt(i);
+    a=Math.imul((a^c)>>>0,0x01000193)>>>0;
+    b=Math.imul((b^(c+((i+1)*131)))>>>0,0x85ebca6b)>>>0;
+  }
+  return (a.toString(36).padStart(7,"0")+b.toString(36).padStart(7,"0")).slice(0,12);
+}
+
+async function ensureRasterSocialImage(article){
+  if(!article||!/\.svg(?:\?|$)/i.test(String(article.image||"")))return false;
+  const name=path.basename(new URL(article.image,"https://nabzesardo.ir").pathname);
+  const socialName=name.replace(/\.svg$/i,"-social.png");
+  if(!(await getMedia(socialName))){
+    const source=await getMedia(name);
+    if(!source)throw new Error("social-preview-source-missing");
+    rasterReady ||= initWasm(resvgModule);await rasterReady;
+    const png=Buffer.from(new Resvg(source.data||source,{fitTo:{mode:"width",value:1200}}).render().asPng());
+    await putMedia(socialName,png,"image/png");
+  }
+  const next="/uploads/"+socialName;
+  if(article.socialImage===next)return false;
+  article.socialImage=next;
+  return true;
+}
+
+async function ensureSocialPreviewForPath(pathname){
+  if(!/^\/(?:n|news)\//.test(String(pathname||"")))return;
+  const db=safeJson(await getState("db"),null);
+  if(!db||!Array.isArray(db.articles))return;
+  let article=null;
+  if(pathname.startsWith("/news/")){
+    let slug="";
+    try{slug=decodeURIComponent(pathname.slice("/news/".length));}catch{slug=pathname.slice("/news/".length);}
+    article=db.articles.find(x=>x.status==="published"&&x.slug===slug)||null;
+  }else{
+    const key=pathname.slice("/n/".length).replace(/\/+$/,"");
+    article=db.articles.find(x=>x.status==="published"&&(String(x.id)===key||shortArticleCodeWorker(x.id)===key))||null;
+  }
+  if(!article)return;
+  try{
+    if(await ensureRasterSocialImage(article))await putState("db",JSON.stringify(db,null,2));
+  }catch(err){
+    console.error("social-preview-raster",article.id,String(err?.message||err));
+  }
+}
+
 async function runtimeAuth() {
   const raw = await getState("admin_auth");
   const auth = safeJson(raw, null);
@@ -1233,17 +1282,8 @@ async function prepareDistribution(a) {
       const category=(db.categories||[]).find(x=>x.id===a.categoryId)||{};
       Object.assign(a,await ensureSmartCover({article:a,category,sourceImage:a.image||"",env,getMedia,putMedia,sha256Hex}));
     }
-    if(a.imageAuto&&/\.svg(?:\?|$)/i.test(a.image||"")&&!a.videoUrl){
-      const name=path.basename(new URL(a.image,"https://nabzesardo.ir").pathname);
-      const socialName=name.replace(/\.svg$/i,"-social.png");
-      if(!(await getMedia(socialName))){
-        const source=await getMedia(name);
-        if(!source)throw Error("auto-cover-source-missing");
-        rasterReady ||= initWasm(resvgModule);await rasterReady;
-        const png=Buffer.from(new Resvg(source.data||source,{fitTo:{mode:"width",value:1200}}).render().asPng());
-        await putMedia(socialName,png,"image/png");
-      }
-      a.socialImage="/uploads/"+socialName;
+    if(a.imageAuto&&/\.svg(?:\?|$)/i.test(a.image||"")){
+      await ensureRasterSocialImage(a);
     }
   }catch(err){console.error("publication-cover",a.id,String(err?.message||err));}
   await publishing.commitChanges(env.DB,{articles:[initial]},{articles:[a]});
@@ -1299,6 +1339,9 @@ async function handleAppSerial(request) {
   const url = new URL(request.url);
   if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1" && url.pathname.startsWith("/admin")) {
     return new Response("Preview admin is disabled until migration verification is complete.", { status: 403 });
+  }
+  if((request.method==="GET"||request.method==="HEAD")&&/^\/(?:n|news)\//.test(url.pathname)){
+    await ensureSocialPreviewForPath(url.pathname);
   }
   const includeUploads = request.method === "GET" && url.pathname === "/admin/backup/download";
   const includeBackups = url.pathname.startsWith("/admin");
