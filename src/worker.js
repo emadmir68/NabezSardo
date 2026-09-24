@@ -9,6 +9,7 @@ import store from "../lib/store.js";
 import views from "../lib/view-public.js";
 import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
+process.env.CLOUDFLARE_WORKER='1';
 
 const PORT = 3000;
 const EXPECTED_BACKUP_SHA256 = "b93b59e5a9dde845a2f4ae50674b44ea7f6e8d84ee42013f7593adfddb5f4619";
