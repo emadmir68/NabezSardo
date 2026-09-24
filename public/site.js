@@ -117,24 +117,21 @@ document.addEventListener('DOMContentLoaded',()=>{
     const title=articleRoot.dataset.articleTitle||document.title;
     const lead=(articleRoot.dataset.articleLead||'').replace(/\s+/g,' ').trim();
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
-    const imageRaw=articleRoot.dataset.articleImage||'';
-    const imageUrl=imageRaw?new URL(imageRaw,location.origin).href:'';
+
+    // Keep the readable SEO URL as canonical, but show visitors a compact permanent URL
+    // in the browser so manual copy/paste can never expose the encoded Persian slug.
+    if(location.pathname.startsWith('/news/')&&history.replaceState){
+      try{
+        const shortPath=new URL(shareUrl,location.origin);
+        history.replaceState(history.state,'',shortPath.pathname+shortPath.search+location.hash);
+      }catch{}
+    }
+
     const shareText=()=>{
       const lines=['📰 '+title];
       if(lead)lines.push(lead);
-      lines.push('📌 ادامه خبر را در سایت نبض ساردو بخوانید 👇','🔗 '+shareUrl,'نبض ساردو');
+      lines.push('📌 ادامه خبر در نبض ساردو:','🔗 '+shareUrl);
       return lines.join('\n\n');
-    };
-    const getShareImageFile=async()=>{
-      if(!imageUrl||typeof File==='undefined')return null;
-      try{
-        const res=await fetch(imageUrl,{cache:'force-cache',credentials:'same-origin'});
-        if(!res.ok)return null;
-        const blob=await res.blob();
-        if(!blob.type||!blob.type.startsWith('image/'))return null;
-        const ext=blob.type.includes('png')?'png':blob.type.includes('webp')?'webp':blob.type.includes('gif')?'gif':'jpg';
-        return new File([blob],'nabez-sardo-news.'+ext,{type:blob.type,lastModified:Date.now()});
-      }catch{return null;}
     };
     const copyArticleLink=async()=>{
       try{
@@ -146,23 +143,24 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(copyBtn){
           copyBtn.classList.add('is-copied');
           const label=copyBtn.querySelector('[data-copy-label]');
-          if(label)label.textContent=root.dataset.lang==='en'?'Copied':'لینک کپی شد';
+          if(label)label.textContent=root.dataset.lang==='en'?'Copied':'لینک کوتاه کپی شد';
           setTimeout(()=>{
             copyBtn.classList.remove('is-copied');
             const label2=copyBtn.querySelector('[data-copy-label]');
-            if(label2)label2.innerHTML='<span class="lang-fa">کپی لینک</span><span class="lang-en">Copy link</span>';
+            if(label2)label2.innerHTML='<span class="lang-fa">کپی لینک کوتاه</span><span class="lang-en">Copy short link</span>';
           },1700);
         }
       }catch(err){console.warn('article copy failed',err);}
     };
-    if(copyBtn)copyBtn.addEventListener('click',copyArticleLink);
+    if(copyBtn){
+      const label=copyBtn.querySelector('[data-copy-label]');
+      if(label)label.innerHTML='<span class="lang-fa">کپی لینک کوتاه</span><span class="lang-en">Copy short link</span>';
+      copyBtn.addEventListener('click',copyArticleLink);
+    }
     if(shareBtn)shareBtn.addEventListener('click',async()=>{
       try{
         if(!navigator.share){await copyArticleLink();return;}
-        const payload={title,text:shareText()};
-        const imageFile=await getShareImageFile();
-        if(imageFile&&navigator.canShare&&navigator.canShare({files:[imageFile]}))payload.files=[imageFile];
-        await navigator.share(payload);
+        await navigator.share({title,text:shareText()});
       }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
     });
   }
