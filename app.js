@@ -297,9 +297,9 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/news-sitemap.xml')return send(res,200,newsSitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/feed.xml')return send(res,200,rssXml(db),'application/rss+xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
   if(req.method==='GET'&&p==='/'){analytics.track(req,p);return send(res,200,views.home(db));}
-  if(req.method==='GET'&&p==='/nabez60'){analytics.track(req,p);return send(res,200,views.nabez60(db));}
+  if(req.method==='GET'&&p==='/nabez60')return permanentRedirect(res,'/all-news');
   if(req.method==='GET'&&p==='/all-news'){analytics.track(req,p);return send(res,200,views.archive(db,u.searchParams.get('q')||''));}
-  if(req.method==='GET'&&p==='/briefs')return redirect(res,'/category/short-news');
+  if(req.method==='GET'&&p==='/briefs')return permanentRedirect(res,'/category/short-news');
   if(req.method==='GET'&&p==='/search'){analytics.track(req,p);return send(res,200,views.search(db,u.searchParams.get('q')||''));}
   if(req.method==='GET'&&p==='/about'){analytics.track(req,p);return send(res,200,views.simple(db,'about'));}
   if(req.method==='GET'&&p==='/contact'){analytics.track(req,p);return send(res,200,views.simple(db,'contact',u.searchParams.get('ok')==='1'));}
