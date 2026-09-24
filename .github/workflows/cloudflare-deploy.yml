@@ -23,7 +23,7 @@ jobs:
       - name: Checkout cloudflare migration branch
         uses: actions/checkout@v4
         with:
-          ref: cloudflare-migration
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Setup Node.js
