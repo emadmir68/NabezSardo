@@ -647,3 +647,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     el.addEventListener('pointerleave',()=>el.style.transform='');
   });
 });
+// Brief card glint; preserve normal links, touch scrolling and story gestures.
+document.addEventListener('DOMContentLoaded',()=>{
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  document.querySelectorAll('main .front-lead,main .front-brief,main .latest-grid .card').forEach(card=>{
+    const shine=()=>{card.classList.remove('ns-card-shine');void card.offsetWidth;card.classList.add('ns-card-shine');};
+    card.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')shine();});
+    card.addEventListener('pointerdown',shine,{passive:true});
+    card.addEventListener('focusin',shine);
+    card.addEventListener('animationend',event=>{if(event.animationName==='nsLuxuryCardSheen')card.classList.remove('ns-card-shine');});
+  });
+});
