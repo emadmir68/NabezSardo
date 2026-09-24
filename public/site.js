@@ -189,61 +189,102 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     const shareImageFile=async()=>{
       if(!shareImageUrl)return null;
-      const res=await fetch(shareImageUrl,{credentials:'same-origin',cache:'no-store'});
-      if(!res.ok)throw new Error('share image fetch '+res.status);
-      const source=await res.blob();
-      if(!/^image\//i.test(source.type||''))throw new Error('share image is not an image');
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),15000);
       try{
-        const bitmap=await createImageBitmap(source);
-        const max=1600,scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));
-        const canvas=document.createElement('canvas');
-        canvas.width=Math.max(1,Math.round(bitmap.width*scale));
-        canvas.height=Math.max(1,Math.round(bitmap.height*scale));
-        const ctx=canvas.getContext('2d');
-        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-        if(bitmap.close)bitmap.close();
-        const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.92));
-        if(blob)return new File([blob],'nabez-sardo-news.jpg',{type:'image/jpeg',lastModified:Date.now()});
-      }catch(err){
-        console.warn('share image normalization failed',err);
+        const res=await fetch(shareImageUrl,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+        if(!res.ok)throw new Error('share image fetch '+res.status);
+        const source=await res.blob();
+        if(!/^image\//i.test(source.type||''))throw new Error('share image is not an image');
+        try{
+          const bitmap=await createImageBitmap(source);
+          const max=1600,scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+          canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+          const ctx=canvas.getContext('2d');
+          ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+          ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+          if(bitmap.close)bitmap.close();
+          const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.92));
+          if(blob)return new File([blob],'nabez-sardo-news.jpg',{type:'image/jpeg',lastModified:Date.now()});
+        }catch(err){
+          console.warn('share image normalization failed',err);
+        }
+        const type=/^image\/(jpeg|png|webp)$/i.test(source.type)?source.type:'image/jpeg';
+        const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg';
+        return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
+      }finally{
+        clearTimeout(timer);
       }
-      const type=/^image\/(jpeg|png|webp)$/i.test(source.type)?source.type:'image/jpeg';
-      const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg';
-      return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
     };
 
-    if(shareImageBtn)shareImageBtn.addEventListener('click',async()=>{
+    let preparedShareImageFile=null;
+    let shareImageReady=false;
+    let shareImageFailed=false;
+    let shareImageOriginalLabel='';
+    if(shareImageBtn){
       const label=shareImageBtn.querySelector('[data-share-image-label]');
-      const original=label?label.innerHTML:'';
-      await copySharePayload();
-      try{
-        if(label)label.textContent=root.dataset.lang==='en'?'Preparing image…':'در حال آماده‌سازی عکس…';
-        const file=await shareImageFile();
-        if(!file||!navigator.share|| (navigator.canShare&&!navigator.canShare({files:[file]}))){
-          if(label)label.textContent=root.dataset.lang==='en'?'Image share unavailable':'اشتراک عکس پشتیبانی نشد';
-          if(navigator.share)await navigator.share({title,text:shareText()});
-          return;
-        }
-        await navigator.share({files:[file],title,text:shareText()});
-        if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';
-      }catch(err){
-        if(err&&err.name!=='AbortError'){
-          console.warn('article image share failed',err);
-          try{if(navigator.share)await navigator.share({title,text:shareText()});}catch{}
-        }
-      }finally{
-        setTimeout(()=>{if(label)label.innerHTML=original;},1700);
+      shareImageOriginalLabel=label?label.innerHTML:'';
+      shareImageBtn.disabled=true;
+      shareImageBtn.setAttribute('aria-busy','true');
+      if(label)label.textContent=root.dataset.lang==='en'?'Preparing image…':'در حال آماده‌سازی عکس…';
+      shareImageFile().then(file=>{
+        if(!file)throw new Error('share image unavailable');
+        if(!navigator.share)throw new Error('native share unavailable');
+        if(navigator.canShare&&!navigator.canShare({files:[file]}))throw new Error('file sharing unsupported');
+        preparedShareImageFile=file;
+        shareImageReady=true;
+        shareImageBtn.disabled=false;
+        shareImageBtn.removeAttribute('aria-busy');
+        if(label)label.innerHTML=shareImageOriginalLabel;
+      }).catch(err=>{
+        shareImageFailed=true;
+        shareImageBtn.disabled=false;
+        shareImageBtn.removeAttribute('aria-busy');
+        console.warn('share image prepare failed',err);
+        if(label)label.textContent=root.dataset.lang==='en'?'Share link instead':'اشتراک لینک';
+      });
+    }
+
+    if(shareImageBtn)shareImageBtn.addEventListener('click',()=>{
+      const label=shareImageBtn.querySelector('[data-share-image-label]');
+      const payload=shareText();
+
+      // navigator.share must be invoked directly from the user's tap. Do not
+      // await clipboard/fetch work here or Android may discard user activation.
+      if(shareImageReady&&preparedShareImageFile&&navigator.share){
+        if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
+        navigator.share({files:[preparedShareImageFile],title,text:payload})
+          .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
+          .catch(err=>{
+            if(err&&err.name!=='AbortError')console.warn('article image share failed',err);
+            if(label)label.innerHTML=shareImageOriginalLabel;
+          })
+          .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1200));
+        return;
       }
+
+      if(navigator.share){
+        navigator.share({title,text:payload}).catch(err=>{
+          if(err&&err.name!=='AbortError')console.warn('article share fallback failed',err);
+        });
+      }else{
+        copySharePayload();
+      }
+      if(shareImageFailed&&label)label.textContent=root.dataset.lang==='en'?'Shared without image':'اشتراک بدون عکس';
+      setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1500);
     });
 
-    if(shareBtn)shareBtn.addEventListener('click',async()=>{
+    if(shareBtn)shareBtn.addEventListener('click',()=>{
       const payload=shareText();
-      await copySharePayload();
-      try{
-        if(!navigator.share)return;
-        await navigator.share({title,text:payload});
-      }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
+      if(navigator.share){
+        navigator.share({title,text:payload}).catch(err=>{
+          if(err&&err.name!=='AbortError')console.warn('article share failed',err);
+        });
+      }else{
+        copySharePayload();
+      }
     });
   }
 
