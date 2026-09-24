@@ -1,0 +1,51 @@
+name: SEO Live Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [cloudflare-migration]
+    paths:
+      - 'app.js'
+      - 'lib/view-common.js'
+      - 'lib/view-public.js'
+      - '.github/workflows/seo-live-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Audit public SEO surfaces
+        run: |
+          set -euo pipefail
+          base='https://nabzesardo.ir'
+          curl -fsS --max-time 30 "$base/robots.txt" -o robots.txt
+          curl -fsS --max-time 30 "$base/sitemap.xml" -o sitemap.xml
+          curl -fsS --max-time 30 "$base/news-sitemap.xml" -o news-sitemap.xml
+          curl -fsS --max-time 30 "$base/feed.xml" -o feed.xml
+          curl -fsS --max-time 30 "$base/" -o home.html
+          grep -q 'Sitemap: https://nabzesardo.ir/sitemap.xml' robots.txt
+          grep -q 'Sitemap: https://nabzesardo.ir/news-sitemap.xml' robots.txt
+          grep -q '<urlset' sitemap.xml
+          grep -q '<rss' feed.xml
+          grep -q 'rel="canonical"' home.html
+          grep -q 'application/ld+json' home.html
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          root=ET.parse('sitemap.xml').getroot()
+          ns={'s':'http://www.sitemaps.org/schemas/sitemap/0.9','i':'http://www.google.com/schemas/sitemap-image/1.1'}
+          urls=root.findall('s:url',ns)
+          images=root.findall('.//i:image',ns)
+          news=ET.parse('news-sitemap.xml').getroot().findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url')
+          print(f'sitemap_urls={len(urls)}')
+          print(f'image_entries={len(images)}')
+          print(f'news_48h_entries={len(news)}')
+          PY
+          for p in local/sardouiyeh local/jiroft local/anbarabad local/kahnuj local/south-kerman; do
+            code=$(curl -L -sS -o /tmp/local.html -w '%{http_code}' --max-time 30 "$base/$p")
+            echo "$p status=$code bytes=$(wc -c </tmp/local.html)"
+            test "$code" = 200 || test "$code" = 404
+          done
+          curl -sS -o /dev/null -w 'home_ttfb=%{time_starttransfer} home_total=%{time_total}\n' --max-time 30 "$base/"
