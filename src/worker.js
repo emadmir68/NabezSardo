@@ -1302,6 +1302,10 @@ async function handleApp(request) {
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+    if (url.protocol === "http:") {
+      url.protocol = "https:";
+      return Response.redirect(url.toString(), 301);
+    }
     const p = decodeURIComponent(url.pathname);
 
     if (p === "/health" && request.method === "GET") {
