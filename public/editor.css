@@ -667,3 +667,77 @@ input[type="file"]{overflow:hidden}
   .gallery-list{grid-template-columns:1fr}
   .admin-sidebar-nav a{padding-inline:8px;font-size:8.5px}
 }
+
+
+/* ===== Admin mobile browser hard lock v4 ===== */
+@media(max-width:760px){
+  .adminbar{
+    width:100%!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    padding-inline:10px!important;
+  }
+  .adminbar .brand{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  .adminbar .brand b{
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .admin{
+    width:calc(100% - 14px)!important;
+    max-width:calc(100% - 14px)!important;
+    margin-inline:auto!important;
+  }
+  .admin-dashboard-shell,
+  .admin-dashboard-content,
+  .admin-dashboard-content>.panel,
+  .admin-overview,
+  .editor-form,
+  .form,
+  .rich-editor,
+  .rich-area,
+  .image-upload,
+  .video-upload-panel,
+  .gallery-editor{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  .admin-sidebar{
+    width:calc(100% + 14px)!important;
+    max-width:calc(100% + 14px)!important;
+    margin-inline:-7px!important;
+  }
+  .admin-sidebar-nav{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+  .admin-sidebar-nav a{flex:0 0 auto!important}
+  .editor-heading{width:100%;max-width:100%}
+  .rich-toolbar{
+    width:100%!important;
+    max-width:100%!important;
+  }
+  .rich-area{
+    overflow-wrap:anywhere!important;
+    word-break:normal!important;
+  }
+  .editor-actions{
+    width:100%!important;
+    padding-bottom:max(4px,env(safe-area-inset-bottom))!important;
+  }
+  .analytics-dashboard,
+  .analytics-card,
+  .analytics-kpis,
+  .analytics-grid{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+}
