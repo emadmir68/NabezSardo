@@ -64,9 +64,9 @@ async function ensureSocialPreviewForPath(pathname){
   if(!db||!Array.isArray(db.articles))return;
   let article=null;
   if(pathname.startsWith("/news/")){
-    let slug="";
-    try{slug=decodeURIComponent(pathname.slice("/news/".length));}catch{slug=pathname.slice("/news/".length);}
-    article=db.articles.find(x=>x.status==="published"&&x.slug===slug)||null;
+    let key="";
+    try{key=decodeURIComponent(pathname.slice("/news/".length));}catch{key=pathname.slice("/news/".length);}
+    article=db.articles.find(x=>x.status==="published"&&(x.slug===key||shortArticleCodeWorker(x.id)===key))||null;
   }else{
     const key=pathname.slice("/n/".length).replace(/\/+$/,"");
     article=db.articles.find(x=>x.status==="published"&&(String(x.id)===key||shortArticleCodeWorker(x.id)===key))||null;
