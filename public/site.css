@@ -6323,3 +6323,9 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
   .article-cover-wrap.auto-cover-story .cover-frame{height:190px!important;max-width:100%!important}
   .front-brief .news-date{font-size:10.5px!important}
 }
+
+/* SEO/news transparency: compact visible byline/date below article title */
+.article-trustline{display:flex;flex-wrap:wrap;align-items:center;gap:8px 11px;margin:10px 0 14px;color:var(--muted,#9aa3ad);font-size:12px;line-height:1.8}
+.article-trustline b{color:inherit;font-weight:700}
+.article-trustline time{color:inherit}
+@media(max-width:640px){.article-trustline{font-size:11px;gap:5px 8px;margin:8px 0 11px}}
