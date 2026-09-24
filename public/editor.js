@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded',()=>{
+  if(window.matchMedia('(max-width:760px)').matches){
+    document.querySelector('.admin-overview .analytics-fold')?.removeAttribute('open');
+  }
   document.querySelectorAll('[data-confirm]').forEach(form=>{
     form.addEventListener('submit',e=>{
       const msg=form.getAttribute('data-confirm')||'مطمئن هستید؟';

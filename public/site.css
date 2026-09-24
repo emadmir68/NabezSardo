@@ -6222,3 +6222,77 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
     line-height:1.65!important;
   }
 }
+
+/* Readability and density pass; header and hero remain unchanged. */
+.front-lead.auto-cover-story .front-lead-media{max-height:320px}
+.article-cover-wrap.auto-cover-story .cover-frame{max-width:760px;margin-inline:auto!important}
+.article-premium h1{font-size:clamp(30px,3.2vw,46px);line-height:1.48}
+.article-head{padding-block:25px 22px}
+.article-cover-wrap{padding-top:20px}
+.article-reading-zone{padding-top:26px}
+.article-meta-item small{color:#aab1bb;font-size:11px}
+.article-meta-item b,.article-meta-item time{font-size:12px}
+.article-newsroom-mark,.frontpage-head .eyebrow,.home-short-news-head .eyebrow{opacity:.65}
+.short-timeline-item{min-height:0!important;padding-block:15px!important}
+.short-timeline-content h3{font-size:16px;line-height:1.55}
+.short-timeline-meta{color:#abb3be;font-size:11px;margin-bottom:4px}
+.short-timeline-cat{font-size:11px}
+.short-timeline-views{font-size:11px;color:#aeb5bf}
+.short-timeline-bottom{margin-top:8px}
+.short-timeline-bottom time,.short-timeline-link{font-size:11px;color:#b8c0cb}
+.short-timeline-link{color:var(--short-accent)}
+.short-timeline-page-head p,.home-short-news-head p{color:#aeb5c0!important;font-size:12px!important}
+.front-lead p,.front-lead-bottom time,.front-brief time{color:#b1b9c4!important}
+@media(max-width:760px){
+  /* Keep the live ticker in one row; its headline scrolls inside its own lane. */
+  .breaking .breaking-row{
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:9px!important;
+    padding-block:9px!important;
+  }
+  .breaking .breaking-label{font-size:12px;padding:7px 10px;white-space:nowrap}
+  .breaking .breaking-marquee{min-width:0;width:100%;overflow:hidden}
+  .breaking .breaking-item{font-size:13px;white-space:nowrap}
+  .breaking .breaking-live{display:none!important}
+  .front-lead.auto-cover-story .front-lead-media{max-height:220px}
+  .front-lead h2{font-size:19px!important;line-height:1.5!important}
+  .front-lead p{font-size:13px!important;line-height:1.65!important}
+  .front-lead-copy{padding:14px 15px 16px}
+  .front-lead-bottom time{font-size:11px!important}
+  .frontpage-head{margin-bottom:13px}
+  .frontpage-head .eyebrow{font-size:10px}
+  .article-premium h1{font-size:clamp(25px,6.5vw,32px);line-height:1.52}
+  .article-head{padding:17px 16px 16px}
+  .article-cover-wrap{padding:13px 13px 2px}
+  .article-reading-zone{padding-top:19px}
+  .article-action{font-size:11px}
+  .article-cover-wrap figcaption{font-size:10px;color:#aeb5c0}
+  .home-short-news-head p{font-size:11px!important}
+  .short-timeline-item{min-height:0!important;padding:13px 57px 13px 12px!important}
+  .short-timeline-item::before{right:24px!important}
+  .short-timeline-item:first-child::before{top:32px!important}
+  .short-timeline-item:last-child::before{bottom:32px!important}
+  .short-timeline-rail{right:5px!important;top:14px!important;width:38px!important;height:38px!important}
+  .short-timeline-no{width:34px!important;height:34px!important;font-size:11px!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--short-accent) 7%,transparent)!important}
+  .short-timeline-no::after{inset:5px}
+  .short-timeline-meta{margin-bottom:5px;color:#aeb5bf}
+  .short-timeline-cat{font-size:11px!important}
+  .short-timeline-views{font-size:10px!important}
+  .short-timeline-content h3{font-size:15px!important;line-height:1.5!important;font-weight:750!important}
+  .short-timeline-bottom{margin-top:7px!important;gap:7px!important;flex-wrap:wrap}
+  .short-timeline-bottom time{font-size:11px!important;color:#aeb5c0}
+  .short-timeline-link{font-size:11px!important}
+  .short-timeline-page-head p{font-size:12px!important}
+}
+@media(max-width:390px){
+  .short-timeline-item{padding-right:57px!important;padding-left:12px!important}
+  .short-timeline-rail{right:5px!important}
+  .short-timeline-item::before{right:24px!important}
+  .short-timeline-content h3{font-size:14.5px!important;line-height:1.5!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .breaking .breaking-track{animation:none!important}
+  .breaking .breaking-marquee{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
+}
