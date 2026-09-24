@@ -1,2 +1,1 @@
-Emergency Cloudflare redeploy after live admin reachability failure — 2026-09-24T16:15Z
-Re-run production deployment and smoke tests for nabzesardo.ir and /admin routes.
+article-layout-lock-20260924-9231268
