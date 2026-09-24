@@ -5236,3 +5236,109 @@ html[data-lang="en"] .citizen-promo-foot{direction:ltr}
   }
   .header-dashboard-entry__icon{display:none}
 }
+
+/* Nabz Fori newsroom ribbon */
+main .breaking{
+  padding:5px 0 7px;
+  border:0;
+  background:linear-gradient(180deg,#100c11 0%,#150e16 100%);
+  box-shadow:none;
+}
+main .breaking::before{display:none}
+main .breaking-row{
+  position:relative;
+  min-height:64px;
+  margin:8px auto 10px;
+  padding:10px 14px;
+  gap:16px;
+  border:1px solid rgba(229,194,134,.25);
+  border-radius:20px;
+  background:linear-gradient(110deg,rgba(58,28,43,.75),rgba(24,23,30,.95) 44%,rgba(24,21,27,.92));
+  box-shadow:0 15px 34px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.09);
+  overflow:hidden;
+}
+main .breaking-row::before{
+  content:"";
+  position:absolute;
+  inset:0 auto auto 15%;
+  width:65%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(239,203,139,.65),transparent);
+  pointer-events:none;
+}
+main .breaking-label{
+  min-height:40px;
+  padding:0 15px;
+  gap:8px;
+  border:1px solid rgba(255,212,169,.25);
+  border-radius:12px;
+  background:linear-gradient(135deg,#a32a50,#691a37 72%,#541329);
+  box-shadow:0 7px 18px rgba(83,13,38,.34),inset 0 1px 0 rgba(255,255,255,.18);
+  color:#fff8f3;
+  font-size:12px;
+  font-weight:900;
+}
+main .breaking-item{color:#f1e9e5;font-size:13px;font-weight:750}
+main .breaking-sep{color:#edca8c}
+main .breaking-live{
+  min-height:30px;
+  padding-inline:10px;
+  border-color:rgba(231,192,119,.21);
+  background:rgba(231,192,119,.07);
+  color:#e9cd9e;
+}
+@media(max-width:620px){
+  main .breaking-row{
+    grid-template-columns:auto minmax(0,1fr);
+    min-height:60px;
+    gap:10px;
+    padding:8px 9px;
+    border-radius:17px;
+  }
+  main .breaking-label{min-height:38px;padding:0 10px;font-size:11px}
+  main .breaking-label-pulse{width:25px}
+  main .breaking-item{font-size:12px}
+  main .breaking-live{display:none!important}
+}
+@media(max-width:390px){main .breaking-label-pulse{display:none}}
+
+
+/* Approved smoky glass news cards — homepage cards only. */
+main :is(.front-lead,.front-brief,.latest-grid .card){
+  position:relative;isolation:isolate;overflow:hidden;
+  border:1px solid rgba(143,117,74,.4)!important;
+  border-radius:20px!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.03),transparent 38%),linear-gradient(160deg,rgba(37,33,39,.94),rgba(23,22,27,.93))!important;
+  box-shadow:0 18px 35px rgba(0,0,0,.19),inset 0 1px 0 rgba(255,255,255,.05)!important;
+  transition:border-color .25s,box-shadow .25s!important;
+  transform:none!important;
+}
+main :is(.front-lead,.front-brief,.latest-grid .card)::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:5;
+  background:linear-gradient(115deg,transparent 33%,rgba(255,230,185,.09) 46%,rgba(255,230,185,.19) 50%,rgba(255,230,185,.08) 54%,transparent 67%)!important;
+  transform:translateX(-150%);mix-blend-mode:normal;animation:none;opacity:1;
+}
+main :is(.front-lead,.front-brief,.latest-grid .card)::after{display:none!important}
+main :is(.front-lead,.front-brief,.latest-grid .card).ns-card-shine::before{animation:nsLuxuryCardSheen .85s ease-out}
+main :is(.front-lead,.front-brief,.latest-grid .card):is(:hover,:focus-within){
+  border-color:rgba(211,177,118,.69)!important;
+  box-shadow:0 22px 42px rgba(0,0,0,.27),inset 0 1px 0 rgba(231,209,166,.14)!important;
+}
+main .latest-grid .card .card-media{padding:12px 12px 0!important;background:transparent!important}
+main :is(.front-lead-media,.front-brief-media,.latest-grid .card-media) :is(img,video){object-fit:contain!important;transform:none!important;filter:none!important}
+main .latest-grid .card .card-media :is(img,video){border-radius:10px!important;background:#111216!important}
+main .latest-grid .card .pad{padding:18px!important}
+main .latest-grid .card h3{font-size:17px!important;line-height:1.95!important;font-weight:700!important;color:#f5eee6!important}
+main :is(.front-lead,.front-brief,.latest-grid .card) :is(h2,h3) a{color:#f5eee6!important}
+main :is(.front-lead,.front-brief,.latest-grid .card) .eyebrow{color:#dcc494!important}
+main .latest-grid .card .more{display:flex;align-items:center;min-height:44px;margin-top:18px;padding-top:14px;border-top:1px solid rgba(218,195,147,.14);color:#ead4aa!important;background:transparent!important;font-size:11px}
+main .front-lead-bottom{border-top-color:rgba(218,195,147,.14)!important}
+main :is(.front-lead,.front-brief,.latest-grid .card) .news-date{color:#b6acaa!important}
+@keyframes nsLuxuryCardSheen{to{transform:translateX(150%)}}
+@media(max-width:620px){main .latest-grid .card h3{font-size:18px!important}}
+@media(prefers-reduced-motion:reduce){
+  main :is(.front-lead,.front-brief,.latest-grid .card){transition:none!important}
+  main :is(.front-lead,.front-brief,.latest-grid .card).ns-card-shine::before{animation:none!important}
+}
+
+main .latest-grid .card > .card-media img,
+main .latest-grid .card > .card-media video{object-fit:contain!important;object-position:center!important;transform:none!important}
