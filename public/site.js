@@ -113,11 +113,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     addEventListener('resize',syncArticleProgress,{passive:true});
 
     const shareBtn=articleRoot.querySelector('[data-article-share]');
+    const shareImageBtn=articleRoot.querySelector('[data-article-share-image]');
     const copyBtn=articleRoot.querySelector('[data-article-copy]');
     const copyMessageBtn=articleRoot.querySelector('[data-article-copy-message]');
     const title=articleRoot.dataset.articleTitle||document.title;
     const lead=(articleRoot.dataset.articleLead||'').replace(/\s+/g,' ').trim();
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
+    const shareImageUrl=articleRoot.dataset.articleImage?new URL(articleRoot.dataset.articleImage,location.origin).href:'';
 
     // Keep the readable SEO URL as canonical, but show visitors a compact permanent URL
     // in the browser so manual copy/paste can never expose the encoded Persian slug.
@@ -182,6 +184,57 @@ document.addEventListener('DOMContentLoaded',()=>{
         },1700);
       }
     });
+
+    const shareImageFile=async()=>{
+      if(!shareImageUrl)return null;
+      const res=await fetch(shareImageUrl,{credentials:'same-origin',cache:'no-store'});
+      if(!res.ok)throw new Error('share image fetch '+res.status);
+      const source=await res.blob();
+      if(!/^image\//i.test(source.type||''))throw new Error('share image is not an image');
+      try{
+        const bitmap=await createImageBitmap(source);
+        const max=1600,scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));
+        const canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+        canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+        const ctx=canvas.getContext('2d');
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+        if(bitmap.close)bitmap.close();
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.92));
+        if(blob)return new File([blob],'nabez-sardo-news.jpg',{type:'image/jpeg',lastModified:Date.now()});
+      }catch(err){
+        console.warn('share image normalization failed',err);
+      }
+      const type=/^image\/(jpeg|png|webp)$/i.test(source.type)?source.type:'image/jpeg';
+      const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg';
+      return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
+    };
+
+    if(shareImageBtn)shareImageBtn.addEventListener('click',async()=>{
+      const label=shareImageBtn.querySelector('[data-share-image-label]');
+      const original=label?label.innerHTML:'';
+      await copySharePayload();
+      try{
+        if(label)label.textContent=root.dataset.lang==='en'?'Preparing image…':'در حال آماده‌سازی عکس…';
+        const file=await shareImageFile();
+        if(!file||!navigator.share|| (navigator.canShare&&!navigator.canShare({files:[file]}))){
+          if(label)label.textContent=root.dataset.lang==='en'?'Image share unavailable':'اشتراک عکس پشتیبانی نشد';
+          if(navigator.share)await navigator.share({title,text:shareText()});
+          return;
+        }
+        await navigator.share({files:[file],title,text:shareText()});
+        if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';
+      }catch(err){
+        if(err&&err.name!=='AbortError'){
+          console.warn('article image share failed',err);
+          try{if(navigator.share)await navigator.share({title,text:shareText()});}catch{}
+        }
+      }finally{
+        setTimeout(()=>{if(label)label.innerHTML=original;},1700);
+      }
+    });
+
     if(shareBtn)shareBtn.addEventListener('click',async()=>{
       const payload=shareText();
       await copySharePayload();
