@@ -131,9 +131,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
 
     const shareText=()=>{
-      const lines=['📰 '+title];
-      if(lead)lines.push(lead);
-      lines.push('📌 ادامه خبر را از لینک زیر در سایت نبض ساردو بخوانید:',shareUrl);
+      const lines=[
+        '📰 '+title
+      ];
+      if(lead)lines.push('🔹 خلاصه خبر',lead);
+      lines.push('📌 ادامه خبر در نبض ساردو',shareUrl);
       return lines.join('\n\n');
     };
     const copyArticleLink=async()=>{
