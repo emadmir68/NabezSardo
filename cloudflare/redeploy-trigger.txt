@@ -1,3 +1,4 @@
 verify-permanent-compact-article-links-20260924
 verify-deep-social-sharing=2026-09-24T18:38Z
 share-with-image=2026-09-24T19:28Z
+fix-share-image-button=2026-09-24T19:45Z
