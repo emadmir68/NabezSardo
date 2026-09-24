@@ -8,7 +8,10 @@ import articleTools from "../lib/article-tools.js";
 import store from "../lib/store.js";
 import views from "../lib/view-public.js";
 import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
+import { Resvg, initWasm } from "@resvg/resvg-wasm";
+import resvgModule from "@resvg/resvg-wasm/index_bg.wasm";
 const originalDispatchAndPersist = articleTools.dispatchAndPersist;
+let rasterReady;
 
 const PORT = 3000;
 const EXPECTED_BACKUP_SHA256 = "b93b59e5a9dde845a2f4ae50674b44ea7f6e8d84ee42013f7593adfddb5f4619";
@@ -1223,6 +1226,25 @@ async function maybeDistribute(beforeDb, afterDb) {
     } catch (err) {
       console.error("smart-cover-publish", a.id, String(err?.message || err));
     }
+    if (a.imageAuto && /\.svg(?:\?|$)/i.test(a.image || "") && !a.videoUrl) {
+      try {
+        const name = path.basename(new URL(a.image, "https://nabzesardo.ir").pathname);
+        const socialName = name.replace(/\.svg$/i, "-social.png");
+        if (!(await getMedia(socialName))) {
+          const source = await getMedia(name);
+          if (!source) throw new Error("auto-cover-source-missing");
+          rasterReady ||= initWasm(resvgModule);
+          await rasterReady;
+          const png = new Resvg(source.data || source, { fitTo: { mode: "width", value: 1200 } }).render().asPng();
+          await putMedia(socialName, Buffer.from(png), "image/png");
+        }
+        a.socialImage = "/uploads/" + socialName;
+        fs.writeFileSync(DB_FILE, JSON.stringify(afterDb, null, 2), "utf8");
+        await putState("db", JSON.stringify(afterDb, null, 2));
+      } catch (err) {
+        console.error("social-cover-raster", a.id, String(err?.message || err));
+      }
+    }
     try { await originalDispatchAndPersist(a.id); } catch (err) { console.error("distribution", err); }
   }
   if (newlyPublished.length && fs.existsSync(DB_FILE)) {
@@ -1279,6 +1301,33 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const p = decodeURIComponent(url.pathname);
+
+    if (p === "/__social-cover-test" && request.method === "POST" && isPrimary()) {
+      const flag = "one_time_social_cover_test_20260924";
+      if (await getState(flag)) return Response.json({ ok: false, reason: "already-run" }, { status: 409 });
+      await putState(flag, "started");
+      try {
+        await ensureAppServer();
+        const db = await loadDbObject();
+        const original = [...(db.articles || [])].reverse().find(a => a.status === "published" && a.imageAuto && /\.svg$/i.test(a.image || ""));
+        if (!original) throw new Error("no-published-auto-cover");
+        const name = path.basename(original.image);
+        const source = await getMedia(name);
+        if (!source) throw new Error("auto-cover-source-missing");
+        rasterReady ||= initWasm(resvgModule);
+        await rasterReady;
+        const pngName = name.replace(/\.svg$/i, "-social.png");
+        if (!(await getMedia(pngName))) await putMedia(pngName, Buffer.from(new Resvg(source.data || source).render().asPng()), "image/png");
+        const { default: social } = await import("../lib/social.js");
+        const result = await social.dispatch({ ...original, title: "آزمایش قالب خودکار | " + original.title, lead: "این پیام برای بررسی ارسال عکس، لینک و قالب خبر نبض ساردو است.", videoUrl: "", image: "/uploads/" + pngName, socialImage: "/uploads/" + pngName, socialTelegram: true, socialRubika: true, socialWhatsApp: false });
+        await putState(flag, JSON.stringify(result));
+        return Response.json({ ok: true, result });
+      } catch (err) {
+        const reason = String(err?.message || err);
+        await putState(flag, JSON.stringify({ error: reason }));
+        return Response.json({ ok: false, reason }, { status: 500 });
+      }
+    }
 
     if (p === "/health" && request.method === "GET") {
       return Response.json({
