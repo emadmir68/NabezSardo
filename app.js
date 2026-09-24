@@ -22,6 +22,7 @@ function headers(type='text/html; charset=utf-8'){
 }
 function send(res,status,body,type,extra={}){const h={...headers(type),...extra};const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
 function redirect(res,to,cookie){const h={...headers(),Location:to,'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'};if(cookie)h['Set-Cookie']=cookie;res.writeHead(302,h);res.end();}
+function permanentRedirect(res,to){res.writeHead(301,{...headers(),Location:to,'Cache-Control':'public,max-age=86400'});res.end();}
 function readRaw(req,max=14*1024*1024){return new Promise((resolve,reject)=>{const chunks=[];let size=0;req.on('data',c=>{size+=c.length;if(size>max){reject(new Error('too-large'));req.destroy();return;}chunks.push(c)});req.on('end',()=>resolve(Buffer.concat(chunks)));req.on('error',reject);});}
 async function urlBody(req){const raw=await readRaw(req,2*1024*1024);return Object.fromEntries(new URLSearchParams(raw.toString('utf8')));}
 async function multipart(req){
@@ -128,7 +129,7 @@ function sitemapXml(db){
     ...['sardouiyeh','jiroft','anbarabad','kahnuj','south-kerman']
       .map(key=>({loc:publicUrl('/local/'+key),lastmod:localLastmod(key),images:[]}))
       .filter(x=>x.lastmod),
-    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:stamp(latestOf(articles.filter(a=>a.categoryId===x.id))),images:[]})),
+    ...db.categories.map(x=>({loc:publicUrl('/category/'+encodeURIComponent(x.id)),lastmod:stamp(latestOf(articles.filter(a=>a.categoryId===x.id))),images:[]})).filter(x=>x.lastmod),
     ...articles.map(a=>({loc:publicUrl('/news/'+encodeURIComponent(a.slug)),lastmod:stamp(a),images:articleImages(a)}))
   ];
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+(x.images||[]).map(src=>'<image:image><image:loc>'+xmlEsc(src)+'</image:loc></image:image>').join('')+'</url>').join('\n')+'\n</urlset>';
@@ -139,7 +140,7 @@ function newsSitemapXml(db){
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n'+items.map(a=>'<url><loc>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</loc><news:news><news:publication><news:name>نبض ساردو</news:name><news:language>fa</news:language></news:publication><news:publication_date>'+xmlEsc(new Date(a.publishedAt||a.createdAt).toISOString())+'</news:publication_date><news:title>'+xmlEsc(a.title)+'</news:title></news:news></url>').join('\n')+'\n</urlset>';
 }
 function robotsTxt(){
-  return ['User-agent: *','Allow: /','Disallow: /admin','Disallow: /search','Sitemap: '+publicUrl('/sitemap.xml'),'Sitemap: '+publicUrl('/news-sitemap.xml'),''].join('\n');
+  return ['User-agent: *','Allow: /','Disallow: /admin','Sitemap: '+publicUrl('/sitemap.xml'),'Sitemap: '+publicUrl('/news-sitemap.xml'),''].join('\n');
 }
 function rssXml(db){
   const items=published(db).slice(0,30);
@@ -269,6 +270,7 @@ console.log(`hero-image-ready bytes=${HERO_MOSQUE_JPG.length} sha1=${HERO_MOSQUE
 const server=http.createServer(async(req,res)=>{
  try{
   const u=new URL(req.url,'http://localhost'),p=decodeURIComponent(u.pathname);
+  if((req.method==='GET'||req.method==='HEAD')&&p.length>1&&p.endsWith('/'))return permanentRedirect(res,p.replace(/\/+$/,'')+u.search);
   if(HERO_SEED_TOKEN&&req.method==='POST'&&p==='/__hero_seed_'+HERO_SEED_TOKEN){
     const raw=await readRaw(req,2*1024*1024);
     if(!raw||raw.length<10000)return send(res,400,'bad-image','text/plain; charset=utf-8');
@@ -312,9 +314,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&m){
     const a=published(db).find(x=>String(x.id)===m[1]);
     if(!a)return send(res,404,'خبر یافت نشد');
-    analytics.track(req,p);
-    const viewCookie=trackView(req,db,a);
-    return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
+    return permanentRedirect(res,'/news/'+encodeURIComponent(a.slug));
   }
 
   m=p.match(/^\/news\/(.+)$/);
