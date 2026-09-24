@@ -94,8 +94,10 @@ jobs:
           INSTAGRAM_UA='Instagram 350.0.0.0 Android'
           WHATSAPP_UA='WhatsApp/2.24 Android'
           TELEGRAM_UA='TelegramBot'
+          RUBIKA_UA='Mozilla/5.0 (compatible; RubikaBot/1.0)'
+          BALE_UA='Mozilla/5.0 (compatible; BaleBot/1.0)'
 
-          for agent in "$META_UA" "$INSTAGRAM_UA" "$WHATSAPP_UA" "$TELEGRAM_UA"; do
+          for agent in "$META_UA" "$INSTAGRAM_UA" "$WHATSAPP_UA" "$TELEGRAM_UA" "$RUBIKA_UA" "$BALE_UA"; do
             head_code=$(curl -A "$agent" -sS -I -o /tmp/article-head.txt -w '%{http_code}' --max-time 30 "$SITE$short_path")
             echo "crawler_head agent=$agent status=$head_code"
             test "$head_code" = 200
@@ -105,6 +107,14 @@ jobs:
               cat /tmp/article-head.txt
               exit 1
             fi
+            get_code=$(curl -A "$agent" -sS -o /tmp/article-get.html -w '%{http_code}' --max-time 30 "$SITE$short_path")
+            echo "crawler_get agent=$agent status=$get_code"
+            test "$get_code" = 200
+            grep -q 'property="og:type" content="article"' /tmp/article-get.html
+            grep -q 'property="og:title" content="[^"]\+"' /tmp/article-get.html
+            grep -q 'property="og:description" content="[^"]\+"' /tmp/article-get.html
+            grep -q 'property="og:image" content="https://nabzesardo.ir/' /tmp/article-get.html
+            grep -Fq "property=\"og:url\" content=\"$SITE$short_path\"" /tmp/article-get.html
           done
 
           curl -A "$META_UA" -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
