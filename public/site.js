@@ -131,11 +131,9 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
 
     const shareText=()=>{
-      const lines=[
-        '📰 '+title
-      ];
-      if(lead)lines.push('🔹 خلاصه خبر',lead);
-      lines.push('📌 ادامه خبر در نبض ساردو',shareUrl);
+      const lines=['📰 '+title];
+      if(lead)lines.push(lead);
+      lines.push('ادامه خبر در نبض ساردو 👇',shareUrl);
       return lines.join('\n\n');
     };
     const copyArticleLink=async()=>{
@@ -196,21 +194,111 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(!res.ok)throw new Error('share image fetch '+res.status);
         const source=await res.blob();
         if(!/^image\//i.test(source.type||''))throw new Error('share image is not an image');
+
+        const bitmap=await createImageBitmap(source);
         try{
-          const bitmap=await createImageBitmap(source);
-          const max=1600,scale=Math.min(1,max/Math.max(bitmap.width,bitmap.height));
+          if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+          const W=1080,H=1350;
           const canvas=document.createElement('canvas');
-          canvas.width=Math.max(1,Math.round(bitmap.width*scale));
-          canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+          canvas.width=W;canvas.height=H;
           const ctx=canvas.getContext('2d');
-          ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-          ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-          if(bitmap.close)bitmap.close();
+          if(!ctx)throw new Error('canvas unavailable');
+
+          const roundRect=(x,y,w,h,r)=>{
+            const rr=Math.min(r,w/2,h/2);
+            ctx.beginPath();
+            ctx.moveTo(x+rr,y);
+            ctx.arcTo(x+w,y,x+w,y+h,rr);
+            ctx.arcTo(x+w,y+h,x,y+h,rr);
+            ctx.arcTo(x,y+h,x,y,rr);
+            ctx.arcTo(x,y,x+w,y,rr);
+            ctx.closePath();
+          };
+          const wrap=(value,maxWidth,maxLines)=>{
+            const words=String(value||'').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+            const lines=[];
+            let line='';
+            for(const word of words){
+              const next=line?word+' '+line:word;
+              if(ctx.measureText(next).width<=maxWidth){
+                line=next;
+              }else{
+                if(line)lines.push(line);
+                line=word;
+                if(lines.length===maxLines-1)break;
+              }
+            }
+            if(line&&lines.length<maxLines)lines.push(line);
+            const consumed=lines.join(' ').replace(/…$/,'');
+            const original=String(value||'').replace(/\s+/g,' ').trim();
+            if(lines.length===maxLines&&original.length>consumed.length){
+              let last=lines[lines.length-1]||'';
+              while(last&&ctx.measureText('… '+last).width>maxWidth)last=last.slice(0,-1).trim();
+              lines[lines.length-1]='… '+last;
+            }
+            return lines;
+          };
+
+          // Full-bleed article photo.
+          ctx.fillStyle='#0b0d12';ctx.fillRect(0,0,W,H);
+          const scale=Math.max(W/bitmap.width,H/bitmap.height);
+          const sw=W/scale,sh=H/scale;
+          const sx=Math.max(0,(bitmap.width-sw)/2);
+          const sy=Math.max(0,(bitmap.height-sh)/2);
+          ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,W,H);
+
+          // Soft brand treatment: preserves the photo while making text readable.
+          const shade=ctx.createLinearGradient(0,360,0,H);
+          shade.addColorStop(0,'rgba(7,9,14,0.02)');
+          shade.addColorStop(.48,'rgba(7,9,14,0.18)');
+          shade.addColorStop(.70,'rgba(7,9,14,0.70)');
+          shade.addColorStop(1,'rgba(7,9,14,0.96)');
+          ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
+
+          // Top-right newsroom pill.
+          ctx.fillStyle='rgba(10,12,17,.72)';
+          roundRect(670,56,350,82,26);ctx.fill();
+          ctx.beginPath();ctx.arc(974,97,10,0,Math.PI*2);ctx.fillStyle='#f5a623';ctx.fill();
+          ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';
+          ctx.fillStyle='#fff';
+          ctx.font='700 34px Vazirmatn, IRANSans, Tahoma, sans-serif';
+          ctx.fillText('نبض ساردو',944,99);
+
+          // Title.
+          ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='alphabetic';
+          ctx.fillStyle='#fff';
+          ctx.font='700 62px Vazirmatn, IRANSans, Tahoma, sans-serif';
+          const titleLines=wrap(title,920,3);
+          let y=865;
+          for(const line of titleLines){ctx.fillText(line,990,y);y+=82;}
+
+          // Lead: quieter than the headline.
+          if(lead){
+            y+=12;
+            ctx.fillStyle='rgba(255,255,255,.88)';
+            ctx.font='400 34px Vazirmatn, IRANSans, Tahoma, sans-serif';
+            const leadLines=wrap(lead,920,2);
+            for(const line of leadLines){ctx.fillText(line,990,y);y+=52;}
+          }
+
+          // Footer signature.
+          ctx.fillStyle='#f5a623';
+          roundRect(72,1260,936,3,2);ctx.fill();
+          ctx.fillStyle='rgba(255,255,255,.92)';
+          ctx.font='500 28px Vazirmatn, IRANSans, Tahoma, sans-serif';
+          ctx.textAlign='left';ctx.direction='ltr';
+          ctx.fillText('nabzesardo.ir',72,1312);
+          ctx.textAlign='right';ctx.direction='rtl';
+          ctx.fillText('خبر کامل در سایت نبض ساردو',1008,1312);
+
           const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.92));
-          if(blob)return new File([blob],'nabez-sardo-news.jpg',{type:'image/jpeg',lastModified:Date.now()});
+          if(blob)return new File([blob],'nabez-sardo-card.jpg',{type:'image/jpeg',lastModified:Date.now()});
         }catch(err){
-          console.warn('share image normalization failed',err);
+          console.warn('share card rendering failed',err);
+        }finally{
+          if(bitmap.close)bitmap.close();
         }
+
         const type=/^image\/(jpeg|png|webp)$/i.test(source.type)?source.type:'image/jpeg';
         const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg';
         return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
