@@ -5784,3 +5784,82 @@ main .latest-grid .card > .card-media video{object-fit:contain!important;object-
     line-height:1.92;
   }
 }
+
+/* ===== Short News compact typography v5 ===== */
+.home-short-news-section,
+.home-short-news-section *{
+  font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
+}
+.home-short-news-head h2{
+  font-size:27px;
+  font-weight:800;
+  line-height:1.35;
+  letter-spacing:-.32px;
+}
+.home-short-news-head p{
+  font-size:9.8px;
+  font-weight:500;
+  line-height:1.75;
+  letter-spacing:-.04px;
+}
+.home-short-news-head .more{
+  font-size:8.8px;
+  font-weight:750;
+}
+.home-short-news-copy h3{
+  font-size:15.2px;
+  font-weight:720;
+  line-height:1.72;
+  letter-spacing:-.14px;
+}
+.home-short-news-copy p{
+  font-size:9.8px;
+  font-weight:450;
+  line-height:1.68;
+}
+.home-short-news-time{
+  font-size:8.8px;
+  font-weight:500;
+}
+.home-short-news-index{
+  font-size:8.4px;
+  font-weight:750;
+}
+
+@media(max-width:760px){
+  .home-short-news-head h2{
+    font-size:20px;
+    line-height:1.4;
+    letter-spacing:-.25px;
+  }
+  .home-short-news-head p{
+    font-size:8.9px;
+    line-height:1.7;
+  }
+  .home-short-news-head .more{
+    font-size:8px;
+  }
+  .home-short-news-time{
+    font-size:8.1px;
+  }
+  .home-short-news-index{
+    font-size:7.8px;
+  }
+  .home-short-news-copy h3{
+    font-size:13.2px;
+    font-weight:700;
+    line-height:1.78;
+    letter-spacing:-.1px;
+  }
+  .home-short-news-copy p{
+    font-size:8.8px;
+    line-height:1.65;
+  }
+}
+
+@media(max-width:420px){
+  .home-short-news-copy h3{
+    font-size:12.9px;
+    line-height:1.76;
+  }
+}
