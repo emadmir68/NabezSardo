@@ -185,120 +185,15 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     });
 
-    const shareImageFile=async()=>{
+    const fetchShareImageFile=async()=>{
       if(!shareImageUrl)return null;
       const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),15000);
+      const timer=setTimeout(()=>controller.abort(),12000);
       try{
-        const res=await fetch(shareImageUrl,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+        const res=await fetch(shareImageUrl,{credentials:'same-origin',cache:'force-cache',signal:controller.signal});
         if(!res.ok)throw new Error('share image fetch '+res.status);
         const source=await res.blob();
         if(!/^image\//i.test(source.type||''))throw new Error('share image is not an image');
-
-        const bitmap=await createImageBitmap(source);
-        try{
-          if(document.fonts&&document.fonts.ready)await document.fonts.ready;
-          const W=1080,H=1350;
-          const canvas=document.createElement('canvas');
-          canvas.width=W;canvas.height=H;
-          const ctx=canvas.getContext('2d');
-          if(!ctx)throw new Error('canvas unavailable');
-
-          const roundRect=(x,y,w,h,r)=>{
-            const rr=Math.min(r,w/2,h/2);
-            ctx.beginPath();
-            ctx.moveTo(x+rr,y);
-            ctx.arcTo(x+w,y,x+w,y+h,rr);
-            ctx.arcTo(x+w,y+h,x,y+h,rr);
-            ctx.arcTo(x,y+h,x,y,rr);
-            ctx.arcTo(x,y,x+w,y,rr);
-            ctx.closePath();
-          };
-          const wrap=(value,maxWidth,maxLines)=>{
-            const words=String(value||'').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
-            const lines=[];
-            let line='';
-            for(const word of words){
-              const next=line?word+' '+line:word;
-              if(ctx.measureText(next).width<=maxWidth){
-                line=next;
-              }else{
-                if(line)lines.push(line);
-                line=word;
-                if(lines.length===maxLines-1)break;
-              }
-            }
-            if(line&&lines.length<maxLines)lines.push(line);
-            const consumed=lines.join(' ').replace(/…$/,'');
-            const original=String(value||'').replace(/\s+/g,' ').trim();
-            if(lines.length===maxLines&&original.length>consumed.length){
-              let last=lines[lines.length-1]||'';
-              while(last&&ctx.measureText('… '+last).width>maxWidth)last=last.slice(0,-1).trim();
-              lines[lines.length-1]='… '+last;
-            }
-            return lines;
-          };
-
-          // Full-bleed article photo.
-          ctx.fillStyle='#0b0d12';ctx.fillRect(0,0,W,H);
-          const scale=Math.max(W/bitmap.width,H/bitmap.height);
-          const sw=W/scale,sh=H/scale;
-          const sx=Math.max(0,(bitmap.width-sw)/2);
-          const sy=Math.max(0,(bitmap.height-sh)/2);
-          ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,W,H);
-
-          // Soft brand treatment: preserves the photo while making text readable.
-          const shade=ctx.createLinearGradient(0,360,0,H);
-          shade.addColorStop(0,'rgba(7,9,14,0.02)');
-          shade.addColorStop(.48,'rgba(7,9,14,0.18)');
-          shade.addColorStop(.70,'rgba(7,9,14,0.70)');
-          shade.addColorStop(1,'rgba(7,9,14,0.96)');
-          ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
-
-          // Top-right newsroom pill.
-          ctx.fillStyle='rgba(10,12,17,.72)';
-          roundRect(670,56,350,82,26);ctx.fill();
-          ctx.beginPath();ctx.arc(974,97,10,0,Math.PI*2);ctx.fillStyle='#f5a623';ctx.fill();
-          ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';
-          ctx.fillStyle='#fff';
-          ctx.font='700 34px Vazirmatn, IRANSans, Tahoma, sans-serif';
-          ctx.fillText('نبض ساردو',944,99);
-
-          // Title.
-          ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='alphabetic';
-          ctx.fillStyle='#fff';
-          ctx.font='700 62px Vazirmatn, IRANSans, Tahoma, sans-serif';
-          const titleLines=wrap(title,920,3);
-          let y=865;
-          for(const line of titleLines){ctx.fillText(line,990,y);y+=82;}
-
-          // Lead: quieter than the headline.
-          if(lead){
-            y+=12;
-            ctx.fillStyle='rgba(255,255,255,.88)';
-            ctx.font='400 34px Vazirmatn, IRANSans, Tahoma, sans-serif';
-            const leadLines=wrap(lead,920,2);
-            for(const line of leadLines){ctx.fillText(line,990,y);y+=52;}
-          }
-
-          // Footer signature.
-          ctx.fillStyle='#f5a623';
-          roundRect(72,1260,936,3,2);ctx.fill();
-          ctx.fillStyle='rgba(255,255,255,.92)';
-          ctx.font='500 28px Vazirmatn, IRANSans, Tahoma, sans-serif';
-          ctx.textAlign='left';ctx.direction='ltr';
-          ctx.fillText('nabzesardo.ir',72,1312);
-          ctx.textAlign='right';ctx.direction='rtl';
-          ctx.fillText('خبر کامل در سایت نبض ساردو',1008,1312);
-
-          const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.92));
-          if(blob)return new File([blob],'nabez-sardo-card.jpg',{type:'image/jpeg',lastModified:Date.now()});
-        }catch(err){
-          console.warn('share card rendering failed',err);
-        }finally{
-          if(bitmap.close)bitmap.close();
-        }
-
         const type=/^image\/(jpeg|png|webp)$/i.test(source.type)?source.type:'image/jpeg';
         const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg';
         return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
@@ -307,52 +202,126 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     };
 
+    const renderBrandedShareCard=async(sourceFile)=>{
+      if(!sourceFile||typeof createImageBitmap!=='function')return sourceFile;
+      let bitmap=null;
+      try{
+        bitmap=await createImageBitmap(sourceFile);
+        if(document.fonts&&document.fonts.ready){
+          await Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,1200))]);
+        }
+        const W=1080,H=1350;
+        const canvas=document.createElement('canvas');
+        canvas.width=W;canvas.height=H;
+        const ctx=canvas.getContext('2d');
+        if(!ctx)return sourceFile;
+
+        const roundRect=(x,y,w,h,r)=>{
+          const rr=Math.min(r,w/2,h/2);
+          ctx.beginPath();ctx.moveTo(x+rr,y);
+          ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);
+          ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath();
+        };
+        const wrap=(value,maxWidth,maxLines)=>{
+          const words=String(value||'').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+          const lines=[];let line='';
+          for(const word of words){
+            const next=line?word+' '+line:word;
+            if(ctx.measureText(next).width<=maxWidth){line=next;continue;}
+            if(line)lines.push(line);
+            line=word;
+            if(lines.length>=maxLines-1)break;
+          }
+          if(line&&lines.length<maxLines)lines.push(line);
+          return lines;
+        };
+
+        ctx.fillStyle='#0b0d12';ctx.fillRect(0,0,W,H);
+        const scale=Math.max(W/bitmap.width,H/bitmap.height);
+        const sw=W/scale,sh=H/scale;
+        ctx.drawImage(bitmap,Math.max(0,(bitmap.width-sw)/2),Math.max(0,(bitmap.height-sh)/2),sw,sh,0,0,W,H);
+
+        const shade=ctx.createLinearGradient(0,380,0,H);
+        shade.addColorStop(0,'rgba(7,9,14,.02)');
+        shade.addColorStop(.52,'rgba(7,9,14,.16)');
+        shade.addColorStop(.74,'rgba(7,9,14,.74)');
+        shade.addColorStop(1,'rgba(7,9,14,.97)');
+        ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
+
+        ctx.fillStyle='rgba(10,12,17,.76)';
+        roundRect(692,54,316,78,24);ctx.fill();
+        ctx.beginPath();ctx.arc(968,93,9,0,Math.PI*2);ctx.fillStyle='#f5a623';ctx.fill();
+        ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';
+        ctx.fillStyle='#fff';ctx.font='700 32px Tahoma, Arial, sans-serif';
+        ctx.fillText('نبض ساردو',940,95);
+
+        ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='alphabetic';
+        ctx.fillStyle='#fff';ctx.font='700 60px Tahoma, Arial, sans-serif';
+        let y=900;
+        for(const line of wrap(title,920,3)){ctx.fillText(line,990,y);y+=80;}
+
+        if(lead){
+          y+=8;ctx.fillStyle='rgba(255,255,255,.88)';
+          ctx.font='400 33px Tahoma, Arial, sans-serif';
+          for(const line of wrap(lead,920,2)){ctx.fillText(line,990,y);y+=50;}
+        }
+
+        ctx.fillStyle='#f5a623';roundRect(72,1256,936,3,2);ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.92)';
+        ctx.font='500 27px Tahoma, Arial, sans-serif';
+        ctx.direction='ltr';ctx.textAlign='left';ctx.fillText('nabzesardo.ir',72,1310);
+        ctx.direction='rtl';ctx.textAlign='right';ctx.fillText('ادامه خبر در نبض ساردو',1008,1310);
+
+        const blob=await Promise.race([
+          new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.91)),
+          new Promise(resolve=>setTimeout(()=>resolve(null),1800))
+        ]);
+        return blob?new File([blob],'nabez-sardo-card.jpg',{type:'image/jpeg',lastModified:Date.now()}):sourceFile;
+      }catch(err){
+        console.warn('share card render fallback',err);
+        return sourceFile;
+      }finally{
+        if(bitmap&&bitmap.close)bitmap.close();
+      }
+    };
+
     let preparedShareImageFile=null;
-    let shareImageReady=false;
-    let shareImageFailed=false;
     let shareImageOriginalLabel='';
     if(shareImageBtn){
       const label=shareImageBtn.querySelector('[data-share-image-label]');
       shareImageOriginalLabel=label?label.innerHTML:'';
-      shareImageBtn.disabled=true;
-      shareImageBtn.setAttribute('aria-busy','true');
-      if(label)label.textContent=root.dataset.lang==='en'?'Preparing image…':'در حال آماده‌سازی عکس…';
-      shareImageFile().then(file=>{
-        if(!file)throw new Error('share image unavailable');
-        if(!navigator.share)throw new Error('native share unavailable');
-        if(navigator.canShare&&!navigator.canShare({files:[file]}))throw new Error('file sharing unsupported');
+
+      // Never disable the button. First prepare the original photo quickly,
+      // then upgrade it to the branded card in the background.
+      fetchShareImageFile().then(file=>{
+        if(!file)return;
+        if(navigator.canShare&&!navigator.canShare({files:[file]}))return;
         preparedShareImageFile=file;
-        shareImageReady=true;
-        shareImageBtn.disabled=false;
-        shareImageBtn.removeAttribute('aria-busy');
-        if(label)label.innerHTML=shareImageOriginalLabel;
-      }).catch(err=>{
-        shareImageFailed=true;
-        shareImageBtn.disabled=false;
-        shareImageBtn.removeAttribute('aria-busy');
-        console.warn('share image prepare failed',err);
-        if(label)label.textContent=root.dataset.lang==='en'?'Share link instead':'اشتراک لینک';
-      });
+        renderBrandedShareCard(file).then(card=>{
+          if(card&&(!navigator.canShare||navigator.canShare({files:[card]})))preparedShareImageFile=card;
+        }).catch(()=>{});
+      }).catch(err=>console.warn('share image preload failed',err));
     }
 
     if(shareImageBtn)shareImageBtn.addEventListener('click',()=>{
       const label=shareImageBtn.querySelector('[data-share-image-label]');
       const payload=shareText();
 
-      // navigator.share must be invoked directly from the user's tap. Do not
-      // await clipboard/fetch work here or Android may discard user activation.
-      if(shareImageReady&&preparedShareImageFile&&navigator.share){
+      // Keep navigator.share directly inside the tap handler so Android
+      // preserves user activation.
+      if(preparedShareImageFile&&navigator.share){
         if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
         navigator.share({files:[preparedShareImageFile],title,text:payload})
           .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
           .catch(err=>{
             if(err&&err.name!=='AbortError')console.warn('article image share failed',err);
-            if(label)label.innerHTML=shareImageOriginalLabel;
           })
-          .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1200));
+          .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1000));
         return;
       }
 
+      // If the image has not finished preloading yet, the button still works
+      // immediately instead of appearing dead.
       if(navigator.share){
         navigator.share({title,text:payload}).catch(err=>{
           if(err&&err.name!=='AbortError')console.warn('article share fallback failed',err);
@@ -360,8 +329,8 @@ document.addEventListener('DOMContentLoaded',()=>{
       }else{
         copySharePayload();
       }
-      if(shareImageFailed&&label)label.textContent=root.dataset.lang==='en'?'Shared without image':'اشتراک بدون عکس';
-      setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1500);
+      if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
+      setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1000);
     });
 
     if(shareBtn)shareBtn.addEventListener('click',()=>{
