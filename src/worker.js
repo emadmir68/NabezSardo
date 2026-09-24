@@ -40,12 +40,20 @@ function legacyShortArticleCodeWorker(value=""){
   }
   return (a.toString(36).padStart(7,"0")+b.toString(36).padStart(7,"0")).slice(0,12);
 }
-function shortArticleCodeWorker(value=""){
+function previousShortArticleCodeWorker(value=""){
   const input=String(value||"").trim();
   const hex=input.replace(/-/g,"").toLowerCase();
   if(/^[0-9a-f]{32}$/.test(hex)){
     return Buffer.from(hex,"hex").toString("base64")
       .replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+  return legacyShortArticleCodeWorker(input);
+}
+function shortArticleCodeWorker(value=""){
+  const input=String(value||"").trim();
+  const hex=input.replace(/-/g,"").toLowerCase();
+  if(/^[0-9a-f]{32}$/.test(hex)){
+    return BigInt("0x"+hex).toString(36).padStart(25,"0");
   }
   return legacyShortArticleCodeWorker(input);
 }
@@ -75,10 +83,10 @@ async function ensureSocialPreviewForPath(pathname){
   if(pathname.startsWith("/news/")){
     let key="";
     try{key=decodeURIComponent(pathname.slice("/news/".length));}catch{key=pathname.slice("/news/".length);}
-    article=db.articles.find(x=>x.status==="published"&&(x.slug===key||shortArticleCodeWorker(x.id)===key||legacyShortArticleCodeWorker(x.id)===key))||null;
+    article=db.articles.find(x=>x.status==="published"&&(x.slug===key||shortArticleCodeWorker(x.id)===key||previousShortArticleCodeWorker(x.id)===key||legacyShortArticleCodeWorker(x.id)===key))||null;
   }else{
     const key=pathname.slice("/n/".length).replace(/\/+$/,"");
-    article=db.articles.find(x=>x.status==="published"&&(String(x.id)===key||shortArticleCodeWorker(x.id)===key||legacyShortArticleCodeWorker(x.id)===key))||null;
+    article=db.articles.find(x=>x.status==="published"&&(String(x.id)===key||shortArticleCodeWorker(x.id)===key||previousShortArticleCodeWorker(x.id)===key||legacyShortArticleCodeWorker(x.id)===key))||null;
   }
   if(!article)return;
   try{
