@@ -85,7 +85,29 @@ jobs:
             exit 1
           fi
           echo "short_article_path=$short_path"
-          echo "$short_path" | grep -Eq '^/news/[a-z0-9]{12}
+          case "$short_path" in
+            /news/*) ;;
+            *) echo "Unexpected compact article path: $short_path"; exit 1 ;;
+          esac
+
+          META_UA='facebookexternalhit/1.1 (+https://www.facebook.com/externalhit_uatext.php)'
+          INSTAGRAM_UA='Instagram 350.0.0.0 Android'
+          WHATSAPP_UA='WhatsApp/2.24 Android'
+          TELEGRAM_UA='TelegramBot'
+
+          for agent in "$META_UA" "$INSTAGRAM_UA" "$WHATSAPP_UA" "$TELEGRAM_UA"; do
+            head_code=$(curl -A "$agent" -sS -I -o /tmp/article-head.txt -w '%{http_code}' --max-time 30 "$SITE$short_path")
+            echo "crawler_head agent=$agent status=$head_code"
+            test "$head_code" = 200
+            grep -qi '^content-type: text/html' /tmp/article-head.txt
+            if grep -qi '^location:' /tmp/article-head.txt; then
+              echo "Compact article URL must not redirect for social crawlers"
+              cat /tmp/article-head.txt
+              exit 1
+            fi
+          done
+
+          curl -A "$META_UA" -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
           grep -q 'data-article-root' /tmp/short-article.html
           grep -Fq "data-article-url=\"$short_path\"" /tmp/short-article.html
           grep -q 'property="og:type" content="article"' /tmp/short-article.html
