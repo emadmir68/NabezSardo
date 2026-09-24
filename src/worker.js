@@ -1304,37 +1304,6 @@ export default {
     const url = new URL(request.url);
     const p = decodeURIComponent(url.pathname);
 
-    if (p === "/__social-cover-test" && request.method === "POST" && isPrimary()) {
-      const rubikaOnly = url.searchParams.get("rubika_only") === "1";
-      const flag = rubikaOnly ? "one_time_social_cover_rubika_retry_20260924" : "one_time_social_cover_test_20260924";
-      if (await getState(flag)) return Response.json({ ok: false, reason: "already-run" }, { status: 409 });
-      await putState(flag, "started");
-      try {
-        await ensureAppServer();
-        const db = await loadDbObject();
-        const original = [...(db.articles || [])].reverse().find(a => a.status === "published" && a.imageAuto && /\.svg$/i.test(a.image || ""));
-        if (!original) throw new Error("no-published-auto-cover");
-        const name = path.basename(original.image);
-        const source = await getMedia(name);
-        if (!source) throw new Error("auto-cover-source-missing");
-        rasterReady ||= initWasm(resvgModule);
-        await rasterReady;
-        const pngName = name.replace(/\.svg$/i, "-social.png");
-        const png = Buffer.from(new Resvg(source.data || source).render().asPng());
-        if (!(await getMedia(pngName))) await putMedia(pngName, png, "image/png");
-        fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-        fs.writeFileSync(path.join(UPLOAD_DIR, pngName), png);
-        const { default: social } = await import("../lib/social.js");
-        const result = await social.dispatch({ ...original, title: "آزمایش قالب خودکار | " + original.title, lead: "این پیام برای بررسی ارسال عکس، لینک و قالب خبر نبض ساردو است.", videoUrl: "", image: "/uploads/" + pngName, socialImage: "/uploads/" + pngName, socialTelegram: !rubikaOnly, socialRubika: true, socialWhatsApp: false });
-        await putState(flag, JSON.stringify(result));
-        return Response.json({ ok: true, result });
-      } catch (err) {
-        const reason = String(err?.message || err);
-        await putState(flag, JSON.stringify({ error: reason }));
-        return Response.json({ ok: false, reason }, { status: 500 });
-      }
-    }
-
     if (p === "/health" && request.method === "GET") {
       return Response.json({
         ok: true,
