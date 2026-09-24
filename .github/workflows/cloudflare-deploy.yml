@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - cloudflare-migration
+    paths-ignore:
+      - cloudflare-deploy-status.json
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: nabzesardo-cloudflare-production
@@ -20,6 +22,9 @@ jobs:
     steps:
       - name: Checkout cloudflare migration branch
         uses: actions/checkout@v4
+        with:
+          ref: cloudflare-migration
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,3 +40,70 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Wait for edge propagation
+        run: sleep 12
+
+      - name: Smoke test Cloudflare production
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORKER="https://nabzesardo-cloudflare.emadmir1368.workers.dev"
+          SITE="https://nabzesardo.ir"
+
+          curl -fsS --retry 5 --retry-delay 3 "$WORKER/health" -o /tmp/worker-health.json
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/health" -o /tmp/site-health.json
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/" -o /tmp/home.html
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/all-news" -o /tmp/archive.html
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/sitemap.xml" -o /tmp/sitemap.xml
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/feed.xml" -o /tmp/feed.xml
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/admin/login" -o /tmp/admin-login.html
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/__cutover/status" -o /tmp/cutover.json
+
+          grep -q "نبض ساردو" /tmp/home.html
+          grep -q "نبض ساردو" /tmp/archive.html
+          grep -q "<urlset" /tmp/sitemap.xml
+          grep -q "<rss" /tmp/feed.xml
+          grep -q "admin" /tmp/admin-login.html || grep -q "ورود" /tmp/admin-login.html
+
+          node <<'NODE'
+          const fs=require('fs');
+          const worker=JSON.parse(fs.readFileSync('/tmp/worker-health.json','utf8'));
+          const site=JSON.parse(fs.readFileSync('/tmp/site-health.json','utf8'));
+          const cut=JSON.parse(fs.readFileSync('/tmp/cutover.json','utf8'));
+          const problems=[];
+          if(worker.origin!=='cloudflare'||worker.railwayDependency!==false) problems.push('worker-health-not-independent');
+          if(site.origin!=='cloudflare'||site.railwayDependency!==false) problems.push('site-health-not-independent');
+          if(cut.cloudflarePrimary!==true) problems.push('cloudflare-not-primary');
+          if(cut.railwayDependency!==false) problems.push('railway-dependency-present');
+          if(cut.adminReady!==true) problems.push('admin-not-ready');
+          if(cut.storage?.arvanConfigured!==true) problems.push('arvan-not-configured');
+          if(cut.storage?.arvanAuthenticated!==true) problems.push('arvan-not-authenticated');
+          if(cut.storage?.lastError) problems.push('arvan-last-error:'+cut.storage.lastError);
+          if(cut.backup?.lastError) problems.push('backup-last-error:'+cut.backup.lastError);
+          const report={
+            testedAt:new Date().toISOString(),
+            commit:process.env.GITHUB_SHA,
+            workerHealth:worker,
+            siteHealth:site,
+            cutover:cut,
+            readyForRailwayShutdown:problems.length===0 && cut.readyForRailwayShutdown===true,
+            problems
+          };
+          fs.writeFileSync('cloudflare-deploy-status.json',JSON.stringify(report,null,2)+'\n');
+          if(problems.length){
+            console.error(JSON.stringify(report,null,2));
+            process.exit(1);
+          }
+          NODE
+
+      - name: Record verified cutover status
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "nabez-sardo-cloudflare-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add cloudflare-deploy-status.json
+          git commit -m "Record verified Cloudflare-only deployment [skip ci]" || exit 0
+          git push origin HEAD:cloudflare-migration
