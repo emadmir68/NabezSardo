@@ -8,6 +8,8 @@ on:
       - 'app.js'
       - 'lib/view-common.js'
       - 'lib/view-public.js'
+      - 'public/site.css'
+      - 'public/logo.svg'
       - '.github/workflows/seo-live-audit.yml'
 
 permissions:
@@ -17,37 +19,113 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Audit public SEO surfaces
+      - name: Audit Googlebot-visible SEO surfaces
         run: |
           set -euo pipefail
           base='https://nabzesardo.ir'
-          curl -fsS --max-time 30 "$base/robots.txt" -o robots.txt
-          curl -fsS --max-time 30 "$base/sitemap.xml" -o sitemap.xml
-          curl -fsS --max-time 30 "$base/news-sitemap.xml" -o news-sitemap.xml
-          curl -fsS --max-time 30 "$base/feed.xml" -o feed.xml
-          curl -fsS --max-time 30 "$base/" -o home.html
+          googlebot='Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+          newsbot='Googlebot-News'
+
+          curl -fsS -A "$googlebot" --max-time 30 "$base/robots.txt" -o robots.txt
+          curl -fsS -A "$googlebot" --max-time 30 "$base/sitemap.xml" -o sitemap.xml
+          curl -fsS -A "$newsbot" --max-time 30 "$base/news-sitemap.xml" -o news-sitemap.xml
+          curl -fsS -A "$googlebot" --max-time 30 "$base/feed.xml" -o feed.xml
+          curl -fsS -A "$googlebot" --max-time 30 "$base/" -o home.html
+          curl -fsS -A "$googlebot" --max-time 30 "$base/editorial-policy" -o editorial.html
+          curl -fsS -A "$googlebot" --max-time 30 "$base/about" -o about.html
+          curl -fsS -A "$googlebot" --max-time 30 "$base/contact" -o contact.html
+
+          grep -q '^Disallow: /admin' robots.txt
+          ! grep -q '^Disallow: /search' robots.txt
           grep -q 'Sitemap: https://nabzesardo.ir/sitemap.xml' robots.txt
           grep -q 'Sitemap: https://nabzesardo.ir/news-sitemap.xml' robots.txt
           grep -q '<urlset' sitemap.xml
+          grep -q '<urlset' news-sitemap.xml
           grep -q '<rss' feed.xml
-          grep -q 'rel="canonical"' home.html
-          grep -q 'application/ld+json' home.html
-          python - <<'PY'
-          import xml.etree.ElementTree as ET
-          root=ET.parse('sitemap.xml').getroot()
-          ns={'s':'http://www.sitemaps.org/schemas/sitemap/0.9','i':'http://www.google.com/schemas/sitemap-image/1.1'}
-          urls=root.findall('s:url',ns)
-          images=root.findall('.//i:image',ns)
-          news=ET.parse('news-sitemap.xml').getroot().findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url')
-          print(f'sitemap_urls={len(urls)}')
-          print(f'image_entries={len(images)}')
-          print(f'news_48h_entries={len(news)}')
-          PY
+
+          grep -q 'rel="canonical" href="https://nabzesardo.ir/"' home.html
+          grep -q 'name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"' home.html
+          grep -q '"@type":"WebSite"' home.html
+          grep -q '"@type":"NewsMediaOrganization"' home.html
+          grep -q '/assets/logo.svg' home.html
+          grep -q 'rel="canonical" href="https://nabzesardo.ir/editorial-policy"' editorial.html
+          grep -q 'سیاست تحریریه' editorial.html
+          grep -q 'اصلاح' editorial.html
+          grep -q 'تحریریه' about.html
+          grep -q 'راه ارتباط رسمی' contact.html
+
+          curl -fsS -A "$googlebot" --max-time 30 "$base/search?q=seo-audit" -o search.html
+          grep -q 'name="robots" content="noindex,follow"' search.html
+          curl -fsS -A "$googlebot" --max-time 30 "$base/all-news?q=seo-audit" -o archive-search.html
+          grep -q 'name="robots" content="noindex,follow"' archive-search.html
+
           for p in local/sardouiyeh local/jiroft local/anbarabad local/kahnuj local/south-kerman; do
-            code=$(curl -L -sS -o /tmp/local.html -w '%{http_code}' --max-time 30 "$base/$p")
+            code=$(curl -A "$googlebot" -sS -o /tmp/local.html -w '%{http_code}' --max-time 30 "$base/$p")
             echo "$p status=$code bytes=$(wc -c </tmp/local.html)"
             test "$code" = 200
             grep -q 'rel="canonical"' /tmp/local.html
             grep -q 'application/ld+json' /tmp/local.html
+            grep -Eq 'name="robots" content="(index,follow|max-image-preview|noindex,follow)' /tmp/local.html
           done
-          curl -sS -o /dev/null -w 'home_ttfb=%{time_starttransfer} home_total=%{time_total}\n' --max-time 30 "$base/"
+
+          slash=$(curl -A "$googlebot" -sS -o /dev/null -w '%{http_code}|%{redirect_url}' --max-time 30 "$base/all-news/")
+          echo "trailing_slash=$slash"
+          case "$slash" in 301*'https://nabzesardo.ir/all-news'*) ;; *) exit 1 ;; esac
+
+          httpredir=$(curl -A "$googlebot" -sS -o /dev/null -w '%{http_code}|%{redirect_url}' --max-time 30 "http://nabzesardo.ir/")
+          echo "http_redirect=$httpredir"
+          case "$httpredir" in 301*'https://nabzesardo.ir/'*|302*'https://nabzesardo.ir/'*|307*'https://nabzesardo.ir/'*|308*'https://nabzesardo.ir/'*) ;; *) exit 1 ;; esac
+
+          python - <<'PY'
+          import datetime as dt
+          import urllib.parse
+          import xml.etree.ElementTree as ET
+
+          ns={'s':'http://www.sitemaps.org/schemas/sitemap/0.9','i':'http://www.google.com/schemas/sitemap-image/1.1','n':'http://www.google.com/schemas/sitemap-news/0.9'}
+          root=ET.parse('sitemap.xml').getroot()
+          urls=[x.find('s:loc',ns).text.strip() for x in root.findall('s:url',ns)]
+          assert urls, 'empty sitemap'
+          assert len(urls)==len(set(urls)), 'duplicate sitemap URLs'
+          for url in urls:
+            p=urllib.parse.urlsplit(url)
+            assert p.scheme=='https' and p.netloc=='nabzesardo.ir', f'noncanonical sitemap host: {url}'
+            assert not p.query and not p.fragment, f'parameterized sitemap URL: {url}'
+            assert not p.path.startswith(('/admin','/search','/n/')), f'private/duplicate URL in sitemap: {url}'
+            assert p.path=='/' or not p.path.endswith('/'), f'trailing slash sitemap URL: {url}'
+
+          news_root=ET.parse('news-sitemap.xml').getroot()
+          news_urls=[]
+          now=dt.datetime.now(dt.timezone.utc)
+          for node in news_root.findall('s:url',ns):
+            loc=node.find('s:loc',ns).text.strip()
+            news_urls.append(loc)
+            assert loc in urls, f'news URL missing from main sitemap: {loc}'
+            pd=node.find('.//n:publication_date',ns)
+            assert pd is not None and pd.text, f'missing publication date: {loc}'
+            when=dt.datetime.fromisoformat(pd.text.replace('Z','+00:00'))
+            assert when <= now + dt.timedelta(minutes=10), f'future publication date: {loc}'
+            assert when >= now - dt.timedelta(hours=49), f'news sitemap item older than 48h window: {loc}'
+          assert len(news_urls)==len(set(news_urls)), 'duplicate news sitemap URLs'
+          print(f'sitemap_urls={len(urls)}')
+          print(f'news_48h_entries={len(news_urls)}')
+          print(f'image_entries={len(root.findall(".//i:image",ns))}')
+          first_news=next((u for u in news_urls if '/news/' in u), next((u for u in urls if '/news/' in u), ''))
+          open('first-news-url.txt','w').write(first_news)
+          PY
+
+          article=$(cat first-news-url.txt)
+          if [ -n "$article" ]; then
+            code=$(curl -A "$newsbot" -sS -o article.html -w '%{http_code}' --max-time 30 "$article")
+            echo "article=$article status=$code"
+            test "$code" = 200
+            grep -q "rel=\"canonical\" href=\"$article\"" article.html
+            grep -q 'name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"' article.html
+            grep -q '"@type":"NewsArticle"' article.html
+            grep -q '"datePublished":' article.html
+            grep -q '"author":' article.html
+            grep -q '"publisher":' article.html
+            grep -q '/assets/logo.svg' article.html
+            grep -q 'article-trustline' article.html
+          fi
+
+          curl -A "$googlebot" -sS -o /dev/null -w 'home_ttfb=%{time_starttransfer} home_total=%{time_total}\n' --max-time 30 "$base/"
