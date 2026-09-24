@@ -134,6 +134,27 @@ jobs:
           open('first-news-url.txt','w').write(first_news)
           PY
 
+          # Exhaustively validate every URL we advertise in the main sitemap.
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          ns={'s':'http://www.sitemaps.org/schemas/sitemap/0.9'}
+          root=ET.parse('sitemap.xml').getroot()
+          with open('sitemap-urls.txt','w') as f:
+            for node in root.findall('s:url',ns):
+              f.write(node.find('s:loc',ns).text.strip()+'\n')
+          PY
+          while IFS= read -r u; do
+            code=$(curl -A "$googlebot" -sS -o /tmp/sitemap-page.html -w '%{http_code}' --max-time 30 "$u")
+            echo "sitemap_url=$u status=$code"
+            test "$code" = 200
+            grep -Fq "rel=\"canonical\" href=\"$u\"" /tmp/sitemap-page.html
+            ! grep -q 'name="robots" content="noindex' /tmp/sitemap-page.html
+          done < sitemap-urls.txt
+
+          notfound=$(curl -A "$googlebot" -sS -o /tmp/notfound.html -w '%{http_code}' --max-time 30 "$base/__seo_audit_missing_page_404")
+          echo "missing_page_status=$notfound"
+          test "$notfound" = 404
+
           article=$(cat first-news-url.txt)
           if [ -n "$article" ]; then
             code=$(curl -A "$newsbot" -sS -o article.html -w '%{http_code}' --max-time 30 "$article")
