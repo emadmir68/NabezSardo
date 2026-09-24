@@ -7,7 +7,7 @@ const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullB
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
-const {shortArticleCode}=require('./lib/view-common');
+const {shortArticleCode,legacyShortArticleCode}=require('./lib/view-common');
 
 const PORT=Number(process.env.PORT||3000);
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
@@ -266,7 +266,7 @@ const server=http.createServer(async(req,res)=>{
   m=p.match(/^\/n\/([^/]+)$/);
   if((req.method==='GET'||req.method==='HEAD')&&m){
     const key=String(m[1]||'');
-    const a=published(db).find(x=>String(x.id)===key||shortArticleCode(x.id)===key);
+    const a=published(db).find(x=>String(x.id)===key||shortArticleCode(x.id)===key||legacyShortArticleCode(x.id)===key);
     if(!a)return send(res,404,'خبر یافت نشد');
     if(req.method==='HEAD')return sendArticleHead(res,a);
     analytics.track(req,p);
@@ -277,7 +277,7 @@ const server=http.createServer(async(req,res)=>{
   m=p.match(/^\/news\/(.+)$/);
   if((req.method==='GET'||req.method==='HEAD')&&m){
     const key=String(m[1]||'');
-    const a=published(db).find(x=>x.slug===key||shortArticleCode(x.id)===key);
+    const a=published(db).find(x=>x.slug===key||shortArticleCode(x.id)===key||legacyShortArticleCode(x.id)===key);
     if(!a)return send(res,404,'خبر یافت نشد');
     if(req.method==='HEAD')return sendArticleHead(res,a);
     analytics.track(req,p);
