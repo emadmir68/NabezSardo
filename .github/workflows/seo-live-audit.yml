@@ -10,6 +10,7 @@ on:
       - 'lib/view-public.js'
       - 'public/site.css'
       - 'public/logo.svg'
+      - 'src/worker.js'
       - '.github/workflows/seo-live-audit.yml'
 
 permissions:
@@ -26,6 +27,18 @@ jobs:
           googlebot='Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
           newsbot='Googlebot-News'
 
+          # Wait until the exact pushed revision is live; avoids auditing the previous edge version.
+          live=0
+          for i in $(seq 1 24); do
+            curl -fsS -A "$googlebot" --max-time 20 "$base/" -o /tmp/revision.html || true
+            if grep -q "name=\"nabez-build\" content=\"$GITHUB_SHA\"" /tmp/revision.html; then
+              live=1
+              break
+            fi
+            sleep 5
+          done
+          test "$live" = 1
+
           curl -fsS -A "$googlebot" --max-time 30 "$base/robots.txt" -o robots.txt
           curl -fsS -A "$googlebot" --max-time 30 "$base/sitemap.xml" -o sitemap.xml
           curl -fsS -A "$newsbot" --max-time 30 "$base/news-sitemap.xml" -o news-sitemap.xml
@@ -34,6 +47,7 @@ jobs:
           curl -fsS -A "$googlebot" --max-time 30 "$base/editorial-policy" -o editorial.html
           curl -fsS -A "$googlebot" --max-time 30 "$base/about" -o about.html
           curl -fsS -A "$googlebot" --max-time 30 "$base/contact" -o contact.html
+          curl -fsS -A "$googlebot" --max-time 30 "$base/send-news" -o send-news.html
 
           grep -q '^Disallow: /admin' robots.txt
           ! grep -q '^Disallow: /search' robots.txt
@@ -53,6 +67,7 @@ jobs:
           grep -q 'اصلاح' editorial.html
           grep -q 'تحریریه' about.html
           grep -q 'راه ارتباط رسمی' contact.html
+          grep -q 'name="robots" content="noindex,follow"' send-news.html
 
           curl -fsS -A "$googlebot" --max-time 30 "$base/search?q=seo-audit" -o search.html
           grep -q 'name="robots" content="noindex,follow"' search.html
@@ -67,6 +82,12 @@ jobs:
             grep -q 'application/ld+json' /tmp/local.html
             grep -Eq 'name="robots" content="(index,follow|max-image-preview|noindex,follow)' /tmp/local.html
           done
+
+          follow=$(curl -A "$googlebot" -sS -o /tmp/follow.html -w '%{http_code}' --max-time 30 "$base/follow-up")
+          echo "follow_up=$follow"
+          test "$follow" = 200
+          grep -q 'rel="canonical" href="https://nabzesardo.ir/follow-up"' /tmp/follow.html
+          grep -Eq 'name="robots" content="(index,follow|max-image-preview|noindex,follow)' /tmp/follow.html
 
           slash=$(curl -A "$googlebot" -sS -o /dev/null -w '%{http_code}|%{redirect_url}' --max-time 30 "$base/all-news/")
           echo "trailing_slash=$slash"
