@@ -205,7 +205,7 @@ async function handlePublicPreview(request, url, pathname) {
   const db = await loadDbObject();
 
   if (pathname === "/health") {
-    return Response.json({ ok: true, name: "nabzesardo-cloudflare", migrated: true });
+    return Response.json({ ok: true, name: "nabzesardo-cloudflare", migrated: true, primary: isPrimary(), origin: "cloudflare", railwayDependency: false, storage: arvanConfig() ? "arvan" : "d1" });
   }
   if (pathname === "/") return html(views.home(db));
   if (pathname === "/all-news") return html(views.archive(db, url.searchParams.get("q") || ""));
@@ -1006,7 +1006,9 @@ async function syncPublicMedia(sourceBase, paths) {
 }
 
 async function publicPull() {
-  const sourceBase = String(env.SYNC_SOURCE_URL || "https://nabzesardo.ir").replace(/\/+$/, "");
+  if (isPrimary()) return { ok: true, skipped: true, reason: "cloudflare-primary" };
+  const sourceBase = String(env.LEGACY_SYNC_SOURCE_URL || "").replace(/\/+$/, "");
+  if (!sourceBase) return { ok: true, skipped: true, reason: "legacy-sync-disabled" };
   const previous = await getState("last_public_sync_at");
   if (previous && Date.now() - Date.parse(previous) < 60000) {
     return { ok: true, skipped: true, syncedAt: previous };
@@ -1151,7 +1153,11 @@ async function publicSyncStatus() {
   ]);
   return {
     ok: true,
-    source: String(env.SYNC_SOURCE_URL || "https://nabzesardo.ir"),
+    source: "cloudflare-d1+arvan",
+    cutoverMode: String(env.CUTOVER_MODE || "cloudflare-only"),
+    cloudflarePrimary: isPrimary(),
+    railwayDependency: false,
+    legacySyncEnabled: Boolean(String(env.LEGACY_SYNC_SOURCE_URL || "").trim()),
     syncedAt: at || null,
     articles: Number(articles || 0),
     media: Number(media || 0),
@@ -1243,26 +1249,6 @@ async function handleCloudflareAdminLogin(request) {
   return handleApp(new Request(request.url, { method: "POST", headers, body, redirect: "manual" }));
 }
 
-async function proxyRailway(request) {
-  const origin = String(env.RAILWAY_ORIGIN || "").replace(/\/+$/, "");
-  if (!origin) return new Response("Railway bridge is not configured.", { status: 503 });
-  const incoming = new URL(request.url);
-  const target = new URL(incoming.pathname + incoming.search, origin + "/");
-  const headers = new Headers(request.headers);
-  headers.delete("host");
-  headers.set("x-nabzesardo-edge", "cloudflare-bridge");
-  const init = {
-    method: request.method,
-    headers,
-    redirect: "manual"
-  };
-  if (request.method !== "GET" && request.method !== "HEAD") init.body = request.body;
-  const upstream = await fetch(target.toString(), init);
-  const outHeaders = new Headers(upstream.headers);
-  outHeaders.set("x-nabzesardo-origin", "railway-bridge");
-  return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: outHeaders });
-}
-
 async function ensureCutoverBackup() {
   const done = await getState("cutover_backup_created");
   if (done === "1") return;
@@ -1299,6 +1285,19 @@ export default {
     if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
     if (p === "/__sync/status" && request.method === "GET") return Response.json(await publicSyncStatus());
+    if (p === "/__cutover/status" && request.method === "GET") {
+      const status = await publicSyncStatus();
+      const ready = Boolean(
+        status.cloudflarePrimary &&
+        status.railwayDependency === false &&
+        status.adminReady &&
+        status.storage?.arvanConfigured &&
+        status.storage?.arvanAuthenticated &&
+        !status.storage?.lastError &&
+        !status.backup?.lastError
+      );
+      return Response.json({ ...status, readyForRailwayShutdown: ready });
+    }
     if (p === "/__sync/public-pull" && request.method === "POST") {
       if (isPrimary()) return Response.json({ ok: true, skipped: true, primary: true });
       try { return Response.json(await publicPull()); }
@@ -1310,7 +1309,7 @@ export default {
     }
 
     if (!isPrimary() && (p.startsWith("/admin") || (request.method !== "GET" && request.method !== "HEAD"))) {
-      return proxyRailway(request);
+      return new Response("Preview is read-only. Production writes run only on Cloudflare primary.", { status: 403 });
     }
 
     if (p.startsWith("/uploads/") && request.method === "GET") {
@@ -1331,7 +1330,7 @@ export default {
 
     if (String(env.PREVIEW_READONLY || "") === "1") {
       if (request.method === "GET" || request.method === "HEAD") return handleApp(request);
-      return proxyRailway(request);
+      return new Response("Preview is read-only.", { status: 403 });
     }
 
     return handleApp(request);
@@ -1339,7 +1338,6 @@ export default {
 
   async scheduled() {
     if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1") {
-      try { await publicPull(); } catch (err) { console.error("public-sync", String(err?.message || err)); }
       return;
     }
     const before = await hydrateState({ includeBackups: true });
