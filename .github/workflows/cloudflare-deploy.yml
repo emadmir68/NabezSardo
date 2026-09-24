@@ -79,6 +79,16 @@ jobs:
           grep -q "<rss" /tmp/feed.xml
           grep -q "admin" /tmp/admin-login.html || grep -q "ورود" /tmp/admin-login.html
 
+          short_path=$(grep -oE 'data-story-url="/n/[a-z0-9]+"' /tmp/home.html | head -n 1 | cut -d'"' -f2 || true)
+          if [ -z "$short_path" ]; then
+            echo "Compact article URL missing from homepage"
+            exit 1
+          fi
+          echo "short_article_path=$short_path"
+          curl -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
+          grep -q 'data-article-root' /tmp/short-article.html
+          grep -Fq "data-article-url=\"$short_path\"" /tmp/short-article.html
+
           node <<'NODE'
           const fs=require('fs');
           const worker=JSON.parse(fs.readFileSync('/tmp/worker-health.json','utf8'));
