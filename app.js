@@ -455,19 +455,21 @@ const server=http.createServer(async(req,res)=>{
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
       if(a.status!=='published')return send(res,400,'فقط خبر منتشرشده قابل ارسال است.');
-      try{await articleTools.dispatchAndPersist(a.id);}
+      try{await articleTools.dispatchAndPersist(a.id,{retry:true});}
       catch(err){console.error('social redistribution',err);}
       return redirect(res,'/admin/articles/'+a.id+'/share-kit?resent=1');
     }
     if(p==='/admin/articles/new'){
+      const submissionToken=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(String(f.submissionToken||''))?f.submissionToken:'';
+      if(submissionToken&&db.articles.some(a=>a.id===submissionToken))return redirect(res,'/admin?saved=1');
       const payload=await articleTools.articlePayload(db,f,files,{},uniqueSlug);
-      const a={id:id(),createdAt:now(),...payload,publishedAt:payload.status==='published'?now():null};
+      const a={id:submissionToken||id(),createdAt:now(),...payload,publishedAt:payload.status==='published'?now():null};
       db.articles.unshift(a);save(db);
       if(a.status==='published'){
         try{await articleTools.dispatchAndPersist(a.id);}
         catch(err){console.error('social distribution',err);}
       }
-      return redirect(res,'/admin');
+      return redirect(res,'/admin?saved=1');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
     if(m){
@@ -476,7 +478,7 @@ const server=http.createServer(async(req,res)=>{
       if(!was&&a.status==='published')a.publishedAt=now();
       save(db);
       if(!was&&a.status==='published'){
-        try{await articleTools.dispatchAndPersist(a.id);}
+        try{await articleTools.dispatchAndPersist(a.id,{retry:true});}
         catch(err){console.error('social distribution',err);}
       }
       return redirect(res,'/admin');

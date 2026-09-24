@@ -10,7 +10,15 @@ import views from "../lib/view-public.js";
 import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
 import { Resvg, initWasm } from "@resvg/resvg-wasm";
 import resvgModule from "@resvg/resvg-wasm/index_bg.wasm";
-const originalDispatchAndPersist = articleTools.dispatchAndPersist;
+import social from "../lib/social.js";
+import publishing from "../lib/publishing-state.js";
+let stateSerial=Promise.resolve();
+function withLocalState(fn){
+  const work=stateSerial.then(fn,fn);
+  stateSerial=work.catch(()=>{});
+  return work;
+}
+const uploadedMediaHashes=new Map();
 let rasterReady;
 
 const PORT = 3000;
@@ -131,7 +139,13 @@ async function ensureAppServer() {
   globalThis.setTimeout = () => 0;
   globalThis.setInterval = () => 0;
   try {
-    articleTools.dispatchAndPersist = async () => {};
+    articleTools.dispatchAndPersist = async (articleId,options={}) => {
+      const db=store.load(),a=db.articles.find(x=>x.id===articleId);
+      if(!a||a.status!=="published")return;
+      a.distributionRequest=options.retry&&a.distributionRequest?crypto.randomUUID():(a.distributionRequest||a.id+":initial");
+      a.shareKit=social.sharePackage(a);
+      store.save(db);
+    };
     await import("../app.js");
     appReady = true;
   } finally {
@@ -359,7 +373,8 @@ async function arvanRequest(method, name = null, { body = null, contentType = ""
   return fetch(url, {
     method: method.toUpperCase(),
     headers,
-    body: method.toUpperCase() === "PUT" ? payload : undefined
+    body: method.toUpperCase() === "PUT" ? payload : undefined,
+    signal: AbortSignal.timeout(45000)
   });
 }
 
@@ -672,14 +687,14 @@ async function persistBackups() {
   ensureDirs();
   const names = fs.readdirSync(BACKUP_DIR).filter(x => x.endsWith(".json")).slice(-30);
   const keep = new Set(names.map(x => "backup:" + x));
-  const existing = await env.DB.prepare("SELECT key FROM app_state WHERE key LIKE 'backup:%'").all();
+  const existing = await env.DB.prepare("SELECT key,value FROM app_state WHERE key LIKE 'backup:%'").all();
   for (const row of existing.results || []) {
     const key = String(row.key || "");
     if (!keep.has(key)) await env.DB.prepare("DELETE FROM app_state WHERE key = ?").bind(key).run();
   }
   for (const name of names) {
     const value = fs.readFileSync(path.join(BACKUP_DIR, name), "utf8");
-    await putState("backup:" + name, value);
+    if(!(existing.results||[]).some(row=>row.key==="backup:"+name&&row.value===value))await putState("backup:" + name, value);
   }
 }
 
@@ -699,6 +714,7 @@ async function hydrateState({ includeUploads = false, includeBackups = false } =
       const media = await getMedia(item.name);
       if (!media) continue;
       fs.writeFileSync(path.join(UPLOAD_DIR, path.basename(item.name)), media.data);
+      uploadedMediaHashes.set(item.name,await sha256Hex(media.data));
     }
   }
   return { dbText: dbText || "", analyticsText: analyticsText || "" };
@@ -712,7 +728,10 @@ async function uploadTempFiles() {
     const file = path.join(UPLOAD_DIR, name);
     if (!fs.statSync(file).isFile()) continue;
     const data = fs.readFileSync(file);
+    const hash=await sha256Hex(data);
+    if(uploadedMediaHashes.get(name)===hash)continue;
     await putMedia(name, data, mimeFor(name));
+    uploadedMediaHashes.set(name,hash);
     count++;
   }
   return count;
@@ -723,7 +742,8 @@ async function flushState(before, request, response) {
   const afterDbText = fs.existsSync(DB_FILE) ? fs.readFileSync(DB_FILE, "utf8") : "";
   const afterAnalyticsText = fs.existsSync(ANALYTICS_FILE) ? fs.readFileSync(ANALYTICS_FILE, "utf8") : "";
 
-  if (afterDbText && afterDbText !== before.dbText) await putState("db", afterDbText);
+  // Persist media first so a queued publication never points at missing files.
+  let committedDb=safeJson(afterDbText,{});
   if (afterAnalyticsText && afterAnalyticsText !== before.analyticsText) await putState("analytics", afterAnalyticsText);
 
   const url = new URL(request.url);
@@ -732,17 +752,21 @@ async function flushState(before, request, response) {
     response.status >= 300 && response.status < 400 &&
     String(response.headers.get("location") || "").includes("restored=1");
 
-  if (restored) await clearMedia();
+  if (restored) { await clearMedia(); uploadedMediaHashes.clear(); }
   await uploadTempFiles();
+  if (afterDbText && afterDbText !== before.dbText) {
+    committedDb=await publishing.commitChanges(env.DB,safeJson(before.dbText,{}),committedDb);
+    fs.writeFileSync(DB_FILE,JSON.stringify(committedDb),"utf8");
+  }
 
   if (before.dbText && afterDbText) {
     const oldRefs = uploadRefsFromText(before.dbText);
-    const newRefs = uploadRefsFromText(afterDbText);
+    const newRefs = uploadRefsFromText(JSON.stringify(committedDb));
     const removed = [...oldRefs].filter(x => !newRefs.has(x));
     if (removed.length) await deleteMedia(removed);
   }
 
-  return { beforeDb: safeJson(before.dbText, {}), afterDb: safeJson(afterDbText, {}) };
+  return { beforeDb: safeJson(before.dbText, {}), afterDb: committedDb };
 }
 
 function isAuthorizedMigration(request) {
@@ -1201,57 +1225,44 @@ async function publicSyncStatus() {
   };
 }
 
-async function maybeDistribute(beforeDb, afterDb) {
-  const before = new Map((beforeDb?.articles || []).map(a => [a.id, a]));
-  const newlyPublished = (afterDb?.articles || []).filter(a =>
-    a.status === "published" && before.get(a.id)?.status !== "published"
-  );
-  for (const a of newlyPublished) {
-    try {
-      if (a.autoCoverEnabled === true && (a.imageAuto === true || isFallbackSourceImage(a.image || ""))) {
-        const category = (afterDb.categories || []).find(x => x.id === a.categoryId) || {};
-        const smart = await ensureSmartCover({
-          article: a,
-          category,
-          sourceImage: a.image || "",
-          env,
-          getMedia,
-          putMedia,
-          sha256Hex
-        });
-        Object.assign(a, smart, { updatedAt: new Date().toISOString() });
-        fs.writeFileSync(DB_FILE, JSON.stringify(afterDb, null, 2), "utf8");
-        await putState("db", JSON.stringify(afterDb, null, 2));
-      }
-    } catch (err) {
-      console.error("smart-cover-publish", a.id, String(err?.message || err));
+async function prepareDistribution(a) {
+  const initial=structuredClone(a);
+  const db=safeJson(await getState("db"),{});
+  try {
+    if(a.autoCoverEnabled===true&&(a.imageAuto===true||isFallbackSourceImage(a.image||""))){
+      const category=(db.categories||[]).find(x=>x.id===a.categoryId)||{};
+      Object.assign(a,await ensureSmartCover({article:a,category,sourceImage:a.image||"",env,getMedia,putMedia,sha256Hex}));
     }
-    if (a.imageAuto && /\.svg(?:\?|$)/i.test(a.image || "") && !a.videoUrl) {
-      try {
-        const name = path.basename(new URL(a.image, "https://nabzesardo.ir").pathname);
-        const socialName = name.replace(/\.svg$/i, "-social.png");
-        if (!(await getMedia(socialName))) {
-          const source = await getMedia(name);
-          if (!source) throw new Error("auto-cover-source-missing");
-          rasterReady ||= initWasm(resvgModule);
-          await rasterReady;
-          const png = Buffer.from(new Resvg(source.data || source, { fitTo: { mode: "width", value: 1200 } }).render().asPng());
-          await putMedia(socialName, png, "image/png");
-          fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-          fs.writeFileSync(path.join(UPLOAD_DIR, socialName), png);
-        }
-        a.socialImage = "/uploads/" + socialName;
-        fs.writeFileSync(DB_FILE, JSON.stringify(afterDb, null, 2), "utf8");
-        await putState("db", JSON.stringify(afterDb, null, 2));
-      } catch (err) {
-        console.error("social-cover-raster", a.id, String(err?.message || err));
+    if(a.imageAuto&&/\.svg(?:\?|$)/i.test(a.image||"")&&!a.videoUrl){
+      const name=path.basename(new URL(a.image,"https://nabzesardo.ir").pathname);
+      const socialName=name.replace(/\.svg$/i,"-social.png");
+      if(!(await getMedia(socialName))){
+        const source=await getMedia(name);
+        if(!source)throw Error("auto-cover-source-missing");
+        rasterReady ||= initWasm(resvgModule);await rasterReady;
+        const png=Buffer.from(new Resvg(source.data||source,{fitTo:{mode:"width",value:1200}}).render().asPng());
+        await putMedia(socialName,png,"image/png");
       }
+      a.socialImage="/uploads/"+socialName;
     }
-    try { await originalDispatchAndPersist(a.id); } catch (err) { console.error("distribution", err); }
-  }
-  if (newlyPublished.length && fs.existsSync(DB_FILE)) {
-    await putState("db", fs.readFileSync(DB_FILE, "utf8"));
-  }
+  }catch(err){console.error("publication-cover",a.id,String(err?.message||err));}
+  await publishing.commitChanges(env.DB,{articles:[initial]},{articles:[a]});
+  return a;
+}
+async function queuePublications(db){
+  for(const a of db.articles||[])if(a.distributionRequest&&a.distributionCompletedRequest!==a.distributionRequest)await publishing.enqueue(env.DB,a);
+}
+async function drainPublications(){
+  await applyRuntimeEnv();
+  await queuePublications(safeJson(await getState("db"),{}));
+  await publishing.drain(env.DB,{
+    read:async id=>(safeJson(await getState("db"),{}).articles||[]).find(a=>a.id===id),
+    prepare:prepareDistribution,
+    dispatch:social.dispatch,
+    persist:async(a,patch)=>{
+      await publishing.commitChanges(env.DB,{articles:[a]},{articles:[{...a,...patch}]});
+    }
+  });
 }
 
 async function handleCloudflareAdminLogin(request) {
@@ -1283,7 +1294,8 @@ async function ensureCutoverBackup() {
   await putState("cutover_backup_created", "1");
 }
 
-async function handleApp(request) {
+function handleApp(request){return withLocalState(()=>handleAppSerial(request));}
+async function handleAppSerial(request) {
   const url = new URL(request.url);
   if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1" && url.pathname.startsWith("/admin")) {
     return new Response("Preview admin is disabled until migration verification is complete.", { status: 403 });
@@ -1295,7 +1307,6 @@ async function handleApp(request) {
   const response = await handleAsNodeRequest(PORT, request);
   const states = await flushState(before, request, response);
   if (includeBackups) await persistBackups();
-  await maybeDistribute(states.beforeDb, states.afterDb);
   return response;
 }
 
@@ -1380,18 +1391,17 @@ export default {
     if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1") {
       return;
     }
-    const before = await hydrateState({ includeBackups: true });
-    if (isPrimary()) {
-      await applyRuntimeEnv();
-      try { await migrateLegacyMediaBatch(10); }
-      catch (err) { console.error("arvan-migrate-batch", String(err?.message || err)); }
-      try { await createDailyArvanBackup(); }
-      catch (err) { console.error("arvan-backup-tick", String(err?.message || err)); }
+    await withLocalState(async()=>{
+      const before=await hydrateState({includeBackups:true});
+      await ensureAppServer();
+      await articleTools.schedulerTick();
+      const states=await flushState(before,new Request("https://nabzesardo.ir/__cron"),new Response(null,{status:204}));
+      await persistBackups();
+    });
+    await drainPublications();
+    if(isPrimary()){
+      try{await migrateLegacyMediaBatch(10);}catch(err){console.error("arvan-migrate-batch",String(err?.message||err));}
+      try{await createDailyArvanBackup();}catch(err){console.error("arvan-backup-tick",String(err?.message||err));}
     }
-    await articleTools.schedulerTick();
-    const fakeReq = new Request("https://nabzesardo.ir/__cron", { method: "GET" });
-    const fakeRes = new Response(null, { status: 204 });
-    await flushState(before, fakeReq, fakeRes);
-    await persistBackups();
   }
 };

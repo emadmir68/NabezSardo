@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         btn.textContent='در حال ذخیره خبر…';
       }
       if(status){
-        status.textContent='در حال ارسال و ذخیره خبر…';
+        status.textContent='در حال ذخیره خبر و فایل‌ها… ارسال شبکه‌ها پس از ذخیره انجام می‌شود.';
         status.classList.add('is-saving');
       }
     });
@@ -242,3 +242,4 @@ document.addEventListener('DOMContentLoaded',()=>{
     select.addEventListener('change',refresh);refresh();
   });
 });
+window.addEventListener('pageshow',()=>{document.querySelectorAll('form[data-rich-form]').forEach(form=>{delete form.dataset.saving;const btn=form.querySelector('[data-save-news]');if(btn){btn.disabled=false;btn.textContent=btn.dataset.originalText||'ذخیره خبر';}const status=form.querySelector('[data-save-status]');if(status){status.textContent='';status.classList.remove('is-saving');}});});
