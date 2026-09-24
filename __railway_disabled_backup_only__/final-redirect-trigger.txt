@@ -1,1 +1,1 @@
-Final Railway decommission redirect trigger. Live production remains Cloudflare-only.
+Final Railway decommission redirect trigger v2. Health returns 200; all public paths redirect permanently to https://nabzesardo.ir.
