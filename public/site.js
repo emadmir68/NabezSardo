@@ -118,8 +118,10 @@ document.addEventListener('DOMContentLoaded',()=>{
     const copyMessageBtn=articleRoot.querySelector('[data-article-copy-message]');
     const title=articleRoot.dataset.articleTitle||document.title;
     const lead=(articleRoot.dataset.articleLead||'').replace(/\s+/g,' ').trim();
+    const shortLead=lead.length>150?lead.slice(0,147).replace(/[\s،,:؛.!؟-]+$/,'')+'…':lead;
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
     const shareImageUrl=articleRoot.dataset.articleImage?new URL(articleRoot.dataset.articleImage,location.origin).href:'';
+    const shareImageKind=articleRoot.dataset.articleImageKind||(/^.*auto-cover/i.test(articleRoot.dataset.articleImage||'')?'auto':shareImageUrl?'real':'none');
 
     // Keep the readable SEO URL as canonical, but show visitors a compact permanent URL
     // in the browser so manual copy/paste can never expose the encoded Persian slug.
@@ -132,7 +134,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     const shareText=()=>{
       const lines=['📰 '+title];
-      if(lead)lines.push(lead);
+      if(shortLead)lines.push(shortLead);
       lines.push('ادامه خبر در نبض ساردو 👇',shareUrl);
       return lines.join('\n\n');
     };
@@ -186,7 +188,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
 
     const fetchShareImageFile=async()=>{
-      if(!shareImageUrl)return null;
+      if(!shareImageUrl||shareImageKind!=='real')return null;
       const controller=new AbortController();
       const timer=setTimeout(()=>controller.abort(),12000);
       try{
@@ -203,18 +205,18 @@ document.addEventListener('DOMContentLoaded',()=>{
     };
 
     const renderBrandedShareCard=async(sourceFile)=>{
-      if(!sourceFile||typeof createImageBitmap!=='function')return sourceFile;
       let bitmap=null;
       try{
-        bitmap=await createImageBitmap(sourceFile);
+        if(sourceFile&&typeof createImageBitmap==='function')bitmap=await createImageBitmap(sourceFile);
         if(document.fonts&&document.fonts.ready){
-          await Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,1200))]);
+          await Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,900))]);
         }
+
         const W=1080,H=1350;
         const canvas=document.createElement('canvas');
         canvas.width=W;canvas.height=H;
         const ctx=canvas.getContext('2d');
-        if(!ctx)return sourceFile;
+        if(!ctx)return sourceFile||null;
 
         const roundRect=(x,y,w,h,r)=>{
           const rr=Math.min(r,w/2,h/2);
@@ -224,48 +226,76 @@ document.addEventListener('DOMContentLoaded',()=>{
         };
         const wrap=(value,maxWidth,maxLines)=>{
           const words=String(value||'').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
-          const lines=[];let line='';
+          const lines=[];let line='';let used=0;
           for(const word of words){
-            const next=line?word+' '+line:word;
-            if(ctx.measureText(next).width<=maxWidth){line=next;continue;}
+            const next=line?line+' '+word:word;
+            if(ctx.measureText(next).width<=maxWidth){line=next;used++;continue;}
             if(line)lines.push(line);
-            line=word;
+            line=word;used++;
             if(lines.length>=maxLines-1)break;
           }
           if(line&&lines.length<maxLines)lines.push(line);
-          return lines;
+          if(used<words.length&&lines.length){
+            let last=lines[lines.length-1];
+            while(last&&ctx.measureText(last+'…').width>maxWidth)last=last.slice(0,-1).trim();
+            lines[lines.length-1]=last+'…';
+          }
+          return lines.slice(0,maxLines);
         };
 
-        ctx.fillStyle='#0b0d12';ctx.fillRect(0,0,W,H);
-        const scale=Math.max(W/bitmap.width,H/bitmap.height);
-        const sw=W/scale,sh=H/scale;
-        ctx.drawImage(bitmap,Math.max(0,(bitmap.width-sw)/2),Math.max(0,(bitmap.height-sh)/2),sw,sh,0,0,W,H);
+        // Real editorial photo: full-bleed. Automatic/no-photo: clean branded fallback.
+        if(bitmap&&shareImageKind==='real'){
+          ctx.fillStyle='#0b0d12';ctx.fillRect(0,0,W,H);
+          const scale=Math.max(W/bitmap.width,H/bitmap.height);
+          const sw=W/scale,sh=H/scale;
+          const sx=Math.max(0,(bitmap.width-sw)/2),sy=Math.max(0,(bitmap.height-sh)/2);
+          ctx.drawImage(bitmap,sx,sy,sw,sh,0,0,W,H);
+          const shade=ctx.createLinearGradient(0,430,0,H);
+          shade.addColorStop(0,'rgba(7,9,14,0)');
+          shade.addColorStop(.55,'rgba(7,9,14,.10)');
+          shade.addColorStop(.76,'rgba(7,9,14,.72)');
+          shade.addColorStop(1,'rgba(7,9,14,.97)');
+          ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
+        }else{
+          const bg=ctx.createLinearGradient(0,0,W,H);
+          bg.addColorStop(0,'#171b24');
+          bg.addColorStop(.56,'#0e1118');
+          bg.addColorStop(1,'#080a0f');
+          ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+          const glow=ctx.createRadialGradient(850,220,20,850,220,620);
+          glow.addColorStop(0,'rgba(245,166,35,.20)');
+          glow.addColorStop(1,'rgba(245,166,35,0)');
+          ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+          ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=1;
+          for(let x=-H;x<W+H;x+=90){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x-H,H);ctx.stroke();}
+        }
 
-        const shade=ctx.createLinearGradient(0,380,0,H);
-        shade.addColorStop(0,'rgba(7,9,14,.02)');
-        shade.addColorStop(.52,'rgba(7,9,14,.16)');
-        shade.addColorStop(.74,'rgba(7,9,14,.74)');
-        shade.addColorStop(1,'rgba(7,9,14,.97)');
-        ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
-
-        ctx.fillStyle='rgba(10,12,17,.76)';
-        roundRect(692,54,316,78,24);ctx.fill();
+        // Compact newsroom brand pill.
+        ctx.fillStyle='rgba(9,11,16,.78)';
+        roundRect(686,54,322,78,24);ctx.fill();
         ctx.beginPath();ctx.arc(968,93,9,0,Math.PI*2);ctx.fillStyle='#f5a623';ctx.fill();
         ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';
         ctx.fillStyle='#fff';ctx.font='700 32px Tahoma, Arial, sans-serif';
         ctx.fillText('نبض ساردو',940,95);
 
+        // Two-line headline only.
         ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='alphabetic';
-        ctx.fillStyle='#fff';ctx.font='700 60px Tahoma, Arial, sans-serif';
-        let y=900;
-        for(const line of wrap(title,920,3)){ctx.fillText(line,990,y);y+=80;}
+        ctx.fillStyle='#fff';ctx.font='700 58px Tahoma, Arial, sans-serif';
+        const titleLines=wrap(title,920,2);
+        const titleStart=bitmap&&shareImageKind==='real'?1010:610;
+        let y=titleStart;
+        for(const line of titleLines){ctx.fillText(line,990,y);y+=78;}
 
-        if(lead){
-          y+=8;ctx.fillStyle='rgba(255,255,255,.88)';
-          ctx.font='400 33px Tahoma, Arial, sans-serif';
-          for(const line of wrap(lead,920,2)){ctx.fillText(line,990,y);y+=50;}
+        // One-line lead only.
+        if(shortLead){
+          y+=14;
+          ctx.fillStyle='rgba(255,255,255,.84)';
+          ctx.font='400 31px Tahoma, Arial, sans-serif';
+          const leadLine=wrap(shortLead,920,1)[0];
+          if(leadLine)ctx.fillText(leadLine,990,y);
         }
 
+        // Fixed footer signature.
         ctx.fillStyle='#f5a623';roundRect(72,1256,936,3,2);ctx.fill();
         ctx.fillStyle='rgba(255,255,255,.92)';
         ctx.font='500 27px Tahoma, Arial, sans-serif';
@@ -276,10 +306,10 @@ document.addEventListener('DOMContentLoaded',()=>{
           new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.91)),
           new Promise(resolve=>setTimeout(()=>resolve(null),1800))
         ]);
-        return blob?new File([blob],'nabez-sardo-card.jpg',{type:'image/jpeg',lastModified:Date.now()}):sourceFile;
+        return blob?new File([blob],'nabez-sardo-card.jpg',{type:'image/jpeg',lastModified:Date.now()}):(sourceFile||null);
       }catch(err){
         console.warn('share card render fallback',err);
-        return sourceFile;
+        return sourceFile||null;
       }finally{
         if(bitmap&&bitmap.close)bitmap.close();
       }
@@ -294,12 +324,10 @@ document.addEventListener('DOMContentLoaded',()=>{
       // Never disable the button. First prepare the original photo quickly,
       // then upgrade it to the branded card in the background.
       fetchShareImageFile().then(file=>{
-        if(!file)return;
-        if(navigator.canShare&&!navigator.canShare({files:[file]}))return;
-        preparedShareImageFile=file;
-        renderBrandedShareCard(file).then(card=>{
-          if(card&&(!navigator.canShare||navigator.canShare({files:[card]})))preparedShareImageFile=card;
-        }).catch(()=>{});
+        if(file&&(!navigator.canShare||navigator.canShare({files:[file]})))preparedShareImageFile=file;
+        return renderBrandedShareCard(file);
+      }).then(card=>{
+        if(card&&(!navigator.canShare||navigator.canShare({files:[card]})))preparedShareImageFile=card;
       }).catch(err=>console.warn('share image preload failed',err));
     }
 
