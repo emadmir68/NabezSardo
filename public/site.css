@@ -5663,3 +5663,124 @@ main .latest-grid .card > .card-media video{object-fit:contain!important;object-
     font-size:15px;
   }
 }
+
+/* ===== Short News typography refinement v4 ===== */
+.home-short-news-section,
+.home-short-news-section *{
+  font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
+}
+.home-short-news-head h2{
+  font-weight:850;
+  letter-spacing:-.45px;
+  color:#f4f0e8;
+}
+.home-short-news-head p{
+  max-width:560px;
+  color:#8f98a4;
+  font-size:10.5px;
+  font-weight:500;
+  line-height:1.9;
+  letter-spacing:-.08px;
+}
+.home-short-news-copy h3{
+  margin:0;
+  font-size:16.5px;
+  font-weight:780;
+  line-height:1.82;
+  letter-spacing:-.22px;
+  text-wrap:balance;
+}
+.home-short-news-copy h3 a{
+  color:#eeeae3;
+}
+.home-short-news-copy p{
+  color:#7f8894;
+  font-size:10.5px;
+  font-weight:450;
+  line-height:1.8;
+}
+.home-short-news-time{
+  color:#737d89;
+  font-size:9.5px;
+  font-weight:500;
+}
+.home-short-news-index{
+  min-width:auto;
+  height:auto;
+  padding:3px 0 0;
+  border:0;
+  border-radius:0;
+  background:none;
+  color:#b99150;
+  font-size:9px;
+  font-weight:800;
+  opacity:.88;
+}
+.home-short-news-open{
+  font-family:Tahoma,Arial,sans-serif;
+}
+
+@media(max-width:760px){
+  .home-short-news-head{
+    padding:15px 14px 12px;
+  }
+  .home-short-news-head h2{
+    font-size:22px;
+    line-height:1.45;
+    letter-spacing:-.35px;
+  }
+  .home-short-news-head p{
+    margin-top:1px;
+    font-size:9.5px;
+    line-height:1.85;
+  }
+  .home-short-news-head .more{
+    min-height:29px;
+    padding:5px 9px;
+    font-size:8.5px;
+    font-weight:750;
+  }
+  .home-short-news-row{
+    grid-template-columns:minmax(0,1fr) 31px;
+    grid-template-areas:
+      "time open"
+      "copy open";
+    padding:11px 11px 12px;
+  }
+  .home-short-news-time{
+    font-size:8.8px;
+    line-height:1.5;
+  }
+  .home-short-news-copy{
+    grid-template-columns:24px minmax(0,1fr);
+    gap:7px;
+    align-items:start;
+  }
+  .home-short-news-index{
+    padding-top:5px;
+    font-size:8.3px;
+  }
+  .home-short-news-copy h3{
+    font-size:14.4px;
+    font-weight:760;
+    line-height:1.95;
+    letter-spacing:-.16px;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+  }
+  .home-short-news-open{
+    width:30px;
+    height:30px;
+    border-radius:10px;
+    font-size:13px;
+  }
+}
+
+@media(max-width:420px){
+  .home-short-news-copy h3{
+    font-size:14px;
+    line-height:1.92;
+  }
+}
