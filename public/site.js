@@ -157,10 +157,23 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(label)label.innerHTML='<span class="lang-fa">کپی لینک کوتاه</span><span class="lang-en">Copy short link</span>';
       copyBtn.addEventListener('click',copyArticleLink);
     }
-    if(shareBtn)shareBtn.addEventListener('click',async()=>{
+    const copySharePayload=async()=>{
+      const value=shareText();
       try{
-        if(!navigator.share){await copyArticleLink();return;}
-        await navigator.share({title,text:shareText()});
+        if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(value);
+        else{
+          const ta=document.createElement('textarea');ta.value=value;ta.style.position='fixed';ta.style.opacity='0';
+          document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+        }
+        return true;
+      }catch(err){console.warn('article share copy failed',err);return false;}
+    };
+    if(shareBtn)shareBtn.addEventListener('click',async()=>{
+      const payload=shareText();
+      await copySharePayload();
+      try{
+        if(!navigator.share)return;
+        await navigator.share({title,text:payload});
       }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
     });
   }
