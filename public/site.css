@@ -6296,3 +6296,15 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
   .breaking .breaking-track{animation:none!important}
   .breaking .breaking-marquee{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
 }
+
+/* Let Persian headlines lead the top-stories section. */
+.front-lead h2{font-size:clamp(25px,2.6vw,32px);line-height:1.48}
+.front-lead p{font-size:13px;line-height:1.7}
+.front-brief h3{font-size:15px;line-height:1.5}
+.front-brief .news-date{font-size:11px;color:#aeb5bf}
+.frontpage-head .eyebrow,.home-short-news-head .eyebrow,.article-newsroom-mark{font-size:10px;opacity:.48}
+@media(max-width:760px){
+  .front-lead h2{font-size:20px!important;line-height:1.48!important}
+  .front-brief h3{font-size:14px!important;line-height:1.5!important}
+  .front-brief .news-date{font-size:10px!important}
+}
