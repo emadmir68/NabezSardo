@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareText=()=>{
       const lines=['📰 '+title];
       if(lead)lines.push(lead);
-      lines.push('📌 ادامه خبر در نبض ساردو');
+      lines.push('📌 ادامه خبر را از لینک زیر در سایت نبض ساردو بخوانید:');
       return lines.join('\n\n');
     };
     const copyArticleLink=async()=>{
