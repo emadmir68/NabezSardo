@@ -1275,11 +1275,40 @@ async function handleApp(request) {
   return response;
 }
 
+let marketSnapshot = null;
+let marketExpiry = 0;
+async function marketRates() {
+  const token = String(env.TINDEX_API_TOKEN || "").trim();
+  if (!token) return Response.json({ available: false }, { status: 503, headers: { "cache-control": "no-store" } });
+  if (marketSnapshot && Date.now() < marketExpiry) return Response.json(marketSnapshot, { headers: { "cache-control": "public, max-age=60" } });
+  try {
+    const upstream = await fetch("https://tindex.app/api/public/boards", {
+      headers: { authorization: `Bearer ${token}`, accept: "application/json" },
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!upstream.ok) throw new Error("Market feed unavailable");
+    const payload = await upstream.json();
+    const boards = payload?.data;
+    if (payload?.success !== true || !Array.isArray(boards)) throw new Error("Invalid market feed");
+    const find = (key, slug) => boards.find(board => board.key === key)?.rows?.find(row => row.slug === slug);
+    const usd = find("currency", "USD-EXCHANGE-RATE");
+    const gold = find("gold", "GOLD-18K");
+    const valid = item => item && Number.isFinite(Number(item.price)) && Number(item.price) > 0 && Number.isFinite(Date.parse(item.updated_at)) && Date.now() - Date.parse(item.updated_at) < 30 * 60 * 1000 && Date.parse(item.updated_at) <= Date.now() + 60000;
+    if (!valid(usd) || !valid(gold)) throw new Error("Stale market feed");
+    marketSnapshot = { available: true, source: "Tindex", unit: "تومان", usd: Number(usd.price), gold: Number(gold.price), updatedAt: [usd.updated_at, gold.updated_at].sort()[0] };
+    marketExpiry = Date.now() + 60000;
+    return Response.json(marketSnapshot, { headers: { "cache-control": "public, max-age=60" } });
+  } catch {
+    return Response.json({ available: false }, { status: 503, headers: { "cache-control": "no-store" } });
+  }
+}
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const p = decodeURIComponent(url.pathname);
 
+    if (p === "/api/market-rates" && request.method === "GET") return marketRates();
     if (p === "/health" && request.method === "GET") {
       return Response.json({
         ok: true,

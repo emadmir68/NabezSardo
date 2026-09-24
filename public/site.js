@@ -43,6 +43,30 @@ document.addEventListener('DOMContentLoaded',()=>{
     new MutationObserver(()=>{if(liveViewsValue!==null)paintLiveViews(liveViewsValue,false)}).observe(root,{attributes:true,attributeFilter:['data-lang']});
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshLiveViews();});
   }
+  const marketBar=document.querySelector('[data-market-rates]');
+  if(marketBar){
+    const status=marketBar.querySelector('[data-rate-status]');
+    const refreshMarket=async()=>{
+      if(document.visibilityState==='hidden')return;
+      try{
+        const response=await fetch('/api/market-rates',{cache:'no-store'});
+        if(!response.ok)throw new Error('unavailable');
+        const data=await response.json();
+        if(!data.available||!Number.isFinite(data.usd)||!Number.isFinite(data.gold))throw new Error('invalid');
+        const fmt=n=>new Intl.NumberFormat(document.documentElement.dataset.lang==='en'?'en-US':'fa-IR').format(n);
+        marketBar.querySelector('[data-rate="usd"]').textContent=fmt(data.usd);
+        marketBar.querySelector('[data-rate="gold"]').textContent=fmt(data.gold);
+        const time=new Intl.DateTimeFormat('fa-IR',{timeZone:'Asia/Tehran',hour:'2-digit',minute:'2-digit'}).format(new Date(data.updatedAt));
+        status.textContent='تومان · به‌روزرسانی '+time+' · '+data.source;
+      }catch{
+        marketBar.querySelectorAll('[data-rate]').forEach(el=>el.textContent='—');
+        status.textContent='قیمت فعلاً در دسترس نیست';
+      }
+    };
+    refreshMarket();
+    setInterval(refreshMarket,60000);
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshMarket()});
+  }
   // Automatic page reloads are intentionally disabled. Deploys must never refresh readers' pages.
   const themeKey='nabez-theme';
   const savedTheme=localStorage.getItem(themeKey)||'gold';

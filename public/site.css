@@ -6222,3 +6222,8 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
     line-height:1.65!important;
   }
 }
+
+/* Independent market badge; no header or hero selectors are modified. */
+.market-rates{position:fixed;z-index:25;left:18px;bottom:18px;display:flex;align-items:center;gap:11px;max-width:min(720px,calc(100vw - 36px));padding:10px 14px;border:1px solid rgba(221,184,109,.45);border-radius:15px;background:rgba(12,16,22,.94);color:#f3efe8;box-shadow:0 14px 40px rgba(0,0,0,.35);backdrop-filter:blur(14px);font-size:13px}
+.market-rates__title{color:#e8c581;font-weight:800}.market-rates__item{white-space:nowrap}.market-rates__item b{font-variant-numeric:tabular-nums;color:#fff}.market-rates small{color:#aeb5c1;font-size:11px;white-space:nowrap}
+@media(max-width:700px){.market-rates{position:static;max-width:none;margin:10px auto 0;width:min(1240px,92%);flex-wrap:wrap;gap:6px 14px}.market-rates__title{width:100%}.market-rates small{width:100%}}
