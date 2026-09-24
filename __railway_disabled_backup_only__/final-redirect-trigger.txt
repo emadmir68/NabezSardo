@@ -1,0 +1,1 @@
+Final Railway decommission redirect trigger. Live production remains Cloudflare-only.
