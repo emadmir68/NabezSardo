@@ -94,6 +94,28 @@ jobs:
           fs.writeFileSync('/tmp/short-path.txt',cards[0][2]);
           fs.writeFileSync('/tmp/short-title.txt',cards[0][1]);
           NODE
+          node <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('/tmp/archive.html','utf8');
+          const cards=[...html.matchAll(/<article\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
+          if(!cards.length)throw new Error('No published news cards found in archive');
+          const byPath=new Map();
+          const byTitle=new Map();
+          for(const [,title,path] of cards){
+            if(byPath.has(path)&&byPath.get(path)!==title){
+              throw new Error('Compact URL collision across published news: '+path);
+            }
+            if(byTitle.has(title)&&byTitle.get(title)!==path){
+              // duplicate titles are allowed, but each card still needs its own path
+            }
+            byPath.set(path,title);
+            byTitle.set(title,path);
+          }
+          if(byPath.size!==cards.length){
+            throw new Error('Published news contains duplicate compact URLs');
+          }
+          console.log('published_compact_links='+cards.length);
+          NODE
           short_path=$(cat /tmp/short-path.txt)
           echo "short_article_path=$short_path"
           case "$short_path" in
