@@ -46,6 +46,8 @@ jobs:
           for p in local/sardouiyeh local/jiroft local/anbarabad local/kahnuj local/south-kerman; do
             code=$(curl -L -sS -o /tmp/local.html -w '%{http_code}' --max-time 30 "$base/$p")
             echo "$p status=$code bytes=$(wc -c </tmp/local.html)"
-            test "$code" = 200 || test "$code" = 404
+            test "$code" = 200
+            grep -q 'rel="canonical"' /tmp/local.html
+            grep -q 'application/ld+json' /tmp/local.html
           done
           curl -sS -o /dev/null -w 'home_ttfb=%{time_starttransfer} home_total=%{time_total}\n' --max-time 30 "$base/"
