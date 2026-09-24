@@ -965,8 +965,16 @@ input[type="file"]{overflow:hidden}
 
 /* Compact overview on phones: actions and numbers precede the optional report. */
 .admin-nav-hint{display:none}
+.admin-mobile-navigation{display:none}
 @media(max-width:760px){
-  .admin-sidebar{position:sticky!important;top:0!important}
+  .admin-sidebar{position:relative!important;top:auto!important}
+  .admin-sidebar>.admin-sidebar-nav,.admin-sidebar>.admin-nav-hint{display:none!important}
+  .admin-mobile-navigation{display:block;border:1px solid #343a43;border-radius:12px;background:#151a20}
+  .admin-mobile-navigation summary{list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:46px;padding:10px 14px;color:#f2eee8;font-size:15px;font-weight:800;cursor:pointer}
+  .admin-mobile-navigation summary::-webkit-details-marker{display:none}
+  .admin-mobile-navigation summary span{color:#c7a66e;font-size:11px;font-weight:600}
+  .admin-mobile-navigation nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px;border-top:1px solid #343a43}
+  .admin-mobile-navigation nav a{display:flex;align-items:center;min-height:42px;padding:8px 10px;border-radius:9px;background:#20262e;color:#e5e5e7;text-decoration:none;font-size:12px}
   .admin-sidebar-nav{padding-bottom:5px!important}
   .admin-sidebar-nav a{font-size:12px!important;min-height:42px!important}
   .admin-nav-hint{display:block;margin-top:4px;color:#b7bec9;font-size:11px;text-align:center}
