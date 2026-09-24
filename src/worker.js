@@ -1235,8 +1235,10 @@ async function maybeDistribute(beforeDb, afterDb) {
           if (!source) throw new Error("auto-cover-source-missing");
           rasterReady ||= initWasm(resvgModule);
           await rasterReady;
-          const png = new Resvg(source.data || source, { fitTo: { mode: "width", value: 1200 } }).render().asPng();
-          await putMedia(socialName, Buffer.from(png), "image/png");
+          const png = Buffer.from(new Resvg(source.data || source, { fitTo: { mode: "width", value: 1200 } }).render().asPng());
+          await putMedia(socialName, png, "image/png");
+          fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+          fs.writeFileSync(path.join(UPLOAD_DIR, socialName), png);
         }
         a.socialImage = "/uploads/" + socialName;
         fs.writeFileSync(DB_FILE, JSON.stringify(afterDb, null, 2), "utf8");
@@ -1303,7 +1305,8 @@ export default {
     const p = decodeURIComponent(url.pathname);
 
     if (p === "/__social-cover-test" && request.method === "POST" && isPrimary()) {
-      const flag = "one_time_social_cover_test_20260924";
+      const rubikaOnly = url.searchParams.get("rubika_only") === "1";
+      const flag = rubikaOnly ? "one_time_social_cover_rubika_retry_20260924" : "one_time_social_cover_test_20260924";
       if (await getState(flag)) return Response.json({ ok: false, reason: "already-run" }, { status: 409 });
       await putState(flag, "started");
       try {
@@ -1317,9 +1320,12 @@ export default {
         rasterReady ||= initWasm(resvgModule);
         await rasterReady;
         const pngName = name.replace(/\.svg$/i, "-social.png");
-        if (!(await getMedia(pngName))) await putMedia(pngName, Buffer.from(new Resvg(source.data || source).render().asPng()), "image/png");
+        const png = Buffer.from(new Resvg(source.data || source).render().asPng());
+        if (!(await getMedia(pngName))) await putMedia(pngName, png, "image/png");
+        fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+        fs.writeFileSync(path.join(UPLOAD_DIR, pngName), png);
         const { default: social } = await import("../lib/social.js");
-        const result = await social.dispatch({ ...original, title: "آزمایش قالب خودکار | " + original.title, lead: "این پیام برای بررسی ارسال عکس، لینک و قالب خبر نبض ساردو است.", videoUrl: "", image: "/uploads/" + pngName, socialImage: "/uploads/" + pngName, socialTelegram: true, socialRubika: true, socialWhatsApp: false });
+        const result = await social.dispatch({ ...original, title: "آزمایش قالب خودکار | " + original.title, lead: "این پیام برای بررسی ارسال عکس، لینک و قالب خبر نبض ساردو است.", videoUrl: "", image: "/uploads/" + pngName, socialImage: "/uploads/" + pngName, socialTelegram: !rubikaOnly, socialRubika: true, socialWhatsApp: false });
         await putState(flag, JSON.stringify(result));
         return Response.json({ ok: true, result });
       } catch (err) {
