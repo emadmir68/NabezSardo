@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     const shareBtn=articleRoot.querySelector('[data-article-share]');
     const copyBtn=articleRoot.querySelector('[data-article-copy]');
+    const copyMessageBtn=articleRoot.querySelector('[data-article-copy-message]');
     const title=articleRoot.dataset.articleTitle||document.title;
     const lead=(articleRoot.dataset.articleLead||'').replace(/\s+/g,' ').trim();
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
@@ -168,6 +169,19 @@ document.addEventListener('DOMContentLoaded',()=>{
         return true;
       }catch(err){console.warn('article share copy failed',err);return false;}
     };
+    if(copyMessageBtn)copyMessageBtn.addEventListener('click',async()=>{
+      const ok=await copySharePayload();
+      if(ok){
+        copyMessageBtn.classList.add('is-copied');
+        const label=copyMessageBtn.querySelector('[data-copy-message-label]');
+        if(label)label.textContent=root.dataset.lang==='en'?'Ready message copied':'متن آماده کپی شد';
+        setTimeout(()=>{
+          copyMessageBtn.classList.remove('is-copied');
+          const label2=copyMessageBtn.querySelector('[data-copy-message-label]');
+          if(label2)label2.innerHTML='<span class="lang-fa">کپی متن آماده</span><span class="lang-en">Copy ready message</span>';
+        },1700);
+      }
+    });
     if(shareBtn)shareBtn.addEventListener('click',async()=>{
       const payload=shareText();
       await copySharePayload();
