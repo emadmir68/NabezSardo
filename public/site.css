@@ -5400,3 +5400,5 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
     grid-template-columns:96px minmax(0,1fr)!important;
   }
 }
+
+/* production responsive audit trigger 2026-09-24 */
