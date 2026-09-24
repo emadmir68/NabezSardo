@@ -105,10 +105,15 @@ jobs:
             echo "Missing social preview image"
             exit 1
           fi
-          image_code=$(curl -A "$META_UA" -sS -o /tmp/og-image.bin -w '%{http_code}' --max-time 45 "$og_image")
-          echo "social_preview_image=$og_image status=$image_code"
+          case "$og_image" in
+            *.svg|*.svg\?*) echo "Social preview image must be raster, got SVG: $og_image"; exit 1 ;;
+          esac
+          image_code=$(curl -A "$META_UA" -sS -D /tmp/og-image.headers -o /tmp/og-image.bin -w '%{http_code}' --max-time 45 "$og_image")
+          image_type=$(tr -d '\r' < /tmp/og-image.headers | awk -F': ' 'tolower($1)=="content-type"{print tolower($2)}' | tail -n1)
+          echo "social_preview_image=$og_image status=$image_code type=$image_type"
           test "$image_code" = 200
           test -s /tmp/og-image.bin
+          echo "$image_type" | grep -Eq '^image/(png|jpeg|jpg|webp|gif)'
 
           node <<'NODE'
           const fs=require('fs');
