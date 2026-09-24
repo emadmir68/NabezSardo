@@ -11,6 +11,7 @@ on:
       - 'public/site.css'
       - 'public/logo.svg'
       - 'src/worker.js'
+      - '.github/workflows/cloudflare-deploy.yml'
       - '.github/workflows/seo-live-audit.yml'
 
 permissions:
