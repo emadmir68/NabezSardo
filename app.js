@@ -7,6 +7,7 @@ const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullB
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
+const {shortArticleCode}=require('./lib/view-common');
 
 const PORT=Number(process.env.PORT||3000);
 const IS_CLOUDFLARE=process.env.CLOUDFLARE_WORKER==='1';
@@ -314,9 +315,12 @@ const server=http.createServer(async(req,res)=>{
 
   m=p.match(/^\/n\/([^/]+)$/);
   if(req.method==='GET'&&m){
-    const a=published(db).find(x=>String(x.id)===m[1]);
+    const key=String(m[1]||'');
+    const a=published(db).find(x=>String(x.id)===key||shortArticleCode(x.id)===key);
     if(!a)return send(res,404,'خبر یافت نشد');
-    return permanentRedirect(res,'/news/'+encodeURIComponent(a.slug));
+    analytics.track(req,p);
+    const viewCookie=trackView(req,db,a);
+    return send(res,200,views.article(db,a),undefined,viewCookie?{'Set-Cookie':viewCookie}:{});
   }
 
   m=p.match(/^\/news\/(.+)$/);
