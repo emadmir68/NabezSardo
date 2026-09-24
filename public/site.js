@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareText=()=>{
       const lines=['📰 '+title];
       if(lead)lines.push(lead);
-      lines.push('📌 ادامه خبر را از لینک زیر در سایت نبض ساردو بخوانید:');
+      lines.push('📌 ادامه خبر را از لینک زیر در سایت نبض ساردو بخوانید:','🔗 '+shareUrl);
       return lines.join('\n\n');
     };
     const copyArticleLink=async()=>{
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(shareBtn)shareBtn.addEventListener('click',async()=>{
       try{
         if(!navigator.share){await copyArticleLink();return;}
-        await navigator.share({title,text:shareText(),url:shareUrl});
+        await navigator.share({title,text:shareText()});
       }catch(err){if(err&&err.name!=='AbortError')console.warn('article share failed',err);}
     });
   }
