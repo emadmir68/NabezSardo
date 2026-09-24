@@ -1,13 +1,13 @@
-name: Sync App to Cloudflare
+name: Sync Public Design to Cloudflare
 
 on:
   push:
     branches:
       - main
     paths:
-      - "app.js"
-      - "lib/**"
       - "public/**"
+      - "lib/view-public.js"
+      - "lib/view-common.js"
       - ".github/workflows/sync-public-design-to-cloudflare.yml"
   workflow_dispatch:
 
@@ -15,13 +15,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: sync-main-to-cloudflare
+  group: sync-main-public-to-cloudflare
   cancel-in-progress: true
 
 jobs:
-  sync-app:
+  sync-design:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 6
     steps:
       - name: Checkout Cloudflare migration branch
         uses: actions/checkout@v4
@@ -29,21 +29,19 @@ jobs:
           ref: cloudflare-migration
           fetch-depth: 0
 
-      - name: Copy shared application code from main
+      - name: Copy safe shared presentation files from main
         run: |
           set -euo pipefail
           git fetch origin main
-
-          # Keep Cloudflare-specific worker/config files intact.
-          git checkout origin/main -- app.js lib public
+          git checkout origin/main -- public lib/view-public.js lib/view-common.js
 
           if git diff --cached --quiet && git diff --quiet; then
-            echo "No shared application changes to sync."
+            echo "No public design changes to sync."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js lib public
-          git commit -m "Sync application from main to Cloudflare"
+          git add public lib/view-public.js lib/view-common.js
+          git commit -m "Sync public design from main"
           git push origin HEAD:cloudflare-migration
