@@ -1,2 +1,2 @@
-Cloudflare admin readiness recheck — 2026-09-22T17:59Z
-Railway remains online until full Cloudflare primary validation passes.
+Emergency Cloudflare redeploy after live admin reachability failure — 2026-09-24T16:15Z
+Re-run production deployment and smoke tests for nabzesardo.ir and /admin routes.
