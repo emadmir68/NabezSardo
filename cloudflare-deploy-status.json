@@ -1,0 +1,80 @@
+{
+  "testedAt": "2026-09-24T06:57:35.323Z",
+  "commit": "6cb7143932c50f696cc39d0b11a0805df464586d",
+  "workerHealth": {
+    "ok": true,
+    "name": "nabzesardo-cloudflare",
+    "primary": true,
+    "origin": "cloudflare",
+    "railwayDependency": false,
+    "cutoverMode": "cloudflare-only",
+    "storage": "arvan",
+    "time": "2026-09-24T06:57:30.156Z"
+  },
+  "siteHealth": {
+    "ok": true,
+    "name": "nabzesardo-cloudflare",
+    "primary": true,
+    "origin": "cloudflare",
+    "railwayDependency": false,
+    "cutoverMode": "cloudflare-only",
+    "storage": "arvan",
+    "time": "2026-09-24T06:57:30.437Z"
+  },
+  "cutover": {
+    "ok": true,
+    "source": "cloudflare-d1+arvan",
+    "cutoverMode": "cloudflare-only",
+    "cloudflarePrimary": true,
+    "railwayDependency": false,
+    "legacySyncEnabled": false,
+    "syncedAt": "2026-09-22T18:21:17.289Z",
+    "articles": 14,
+    "media": 19,
+    "aiCovers": 1,
+    "templateCovers": 4,
+    "fallbackCovers": 0,
+    "adminReady": true,
+    "analyticsTotal": 4030,
+    "integrationsReady": {
+      "telegram": true,
+      "rubika": true,
+      "whatsapp": false,
+      "googleVerification": true
+    },
+    "fastLoginReady": true,
+    "storage": {
+      "provider": "arvan",
+      "arvanConfigured": true,
+      "arvanAuthenticated": true,
+      "probeStatus": 200,
+      "bucket": "nabzesardo",
+      "region": "ir-thr-at1",
+      "legacyPending": 0,
+      "lastSuccessAt": "2026-09-24T06:22:45.215Z",
+      "lastError": null
+    },
+    "backup": {
+      "enabled": true,
+      "encrypted": true,
+      "retentionDays": 30,
+      "lastAt": "2026-09-24T00:01:06.311Z",
+      "object": "db-backup-2026-09-24.json.enc",
+      "bytes": 143843,
+      "lastError": null
+    },
+    "usage": {
+      "mediaObjects": 37,
+      "arvanMediaBytes": 13132767,
+      "arvanFreeTierBytes": 5368709120,
+      "arvanUsagePercentOfFreeTier": 0.24,
+      "d1TrackedBytesApprox": 1384707,
+      "d1FreeTierDatabaseLimitBytes": 524288000,
+      "d1UsagePercentApprox": 0.26
+    },
+    "primary": true,
+    "readyForRailwayShutdown": true
+  },
+  "readyForRailwayShutdown": true,
+  "problems": []
+}
