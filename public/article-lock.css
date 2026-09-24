@@ -1,0 +1,140 @@
+/*
+ * NABEZ SARDO — ARTICLE LAYOUT LOCK v1
+ * Public article typography is intentionally isolated here and loaded LAST.
+ * Keep this file scoped to .article-premium so homepage/header/hero/admin cannot regress.
+ */
+.article-premium,
+.article-premium *{box-sizing:border-box}
+
+.article-premium .article-head,
+.article-premium .article-head h1,
+.article-premium .article-deck{
+  direction:rtl!important;
+  text-align:right!important;
+  text-align-last:right!important;
+  unicode-bidi:plaintext;
+}
+
+.article-premium .article-head h1{
+  white-space:normal!important;
+  overflow-wrap:break-word;
+}
+
+.article-premium .article-reading-zone{
+  min-width:0;
+}
+
+.article-premium .article-body,
+.article-premium .article-body .lang-fa{
+  width:100%;
+  min-width:0;
+  max-width:760px;
+  direction:rtl!important;
+  text-align:right!important;
+  text-align-last:right!important;
+  unicode-bidi:plaintext;
+  color:#dedfe3!important;
+  font-family:"Noto Naskh Arabic",Tahoma,Arial,sans-serif!important;
+  font-size:18.5px!important;
+  line-height:2.05!important;
+  word-spacing:normal!important;
+  letter-spacing:normal!important;
+  overflow-wrap:break-word;
+}
+
+.article-premium .article-body .lang-fa :where(p,div,blockquote,li){
+  direction:rtl!important;
+  text-align:justify!important;
+  text-align-last:right!important;
+  text-justify:inter-word;
+  unicode-bidi:plaintext;
+  text-indent:0!important;
+  white-space:normal!important;
+  word-spacing:normal!important;
+  letter-spacing:normal!important;
+  overflow-wrap:break-word;
+  padding-inline:0!important;
+}
+
+.article-premium .article-body .lang-fa :where(p,div){
+  margin-top:0!important;
+  margin-bottom:1.15em!important;
+}
+
+.article-premium .article-body .lang-fa :where(p,div):last-child{
+  margin-bottom:0!important;
+}
+
+.article-premium .article-body .lang-fa :where(p,div):empty{
+  display:none!important;
+}
+
+.article-premium .article-body .lang-fa :where(h2,h3){
+  direction:rtl!important;
+  text-align:right!important;
+  text-align-last:right!important;
+  unicode-bidi:plaintext;
+  text-indent:0!important;
+}
+
+.article-premium .article-body .lang-fa :where(ul,ol){
+  direction:rtl!important;
+  text-align:right!important;
+  text-align-last:right!important;
+  unicode-bidi:plaintext;
+  padding-right:1.55em!important;
+  padding-left:0!important;
+  margin:0 0 1.15em!important;
+}
+
+.article-premium .article-body .lang-fa :where(span,strong,b,em,i,u){
+  direction:inherit!important;
+  text-align:inherit!important;
+  unicode-bidi:plaintext;
+}
+
+.article-premium .article-body .lang-fa img{
+  display:block;
+  max-width:100%;
+  height:auto;
+  margin:22px auto!important;
+}
+
+html[data-lang="en"] .article-premium .article-head,
+html[data-lang="en"] .article-premium .article-head h1,
+html[data-lang="en"] .article-premium .article-deck,
+html[data-lang="en"] .article-premium .article-body,
+html[data-lang="en"] .article-premium .article-body .lang-en{
+  direction:ltr!important;
+  text-align:left!important;
+  text-align-last:left!important;
+}
+
+html[data-lang="en"] .article-premium .article-body .lang-en :where(p,div,blockquote,li){
+  direction:ltr!important;
+  text-align:justify!important;
+  text-align-last:left!important;
+}
+
+html[data-lang="en"] .article-premium .article-body .lang-en :where(h2,h3,ul,ol){
+  direction:ltr!important;
+  text-align:left!important;
+  text-align-last:left!important;
+}
+
+@media(max-width:620px){
+  .article-premium .article-reading-zone{
+    padding-inline:18px!important;
+  }
+
+  .article-premium .article-body,
+  .article-premium .article-body .lang-fa{
+    max-width:100%;
+    font-size:17px!important;
+    line-height:2.05!important;
+  }
+
+  .article-premium .article-body .lang-fa :where(p,div){
+    margin-bottom:1.1em!important;
+  }
+}
