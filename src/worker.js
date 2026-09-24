@@ -1280,6 +1280,18 @@ export default {
     const url = new URL(request.url);
     const p = decodeURIComponent(url.pathname);
 
+    if (p === "/health" && request.method === "GET") {
+      return Response.json({
+        ok: true,
+        name: "nabzesardo-cloudflare",
+        primary: isPrimary(),
+        origin: "cloudflare",
+        railwayDependency: false,
+        cutoverMode: String(env.CUTOVER_MODE || "cloudflare-only"),
+        storage: arvanConfig() ? "arvan" : "d1",
+        time: new Date().toISOString()
+      });
+    }
     if (p === "/__migration" && request.method === "GET") return migrationPage();
     if (p === "/__migration/import" && request.method === "POST") return importBackup(request);
     if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
