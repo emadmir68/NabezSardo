@@ -741,3 +741,224 @@ input[type="file"]{overflow:hidden}
     min-width:0!important;
   }
 }
+
+
+/* ===== Admin mobile viewport lock v5 — final ===== */
+@media(max-width:760px){
+  html,body{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:clip!important;
+  }
+  body>*{max-width:100%!important}
+
+  .adminbar{
+    box-sizing:border-box!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:8px!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:9px 10px!important;
+    overflow:hidden!important;
+  }
+  .adminbar .brand{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+  .adminbar .brand b,
+  .adminbar .brand small{
+    display:block!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  .adminbar>a[href="/"]{display:none!important}
+
+  .admin{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:14px 10px 38px!important;
+    overflow-x:clip!important;
+  }
+
+  .admin-dashboard-shell{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+
+  .admin-sidebar{
+    box-sizing:border-box!important;
+    position:sticky!important;
+    top:0!important;
+    z-index:30!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0 0 12px!important;
+    padding:8px!important;
+    border-radius:12px!important;
+    overflow:hidden!important;
+  }
+  .admin-sidebar-nav{
+    box-sizing:border-box!important;
+    display:flex!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    gap:6px!important;
+    padding:0!important;
+    margin:0!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-x:contain!important;
+    scrollbar-width:none!important;
+  }
+  .admin-sidebar-nav::-webkit-scrollbar{display:none!important}
+  .admin-sidebar-nav a{
+    flex:0 0 auto!important;
+    max-width:85vw!important;
+    white-space:nowrap!important;
+  }
+
+  .admin-dashboard-content,
+  .admin-dashboard-content>*,
+  .admin-overview,
+  .panel,
+  .form,
+  .editor-form,
+  .rich-editor,
+  .rich-area,
+  .image-upload,
+  .video-upload-panel,
+  .gallery-editor,
+  .analytics-dashboard,
+  .analytics-grid,
+  .analytics-card,
+  .analytics-kpis,
+  .admin-inbox-grid{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  .admin-dashboard-content{overflow-x:clip!important}
+  .admin-dashboard-content *{min-width:0}
+  .admin-overview,
+  .admin-dashboard-content>.panel{padding-inline:12px!important}
+
+  .adminrow{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    gap:10px!important;
+    overflow:hidden!important;
+  }
+  .adminrow>div{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  .adminrow>div:last-child{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:8px!important;
+  }
+  .adminrow a,
+  .adminrow button,
+  .adminrow form{
+    max-width:100%!important;
+  }
+
+  .stats,
+  .admin-summary-stats,
+  .integration-grid,
+  .analytics-kpis,
+  .analytics-grid,
+  .analytics-grid.lower,
+  .twocol{
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  .panel-head,
+  .admin-section-title,
+  .editor-heading{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  .form input,
+  .form textarea,
+  .form select,
+  .loginbox input,
+  input[type="file"],
+  .rich-font-picker select{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  .rich-toolbar{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    flex-wrap:nowrap!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  .rich-toolbar>*{flex:0 0 auto!important}
+
+  .gallery-list{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+
+  .analytics-bars{
+    width:100%!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+
+  .editor-actions{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    left:auto!important;
+    right:auto!important;
+  }
+}
+
+@media(max-width:390px){
+  .admin{padding-inline:7px!important}
+  .adminbar{padding-inline:7px!important}
+  .gallery-list{grid-template-columns:1fr!important}
+}
