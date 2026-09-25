@@ -16,6 +16,7 @@
     "PREVIEW_READONLY": "0",
     "CLOUDFLARE_PRIMARY": "1",
     "CUTOVER_MODE": "cloudflare-only",
+    "AUTO_DISTRIBUTION_ENABLED": "0",
     "CLOUDFLARE_ASSET_VERSION": "20260924-short-timeline-v4",
     "ARVAN_ENDPOINT": "https://s3.ir-thr-at1.arvanstorage.ir",
     "ARVAN_BUCKET": "nabzesardo",
