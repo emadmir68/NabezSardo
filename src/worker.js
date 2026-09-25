@@ -19,6 +19,7 @@ function withLocalState(fn){
   return work;
 }
 const uploadedMediaHashes=new Map();
+const uploadedMediaSignatures=new Map();
 let rasterReady;
 
 const PORT = 3000;
@@ -28,6 +29,10 @@ let appReady = false;
 
 function isPrimary() {
   return String(env.CLOUDFLARE_PRIMARY || "") === "1";
+}
+
+function automaticDistributionEnabled() {
+  return String(env.AUTO_DISTRIBUTION_ENABLED || "") === "1";
 }
 
 function legacyShortArticleCodeWorker(value=""){
@@ -208,8 +213,14 @@ async function ensureAppServer() {
     articleTools.dispatchAndPersist = async (articleId,options={}) => {
       const db=store.load(),a=db.articles.find(x=>x.id===articleId);
       if(!a||a.status!=="published")return;
-      a.distributionRequest=options.retry&&a.distributionRequest?crypto.randomUUID():(a.distributionRequest||a.id+":initial");
       a.shareKit=social.sharePackage(a);
+      if(!automaticDistributionEnabled()&&!options.retry){
+        a.distributionAutoPausedAt=new Date().toISOString();
+        store.save(db);
+        return;
+      }
+      a.distributionRequest=options.retry&&a.distributionRequest?crypto.randomUUID():(a.distributionRequest||a.id+":initial");
+      if(options.retry)a.distributionManualRequest=a.distributionRequest;
       store.save(db);
     };
     await import("../app.js");
@@ -384,7 +395,7 @@ function amzTimestamp(date = new Date()) {
   return date.toISOString().replace(/[:-]|\.\d{3}/g, "");
 }
 
-async function arvanRequest(method, name = null, { body = null, contentType = "" } = {}) {
+async function arvanRequest(method, name = null, { body = null, contentType = "", timeoutMs = 45000 } = {}) {
   const cfg = arvanConfig();
   if (!cfg) throw new Error("arvan-not-configured");
 
@@ -441,7 +452,7 @@ async function arvanRequest(method, name = null, { body = null, contentType = ""
     method: method.toUpperCase(),
     headers,
     body: method.toUpperCase() === "PUT" ? payload : undefined,
-    signal: AbortSignal.timeout(45000)
+    signal: AbortSignal.timeout(timeoutMs)
   });
 }
 
@@ -481,7 +492,7 @@ async function probeArvan() {
   const cfg = arvanConfig();
   if (!cfg) return { configured: false, authenticated: false, status: null };
   try {
-    const res = await arvanRequest("HEAD", null);
+    const res = await arvanRequest("HEAD", null, { timeoutMs: 5000 });
     return { configured: true, authenticated: res.ok, status: res.status };
   } catch (err) {
     return { configured: true, authenticated: false, status: null, error: String(err?.message || err).slice(0, 180) };
@@ -806,12 +817,19 @@ async function uploadTempFiles() {
   let count = 0;
   for (const name of names) {
     const file = path.join(UPLOAD_DIR, name);
-    if (!fs.statSync(file).isFile()) continue;
+    const stat=fs.statSync(file);
+    if (!stat.isFile()) continue;
+    const signature=String(stat.size)+":"+String(Math.trunc(stat.mtimeMs));
+    if(uploadedMediaSignatures.get(name)===signature)continue;
     const data = fs.readFileSync(file);
     const hash=await sha256Hex(data);
-    if(uploadedMediaHashes.get(name)===hash)continue;
+    if(uploadedMediaHashes.get(name)===hash){
+      uploadedMediaSignatures.set(name,signature);
+      continue;
+    }
     await putMedia(name, data, mimeFor(name));
     uploadedMediaHashes.set(name,hash);
+    uploadedMediaSignatures.set(name,signature);
     count++;
   }
   return count;
@@ -832,8 +850,8 @@ async function flushState(before, request, response) {
     response.status >= 300 && response.status < 400 &&
     String(response.headers.get("location") || "").includes("restored=1");
 
-  if (restored) { await clearMedia(); uploadedMediaHashes.clear(); }
-  await uploadTempFiles();
+  if (restored) { await clearMedia(); uploadedMediaHashes.clear(); uploadedMediaSignatures.clear(); }
+  if(request.method!=="GET"&&request.method!=="HEAD")await uploadTempFiles();
   if (afterDbText && afterDbText !== before.dbText) {
     committedDb=await publishing.commitChanges(env.DB,safeJson(before.dbText,{}),committedDb);
     fs.writeFileSync(DB_FILE,JSON.stringify(committedDb),"utf8");
@@ -1323,6 +1341,21 @@ async function prepareDistribution(a) {
 async function queuePublications(db){
   for(const a of db.articles||[])if(a.distributionRequest&&a.distributionCompletedRequest!==a.distributionRequest)await publishing.enqueue(env.DB,a);
 }
+async function suppressPendingAutomaticPublications(){
+  if(automaticDistributionEnabled())return false;
+  const db=safeJson(await getState("db"),{});
+  let changed=false;
+  const pausedAt=new Date().toISOString();
+  for(const a of db.articles||[]){
+    if(!a.distributionRequest||a.distributionCompletedRequest===a.distributionRequest)continue;
+    if(a.distributionManualRequest===a.distributionRequest)continue;
+    a.distributionCompletedRequest=a.distributionRequest;
+    a.distributionAutoPausedAt=pausedAt;
+    changed=true;
+  }
+  if(changed)await putState("db",JSON.stringify(db,null,2));
+  return changed;
+}
 async function drainPublications(){
   await applyRuntimeEnv();
   await queuePublications(safeJson(await getState("db"),{}));
@@ -1393,9 +1426,8 @@ async function handleAppSerial(request) {
     await ensureSocialPreviewForPath(url.pathname);
   }
   const includeUploads = request.method === "GET" && url.pathname === "/admin/backup/download";
-  const isAdmin = url.pathname.startsWith("/admin");
-  const isLogin = url.pathname === "/admin/login";
-  const includeBackups = isAdmin && !isLogin && request.method !== "GET" && request.method !== "HEAD";
+  const backupMutation = request.method === "POST" && (url.pathname === "/admin/backup/create" || url.pathname === "/admin/backup/restore");
+  const includeBackups = backupMutation;
   const includeBackupManifest = request.method === "GET" && url.pathname === "/admin";
   const before = await hydrateState({ includeUploads, includeBackups });
   if (includeBackupManifest) await hydrateBackupManifest();
@@ -1494,6 +1526,7 @@ export default {
       const states=await flushState(before,new Request("https://nabzesardo.ir/__cron"),new Response(null,{status:204}));
       await persistBackups();
     });
+    await suppressPendingAutomaticPublications();
     await drainPublications();
     if(isPrimary()){
       try{await refreshOpinionSocialWording();}catch(err){console.error("opinion-social-refresh",String(err?.message||err));}
