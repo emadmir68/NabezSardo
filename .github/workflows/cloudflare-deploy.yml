@@ -130,6 +130,17 @@ jobs:
           RUBIKA_UA='Mozilla/5.0 (compatible; RubikaBot/1.0)'
           BALE_UA='Mozilla/5.0 (compatible; BaleBot/1.0)'
 
+          require_meta() {
+            label="$1"
+            pattern="$2"
+            file="$3"
+            if ! grep -q "$pattern" "$file"; then
+              echo "Missing social metadata: $label"
+              grep -o '<meta[^>]*\(og:\|twitter:\)[^>]*>' "$file" | head -n 30 || true
+              exit 1
+            fi
+          }
+
           for agent in "$META_UA" "$INSTAGRAM_UA" "$WHATSAPP_UA" "$TELEGRAM_UA" "$RUBIKA_UA" "$BALE_UA"; do
             head_code=$(curl -A "$agent" -sS -I -o /tmp/article-head.txt -w '%{http_code}' --max-time 30 "$SITE$short_path")
             echo "crawler_head agent=$agent status=$head_code"
@@ -143,11 +154,15 @@ jobs:
             get_code=$(curl -A "$agent" -sS -o /tmp/article-get.html -w '%{http_code}' --max-time 30 "$SITE$short_path")
             echo "crawler_get agent=$agent status=$get_code"
             test "$get_code" = 200
-            grep -q 'property="og:type" content="article"' /tmp/article-get.html
-            grep -q 'property="og:title" content="[^"]\+"' /tmp/article-get.html
-            grep -q 'property="og:description" content="[^"]\+"' /tmp/article-get.html
-            grep -q 'property="og:image" content="https://nabzesardo.ir/' /tmp/article-get.html
-            grep -Fq "property=\"og:url\" content=\"$SITE$short_path\"" /tmp/article-get.html
+            require_meta "og:type" 'property="og:type" content="article"' /tmp/article-get.html
+            require_meta "og:title" 'property="og:title" content="[^"]\+"' /tmp/article-get.html
+            require_meta "og:description" 'property="og:description" content="[^"]\+"' /tmp/article-get.html
+            require_meta "og:image-local" 'property="og:image" content="https://nabzesardo.ir/' /tmp/article-get.html
+            if ! grep -Fq "property=\"og:url\" content=\"$SITE$short_path\"" /tmp/article-get.html; then
+              echo "Missing social metadata: og:url exact compact URL"
+              grep -o '<meta[^>]*property="og:url"[^>]*>' /tmp/article-get.html | head -n 5 || true
+              exit 1
+            fi
           done
 
           curl -A "$META_UA" -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
