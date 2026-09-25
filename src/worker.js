@@ -639,8 +639,8 @@ async function arvanRequest(method, name = null, { body = null, contentType = ""
   });
 }
 
-async function putArvanObject(name, data, contentType) {
-  const res = await arvanRequest("PUT", name, { body: data, contentType });
+async function putArvanObject(name, data, contentType, timeoutMs=45000) {
+  const res = await arvanRequest("PUT", name, { body: data, contentType, timeoutMs });
   if (!res.ok) {
     const detail = (await res.text().catch(() => "")).slice(0, 300);
     throw new Error("arvan-put-" + res.status + (detail ? ":" + detail : ""));
@@ -803,7 +803,7 @@ async function putMedia(name, data, contentType = mimeFor(name)) {
 
   if (arvanConfig()) {
     try {
-      await putArvanObject(safe, buf, contentType);
+      await putArvanObject(safe, buf, contentType, 15000);
       await env.DB.prepare("DELETE FROM media_chunks WHERE name = ?").bind(safe).run();
       await env.DB.prepare("DELETE FROM media_meta WHERE name = ?").bind(safe).run();
       await env.DB.prepare(
@@ -909,7 +909,7 @@ async function migrateLegacyMediaBatch(limit = 2) {
     try {
       const media = await getMedia(safe);
       if (!media || !media.data?.length) continue;
-      await putArvanObject(safe, media.data, media.contentType || mimeFor(safe));
+      await putArvanObject(safe, media.data, media.contentType || mimeFor(safe), 30000);
       await env.DB.prepare("DELETE FROM media_chunks WHERE name = ?").bind(safe).run();
       await env.DB.prepare(
         "UPDATE media_meta SET chunk_count = 0, updated_at = datetime('now') WHERE name = ?"
