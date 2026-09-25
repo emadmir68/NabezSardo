@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-09-25T04:47:46.101Z",
-  "commit": "9587c625492cf7ab14f83682229db27fd57138a0",
+  "testedAt": "2026-09-25T04:55:44.826Z",
+  "commit": "75e1135e57e3b819ec627c4d2895c7a273c4e4bb",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-25T04:47:21.453Z"
+    "time": "2026-09-25T04:55:22.974Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-25T04:47:21.737Z"
+    "time": "2026-09-25T04:55:23.200Z"
   },
   "cutover": {
     "ok": true,
@@ -35,7 +35,7 @@
     "templateCovers": 6,
     "fallbackCovers": 0,
     "adminReady": true,
-    "analyticsTotal": 4763,
+    "analyticsTotal": 4791,
     "integrationsReady": {
       "telegram": true,
       "rubika": true,
@@ -64,13 +64,13 @@
       "lastError": null
     },
     "usage": {
-      "mediaObjects": 51,
-      "arvanMediaBytes": 20151810,
+      "mediaObjects": 50,
+      "arvanMediaBytes": 18166611,
       "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 0.38,
-      "d1TrackedBytesApprox": 1498864,
+      "arvanUsagePercentOfFreeTier": 0.34,
+      "d1TrackedBytesApprox": 1471036,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.29
+      "d1UsagePercentApprox": 0.28
     },
     "primary": true,
     "readyForRailwayShutdown": true
