@@ -38,3 +38,14 @@ test('demand Story sharing stays Instagram-compatible',()=>{
   assert.match(js,/badge\.addEventListener\('click'/);
   assert.match(js,/img\.crossOrigin='anonymous'/);
 });
+
+
+test('demand/category Story cards use the same Instagram pipeline',()=>{
+  const js=fs.readFileSync('public/site.js','utf8');
+  assert.match(js,/document\.querySelectorAll\('\[data-story-card\]'\)/);
+  assert.match(js,/card\.querySelector\('\.card-story-badge'\)/);
+  assert.match(js,/openNewsStory\(card\)/);
+  assert.match(js,/makeNewsStory\(card\)/);
+  assert.match(js,/navigator\.share\(\{files:\[preparedStoryFile\],title,text:/);
+  assert.doesNotMatch(js,/\.latest-grid \[data-story-card\], \.archive-grid \[data-story-card\]/);
+});
