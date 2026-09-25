@@ -1,0 +1,36 @@
+name: Cloudflare Runtime Check
+
+on:
+  push:
+    branches:
+      - cloudflare-migration
+    paths:
+      - "src/**"
+      - "lib/**"
+      - "app.js"
+      - "wrangler.jsonc"
+      - ".github/workflows/cloudflare-runtime-check.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-runtime-check
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check worker syntax
+        run: node --input-type=module --check < src/worker.js
+      - name: Check Node bridge syntax
+        run: |
+          node --check app.js
+          node --check lib/analytics.js
+          node --check lib/store.js
