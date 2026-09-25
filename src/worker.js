@@ -777,16 +777,15 @@ async function hydrateBackupManifest() {
 async function persistBackups() {
   ensureDirs();
   const names = fs.readdirSync(BACKUP_DIR).filter(x => x.endsWith(".json")).slice(-30);
-  const keep = new Set(names.map(x => "backup:" + x));
-  const existing = await env.DB.prepare("SELECT key,value FROM app_state WHERE key LIKE 'backup:%'").all();
-  for (const row of existing.results || []) {
-    const key = String(row.key || "");
-    if (!keep.has(key)) await env.DB.prepare("DELETE FROM app_state WHERE key = ?").bind(key).run();
-  }
   for (const name of names) {
     const value = fs.readFileSync(path.join(BACKUP_DIR, name), "utf8");
-    if(!(existing.results||[]).some(row=>row.key==="backup:"+name&&row.value===value))await putState("backup:" + name, value);
+    await putState("backup:" + name, value);
   }
+  // Retention is enforced inside D1. We never hydrate or compare every historical
+  // backup during a normal request, which keeps editor saves and cron ticks light.
+  await env.DB.prepare(
+    "DELETE FROM app_state WHERE key IN (SELECT key FROM app_state WHERE key LIKE 'backup:%' ORDER BY updated_at DESC LIMIT -1 OFFSET 30)"
+  ).run();
 }
 
 async function hydrateState({ includeUploads = false, includeBackups = false } = {}) {
@@ -811,12 +810,13 @@ async function hydrateState({ includeUploads = false, includeBackups = false } =
   return { dbText: dbText || "", analyticsText: analyticsText || "" };
 }
 
-async function uploadTempFiles() {
+async function uploadTempFiles(onlyNames = null) {
   ensureDirs();
-  const names = fs.readdirSync(UPLOAD_DIR);
+  const requested = onlyNames ? [...new Set(onlyNames.map(x=>path.basename(String(x||""))).filter(Boolean))] : fs.readdirSync(UPLOAD_DIR);
   let count = 0;
-  for (const name of names) {
+  for (const name of requested) {
     const file = path.join(UPLOAD_DIR, name);
+    if(!fs.existsSync(file))continue;
     const stat=fs.statSync(file);
     if (!stat.isFile()) continue;
     const signature=String(stat.size)+":"+String(Math.trunc(stat.mtimeMs));
@@ -850,8 +850,17 @@ async function flushState(before, request, response) {
     response.status >= 300 && response.status < 400 &&
     String(response.headers.get("location") || "").includes("restored=1");
 
-  if (restored) { await clearMedia(); uploadedMediaHashes.clear(); uploadedMediaSignatures.clear(); }
-  if(request.method!=="GET"&&request.method!=="HEAD")await uploadTempFiles();
+  if (restored) {
+    await clearMedia();
+    uploadedMediaHashes.clear();
+    uploadedMediaSignatures.clear();
+    await uploadTempFiles();
+  } else if(request.method!=="GET"&&request.method!=="HEAD") {
+    const oldRefs=uploadRefsFromText(before.dbText||"");
+    const newRefs=uploadRefsFromText(afterDbText||"");
+    const added=[...newRefs].filter(name=>!oldRefs.has(name));
+    if(added.length)await uploadTempFiles(added);
+  }
   if (afterDbText && afterDbText !== before.dbText) {
     committedDb=await publishing.commitChanges(env.DB,safeJson(before.dbText,{}),committedDb);
     fs.writeFileSync(DB_FILE,JSON.stringify(committedDb),"utf8");
@@ -1436,14 +1445,13 @@ async function handleAppSerial(request) {
   }
   const includeUploads = request.method === "GET" && url.pathname === "/admin/backup/download";
   const backupMutation = request.method === "POST" && (url.pathname === "/admin/backup/create" || url.pathname === "/admin/backup/restore");
-  const includeBackups = backupMutation;
   const includeBackupManifest = request.method === "GET" && url.pathname === "/admin";
-  const before = await hydrateState({ includeUploads, includeBackups });
+  const before = await hydrateState({ includeUploads, includeBackups: false });
   if (includeBackupManifest) await hydrateBackupManifest();
   await ensureAppServer();
   const response = await handleAsNodeRequest(PORT, request);
   const states = await flushState(before, request, response);
-  if (includeBackups) await persistBackups();
+  if (backupMutation) await persistBackups();
   return response;
 }
 
@@ -1529,7 +1537,7 @@ export default {
       return;
     }
     await withLocalState(async()=>{
-      const before=await hydrateState({includeBackups:true});
+      const before=await hydrateState({includeBackups:false});
       await ensureAppServer();
       await articleTools.schedulerTick();
       const states=await flushState(before,new Request("https://nabzesardo.ir/__cron"),new Response(null,{status:204}));
