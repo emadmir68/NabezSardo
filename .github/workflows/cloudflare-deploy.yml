@@ -68,6 +68,8 @@ jobs:
           curl -fsS --retry 5 --retry-delay 3 "$SITE/health" -o /tmp/site-health.json
           curl -fsS --retry 5 --retry-delay 3 "$SITE/" -o /tmp/home.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/all-news" -o /tmp/archive.html
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/category/incidents" -o /tmp/incidents.html
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/category/weather" -o /tmp/weather.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/sitemap.xml" -o /tmp/sitemap.xml
           curl -fsS --retry 5 --retry-delay 3 "$SITE/feed.xml" -o /tmp/feed.xml
           curl -fsS --retry 5 --retry-delay 3 "$SITE/admin/login" -o /tmp/admin-login.html
@@ -75,6 +77,10 @@ jobs:
 
           grep -q "نبض ساردو" /tmp/home.html
           grep -q "نبض ساردو" /tmp/archive.html
+          grep -q 'href="/category/incidents"' /tmp/home.html
+          grep -q 'href="/category/weather"' /tmp/home.html
+          grep -q '<h1>حوادث</h1>' /tmp/incidents.html
+          grep -q '<h1>آب‌وهوا</h1>' /tmp/weather.html
           grep -q "<urlset" /tmp/sitemap.xml
           grep -q "<rss" /tmp/feed.xml
           grep -q "admin" /tmp/admin-login.html || grep -q "ورود" /tmp/admin-login.html
