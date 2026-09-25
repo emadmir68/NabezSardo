@@ -122,6 +122,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
     const shareImageUrl=articleRoot.dataset.articleImage?new URL(articleRoot.dataset.articleImage,location.origin).href:'';
     const shareImageKind=articleRoot.dataset.articleImageKind||(/^.*auto-cover/i.test(articleRoot.dataset.articleImage||'')?'auto':shareImageUrl?'real':'none');
+    const articleCategoryId=articleRoot.dataset.articleCategoryId||'';
+    const isDemand=articleCategoryId==='opinion';
 
     // Keep the readable SEO URL as canonical, but show visitors a compact permanent URL
     // in the browser so manual copy/paste can never expose the encoded Persian slug.
@@ -133,9 +135,9 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
 
     const shareText=()=>{
-      const lines=['📰 '+title];
-      if(shortLead)lines.push(shortLead);
-      lines.push('ادامه خبر در نبض ساردو 👇',shareUrl);
+      const lines=[(isDemand?'📣 ':'📰 ')+title];
+      if(shortLead)lines.push((isDemand?'خلاصه مطالبه':'خلاصه خبر')+'\n'+shortLead);
+      lines.push((isDemand?'متن کامل مطالبه در نبض ساردو 👇':'ادامه خبر در نبض ساردو 👇'),shareUrl);
       return lines.join('\n\n');
     };
     const copyArticleLink=async()=>{
