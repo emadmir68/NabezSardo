@@ -665,8 +665,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 
 
-  // Long-press Story sharing for Latest News cards.
-  const newsStoryCards=[...document.querySelectorAll('.latest-grid [data-story-card], .archive-grid [data-story-card]')];
+  // Use one identical Story/Instagram pipeline for every standard news card.
+  // Category/local/search pages render the same data-story-card markup, so
+  // "یادداشت و مطالبه" must be wired exactly like Latest and Archive cards.
+  const newsStoryCards=[...document.querySelectorAll('[data-story-card]')];
   if(newsStoryCards.length){
     const storySheet=document.createElement('div');
     storySheet.className='story-share-sheet news-story-sheet';
@@ -852,6 +854,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       let timer=null,startX=0,startY=0,triggered=false,lastPointerType='';
       const cancel=()=>{if(timer){clearTimeout(timer);timer=null;}card.classList.remove('story-holding');};
       card.addEventListener('pointerdown',ev=>{
+        if(ev.target.closest('.card-story-badge'))return;
         if(ev.button!==undefined&&ev.button!==0)return;
         lastPointerType=ev.pointerType||'';
         startX=ev.clientX;startY=ev.clientY;triggered=false;
