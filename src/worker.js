@@ -295,6 +295,125 @@ async function loadDbObject() {
   return safeJson(text, { settings: {}, categories: [], articles: [], contacts: [], citizens: [] });
 }
 
+let trafficSchemaReady;
+async function ensureTrafficSchema(){
+  if(!trafficSchemaReady){
+    trafficSchemaReady=(async()=>{
+      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_daily(day TEXT PRIMARY KEY,page_views INTEGER NOT NULL DEFAULT 0,google_entrances INTEGER NOT NULL DEFAULT 0,external_entrances INTEGER NOT NULL DEFAULT 0,direct_entrances INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL)").run();
+      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_paths(day TEXT NOT NULL,path TEXT NOT NULL,views INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,path))").run();
+      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_sources(day TEXT NOT NULL,source TEXT NOT NULL,views INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,source))").run();
+      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_visitors(day TEXT NOT NULL,visitor_hash TEXT NOT NULL,PRIMARY KEY(day,visitor_hash))").run();
+      await env.DB.prepare("CREATE TABLE IF NOT EXISTS article_view_counts(article_id TEXT PRIMARY KEY,views INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL)").run();
+    })();
+  }
+  await trafficSchemaReady;
+}
+function tehranDayFast(date=new Date()){
+  try{
+    const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tehran",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(date);
+    const p=Object.fromEntries(parts.filter(x=>x.type!=="literal").map(x=>[x.type,x.value]));
+    return p.year+"-"+p.month+"-"+p.day;
+  }catch{return date.toISOString().slice(0,10);}
+}
+function fastTrackablePath(p=""){
+  return /^\/$|^\/all-news$|^\/search$|^\/about$|^\/contact$|^\/send-news$|^\/news\/|^\/n\/|^\/category\/|^\/local\//.test(String(p||""));
+}
+function fastBot(ua=""){
+  return /(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|telegrambot|discordbot|preview|headless|lighthouse|pagespeed|uptime|monitor|cloudflare-sync)/i.test(String(ua||""));
+}
+async function fastVisitorHash(request){
+  const ua=String(request.headers.get("user-agent")||"");
+  const ip=String(request.headers.get("cf-connecting-ip")||request.headers.get("x-forwarded-for")||"").split(",")[0].trim();
+  const bytes=new TextEncoder().encode(ip+"|"+ua+"|nabez-fast-analytics-v1");
+  return sha256Hex(bytes).then(x=>x.slice(0,24));
+}
+async function recordFastVisit(request,pathname,articleId=""){
+  if(request.method!=="GET"||!fastTrackablePath(pathname))return;
+  const ua=String(request.headers.get("user-agent")||"");
+  if(!ua||fastBot(ua))return;
+  await ensureTrafficSchema();
+  const day=tehranDayFast(),stamp=new Date().toISOString();
+  const url=new URL(request.url);
+  const ref=String(request.headers.get("referer")||"");
+  let host="";try{host=ref?new URL(ref).hostname.toLowerCase().replace(/^www\./,""):"";}catch{}
+  const utm=String(url.searchParams.get("utm_source")||"").toLowerCase().replace(/[^a-z0-9_-]/g,"").slice(0,40);
+  const internal=!host||host==="nabzesardo.ir"||host.endsWith(".nabzesardo.ir");
+  const google=host&&/(^|\.)google\.[a-z.]+$/i.test(host)?1:0;
+  const direct=!host?1:0;
+  const external=host&&!internal?1:0;
+  const statements=[
+    env.DB.prepare("INSERT INTO traffic_daily(day,page_views,google_entrances,external_entrances,direct_entrances,updated_at) VALUES(?,1,?,?,?,?) ON CONFLICT(day) DO UPDATE SET page_views=page_views+1,google_entrances=google_entrances+excluded.google_entrances,external_entrances=external_entrances+excluded.external_entrances,direct_entrances=direct_entrances+excluded.direct_entrances,updated_at=excluded.updated_at").bind(day,google,external,direct,stamp),
+    env.DB.prepare("INSERT INTO traffic_paths(day,path,views) VALUES(?,?,1) ON CONFLICT(day,path) DO UPDATE SET views=views+1").bind(day,String(pathname).slice(0,700)),
+    env.DB.prepare("INSERT OR IGNORE INTO traffic_visitors(day,visitor_hash) VALUES(?,?)").bind(day,await fastVisitorHash(request))
+  ];
+  if(utm)statements.push(env.DB.prepare("INSERT INTO traffic_sources(day,source,views) VALUES(?,?,1) ON CONFLICT(day,source) DO UPDATE SET views=views+1").bind(day,utm));
+  if(articleId)statements.push(env.DB.prepare("INSERT INTO article_view_counts(article_id,views,updated_at) VALUES(?,1,?) ON CONFLICT(article_id) DO UPDATE SET views=views+1,updated_at=excluded.updated_at").bind(articleId,stamp));
+  await env.DB.batch(statements);
+}
+
+let publicDbCache={at:0,db:null};
+async function loadPublicDbFast(){
+  const nowMs=Date.now();
+  if(publicDbCache.db&&nowMs-publicDbCache.at<1500)return publicDbCache.db;
+  await ensureTrafficSchema();
+  const [text,viewRows]=await Promise.all([
+    getState("db"),
+    env.DB.prepare("SELECT article_id,views FROM article_view_counts").all()
+  ]);
+  const db=safeJson(text,{settings:{},categories:[],articles:[],contacts:[],citizens:[]});
+  const counts=new Map((viewRows.results||[]).map(x=>[String(x.article_id),Number(x.views||0)]));
+  for(const a of db.articles||[])a.views=Number(a.views||0)+Number(counts.get(String(a.id))||0);
+  publicDbCache={at:nowMs,db};
+  return db;
+}
+function fastHtml(body,status=200){
+  return new Response(body,{status,headers:{
+    "content-type":"text/html; charset=utf-8",
+    "cache-control":"public, max-age=0, must-revalidate",
+    "x-content-type-options":"nosniff",
+    "x-frame-options":"SAMEORIGIN",
+    "referrer-policy":"strict-origin-when-cross-origin",
+    "x-nabzesardo-runtime":"cloudflare-fast-public-v1"
+  }});
+}
+async function handleFastPublic(request,url,pathname,ctx){
+  if(request.method!=="GET"&&request.method!=="HEAD")return null;
+  if(pathname==="/nabez60")return Response.redirect(new URL("/all-news",request.url).toString(),301);
+  if(pathname==="/briefs")return Response.redirect(new URL("/category/short-news",request.url).toString(),301);
+  const recognized=
+    pathname==="/"||pathname==="/all-news"||pathname==="/search"||pathname==="/about"||pathname==="/contact"||pathname==="/send-news"||
+    /^\/local\/(sardouiyeh|jiroft|south-kerman)$/.test(pathname)||/^\/(?:n|news)\//.test(pathname)||/^\/category\//.test(pathname);
+  if(!recognized)return null;
+  const db=await loadPublicDbFast();
+  let body="",status=200,articleId="";
+  if(pathname==="/")body=views.home(db);
+  else if(pathname==="/all-news")body=views.archive(db,url.searchParams.get("q")||"");
+  else if(pathname==="/search")body=views.search(db,url.searchParams.get("q")||"");
+  else if(pathname==="/about")body=views.simple(db,"about");
+  else if(pathname==="/contact")body=views.simple(db,"contact",url.searchParams.get("ok")==="1");
+  else if(pathname==="/send-news")body=views.simple(db,"send-news",url.searchParams.get("ok")==="1",url.searchParams.get("uploadError")||"");
+  else if(pathname.startsWith("/local/")){
+    body=views.localHub(db,pathname.slice("/local/".length));
+    if(!body){body="صفحه پیدا نشد";status=404;}
+  }else if(pathname.startsWith("/category/")){
+    const key=pathname.slice("/category/".length);
+    const cat=(db.categories||[]).find(x=>String(x.id)===key);
+    if(cat)body=views.category(db,cat);else{body="دسته‌بندی یافت نشد";status=404;}
+  }else{
+    const prefix=pathname.startsWith("/news/")?"/news/":"/n/";
+    const key=pathname.slice(prefix.length);
+    const article=(db.articles||[]).find(x=>x.status==="published"&&(String(x.slug)===key||String(x.id)===key||shortArticleCodeWorker(x.id)===key||previousShortArticleCodeWorker(x.id)===key||legacyShortArticleCodeWorker(x.id)===key));
+    if(article){body=views.article(db,article);articleId=String(article.id);}
+    else{body="خبر یافت نشد";status=404;}
+  }
+  if(status===200&&ctx&&fastTrackablePath(pathname)){
+    ctx.waitUntil(recordFastVisit(request,pathname,articleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
+    if(articleId)ctx.waitUntil(ensureSocialPreviewForPath(pathname).catch(err=>console.error("fast-social-preview",String(err?.message||err))));
+  }
+  if(request.method==="HEAD")return new Response(null,{status,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=0, must-revalidate","x-nabzesardo-runtime":"cloudflare-fast-public-v1"}});
+  return fastHtml(body,status);
+}
+
 async function handlePublicPreview(request, url, pathname) {
   if (request.method !== "GET") return null;
   const db = await loadDbObject();
@@ -1456,7 +1575,7 @@ async function handleAppSerial(request) {
 }
 
 export default {
-  async fetch(request) {
+  async fetch(request, _bindings, ctx) {
     const url = new URL(request.url);
     if (url.protocol === "http:") {
       url.protocol = "https:";
@@ -1518,6 +1637,8 @@ export default {
 
     if (isPrimary()) {
       await ensureCutoverBackup();
+      const fastPublic=await handleFastPublic(request,url,p,ctx);
+      if(fastPublic)return fastPublic;
       return handleApp(request);
     }
 
