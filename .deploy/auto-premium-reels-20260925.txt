@@ -1,0 +1,2 @@
+Deploy auto-premium Reels progressive enhancement from main bc577e7153cf5abf80ad4963c983f630fbe9bf52.
+Stable Reels core remains primary; premium overlay silently disables on unsupported devices.
