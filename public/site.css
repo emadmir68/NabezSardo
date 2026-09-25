@@ -888,8 +888,8 @@ html[data-lang="en"] .story-sheet-card{text-align:center;direction:ltr}
 .breaking-admin-form{max-width:none;margin-top:14px}
 .breaking-admin-form textarea{min-height:86px}
 @media(max-width:620px){
-  .breaking-row{grid-template-columns:auto minmax(0,1fr);gap:10px;padding:10px 0}
-  .breaking-live{display:none}
+  /* Keep all three ticker items on one row, including the LIVE DESK badge. */
+  .breaking-row{grid-template-columns:auto minmax(0,1fr) auto;gap:8px;padding:10px 0}
   .breaking-label{font-size:10px;padding:7px 10px}
   .breaking-track{animation-duration:16s}
   .breaking-loop-set{gap:24px;padding-inline:12px 24px}
