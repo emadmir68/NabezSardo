@@ -681,7 +681,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         <p data-news-story-status><span class="lang-fa">در حال آماده‌سازی تصویر استوری…</span><span class="lang-en">Preparing story image…</span></p>
         <div class="news-story-preview" data-news-story-preview></div>
         <button class="btn primary" type="button" data-news-story-native disabled><span class="lang-fa">اشتراک در استوری / اینستاگرام</span><span class="lang-en">Share to Story / Instagram</span></button>
-        <button class="btn ghost" type="button" data-news-reel-card disabled><span class="lang-fa">کارت مخصوص Reels اینستاگرام</span><span class="lang-en">Instagram Reels card</span></button>
+        <button class="btn ghost" type="button" data-news-reel-card disabled><span class="lang-fa">Reels متحرک اینستاگرام</span><span class="lang-en">Animated Instagram Reels</span></button>
         <button class="btn ghost" type="button" data-news-story-download disabled><span class="lang-fa">ذخیره تصویر استوری</span><span class="lang-en">Save story image</span></button>
         <button class="story-sheet-cancel" type="button" data-news-story-close><span class="lang-fa">انصراف</span><span class="lang-en">Cancel</span></button>
       </div>`;
@@ -692,7 +692,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareBtn=storySheet.querySelector('[data-news-story-native]');
     const reelBtn=storySheet.querySelector('[data-news-reel-card]');
     const downloadBtn=storySheet.querySelector('[data-news-story-download]');
-    let activeStoryCard=null,preparedStoryFile=null,preparedStoryUrl='';
+    let activeStoryCard=null,preparedStoryFile=null,preparedStoryUrl='',preparedReelUrl='';
 
     const rr=(ctx,x,y,w,h,r)=>{
       const q=Math.min(r,w/2,h/2);
@@ -788,10 +788,211 @@ document.addEventListener('DOMContentLoaded',()=>{
       return {file:new File([blob],categoryId==='opinion'?'nabez-sardo-demand-story.png':'nabez-sardo-news-story.png',{type:'image/png'}),articleUrl,title,categoryId};
     };
 
+    const loadReelVideo=card=>new Promise(resolve=>{
+      const existing=card.querySelector('video');
+      const source=existing?.querySelector('source');
+      const src=String(source?.src||source?.getAttribute('src')||existing?.currentSrc||existing?.src||'').trim();
+      if(!src){resolve(null);return;}
+      const video=document.createElement('video');
+      video.muted=true;video.playsInline=true;video.preload='auto';
+      if(/^https?:\/\//i.test(src)&&!src.startsWith(location.origin))video.crossOrigin='anonymous';
+      const timer=setTimeout(()=>{try{video.pause()}catch{}resolve(null);},7000);
+      video.onloadeddata=async()=>{
+        clearTimeout(timer);
+        try{await video.play()}catch{}
+        resolve(video);
+      };
+      video.onerror=()=>{clearTimeout(timer);resolve(null);};
+      video.src=src.startsWith('http')?src:new URL(src,location.origin).href;
+      video.load();
+    });
+
+    const makeAnimatedReel=async card=>{
+      try{if(document.fonts&&document.fonts.ready)await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1200))])}catch{}
+      if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream)throw new Error('animated-reels-not-supported');
+
+      const lang=root.dataset.lang==='en'?'en':'fa';
+      const title=card.dataset[lang==='en'?'storyTitleEn':'storyTitleFa']||card.dataset.storyTitleFa||'Nabez Sardo';
+      const lead=card.dataset[lang==='en'?'storyLeadEn':'storyLeadFa']||card.dataset.storyLeadFa||'';
+      const category=card.dataset[lang==='en'?'storyCategoryEn':'storyCategoryFa']||card.dataset.storyCategoryFa||'News';
+      const categoryId=card.dataset.storyCategoryId||'';
+      const [img,video]=await Promise.all([loadStoryImage(card.dataset.storyImage||''),loadReelVideo(card)]);
+
+      const W=1080,H=1920,DURATION=10000,FPS=30;
+      const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+      const ctx=canvas.getContext('2d',{alpha:false});
+      if(!ctx)throw new Error('animated-reels-canvas-failed');
+
+      const mediaTypes=[
+        'video/mp4;codecs=avc1.42E01E',
+        'video/mp4',
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm'
+      ];
+      const mimeType=mediaTypes.find(type=>MediaRecorder.isTypeSupported(type))||'';
+      if(!mimeType)throw new Error('animated-reels-codec-not-supported');
+      const extension=mimeType.startsWith('video/mp4')?'mp4':'webm';
+
+      const easeOut=x=>1-Math.pow(1-Math.max(0,Math.min(1,x)),3);
+      const fade=(t,start,end)=>{
+        if(t<=start)return 0;
+        if(t>=end)return 1;
+        return easeOut((t-start)/(end-start));
+      };
+      const drawCover=(media,x,y,w,h,zoom=1,shiftX=0,shiftY=0)=>{
+        if(!media)return false;
+        const mw=media.videoWidth||media.naturalWidth||media.width||0;
+        const mh=media.videoHeight||media.naturalHeight||media.height||0;
+        if(!mw||!mh)return false;
+        const scale=Math.max(w/mw,h/mh)*zoom;
+        const sw=w/scale,sh=h/scale;
+        const sx=Math.max(0,Math.min(mw-sw,(mw-sw)/2-shiftX/scale));
+        const sy=Math.max(0,Math.min(mh-sh,(mh-sh)/2-shiftY/scale));
+        ctx.drawImage(media,sx,sy,sw,sh,x,y,w,h);
+        return true;
+      };
+      const drawLines=(lines,x,y,lineHeight,alpha=1,offsetY=0)=>{
+        ctx.globalAlpha=alpha;
+        lines.forEach((line,index)=>ctx.fillText(line,x,y+offsetY+index*lineHeight));
+        ctx.globalAlpha=1;
+      };
+
+      const stream=canvas.captureStream(FPS);
+      const chunks=[];
+      const recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:6000000});
+      recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+
+      const done=new Promise((resolve,reject)=>{
+        recorder.onerror=e=>reject(e.error||new Error('animated-reels-recording-failed'));
+        recorder.onstop=()=>{
+          try{
+            stream.getTracks().forEach(track=>track.stop());
+            if(video){try{video.pause()}catch{}}
+            const blob=new Blob(chunks,{type:recorder.mimeType||mimeType});
+            if(!blob.size){reject(new Error('animated-reels-empty'));return;}
+            const name=categoryId==='opinion'?'nabez-sardo-demand-reel.'+extension:'nabez-sardo-news-reel.'+extension;
+            resolve({file:new File([blob],name,{type:blob.type,lastModified:Date.now()}),extension});
+          }catch(err){reject(err)}
+        };
+      });
+
+      const renderFrame=elapsed=>{
+        const t=Math.max(0,Math.min(DURATION,elapsed));
+        const p=t/DURATION;
+
+        const bg=ctx.createLinearGradient(0,0,W,H);
+        bg.addColorStop(0,'#070b11');bg.addColorStop(.52,'#111925');bg.addColorStop(1,'#080b10');
+        ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+        const glow=ctx.createRadialGradient(855,260,20,855,260,720);
+        glow.addColorStop(0,'rgba(151,34,70,.34)');
+        glow.addColorStop(.48,'rgba(207,166,91,.13)');
+        glow.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=glow;ctx.fillRect(0,0,W,1020);
+
+        ctx.save();
+        rr(ctx,66,72,948,1776,48);ctx.clip();
+        const media=video&&video.readyState>=2?video:img;
+        const zoom=1.015+(p*.065);
+        const shiftX=(p-.5)*34;
+        const shiftY=(p-.5)*18;
+        if(!drawCover(media,66,72,948,1776,zoom,shiftX,shiftY)){
+          ctx.fillStyle='#10151d';ctx.fillRect(66,72,948,1776);
+        }
+        const shade=ctx.createLinearGradient(0,300,0,1848);
+        shade.addColorStop(0,'rgba(4,7,12,.18)');
+        shade.addColorStop(.38,'rgba(4,7,12,.15)');
+        shade.addColorStop(.62,'rgba(4,7,12,.62)');
+        shade.addColorStop(1,'rgba(4,7,12,.96)');
+        ctx.fillStyle=shade;ctx.fillRect(66,72,948,1776);
+        ctx.restore();
+
+        ctx.strokeStyle='rgba(213,173,100,.36)';ctx.lineWidth=3;rr(ctx,66,72,948,1776,48);ctx.stroke();
+
+        // Animated brand entrance.
+        const brandA=fade(t,100,900);
+        ctx.globalAlpha=brandA;
+        ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+        ctx.fillStyle='#f2c978';ctx.font='900 48px Vazirmatn, sans-serif';
+        const brandX=lang==='en'?100:980;
+        ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',brandX,150+(1-brandA)*18);
+        ctx.fillStyle='rgba(242,232,215,.72)';ctx.font='600 22px Vazirmatn, sans-serif';
+        ctx.fillText(lang==='en'?'LOCAL NEWS / SOUTH KERMAN':'رسانه محلی ساردوئیه و جنوب کرمان',brandX,194+(1-brandA)*18);
+        ctx.fillStyle='#d7ae63';ctx.fillRect(lang==='en'?100:800,216,180*brandA,4);
+        ctx.globalAlpha=1;
+
+        // Category pill.
+        const catA=fade(t,650,1450);
+        ctx.font='800 24px Vazirmatn, sans-serif';
+        const pillW=Math.min(330,Math.max(150,ctx.measureText(category).width+70));
+        const pillX=lang==='en'?90:990-pillW;
+        ctx.globalAlpha=catA;
+        ctx.fillStyle='rgba(132,29,61,.88)';rr(ctx,pillX,1010+(1-catA)*16,pillW,58,29);ctx.fill();
+        ctx.fillStyle='#f0d49a';ctx.textAlign='center';ctx.fillText(category,pillX+pillW/2,1048+(1-catA)*16);
+        ctx.globalAlpha=1;
+
+        // Headline motion.
+        ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+        const titleFont=title.length>95?58:title.length>62?64:72;
+        ctx.font='900 '+titleFont+'px Vazirmatn, sans-serif';ctx.fillStyle='#fff8ed';
+        const titleLines=wrapStoryLines(ctx,title,880).slice(0,4);
+        const titleA=fade(t,1100,2450);
+        drawLines(titleLines,lang==='en'?100:980,1185,titleFont*1.34,titleA,(1-titleA)*42);
+
+        // Gold rule grows after title.
+        const ruleA=fade(t,2200,3200);
+        const ruleW=880*ruleA;
+        const ruleX=540-ruleW/2;
+        const rule=ctx.createLinearGradient(ruleX,0,ruleX+Math.max(1,ruleW),0);
+        rule.addColorStop(0,'rgba(217,176,99,0)');rule.addColorStop(.15,'#d9b063');rule.addColorStop(.85,'#d9b063');rule.addColorStop(1,'rgba(217,176,99,0)');
+        ctx.fillStyle=rule;ctx.fillRect(ruleX,1510,ruleW,3);
+
+        // Lead comes in later and stays readable.
+        const leadA=fade(t,2850,4300);
+        ctx.fillStyle='#e5e9ef';ctx.font='600 31px Vazirmatn, sans-serif';
+        const leadLines=wrapStoryLines(ctx,lead,860).slice(0,4);
+        drawLines(leadLines,lang==='en'?105:975,1582,50,leadA,(1-leadA)*30);
+
+        // End CTA.
+        const ctaA=fade(t,6900,8300);
+        ctx.globalAlpha=ctaA;
+        ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';
+        ctx.fillStyle='rgba(8,11,16,.84)';rr(ctx,210,1730+(1-ctaA)*24,660,96,34);ctx.fill();
+        ctx.strokeStyle='rgba(215,174,99,.46)';ctx.lineWidth=2;rr(ctx,210,1730+(1-ctaA)*24,660,96,34);ctx.stroke();
+        ctx.fillStyle='#f2d28e';ctx.font='800 28px Vazirmatn, sans-serif';
+        ctx.fillText(lang==='en'?'Read more on NABZESARDO.IR':'ادامه خبر در NABZESARDO.IR',540,1790+(1-ctaA)*24);
+        ctx.globalAlpha=1;
+
+        // A restrained moving light sweep gives the reel motion even on no-photo cards.
+        const sweepX=-260+(W+520)*p;
+        const sweep=ctx.createLinearGradient(sweepX-180,0,sweepX+180,0);
+        sweep.addColorStop(0,'rgba(255,255,255,0)');
+        sweep.addColorStop(.5,'rgba(242,202,120,.055)');
+        sweep.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.fillStyle=sweep;ctx.fillRect(66,72,948,1776);
+      };
+
+      recorder.start(500);
+      const started=performance.now();
+      await new Promise(resolve=>{
+        const tick=now=>{
+          const elapsed=now-started;
+          renderFrame(elapsed);
+          if(elapsed<DURATION)requestAnimationFrame(tick);
+          else{renderFrame(DURATION);setTimeout(resolve,80)}
+        };
+        requestAnimationFrame(tick);
+      });
+      if(recorder.state!=='inactive')recorder.stop();
+      return done;
+    };
+
     const closeNewsStory=()=>{
       storySheet.hidden=true;
       document.body.classList.remove('story-sheet-open');
       if(preparedStoryUrl){URL.revokeObjectURL(preparedStoryUrl);preparedStoryUrl='';}
+      if(preparedReelUrl){URL.revokeObjectURL(preparedReelUrl);preparedReelUrl='';}
       storyPreview.innerHTML='';
       activeStoryCard=null;preparedStoryFile=null;
     };
@@ -800,6 +1001,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const openNewsStory=card=>{
       activeStoryCard=card;preparedStoryFile=null;
       if(preparedStoryUrl){URL.revokeObjectURL(preparedStoryUrl);preparedStoryUrl='';}
+      if(preparedReelUrl){URL.revokeObjectURL(preparedReelUrl);preparedReelUrl='';}
       storyPreview.innerHTML='';
       shareBtn.disabled=true;reelBtn.disabled=true;downloadBtn.disabled=true;
       storyStatus.innerHTML=root.dataset.lang==='en'?'Preparing story image…':'در حال آماده‌سازی تصویر استوری…';
@@ -842,37 +1044,51 @@ document.addEventListener('DOMContentLoaded',()=>{
       }catch(err){if(err&&err.name!=='AbortError')console.warn('news story share failed',err);}
     });
     reelBtn.addEventListener('click',async()=>{
-      if(!preparedStoryFile||!activeStoryCard)return;
-      const isOpinion=(activeStoryCard.dataset.storyCategoryId||'')==='opinion';
-      const reelFile=new File(
-        [preparedStoryFile],
-        isOpinion?'nabez-sardo-demand-reel.png':'nabez-sardo-news-reel.png',
-        {type:preparedStoryFile.type||'image/png',lastModified:Date.now()}
-      );
+      if(!activeStoryCard)return;
       reelBtn.disabled=true;
+      const oldShareDisabled=shareBtn.disabled,oldDownloadDisabled=downloadBtn.disabled;
       storyStatus.textContent=root.dataset.lang==='en'
-        ?'Reels card is ready. Choose Instagram / Reels in the share sheet.'
-        :'کارت ۹:۱۶ ریلز آماده است؛ در پنجره اشتراک، Instagram / Reels را انتخاب کنید.';
+        ?'Building a 10-second animated Reels video…'
+        :'در حال ساخت ویدیوی متحرک ۱۰ ثانیه‌ای Reels…';
       try{
+        const result=await makeAnimatedReel(activeStoryCard);
+        const reelFile=result.file;
+        if(preparedReelUrl){URL.revokeObjectURL(preparedReelUrl);preparedReelUrl='';}
+        preparedReelUrl=URL.createObjectURL(reelFile);
+
+        const previewVideo=document.createElement('video');
+        previewVideo.src=preparedReelUrl;
+        previewVideo.muted=true;previewVideo.loop=true;previewVideo.playsInline=true;previewVideo.controls=true;
+        previewVideo.autoplay=true;
+        storyPreview.replaceChildren(previewVideo);
+        previewVideo.play().catch(()=>{});
+
+        const isMp4=result.extension==='mp4';
+        storyStatus.textContent=isMp4
+          ?(root.dataset.lang==='en'
+            ?'Animated MP4 is ready. Choose Instagram / Reels.'
+            :'ویدیوی متحرک MP4 آماده است؛ Instagram / Reels را انتخاب کنید.')
+          :(root.dataset.lang==='en'
+            ?'Animated video is ready. This browser produced WebM instead of MP4.'
+            :'ویدیوی متحرک آماده است؛ این مرورگر به‌جای MP4 خروجی WebM ساخته است.');
+
         if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[reelFile]}))){
           await navigator.share({files:[reelFile]});
         }else{
-          const reelUrl=URL.createObjectURL(reelFile);
-          const a=document.createElement('a');a.href=reelUrl;a.download=reelFile.name;a.click();
-          setTimeout(()=>URL.revokeObjectURL(reelUrl),2500);
-          storyStatus.textContent=root.dataset.lang==='en'
-            ?'The 1080×1920 Reels card was saved.'
-            :'کارت ۱۰۸۰×۱۹۲۰ مخصوص ریلز ذخیره شد.';
+          const a=document.createElement('a');a.href=preparedReelUrl;a.download=reelFile.name;a.click();
         }
       }catch(err){
         if(err&&err.name!=='AbortError'){
-          console.warn('news reels card share failed',err);
+          console.warn('animated reels share failed',err);
+          const unsupported=/not-supported|codec/i.test(String(err&&err.message||err));
           storyStatus.textContent=root.dataset.lang==='en'
-            ?'The Reels card is ready; use Save if Instagram does not appear.'
-            :'کارت ریلز آماده است؛ اگر Instagram نمایش داده نشد، تصویر را ذخیره کنید.';
+            ?(unsupported?'Animated Reels is not supported by this browser.':'Could not build the animated Reels video.')
+            :(unsupported?'این مرورگر از ساخت Reels متحرک پشتیبانی نمی‌کند.':'ساخت ویدیوی متحرک Reels انجام نشد.');
         }
       }finally{
         if(activeStoryCard)reelBtn.disabled=false;
+        shareBtn.disabled=oldShareDisabled;
+        downloadBtn.disabled=oldDownloadDisabled;
       }
     });
 
