@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-09-24T20:46:23.209Z",
-  "commit": "a09f4289200fe6c6f729f8f421822137ce87d660",
+  "testedAt": "2026-09-25T04:09:35.222Z",
+  "commit": "729ca43151a44a570967007f7e7e2f22a4d4a432",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-24T20:45:47.132Z"
+    "time": "2026-09-25T04:09:01.456Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-24T20:45:47.425Z"
+    "time": "2026-09-25T04:09:01.672Z"
   },
   "cutover": {
     "ok": true,
@@ -35,7 +35,7 @@
     "templateCovers": 6,
     "fallbackCovers": 0,
     "adminReady": true,
-    "analyticsTotal": 4649,
+    "analyticsTotal": 4722,
     "integrationsReady": {
       "telegram": true,
       "rubika": true,
@@ -51,26 +51,26 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-09-24T19:16:43.950Z",
+      "lastSuccessAt": "2026-09-25T02:58:22.042Z",
       "lastError": null
     },
     "backup": {
       "enabled": true,
       "encrypted": true,
       "retentionDays": 30,
-      "lastAt": "2026-09-24T00:01:06.311Z",
-      "object": "db-backup-2026-09-24.json.enc",
-      "bytes": 143843,
+      "lastAt": "2026-09-25T00:00:28.165Z",
+      "object": "db-backup-2026-09-25.json.enc",
+      "bytes": 189811,
       "lastError": null
     },
     "usage": {
-      "mediaObjects": 49,
-      "arvanMediaBytes": 18067525,
+      "mediaObjects": 50,
+      "arvanMediaBytes": 18166611,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 0.34,
-      "d1TrackedBytesApprox": 1388142,
+      "d1TrackedBytesApprox": 1389682,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.26
+      "d1UsagePercentApprox": 0.27
     },
     "primary": true,
     "readyForRailwayShutdown": true
