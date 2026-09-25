@@ -808,7 +808,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
 
     const makeAnimatedReel=async card=>{
-      try{if(document.fonts&&document.fonts.ready)await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1200))])}catch{}
+      try{if(document.fonts&&document.fonts.ready)await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,900))])}catch{}
       if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream)throw new Error('animated-reels-not-supported');
 
       const lang=root.dataset.lang==='en'?'en':'fa';
@@ -818,29 +818,15 @@ document.addEventListener('DOMContentLoaded',()=>{
       const categoryId=card.dataset.storyCategoryId||'';
       const [img,video]=await Promise.all([loadStoryImage(card.dataset.storyImage||''),loadReelVideo(card)]);
 
-      const W=1080,H=1920,DURATION=8000,FPS=24;
-      const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
-      const ctx=canvas.getContext('2d',{alpha:false});
-      if(!ctx)throw new Error('animated-reels-canvas-failed');
-
-      const mediaTypes=[
-        'video/mp4;codecs=avc1.424028',
-        'video/mp4;codecs=avc1.42E01E',
-        'video/mp4',
-        'video/webm;codecs=vp8',
-        'video/webm'
-      ].filter(type=>{
-        try{return MediaRecorder.isTypeSupported(type)}catch{return false}
-      });
-      if(!mediaTypes.length)mediaTypes.push('');
-
+      const LW=1080,LH=1920,DURATION=6500;
       const easeOut=x=>1-Math.pow(1-Math.max(0,Math.min(1,x)),3);
       const fade=(t,start,end)=>{
         if(t<=start)return 0;
         if(t>=end)return 1;
         return easeOut((t-start)/(end-start));
       };
-      const drawCover=(media,x,y,w,h,zoom=1,shiftX=0,shiftY=0)=>{
+
+      const drawCover=(ctx,media,x,y,w,h,zoom=1,shiftX=0,shiftY=0)=>{
         if(!media)return false;
         const mw=media.videoWidth||media.naturalWidth||media.width||0;
         const mh=media.videoHeight||media.naturalHeight||media.height||0;
@@ -852,179 +838,191 @@ document.addEventListener('DOMContentLoaded',()=>{
         try{
           ctx.drawImage(media,sx,sy,sw,sh,x,y,w,h);
           return true;
-        }catch(err){
-          console.warn('animated reels media draw skipped',String(err?.message||err));
-          return false;
-        }
-      };
-      const drawLines=(lines,x,y,lineHeight,alpha=1,offsetY=0)=>{
-        ctx.globalAlpha=alpha;
-        lines.forEach((line,index)=>ctx.fillText(line,x,y+offsetY+index*lineHeight));
-        ctx.globalAlpha=1;
+        }catch{return false}
       };
 
+      const renderAttempt=async({width,height,fps,bitRate,safeMode=false})=>{
+        const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+        const ctx=canvas.getContext('2d',{alpha:false,desynchronized:true})||canvas.getContext('2d',{alpha:false});
+        if(!ctx)throw new Error('animated-reels-canvas-failed');
+        const scale=width/LW;
 
-      const renderFrame=elapsed=>{
-        const t=Math.max(0,Math.min(DURATION,elapsed));
-        const p=t/DURATION;
+        const mediaTypes=[
+          'video/mp4;codecs=avc1.42E01E',
+          'video/mp4',
+          'video/webm;codecs=vp8',
+          'video/webm'
+        ].filter(type=>{try{return MediaRecorder.isTypeSupported(type)}catch{return false}});
+        if(!mediaTypes.length)mediaTypes.push('');
 
-        const bg=ctx.createLinearGradient(0,0,W,H);
-        bg.addColorStop(0,'#070b11');bg.addColorStop(.52,'#111925');bg.addColorStop(1,'#080b10');
-        ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+        const renderFrame=elapsed=>{
+          const t=Math.max(0,Math.min(DURATION,elapsed));
+          const p=t/DURATION;
+          ctx.setTransform(scale,0,0,scale,0,0);
 
-        const glow=ctx.createRadialGradient(855,260,20,855,260,720);
-        glow.addColorStop(0,'rgba(151,34,70,.34)');
-        glow.addColorStop(.48,'rgba(207,166,91,.13)');
-        glow.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=glow;ctx.fillRect(0,0,W,1020);
+          const bg=ctx.createLinearGradient(0,0,LW,LH);
+          bg.addColorStop(0,'#070b11');bg.addColorStop(.52,'#111925');bg.addColorStop(1,'#080b10');
+          ctx.fillStyle=bg;ctx.fillRect(0,0,LW,LH);
 
-        ctx.save();
-        rr(ctx,66,72,948,1776,48);ctx.clip();
-        const media=video&&video.readyState>=2?video:img;
-        const zoom=1.015+(p*.065);
-        const shiftX=(p-.5)*34;
-        const shiftY=(p-.5)*18;
-        if(!drawCover(media,66,72,948,1776,zoom,shiftX,shiftY)){
-          ctx.fillStyle='#10151d';ctx.fillRect(66,72,948,1776);
-        }
-        const shade=ctx.createLinearGradient(0,300,0,1848);
-        shade.addColorStop(0,'rgba(4,7,12,.18)');
-        shade.addColorStop(.38,'rgba(4,7,12,.15)');
-        shade.addColorStop(.62,'rgba(4,7,12,.62)');
-        shade.addColorStop(1,'rgba(4,7,12,.96)');
-        ctx.fillStyle=shade;ctx.fillRect(66,72,948,1776);
-        ctx.restore();
+          const glow=ctx.createRadialGradient(855,260,20,855,260,720);
+          glow.addColorStop(0,'rgba(151,34,70,.34)');
+          glow.addColorStop(.48,'rgba(207,166,91,.13)');
+          glow.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=glow;ctx.fillRect(0,0,LW,1020);
 
-        ctx.strokeStyle='rgba(213,173,100,.36)';ctx.lineWidth=3;rr(ctx,66,72,948,1776,48);ctx.stroke();
+          ctx.save();
+          rr(ctx,66,72,948,1776,48);ctx.clip();
+          const media=!safeMode&&video&&video.readyState>=2?video:img;
+          const zoom=1.012+(p*.055);
+          if(!drawCover(ctx,media,66,72,948,1776,zoom,(p-.5)*26,(p-.5)*14)){
+            ctx.fillStyle='#10151d';ctx.fillRect(66,72,948,1776);
+          }
+          const shade=ctx.createLinearGradient(0,260,0,1848);
+          shade.addColorStop(0,'rgba(4,7,12,.16)');
+          shade.addColorStop(.42,'rgba(4,7,12,.18)');
+          shade.addColorStop(.64,'rgba(4,7,12,.66)');
+          shade.addColorStop(1,'rgba(4,7,12,.97)');
+          ctx.fillStyle=shade;ctx.fillRect(66,72,948,1776);
+          ctx.restore();
 
-        // Animated brand entrance.
-        const brandA=fade(t,100,900);
-        ctx.globalAlpha=brandA;
-        ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
-        ctx.fillStyle='#f2c978';ctx.font='900 48px Vazirmatn, sans-serif';
-        const brandX=lang==='en'?100:980;
-        ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',brandX,150+(1-brandA)*18);
-        ctx.fillStyle='rgba(242,232,215,.72)';ctx.font='600 22px Vazirmatn, sans-serif';
-        ctx.fillText(lang==='en'?'LOCAL NEWS / SOUTH KERMAN':'رسانه محلی ساردوئیه و جنوب کرمان',brandX,194+(1-brandA)*18);
-        ctx.fillStyle='#d7ae63';ctx.fillRect(lang==='en'?100:800,216,180*brandA,4);
-        ctx.globalAlpha=1;
+          ctx.strokeStyle='rgba(213,173,100,.36)';ctx.lineWidth=3;rr(ctx,66,72,948,1776,48);ctx.stroke();
 
-        // Category pill.
-        const catA=fade(t,650,1450);
-        ctx.font='800 24px Vazirmatn, sans-serif';
-        const pillW=Math.min(330,Math.max(150,ctx.measureText(category).width+70));
-        const pillX=lang==='en'?90:990-pillW;
-        ctx.globalAlpha=catA;
-        ctx.fillStyle='rgba(132,29,61,.88)';rr(ctx,pillX,1010+(1-catA)*16,pillW,58,29);ctx.fill();
-        ctx.fillStyle='#f0d49a';ctx.textAlign='center';ctx.fillText(category,pillX+pillW/2,1048+(1-catA)*16);
-        ctx.globalAlpha=1;
+          const brandA=fade(t,80,720);
+          ctx.globalAlpha=brandA;
+          ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+          ctx.fillStyle='#f2c978';ctx.font='900 48px Vazirmatn, sans-serif';
+          const brandX=lang==='en'?100:980;
+          ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',brandX,150+(1-brandA)*16);
+          ctx.fillStyle='rgba(242,232,215,.72)';ctx.font='600 22px Vazirmatn, sans-serif';
+          ctx.fillText(lang==='en'?'LOCAL NEWS / SOUTH KERMAN':'رسانه محلی ساردوئیه و جنوب کرمان',brandX,194+(1-brandA)*16);
+          ctx.fillStyle='#d7ae63';ctx.fillRect(lang==='en'?100:800,216,180*brandA,4);
+          ctx.globalAlpha=1;
 
-        // Headline motion.
-        ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
-        const titleFont=title.length>95?58:title.length>62?64:72;
-        ctx.font='900 '+titleFont+'px Vazirmatn, sans-serif';ctx.fillStyle='#fff8ed';
-        const titleLines=wrapStoryLines(ctx,title,880).slice(0,4);
-        const titleA=fade(t,1100,2450);
-        drawLines(titleLines,lang==='en'?100:980,1185,titleFont*1.34,titleA,(1-titleA)*42);
+          const catA=fade(t,520,1100);
+          ctx.font='800 24px Vazirmatn, sans-serif';
+          const pillW=Math.min(330,Math.max(150,ctx.measureText(category).width+70));
+          const pillX=lang==='en'?90:990-pillW;
+          ctx.globalAlpha=catA;
+          ctx.fillStyle='rgba(132,29,61,.88)';rr(ctx,pillX,1010+(1-catA)*14,pillW,58,29);ctx.fill();
+          ctx.fillStyle='#f0d49a';ctx.textAlign='center';ctx.fillText(category,pillX+pillW/2,1048+(1-catA)*14);
+          ctx.globalAlpha=1;
 
-        // Gold rule grows after title.
-        const ruleA=fade(t,2200,3200);
-        const ruleW=880*ruleA;
-        const ruleX=540-ruleW/2;
-        const rule=ctx.createLinearGradient(ruleX,0,ruleX+Math.max(1,ruleW),0);
-        rule.addColorStop(0,'rgba(217,176,99,0)');rule.addColorStop(.15,'#d9b063');rule.addColorStop(.85,'#d9b063');rule.addColorStop(1,'rgba(217,176,99,0)');
-        ctx.fillStyle=rule;ctx.fillRect(ruleX,1510,ruleW,3);
+          ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+          const titleFont=title.length>95?58:title.length>62?64:72;
+          ctx.font='900 '+titleFont+'px Vazirmatn, sans-serif';ctx.fillStyle='#fff8ed';
+          const titleLines=wrapStoryLines(ctx,title,880).slice(0,4);
+          const titleA=fade(t,850,1800);
+          ctx.globalAlpha=titleA;
+          titleLines.forEach((line,index)=>ctx.fillText(line,lang==='en'?100:980,1185+(1-titleA)*34+index*titleFont*1.34));
+          ctx.globalAlpha=1;
 
-        // Lead comes in later and stays readable.
-        const leadA=fade(t,2850,4300);
-        ctx.fillStyle='#e5e9ef';ctx.font='600 31px Vazirmatn, sans-serif';
-        const leadLines=wrapStoryLines(ctx,lead,860).slice(0,4);
-        drawLines(leadLines,lang==='en'?105:975,1582,50,leadA,(1-leadA)*30);
+          const ruleA=fade(t,1650,2350),ruleW=880*ruleA,ruleX=540-ruleW/2;
+          if(ruleW>2){
+            const rule=ctx.createLinearGradient(ruleX,0,ruleX+ruleW,0);
+            rule.addColorStop(0,'rgba(217,176,99,0)');rule.addColorStop(.15,'#d9b063');rule.addColorStop(.85,'#d9b063');rule.addColorStop(1,'rgba(217,176,99,0)');
+            ctx.fillStyle=rule;ctx.fillRect(ruleX,1510,ruleW,3);
+          }
 
-        // End CTA.
-        const ctaA=fade(t,6900,8300);
-        ctx.globalAlpha=ctaA;
-        ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';
-        ctx.fillStyle='rgba(8,11,16,.84)';rr(ctx,210,1730+(1-ctaA)*24,660,96,34);ctx.fill();
-        ctx.strokeStyle='rgba(215,174,99,.46)';ctx.lineWidth=2;rr(ctx,210,1730+(1-ctaA)*24,660,96,34);ctx.stroke();
-        ctx.fillStyle='#f2d28e';ctx.font='800 28px Vazirmatn, sans-serif';
-        ctx.fillText(lang==='en'?'Read more on NABZESARDO.IR':'ادامه خبر در NABZESARDO.IR',540,1790+(1-ctaA)*24);
-        ctx.globalAlpha=1;
+          const leadA=fade(t,2150,3150);
+          ctx.fillStyle='#e5e9ef';ctx.font='600 31px Vazirmatn, sans-serif';
+          const leadLines=wrapStoryLines(ctx,lead,860).slice(0,4);
+          ctx.globalAlpha=leadA;
+          leadLines.forEach((line,index)=>ctx.fillText(line,lang==='en'?105:975,1582+(1-leadA)*24+index*50));
+          ctx.globalAlpha=1;
 
-        // A restrained moving light sweep gives the reel motion even on no-photo cards.
-        const sweepX=-260+(W+520)*p;
-        const sweep=ctx.createLinearGradient(sweepX-180,0,sweepX+180,0);
-        sweep.addColorStop(0,'rgba(255,255,255,0)');
-        sweep.addColorStop(.5,'rgba(242,202,120,.055)');
-        sweep.addColorStop(1,'rgba(255,255,255,0)');
-        ctx.fillStyle=sweep;ctx.fillRect(66,72,948,1776);
-      };
+          const ctaA=fade(t,4700,5550);
+          ctx.globalAlpha=ctaA;
+          ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';
+          ctx.fillStyle='rgba(8,11,16,.84)';rr(ctx,210,1730+(1-ctaA)*20,660,96,34);ctx.fill();
+          ctx.strokeStyle='rgba(215,174,99,.46)';ctx.lineWidth=2;rr(ctx,210,1730+(1-ctaA)*20,660,96,34);ctx.stroke();
+          ctx.fillStyle='#f2d28e';ctx.font='800 28px Vazirmatn, sans-serif';
+          ctx.fillText(lang==='en'?'Read more on NABZESARDO.IR':'ادامه خبر در NABZESARDO.IR',540,1790+(1-ctaA)*20);
+          ctx.globalAlpha=1;
 
-      const recordAttempt=async(mimeType,attempt)=>{
-        const localFps=attempt===0?FPS:20;
-        const bitRate=attempt===0?2800000:1900000;
-        const stream=canvas.captureStream(localFps);
-        const chunks=[];
-        let recorder;
-        try{
-          const options={videoBitsPerSecond:bitRate};
-          if(mimeType)options.mimeType=mimeType;
-          recorder=new MediaRecorder(stream,options);
-        }catch(err){
-          stream.getTracks().forEach(track=>track.stop());
-          throw err;
-        }
+          const sweepX=-260+(LW+520)*p;
+          const sweep=ctx.createLinearGradient(sweepX-180,0,sweepX+180,0);
+          sweep.addColorStop(0,'rgba(255,255,255,0)');
+          sweep.addColorStop(.5,'rgba(242,202,120,.045)');
+          sweep.addColorStop(1,'rgba(255,255,255,0)');
+          ctx.fillStyle=sweep;ctx.fillRect(66,72,948,1776);
+          ctx.setTransform(1,0,0,1,0,0);
+        };
 
-        recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
-        let recorderError=null;
-        const done=new Promise((resolve,reject)=>{
-          recorder.onerror=e=>{
-            recorderError=e?.error||new Error('animated-reels-recording-failed');
+        let lastError=null;
+        for(const mimeType of mediaTypes){
+          const stream=canvas.captureStream(fps);
+          const chunks=[];
+          let recorder;
+          try{
+            const options={videoBitsPerSecond:bitRate};
+            if(mimeType)options.mimeType=mimeType;
+            recorder=new MediaRecorder(stream,options);
+          }catch(err){
+            stream.getTracks().forEach(track=>track.stop());
+            lastError=err;continue;
+          }
+
+          let fatal=null;
+          const done=new Promise((resolve,reject)=>{
+            recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+            recorder.onerror=e=>{
+              fatal=e?.error||new Error('animated-reels-recording-failed');
+              reject(fatal);
+            };
+            recorder.onstop=()=>{
+              try{
+                stream.getTracks().forEach(track=>track.stop());
+                if(fatal)return;
+                const finalType=recorder.mimeType||mimeType||'video/webm';
+                const blob=new Blob(chunks,{type:finalType});
+                if(!blob.size){reject(new Error('animated-reels-empty'));return;}
+                const extension=/^video\/mp4/i.test(finalType)?'mp4':'webm';
+                const name=categoryId==='opinion'?'nabez-sardo-demand-reel.'+extension:'nabez-sardo-news-reel.'+extension;
+                resolve({file:new File([blob],name,{type:blob.type,lastModified:Date.now()}),extension,mimeType:finalType,width,height});
+              }catch(err){reject(err)}
+            };
+          });
+
+          try{
+            recorder.start();
+            const started=performance.now();
+            await new Promise((resolve,reject)=>{
+              const tick=now=>{
+                if(fatal){reject(fatal);return;}
+                const elapsed=now-started;
+                try{renderFrame(elapsed)}catch(err){reject(err);return;}
+                if(elapsed<DURATION)requestAnimationFrame(tick);
+                else{renderFrame(DURATION);setTimeout(resolve,100)}
+              };
+              requestAnimationFrame(tick);
+            });
+            if(recorder.state!=='inactive')recorder.stop();
+            return await done;
+          }catch(err){
+            lastError=err;
             try{if(recorder.state!=='inactive')recorder.stop()}catch{}
-            reject(recorderError);
-          };
-          recorder.onstop=()=>{
-            try{
-              stream.getTracks().forEach(track=>track.stop());
-              if(recorderError)return;
-              const finalType=recorder.mimeType||mimeType||'video/webm';
-              const blob=new Blob(chunks,{type:finalType});
-              if(!blob.size){reject(new Error('animated-reels-empty'));return;}
-              const extension=/^video\/mp4/i.test(finalType)?'mp4':'webm';
-              const name=categoryId==='opinion'?'nabez-sardo-demand-reel.'+extension:'nabez-sardo-news-reel.'+extension;
-              resolve({file:new File([blob],name,{type:blob.type,lastModified:Date.now()}),extension,mimeType:finalType});
-            }catch(err){reject(err)}
-          };
-        });
-
-        recorder.start(1000);
-        const started=performance.now();
-        await new Promise((resolve,reject)=>{
-          const tick=now=>{
-            if(recorderError){reject(recorderError);return;}
-            const elapsed=now-started;
-            try{renderFrame(elapsed)}catch(err){reject(err);return;}
-            if(elapsed<DURATION)requestAnimationFrame(tick);
-            else{try{renderFrame(DURATION)}catch(err){reject(err);return}setTimeout(resolve,120)}
-          };
-          requestAnimationFrame(tick);
-        }).catch(err=>{
-          try{if(recorder.state!=='inactive')recorder.stop()}catch{}
-          throw err;
-        });
-        if(recorder.state!=='inactive')recorder.stop();
-        return done;
+            stream.getTracks().forEach(track=>track.stop());
+            await new Promise(resolve=>setTimeout(resolve,160));
+          }
+        }
+        throw lastError||new Error('animated-reels-recording-failed');
       };
 
+      const attempts=[
+        {width:1080,height:1920,fps:20,bitRate:2200000,safeMode:false},
+        {width:720,height:1280,fps:15,bitRate:1200000,safeMode:true},
+        {width:540,height:960,fps:12,bitRate:800000,safeMode:true}
+      ];
       let lastError=null;
-      for(let i=0;i<mediaTypes.length;i++){
+      for(const config of attempts){
         try{
-          return await recordAttempt(mediaTypes[i],i);
+          const result=await renderAttempt(config);
+          if(video){try{video.pause()}catch{}}
+          return result;
         }catch(err){
           lastError=err;
-          console.warn('animated reels codec attempt failed',mediaTypes[i]||'browser-default',String(err?.message||err));
-          // Give Samsung/Chromium's encoder a brief chance to release hardware resources.
-          await new Promise(resolve=>setTimeout(resolve,180));
+          console.warn('animated reels render profile failed',config.width+'x'+config.height,String(err?.message||err));
+          await new Promise(resolve=>setTimeout(resolve,220));
         }
       }
       if(video){try{video.pause()}catch{}}
@@ -1091,8 +1089,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       reelBtn.disabled=true;
       const oldShareDisabled=shareBtn.disabled,oldDownloadDisabled=downloadBtn.disabled;
       storyStatus.textContent=root.dataset.lang==='en'
-        ?'Building a 10-second animated Reels video…'
-        :'در حال ساخت ویدیوی متحرک ۱۰ ثانیه‌ای Reels…';
+        ? 'Building an animated Reels video…' : 'در حال ساخت Reels متحرک؛ در صورت نیاز حالت سازگار موبایل خودکار فعال می‌شود…';
       try{
         const result=await makeAnimatedReel(activeStoryCard);
         const reelFile=result.file;
@@ -1110,7 +1107,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         storyStatus.textContent=isMp4
           ?(root.dataset.lang==='en'
             ?'Animated MP4 is ready. Choose Instagram / Reels.'
-            :'ویدیوی متحرک MP4 آماده است؛ Instagram / Reels را انتخاب کنید.')
+            :'ویدیوی متحرک آماده است؛ Instagram / Reels را انتخاب کنید.')
           :(root.dataset.lang==='en'
             ?'Animated video is ready. This browser produced WebM instead of MP4.'
             :'ویدیوی متحرک آماده است؛ این مرورگر به‌جای MP4 خروجی WebM ساخته است.');
@@ -1126,7 +1123,7 @@ document.addEventListener('DOMContentLoaded',()=>{
           const unsupported=/not-supported|codec/i.test(String(err&&err.message||err));
           storyStatus.textContent=root.dataset.lang==='en'
             ?(unsupported?'Animated Reels is not supported by this browser.':'Could not build the animated Reels video.')
-            :(unsupported?'این مرورگر از ساخت Reels متحرک پشتیبانی نمی‌کند.':'ساخت ویدیوی Reels با کُدک اول انجام نشد؛ مسیرهای جایگزین هم پاسخ ندادند.');
+            :(unsupported?'این مرورگر از ساخت Reels متحرک پشتیبانی نمی‌کند.':'ساخت ویدیوی Reels روی این مرورگر انجام نشد.');
         }
       }finally{
         if(activeStoryCard)reelBtn.disabled=false;
