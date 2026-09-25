@@ -389,25 +389,62 @@ document.addEventListener('DOMContentLoaded',()=>{
       const label=shareImageBtn.querySelector('[data-share-image-label]');
       const payload=shareText();
 
-      // Keep navigator.share directly inside the tap handler so Android
-      // preserves user activation.
-      if(preparedShareImageFile&&navigator.share){
+      // Web Share on Android is strict about mixed file/title/text payloads.
+      // Keep the native share call directly inside this tap and prefer the
+      // smallest compatible payload so the Share Sheet always opens.
+      if(preparedShareImageFile&&typeof navigator.share==='function'){
+        const fileOnly={files:[preparedShareImageFile]};
+        const fileWithText={files:[preparedShareImageFile],text:payload};
+        let sharePayload=fileWithText;
+        try{
+          if(typeof navigator.canShare==='function'){
+            if(navigator.canShare(fileWithText)){
+              sharePayload=fileWithText;
+            }else if(navigator.canShare(fileOnly)){
+              // Some Android/WebView builds accept a file but reject file+text.
+              // Copy the caption synchronously, then open file sharing.
+              const ta=document.createElement('textarea');
+              ta.value=payload;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';
+              document.body.appendChild(ta);ta.focus();ta.select();
+              try{document.execCommand('copy');}catch{}
+              ta.remove();
+              sharePayload=fileOnly;
+            }else{
+              sharePayload={text:payload};
+            }
+          }
+        }catch(err){
+          console.warn('article share capability check failed',err);
+        }
+
         if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
-        navigator.share({files:[preparedShareImageFile],title,text:payload})
-          .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
-          .catch(err=>{
-            if(err&&err.name!=='AbortError')console.warn('article image share failed',err);
-          })
-          .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1000));
+        try{
+          const result=navigator.share(sharePayload);
+          Promise.resolve(result)
+            .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
+            .catch(err=>{
+              if(err&&err.name!=='AbortError')console.warn('article image share failed',err);
+            })
+            .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1000));
+        }catch(err){
+          console.warn('article image share sync failure',err);
+          if(label)label.innerHTML=shareImageOriginalLabel;
+        }
         return;
       }
 
-      // If the image has not finished preloading yet, the button still works
-      // immediately instead of appearing dead.
-      if(navigator.share){
-        navigator.share({title,text:payload}).catch(err=>{
-          if(err&&err.name!=='AbortError')console.warn('article share fallback failed',err);
-        });
+      // Image is still preparing or file sharing is unavailable: open normal
+      // text/link sharing immediately instead of leaving a dead button.
+      if(typeof navigator.share==='function'){
+        try{
+          const result=navigator.share({text:payload});
+          Promise.resolve(result).catch(err=>{
+            if(err&&err.name!=='AbortError')console.warn('article share fallback failed',err);
+          });
+        }catch(err){
+          console.warn('article share fallback sync failure',err);
+          copySharePayload();
+        }
       }else{
         copySharePayload();
       }
