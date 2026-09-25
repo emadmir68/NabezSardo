@@ -25,3 +25,16 @@ test('approved share-card rules stay locked',()=>{
   assert.match(js,/خلاصه مطالبه/);
   assert.match(js,/متن کامل مطالبه در نبض ساردو/);
 });
+
+
+test('demand Story sharing stays Instagram-compatible',()=>{
+  const js=fs.readFileSync('public/site.js','utf8');
+  const view=fs.readFileSync('lib/view-common.js','utf8');
+  assert.match(view,/data-story-category-id=/);
+  assert.match(js,/storyCategoryId/);
+  assert.match(js,/nabez-sardo-demand-story\.png/);
+  assert.match(js,/isOpinion/);
+  assert.match(js,/await navigator\.share\(\{files:\[preparedStoryFile\]\}\)/);
+  assert.match(js,/badge\.addEventListener\('click'/);
+  assert.match(js,/img\.crossOrigin='anonymous'/);
+});
