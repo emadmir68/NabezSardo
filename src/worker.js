@@ -1339,7 +1339,12 @@ async function prepareDistribution(a) {
   return a;
 }
 async function queuePublications(db){
-  for(const a of db.articles||[])if(a.distributionRequest&&a.distributionCompletedRequest!==a.distributionRequest)await publishing.enqueue(env.DB,a);
+  const automatic=automaticDistributionEnabled();
+  for(const a of db.articles||[]){
+    if(!a.distributionRequest||a.distributionCompletedRequest===a.distributionRequest)continue;
+    if(!automatic&&a.distributionManualRequest!==a.distributionRequest)continue;
+    await publishing.enqueue(env.DB,a);
+  }
 }
 async function suppressPendingAutomaticPublications(){
   if(automaticDistributionEnabled())return false;
@@ -1358,6 +1363,10 @@ async function suppressPendingAutomaticPublications(){
 }
 async function drainPublications(){
   await applyRuntimeEnv();
+  if(!automaticDistributionEnabled()){
+    await env.DB.prepare("CREATE TABLE IF NOT EXISTS publication_jobs(article_id TEXT PRIMARY KEY,request TEXT NOT NULL,status TEXT NOT NULL,distribution TEXT NOT NULL,updated_at INTEGER NOT NULL)").run();
+    await env.DB.prepare("DELETE FROM publication_jobs WHERE status='pending' OR status='running'").run();
+  }
   await queuePublications(safeJson(await getState("db"),{}));
   await publishing.drain(env.DB,{
     read:async id=>(safeJson(await getState("db"),{}).articles||[]).find(a=>a.id===id),
@@ -1529,7 +1538,9 @@ export default {
     await suppressPendingAutomaticPublications();
     await drainPublications();
     if(isPrimary()){
-      try{await refreshOpinionSocialWording();}catch(err){console.error("opinion-social-refresh",String(err?.message||err));}
+      if(automaticDistributionEnabled()){
+        try{await refreshOpinionSocialWording();}catch(err){console.error("opinion-social-refresh",String(err?.message||err));}
+      }
       try{await migrateLegacyMediaBatch(10);}catch(err){console.error("arvan-migrate-batch",String(err?.message||err));}
       try{await createDailyArvanBackup();}catch(err){console.error("arvan-backup-tick",String(err?.message||err));}
     }
