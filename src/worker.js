@@ -351,6 +351,65 @@ async function recordFastVisit(request,pathname,articleId=""){
   await env.DB.batch(statements);
 }
 
+async function trafficSnapshotFast(){
+  await ensureTrafficSchema();
+  const today=tehranDayFast();
+  const keys=[];
+  for(let i=6;i>=0;i--)keys.push(tehranDayFast(new Date(Date.now()-i*86400000)));
+  const since=keys[0];
+  const [dailyRows,visitorRows,pathRows,sourceRows,totalRow,legacyText]=await Promise.all([
+    env.DB.prepare("SELECT day,page_views,google_entrances,external_entrances,direct_entrances,updated_at FROM traffic_daily WHERE day>=? ORDER BY day").bind(since).all(),
+    env.DB.prepare("SELECT day,COUNT(*) AS visitors FROM traffic_visitors WHERE day>=? GROUP BY day").bind(since).all(),
+    env.DB.prepare("SELECT path,views FROM traffic_paths WHERE day=? ORDER BY views DESC LIMIT 12").bind(today).all(),
+    env.DB.prepare("SELECT source,views FROM traffic_sources WHERE day=? ORDER BY views DESC").bind(today).all(),
+    env.DB.prepare("SELECT COALESCE(SUM(page_views),0) AS total,MIN(day) AS started,MAX(updated_at) AS updated FROM traffic_daily").first(),
+    getState("analytics")
+  ]);
+  const legacy=safeJson(legacyText,{})||{};
+  const legacyDays=legacy.days&&typeof legacy.days==="object"?legacy.days:{};
+  const dailyMap=new Map((dailyRows.results||[]).map(x=>[String(x.day),x]));
+  const visitorMap=new Map((visitorRows.results||[]).map(x=>[String(x.day),Number(x.visitors||0)]));
+  const days=keys.map(day=>{
+    const row=dailyMap.get(day)||{};
+    const old=legacyDays[day]||{};
+    return {
+      date:day,
+      pageViews:Number(old.pageViews||0)+Number(row.page_views||0),
+      visitors:Object.keys(old.visitors||{}).length+Number(visitorMap.get(day)||0),
+      googleEntrances:Number(old.googleEntrances||0)+Number(row.google_entrances||0)
+    };
+  });
+  const oldToday=legacyDays[today]||{};
+  const newToday=dailyMap.get(today)||{};
+  const sourceMap={...(oldToday.sources||{})};
+  for(const row of sourceRows.results||[])sourceMap[row.source]=Number(sourceMap[row.source]||0)+Number(row.views||0);
+  const pathMap=new Map(Object.entries(oldToday.paths||{}).map(([path,views])=>[path,Number(views||0)]));
+  for(const row of pathRows.results||[])pathMap.set(String(row.path),Number(pathMap.get(String(row.path))||0)+Number(row.views||0));
+  const topPaths=[...pathMap.entries()].map(([path,views])=>({path,views})).sort((a,b)=>b.views-a.views).slice(0,8);
+  const todaySummary={
+    pageViews:Number(oldToday.pageViews||0)+Number(newToday.page_views||0),
+    visitors:Object.keys(oldToday.visitors||{}).length+Number(visitorMap.get(today)||0),
+    googleEntrances:Number(oldToday.googleEntrances||0)+Number(newToday.google_entrances||0),
+    externalEntrances:Number(oldToday.externalEntrances||0)+Number(newToday.external_entrances||0),
+    directEntrances:Number(oldToday.directEntrances||0)+Number(newToday.direct_entrances||0),
+    sources:sourceMap
+  };
+  return {
+    totalPageViews:Number(legacy.allTimePageViews||0)+Number(totalRow?.total||0),
+    startedAt:legacy.startedAt||(totalRow?.started?String(totalRow.started)+"T00:00:00Z":new Date().toISOString()),
+    updatedAt:totalRow?.updated||legacy.updatedAt||new Date().toISOString(),
+    todayKey:today,
+    today:todaySummary,
+    sevenDays:{
+      pageViews:days.reduce((s,x)=>s+x.pageViews,0),
+      visitors:days.reduce((s,x)=>s+x.visitors,0),
+      googleEntrances:days.reduce((s,x)=>s+x.googleEntrances,0)
+    },
+    days,
+    topPaths
+  };
+}
+
 let publicDbCache={at:0,db:null};
 async function loadPublicDbFast(){
   const nowMs=Date.now();
@@ -1543,14 +1602,17 @@ async function handleCloudflareAdminLogin(request) {
   return handleApp(new Request(request.url, { method: "POST", headers, body, redirect: "manual" }));
 }
 
+let cutoverBackupEnsured=false;
 async function ensureCutoverBackup() {
+  if(cutoverBackupEnsured)return;
   const done = await getState("cutover_backup_created");
-  if (done === "1") return;
+  if (done === "1") {cutoverBackupEnsured=true;return;}
   const dbText = await getState("db");
   if (!dbText) return;
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   await putState("backup:cutover-" + stamp + ".json", dbText);
   await putState("cutover_backup_created", "1");
+  cutoverBackupEnsured=true;
 }
 
 function handleApp(request){return withLocalState(()=>handleAppSerial(request));}
@@ -1567,6 +1629,10 @@ async function handleAppSerial(request) {
   const includeBackupManifest = request.method === "GET" && url.pathname === "/admin";
   const before = await hydrateState({ includeUploads, includeBackups: false });
   if (includeBackupManifest) await hydrateBackupManifest();
+  if(request.method==="GET"&&url.pathname==="/admin"){
+    try{globalThis.__NABEZ_ANALYTICS_SNAPSHOT=await trafficSnapshotFast();}
+    catch(err){console.error("admin-fast-analytics",String(err?.message||err));}
+  }
   await ensureAppServer();
   const response = await handleAsNodeRequest(PORT, request);
   const states = await flushState(before, request, response);
@@ -1600,6 +1666,10 @@ export default {
     if (p === "/__sync/push" && request.method === "POST") return syncPush(request);
     if (p === "/__migration/export" && request.method === "GET") return exportBackup(request);
     if (p === "/__sync/status" && request.method === "GET") return Response.json(await publicSyncStatus());
+    if (p === "/api/live-stats" && request.method === "GET") {
+      const stats=await trafficSnapshotFast();
+      return Response.json({totalPageViews:stats.totalPageViews,todayPageViews:stats.today.pageViews,updatedAt:stats.updatedAt},{headers:{"cache-control":"no-store","x-nabzesardo-runtime":"cloudflare-fast-stats-v1"}});
+    }
     if (p === "/__cutover/status" && request.method === "GET") {
       const status = await publicSyncStatus();
       const ready = Boolean(
