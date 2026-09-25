@@ -807,9 +807,12 @@ document.addEventListener('DOMContentLoaded',()=>{
       video.load();
     });
 
-    const makeAnimatedReel=async card=>{
+    const makeAnimatedReel=async(card,storyFile)=>{
       try{if(document.fonts&&document.fonts.ready)await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,900))])}catch{}
-      if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream)throw new Error('animated-reels-not-supported');
+      const canMediaRecorder=typeof MediaRecorder!=='undefined'&&!!HTMLCanvasElement.prototype.captureStream;
+      const canWebCodecs=typeof VideoEncoder!=='undefined'&&typeof VideoFrame!=='undefined'&&!!window.Mp4Muxer;
+      if(!canMediaRecorder&&!canWebCodecs)throw new Error('animated-reels-not-supported');
+      const preferWebCodecs=/SamsungBrowser/i.test(navigator.userAgent||'')&&canWebCodecs;
 
       const lang=root.dataset.lang==='en'?'en':'fa';
       const title=card.dataset[lang==='en'?'storyTitleEn':'storyTitleFa']||card.dataset.storyTitleFa||'Nabez Sardo';
@@ -842,6 +845,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       };
 
       const renderAttempt=async({width,height,fps,bitRate,safeMode=false})=>{
+        if(!canMediaRecorder)throw new Error('media-recorder-unavailable');
         const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
         const ctx=canvas.getContext('2d',{alpha:false,desynchronized:true})||canvas.getContext('2d',{alpha:false});
         if(!ctx)throw new Error('animated-reels-canvas-failed');
@@ -1008,23 +1012,148 @@ document.addEventListener('DOMContentLoaded',()=>{
         throw lastError||new Error('animated-reels-recording-failed');
       };
 
+      const renderWebCodecsMp4=async()=>{
+        if(!canWebCodecs||!storyFile)throw new Error('webcodecs-mp4-unavailable');
+        let bitmap=null;
+        try{bitmap=await createImageBitmap(storyFile)}catch(err){throw new Error('webcodecs-story-image-failed:'+String(err?.message||err))}
+        const profiles=[
+          {width:720,height:1280,fps:15,bitRate:1400000},
+          {width:540,height:960,fps:12,bitRate:900000}
+        ];
+        let lastError=null;
+        try{
+          for(const profile of profiles){
+            const {width,height,fps,bitRate}=profile;
+            const codecCandidates=['avc1.42001f','avc1.42E01E','avc1.4d001f'];
+            for(const codec of codecCandidates){
+              let encoder=null;
+              try{
+                const config={codec,width,height,bitrate:bitRate,framerate:fps,hardwareAcceleration:'prefer-hardware',latencyMode:'quality'};
+                if(VideoEncoder.isConfigSupported){
+                  const support=await VideoEncoder.isConfigSupported(config);
+                  if(!support?.supported)continue;
+                }
+                const target=new Mp4Muxer.ArrayBufferTarget();
+                const muxer=new Mp4Muxer.Muxer({
+                  target,
+                  video:{codec:'avc',width,height,frameRate:fps},
+                  fastStart:'in-memory',
+                  firstTimestampBehavior:'offset'
+                });
+                let encodeError=null;
+                encoder=new VideoEncoder({
+                  output:(chunk,meta)=>muxer.addVideoChunk(chunk,meta),
+                  error:err=>{encodeError=err}
+                });
+                encoder.configure(config);
+
+                const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+                const ctx=canvas.getContext('2d',{alpha:false,desynchronized:true})||canvas.getContext('2d',{alpha:false});
+                if(!ctx)throw new Error('webcodecs-canvas-failed');
+
+                const frames=Math.max(1,Math.round(DURATION/1000*fps));
+                const frameDuration=Math.round(1000000/fps);
+                for(let i=0;i<frames;i++){
+                  if(encodeError)throw encodeError;
+                  const p=frames<=1?1:i/(frames-1);
+                  ctx.fillStyle='#070b11';ctx.fillRect(0,0,width,height);
+
+                  // Animate the already-approved Story artwork with a subtle
+                  // editorial Ken Burns motion. This keeps text/branding exact
+                  // while avoiding Samsung Internet's MediaRecorder path.
+                  const zoom=1.0+0.035*p;
+                  const dw=width*zoom,dh=height*zoom;
+                  const dx=(width-dw)/2+(Math.sin(p*Math.PI)*8);
+                  const dy=(height-dh)/2-(p*10);
+                  ctx.drawImage(bitmap,dx,dy,dw,dh);
+
+                  const sweepX=-width*.25+(width*1.5)*p;
+                  const sweep=ctx.createLinearGradient(sweepX-width*.16,0,sweepX+width*.16,0);
+                  sweep.addColorStop(0,'rgba(255,255,255,0)');
+                  sweep.addColorStop(.5,'rgba(242,202,120,.055)');
+                  sweep.addColorStop(1,'rgba(255,255,255,0)');
+                  ctx.fillStyle=sweep;ctx.fillRect(0,0,width,height);
+
+                  const frame=new VideoFrame(canvas,{
+                    timestamp:i*frameDuration,
+                    duration:frameDuration
+                  });
+                  encoder.encode(frame,{keyFrame:i===0||i%(fps*2)===0});
+                  frame.close();
+
+                  if(encoder.encodeQueueSize>4){
+                    await new Promise(resolve=>setTimeout(resolve,0));
+                  }
+                }
+                await encoder.flush();
+                if(encodeError)throw encodeError;
+                muxer.finalize();
+                const buffer=target.buffer;
+                if(!buffer||!buffer.byteLength)throw new Error('webcodecs-empty-mp4');
+                const name=categoryId==='opinion'?'nabez-sardo-demand-reel.mp4':'nabez-sardo-news-reel.mp4';
+                return {
+                  file:new File([buffer],name,{type:'video/mp4',lastModified:Date.now()}),
+                  extension:'mp4',
+                  mimeType:'video/mp4',
+                  width,height,
+                  engine:'webcodecs'
+                };
+              }catch(err){
+                lastError=err;
+                console.warn('animated reels WebCodecs attempt failed',codec,profile.width+'x'+profile.height,String(err?.message||err));
+              }finally{
+                if(encoder){try{encoder.close()}catch{}}
+              }
+            }
+          }
+        }finally{
+          if(bitmap&&bitmap.close)bitmap.close();
+        }
+        throw lastError||new Error('webcodecs-mp4-failed');
+      };
+
       const attempts=[
         {width:1080,height:1920,fps:20,bitRate:2200000,safeMode:false},
         {width:720,height:1280,fps:15,bitRate:1200000,safeMode:true},
         {width:540,height:960,fps:12,bitRate:800000,safeMode:true}
       ];
       let lastError=null;
-      for(const config of attempts){
+      if(preferWebCodecs){
         try{
-          const result=await renderAttempt(config);
+          const result=await renderWebCodecsMp4();
           if(video){try{video.pause()}catch{}}
           return result;
         }catch(err){
           lastError=err;
-          console.warn('animated reels render profile failed',config.width+'x'+config.height,String(err?.message||err));
-          await new Promise(resolve=>setTimeout(resolve,220));
+          console.warn('Samsung WebCodecs Reels fallback failed',String(err?.message||err));
         }
       }
+
+      if(canMediaRecorder){
+        for(const config of attempts){
+          try{
+            const result=await renderAttempt(config);
+            if(video){try{video.pause()}catch{}}
+            return result;
+          }catch(err){
+            lastError=err;
+            console.warn('animated reels render profile failed',config.width+'x'+config.height,String(err?.message||err));
+            await new Promise(resolve=>setTimeout(resolve,180));
+          }
+        }
+      }
+
+      if(canWebCodecs&&!preferWebCodecs){
+        try{
+          const result=await renderWebCodecsMp4();
+          if(video){try{video.pause()}catch{}}
+          return result;
+        }catch(err){
+          lastError=err;
+          console.warn('animated reels WebCodecs fallback failed',String(err?.message||err));
+        }
+      }
+
       if(video){try{video.pause()}catch{}}
       throw lastError||new Error('animated-reels-recording-failed');
     };
@@ -1089,9 +1218,9 @@ document.addEventListener('DOMContentLoaded',()=>{
       reelBtn.disabled=true;
       const oldShareDisabled=shareBtn.disabled,oldDownloadDisabled=downloadBtn.disabled;
       storyStatus.textContent=root.dataset.lang==='en'
-        ? 'Building an animated Reels video…' : 'در حال ساخت Reels متحرک؛ در صورت نیاز حالت سازگار موبایل خودکار فعال می‌شود…';
+        ? 'Building an animated Reels video…' : 'در حال ساخت Reels متحرک؛ روی سامسونگ مسیر MP4 سازگار به‌صورت خودکار استفاده می‌شود…';
       try{
-        const result=await makeAnimatedReel(activeStoryCard);
+        const result=await makeAnimatedReel(activeStoryCard,preparedStoryFile);
         const reelFile=result.file;
         if(preparedReelUrl){URL.revokeObjectURL(preparedReelUrl);preparedReelUrl='';}
         preparedReelUrl=URL.createObjectURL(reelFile);
