@@ -1,0 +1,27 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+
+test('article share-with-image keeps Android-safe direct sharing',()=>{
+  const js=fs.readFileSync('public/site.js','utf8');
+  assert.match(js,/data-article-share-image/);
+  assert.match(js,/const fileWithText=\{files:\[preparedShareImageFile\],text:payload\}/);
+  assert.match(js,/navigator\.canShare\(fileWithText\)/);
+  assert.match(js,/navigator\.canShare\(fileOnly\)/);
+  assert.match(js,/navigator\.share\(sharePayload\)/);
+  assert.match(js,/navigator\.share\(\{text:payload\}\)/);
+  assert.doesNotMatch(js,/navigator\.share\(\{files:\[preparedShareImageFile\],title,text:payload\}\)/);
+});
+
+test('approved share-card rules stay locked',()=>{
+  const js=fs.readFileSync('public/site.js','utf8');
+  const view=fs.readFileSync('lib/view-public.js','utf8');
+  assert.match(view,/data-article-image-kind=/);
+  assert.match(view,/data-article-category-id=/);
+  assert.match(js,/if\(bitmap&&shareImageKind==='real'\)/);
+  assert.match(js,/wrap\(title,920,2\)/);
+  assert.match(js,/wrap\(shortLead,920,1\)/);
+  assert.match(js,/articleCategoryId==='opinion'/);
+  assert.match(js,/خلاصه مطالبه/);
+  assert.match(js,/متن کامل مطالبه در نبض ساردو/);
+});
