@@ -95,7 +95,11 @@ async function ensureSocialPreviewForPath(pathname){
   }
   if(!article)return;
   try{
-    if(await ensureRasterSocialImage(article))await putState("db",JSON.stringify(db,null,2));
+    const beforeArticle=structuredClone(article);
+    if(await ensureRasterSocialImage(article)){
+      await publishing.commitChanges(env.DB,{articles:[beforeArticle]},{articles:[article]});
+      publicDbCache.at=0;
+    }
   }catch(err){
     console.error("social-preview-raster",article.id,String(err?.message||err));
   }
@@ -1536,17 +1540,21 @@ async function queuePublications(db){
 async function suppressPendingAutomaticPublications(){
   if(automaticDistributionEnabled())return false;
   const db=safeJson(await getState("db"),{});
-  let changed=false;
+  const beforeArticles=[],afterArticles=[];
   const pausedAt=new Date().toISOString();
   for(const a of db.articles||[]){
     if(!a.distributionRequest||a.distributionCompletedRequest===a.distributionRequest)continue;
     if(a.distributionManualRequest===a.distributionRequest)continue;
+    beforeArticles.push(structuredClone(a));
     a.distributionCompletedRequest=a.distributionRequest;
     a.distributionAutoPausedAt=pausedAt;
-    changed=true;
+    afterArticles.push(structuredClone(a));
   }
-  if(changed)await putState("db",JSON.stringify(db,null,2));
-  return changed;
+  if(afterArticles.length){
+    await publishing.commitChanges(env.DB,{articles:beforeArticles},{articles:afterArticles});
+    publicDbCache.at=0;
+  }
+  return afterArticles.length>0;
 }
 async function drainPublications(){
   await applyRuntimeEnv();
@@ -1568,19 +1576,23 @@ async function drainPublications(){
 async function refreshOpinionSocialWording(){
   await applyRuntimeEnv();
   const db=safeJson(await getState("db"),{});
-  let changed=false;
+  const beforeArticles=[],afterArticles=[];
   for(const a of db.articles||[]){
     if(a.status!=='published'||String(a.categoryId||'')!=='opinion')continue;
     if(Number(a.socialWordingVersion||0)>=2)continue;
+    beforeArticles.push(structuredClone(a));
     let result={telegram:{status:'skipped'},rubika:{status:'skipped'}};
     try{result=await social.updateExisting(a);}
     catch(err){result={error:String(err&&err.message||err)};}
     a.socialWordingVersion=2;
     a.socialWordingRefresh={version:2,at:new Date().toISOString(),result};
-    changed=true;
+    afterArticles.push(structuredClone(a));
   }
-  if(changed)await putState("db",JSON.stringify(db,null,2));
-  return changed;
+  if(afterArticles.length){
+    await publishing.commitChanges(env.DB,{articles:beforeArticles},{articles:afterArticles});
+    publicDbCache.at=0;
+  }
+  return afterArticles.length>0;
 }
 
 async function handleCloudflareAdminLogin(request) {
