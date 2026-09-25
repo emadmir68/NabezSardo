@@ -704,11 +704,16 @@ document.addEventListener('DOMContentLoaded',()=>{
       return lines;
     };
     const loadStoryImage=src=>new Promise(resolve=>{
+      const value=String(src||'').trim();
+      if(!value||/\/assets\/placeholder\.svg(?:\?|$)/i.test(value)){resolve(null);return;}
       const img=new Image();
       img.decoding='async';
+      // Prevent a remote image from tainting the Story canvas. If the source
+      // does not allow CORS, onerror gives us the branded no-photo fallback.
+      if(/^https?:\/\//i.test(value)&&!value.startsWith(location.origin))img.crossOrigin='anonymous';
       img.onload=()=>resolve(img);
       img.onerror=()=>resolve(null);
-      img.src=src.startsWith('http')?src:new URL(src,location.origin).href;
+      img.src=value.startsWith('http')?value:new URL(value,location.origin).href;
     });
     const drawContain=(ctx,img,x,y,w,h)=>{
       ctx.fillStyle='#0d1219';rr(ctx,x,y,w,h,34);ctx.fill();
@@ -724,6 +729,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       const lead=card.dataset[lang==='en'?'storyLeadEn':'storyLeadFa']||card.dataset.storyLeadFa||'';
       const body=card.dataset[lang==='en'?'storyBodyEn':'storyBodyFa']||card.dataset.storyBodyFa||'';
       const category=card.dataset[lang==='en'?'storyCategoryEn':'storyCategoryFa']||card.dataset.storyCategoryFa||'News';
+      const categoryId=card.dataset.storyCategoryId||'';
       const articleUrl=new URL(card.dataset.storyUrl||'/',location.origin).href;
       const img=await loadStoryImage(card.dataset.storyImage||'');
       const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
@@ -775,7 +781,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
       const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
       if(!blob)throw new Error('story-render-failed');
-      return {file:new File([blob],'nabez-sardo-news-story.png',{type:'image/png'}),articleUrl,title};
+      return {file:new File([blob],categoryId==='opinion'?'nabez-sardo-demand-story.png':'nabez-sardo-news-story.png',{type:'image/png'}),articleUrl,title,categoryId};
     };
 
     const closeNewsStory=()=>{
@@ -798,6 +804,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       makeNewsStory(card).then(result=>{
         if(activeStoryCard!==card)return;
         preparedStoryFile=result.file;
+        activeStoryCard.dataset.storyPreparedCategoryId=result.categoryId||activeStoryCard.dataset.storyCategoryId||'';
         preparedStoryUrl=URL.createObjectURL(result.file);
         const previewImg=document.createElement('img');previewImg.src=preparedStoryUrl;previewImg.alt='';
         storyPreview.replaceChildren(previewImg);
@@ -814,9 +821,16 @@ document.addEventListener('DOMContentLoaded',()=>{
       const lang=root.dataset.lang==='en'?'en':'fa';
       const title=activeStoryCard.dataset[lang==='en'?'storyTitleEn':'storyTitleFa']||activeStoryCard.dataset.storyTitleFa||'Nabez Sardo';
       const url=new URL(activeStoryCard.dataset.storyUrl||'/',location.origin).href;
+      const isOpinion=(activeStoryCard.dataset.storyCategoryId||'')==='opinion';
       try{
         if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[preparedStoryFile]}))){
-          await navigator.share({files:[preparedStoryFile],title,text:(lang==='en'?'Nabez Sardo — ':'نبض ساردو — ')+title+'\n'+url});
+          if(isOpinion){
+            // Instagram is more reliable when the Story handoff is image-only.
+            // The Story artwork itself already contains the title/lead/brand.
+            await navigator.share({files:[preparedStoryFile]});
+          }else{
+            await navigator.share({files:[preparedStoryFile],title,text:(lang==='en'?'Nabez Sardo — ':'نبض ساردو — ')+title+'\n'+url});
+          }
           closeNewsStory();
         }else{
           const a=document.createElement('a');a.href=preparedStoryUrl;a.download=preparedStoryFile.name;a.click();
@@ -829,6 +843,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
 
     newsStoryCards.forEach(card=>{
+      const badge=card.querySelector('.card-story-badge');
+      if(badge)badge.addEventListener('click',ev=>{
+        ev.preventDefault();ev.stopPropagation();
+        card.dataset.storySuppressUntil=String(Date.now()+900);
+        openNewsStory(card);
+      });
       let timer=null,startX=0,startY=0,triggered=false,lastPointerType='';
       const cancel=()=>{if(timer){clearTimeout(timer);timer=null;}card.classList.remove('story-holding');};
       card.addEventListener('pointerdown',ev=>{
