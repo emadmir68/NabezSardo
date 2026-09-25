@@ -971,14 +971,14 @@ async function persistBackups() {
   ).run();
 }
 
-async function hydrateState({ includeUploads = false, includeBackups = false } = {}) {
+async function hydrateState({ includeUploads = false, includeBackups = false, includeAnalytics = false } = {}) {
   ensureDirs();
   const [dbText, analyticsText] = await Promise.all([
     getState("db"),
-    getState("analytics")
+    includeAnalytics ? getState("analytics") : Promise.resolve("")
   ]);
   if (dbText) fs.writeFileSync(DB_FILE, dbText, "utf8");
-  if (analyticsText) fs.writeFileSync(ANALYTICS_FILE, analyticsText, "utf8");
+  if (includeAnalytics && analyticsText) fs.writeFileSync(ANALYTICS_FILE, analyticsText, "utf8");
   if (includeBackups) await hydrateBackups();
 
   if (includeUploads) {
@@ -990,7 +990,7 @@ async function hydrateState({ includeUploads = false, includeBackups = false } =
       uploadedMediaHashes.set(item.name,await sha256Hex(media.data));
     }
   }
-  return { dbText: dbText || "", analyticsText: analyticsText || "" };
+  return { dbText: dbText || "", analyticsText: analyticsText || "", analyticsLoaded: includeAnalytics };
 }
 
 async function uploadTempFiles(onlyNames = null) {
@@ -1021,11 +1021,11 @@ async function uploadTempFiles(onlyNames = null) {
 async function flushState(before, request, response) {
   ensureDirs();
   const afterDbText = fs.existsSync(DB_FILE) ? fs.readFileSync(DB_FILE, "utf8") : "";
-  const afterAnalyticsText = fs.existsSync(ANALYTICS_FILE) ? fs.readFileSync(ANALYTICS_FILE, "utf8") : "";
+  const afterAnalyticsText = before.analyticsLoaded && fs.existsSync(ANALYTICS_FILE) ? fs.readFileSync(ANALYTICS_FILE, "utf8") : "";
 
   // Persist media first so a queued publication never points at missing files.
   let committedDb=safeJson(afterDbText,{});
-  if (afterAnalyticsText && afterAnalyticsText !== before.analyticsText) await putState("analytics", afterAnalyticsText);
+  if (before.analyticsLoaded && afterAnalyticsText && afterAnalyticsText !== before.analyticsText) await putState("analytics", afterAnalyticsText);
 
   const url = new URL(request.url);
   const restored = request.method === "POST" &&
