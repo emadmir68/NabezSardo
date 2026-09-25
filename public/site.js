@@ -818,21 +818,21 @@ document.addEventListener('DOMContentLoaded',()=>{
       const categoryId=card.dataset.storyCategoryId||'';
       const [img,video]=await Promise.all([loadStoryImage(card.dataset.storyImage||''),loadReelVideo(card)]);
 
-      const W=1080,H=1920,DURATION=10000,FPS=30;
+      const W=1080,H=1920,DURATION=8000,FPS=24;
       const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
       const ctx=canvas.getContext('2d',{alpha:false});
       if(!ctx)throw new Error('animated-reels-canvas-failed');
 
       const mediaTypes=[
+        'video/mp4;codecs=avc1.424028',
         'video/mp4;codecs=avc1.42E01E',
         'video/mp4',
-        'video/webm;codecs=vp9',
         'video/webm;codecs=vp8',
         'video/webm'
-      ];
-      const mimeType=mediaTypes.find(type=>MediaRecorder.isTypeSupported(type))||'';
-      if(!mimeType)throw new Error('animated-reels-codec-not-supported');
-      const extension=mimeType.startsWith('video/mp4')?'mp4':'webm';
+      ].filter(type=>{
+        try{return MediaRecorder.isTypeSupported(type)}catch{return false}
+      });
+      if(!mediaTypes.length)mediaTypes.push('');
 
       const easeOut=x=>1-Math.pow(1-Math.max(0,Math.min(1,x)),3);
       const fade=(t,start,end)=>{
@@ -849,8 +849,13 @@ document.addEventListener('DOMContentLoaded',()=>{
         const sw=w/scale,sh=h/scale;
         const sx=Math.max(0,Math.min(mw-sw,(mw-sw)/2-shiftX/scale));
         const sy=Math.max(0,Math.min(mh-sh,(mh-sh)/2-shiftY/scale));
-        ctx.drawImage(media,sx,sy,sw,sh,x,y,w,h);
-        return true;
+        try{
+          ctx.drawImage(media,sx,sy,sw,sh,x,y,w,h);
+          return true;
+        }catch(err){
+          console.warn('animated reels media draw skipped',String(err?.message||err));
+          return false;
+        }
       };
       const drawLines=(lines,x,y,lineHeight,alpha=1,offsetY=0)=>{
         ctx.globalAlpha=alpha;
@@ -858,24 +863,6 @@ document.addEventListener('DOMContentLoaded',()=>{
         ctx.globalAlpha=1;
       };
 
-      const stream=canvas.captureStream(FPS);
-      const chunks=[];
-      const recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:6000000});
-      recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
-
-      const done=new Promise((resolve,reject)=>{
-        recorder.onerror=e=>reject(e.error||new Error('animated-reels-recording-failed'));
-        recorder.onstop=()=>{
-          try{
-            stream.getTracks().forEach(track=>track.stop());
-            if(video){try{video.pause()}catch{}}
-            const blob=new Blob(chunks,{type:recorder.mimeType||mimeType});
-            if(!blob.size){reject(new Error('animated-reels-empty'));return;}
-            const name=categoryId==='opinion'?'nabez-sardo-demand-reel.'+extension:'nabez-sardo-news-reel.'+extension;
-            resolve({file:new File([blob],name,{type:blob.type,lastModified:Date.now()}),extension});
-          }catch(err){reject(err)}
-        };
-      });
 
       const renderFrame=elapsed=>{
         const t=Math.max(0,Math.min(DURATION,elapsed));
@@ -973,19 +960,75 @@ document.addEventListener('DOMContentLoaded',()=>{
         ctx.fillStyle=sweep;ctx.fillRect(66,72,948,1776);
       };
 
-      recorder.start(500);
-      const started=performance.now();
-      await new Promise(resolve=>{
-        const tick=now=>{
-          const elapsed=now-started;
-          renderFrame(elapsed);
-          if(elapsed<DURATION)requestAnimationFrame(tick);
-          else{renderFrame(DURATION);setTimeout(resolve,80)}
-        };
-        requestAnimationFrame(tick);
-      });
-      if(recorder.state!=='inactive')recorder.stop();
-      return done;
+      const recordAttempt=async(mimeType,attempt)=>{
+        const localFps=attempt===0?FPS:20;
+        const bitRate=attempt===0?2800000:1900000;
+        const stream=canvas.captureStream(localFps);
+        const chunks=[];
+        let recorder;
+        try{
+          const options={videoBitsPerSecond:bitRate};
+          if(mimeType)options.mimeType=mimeType;
+          recorder=new MediaRecorder(stream,options);
+        }catch(err){
+          stream.getTracks().forEach(track=>track.stop());
+          throw err;
+        }
+
+        recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+        let recorderError=null;
+        const done=new Promise((resolve,reject)=>{
+          recorder.onerror=e=>{
+            recorderError=e?.error||new Error('animated-reels-recording-failed');
+            try{if(recorder.state!=='inactive')recorder.stop()}catch{}
+            reject(recorderError);
+          };
+          recorder.onstop=()=>{
+            try{
+              stream.getTracks().forEach(track=>track.stop());
+              if(recorderError)return;
+              const finalType=recorder.mimeType||mimeType||'video/webm';
+              const blob=new Blob(chunks,{type:finalType});
+              if(!blob.size){reject(new Error('animated-reels-empty'));return;}
+              const extension=/^video\/mp4/i.test(finalType)?'mp4':'webm';
+              const name=categoryId==='opinion'?'nabez-sardo-demand-reel.'+extension:'nabez-sardo-news-reel.'+extension;
+              resolve({file:new File([blob],name,{type:blob.type,lastModified:Date.now()}),extension,mimeType:finalType});
+            }catch(err){reject(err)}
+          };
+        });
+
+        recorder.start(1000);
+        const started=performance.now();
+        await new Promise((resolve,reject)=>{
+          const tick=now=>{
+            if(recorderError){reject(recorderError);return;}
+            const elapsed=now-started;
+            try{renderFrame(elapsed)}catch(err){reject(err);return;}
+            if(elapsed<DURATION)requestAnimationFrame(tick);
+            else{try{renderFrame(DURATION)}catch(err){reject(err);return}setTimeout(resolve,120)}
+          };
+          requestAnimationFrame(tick);
+        }).catch(err=>{
+          try{if(recorder.state!=='inactive')recorder.stop()}catch{}
+          throw err;
+        });
+        if(recorder.state!=='inactive')recorder.stop();
+        return done;
+      };
+
+      let lastError=null;
+      for(let i=0;i<mediaTypes.length;i++){
+        try{
+          return await recordAttempt(mediaTypes[i],i);
+        }catch(err){
+          lastError=err;
+          console.warn('animated reels codec attempt failed',mediaTypes[i]||'browser-default',String(err?.message||err));
+          // Give Samsung/Chromium's encoder a brief chance to release hardware resources.
+          await new Promise(resolve=>setTimeout(resolve,180));
+        }
+      }
+      if(video){try{video.pause()}catch{}}
+      throw lastError||new Error('animated-reels-recording-failed');
     };
 
     const closeNewsStory=()=>{
@@ -1083,7 +1126,7 @@ document.addEventListener('DOMContentLoaded',()=>{
           const unsupported=/not-supported|codec/i.test(String(err&&err.message||err));
           storyStatus.textContent=root.dataset.lang==='en'
             ?(unsupported?'Animated Reels is not supported by this browser.':'Could not build the animated Reels video.')
-            :(unsupported?'این مرورگر از ساخت Reels متحرک پشتیبانی نمی‌کند.':'ساخت ویدیوی متحرک Reels انجام نشد.');
+            :(unsupported?'این مرورگر از ساخت Reels متحرک پشتیبانی نمی‌کند.':'ساخت ویدیوی Reels با کُدک اول انجام نشد؛ مسیرهای جایگزین هم پاسخ ندادند.');
         }
       }finally{
         if(activeStoryCard)reelBtn.disabled=false;
