@@ -1,0 +1,2 @@
+Deploy low-memory mobile fallback for animated Reels from main 0a598706b93b4b82ca15df77bc877cb6f7449fa2.
+No Story/CSS/layout changes.
