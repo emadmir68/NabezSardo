@@ -1020,6 +1020,28 @@ document.addEventListener('DOMContentLoaded',()=>{
           {width:720,height:1280,fps:15,bitRate:1400000},
           {width:540,height:960,fps:12,bitRate:900000}
         ];
+        const premiumCapability=async()=>{
+          try{
+            const cores=Number(navigator.hardwareConcurrency||0);
+            const memory=Number(navigator.deviceMemory||0);
+            if(cores&&cores<4)return false;
+            if(memory&&memory<4)return false;
+            if(VideoEncoder.isConfigSupported){
+              const probe=await VideoEncoder.isConfigSupported({
+                codec:'avc1.42001f',
+                width:720,
+                height:1280,
+                bitrate:1400000,
+                framerate:15,
+                hardwareAcceleration:'prefer-hardware',
+                latencyMode:'quality'
+              });
+              if(!probe?.supported)return false;
+            }
+            return true;
+          }catch{return false}
+        };
+        let premiumEnabled=await premiumCapability();
         let lastError=null;
         try{
           for(const profile of profiles){
@@ -1074,6 +1096,88 @@ document.addEventListener('DOMContentLoaded',()=>{
                   sweep.addColorStop(1,'rgba(255,255,255,0)');
                   ctx.fillStyle=sweep;ctx.fillRect(0,0,width,height);
 
+                  // Progressive premium layer. The stable frame above is already
+                  // complete; any overlay failure simply turns premium off.
+                  if(premiumEnabled){
+                    try{
+                      const intro=Math.max(0,Math.min(1,p/.16));
+                      const outro=Math.max(0,Math.min(1,(p-.72)/.22));
+                      const pulse=.72+.28*Math.sin(p*Math.PI);
+
+                      // Burgundy/gold cinematic ambience.
+                      const wine=ctx.createRadialGradient(width*.82,height*.16,8,width*.82,height*.16,width*.55);
+                      wine.addColorStop(0,'rgba(151,34,70,'+(0.18*pulse)+')');
+                      wine.addColorStop(.52,'rgba(116,24,57,'+(0.07*pulse)+')');
+                      wine.addColorStop(1,'rgba(0,0,0,0)');
+                      ctx.fillStyle=wine;ctx.fillRect(0,0,width,height*.62);
+
+                      const gold=ctx.createRadialGradient(width*.16,height*.82,8,width*.16,height*.82,width*.42);
+                      gold.addColorStop(0,'rgba(225,184,111,'+(0.075*pulse)+')');
+                      gold.addColorStop(1,'rgba(225,184,111,0)');
+                      ctx.fillStyle=gold;ctx.fillRect(0,height*.52,width*.78,height*.48);
+
+                      // Premium inner frame fades in, never replaces the base.
+                      ctx.globalAlpha=.14*intro;
+                      ctx.strokeStyle='rgba(238,198,124,.95)';
+                      ctx.lineWidth=Math.max(1,width/540);
+                      ctx.strokeRect(width*.035,height*.022,width*.93,height*.956);
+                      ctx.globalAlpha=1;
+
+                      // Glass sheen across the information region.
+                      const sheenP=Math.max(0,Math.min(1,(p-.24)/.52));
+                      if(sheenP>0&&sheenP<1){
+                        const sx=-width*.22+(width*1.44)*sheenP;
+                        const sheen=ctx.createLinearGradient(sx-width*.12,0,sx+width*.12,0);
+                        sheen.addColorStop(0,'rgba(255,255,255,0)');
+                        sheen.addColorStop(.48,'rgba(247,215,153,.018)');
+                        sheen.addColorStop(.5,'rgba(247,215,153,.13)');
+                        sheen.addColorStop(.52,'rgba(247,215,153,.018)');
+                        sheen.addColorStop(1,'rgba(255,255,255,0)');
+                        ctx.fillStyle=sheen;ctx.fillRect(0,height*.48,width,height*.44);
+                      }
+
+                      // Animated gold rail gives the title area a premium beat.
+                      const railP=Math.max(0,Math.min(1,(p-.20)/.28));
+                      if(railP>0){
+                        const railW=width*.60*railP;
+                        const railX=(width-railW)/2;
+                        const rail=ctx.createLinearGradient(railX,0,railX+Math.max(2,railW),0);
+                        rail.addColorStop(0,'rgba(227,187,112,0)');
+                        rail.addColorStop(.18,'rgba(242,205,136,.86)');
+                        rail.addColorStop(.82,'rgba(242,205,136,.86)');
+                        rail.addColorStop(1,'rgba(227,187,112,0)');
+                        ctx.fillStyle=rail;ctx.fillRect(railX,height*.776,railW,Math.max(1,height*.0018));
+                      }
+
+                      // CTA glow/pulse only near the end.
+                      if(outro>0){
+                        const ctaPulse=1+Math.sin(p*38)*.05*outro;
+                        const glow=ctx.createRadialGradient(width*.5,height*.922,5,width*.5,height*.922,width*.34*ctaPulse);
+                        glow.addColorStop(0,'rgba(233,193,116,'+(0.15*outro)+')');
+                        glow.addColorStop(1,'rgba(233,193,116,0)');
+                        ctx.fillStyle=glow;ctx.fillRect(width*.12,height*.845,width*.76,height*.14);
+                      }
+
+                      // Final edge-light trace.
+                      if(p>.78){
+                        const edgeA=(p-.78)/.22;
+                        ctx.globalAlpha=.18*edgeA;
+                        const edge=ctx.createLinearGradient(0,0,width,0);
+                        edge.addColorStop(0,'rgba(225,184,111,0)');
+                        edge.addColorStop(.5,'rgba(246,215,151,.95)');
+                        edge.addColorStop(1,'rgba(225,184,111,0)');
+                        ctx.strokeStyle=edge;
+                        ctx.lineWidth=Math.max(1,width/420);
+                        ctx.strokeRect(width*.026,height*.014,width*.948,height*.972);
+                        ctx.globalAlpha=1;
+                      }
+                    }catch(err){
+                      premiumEnabled=false;
+                      ctx.globalAlpha=1;
+                      console.warn('premium reels overlay disabled',String(err?.message||err));
+                    }
+                  }
+
                   const frame=new VideoFrame(canvas,{
                     timestamp:i*frameDuration,
                     duration:frameDuration
@@ -1096,7 +1200,8 @@ document.addEventListener('DOMContentLoaded',()=>{
                   extension:'mp4',
                   mimeType:'video/mp4',
                   width,height,
-                  engine:'webcodecs'
+                  engine:premiumEnabled?'webcodecs-premium-auto':'webcodecs',
+                  premium:premiumEnabled
                 };
               }catch(err){
                 lastError=err;
@@ -1218,7 +1323,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       reelBtn.disabled=true;
       const oldShareDisabled=shareBtn.disabled,oldDownloadDisabled=downloadBtn.disabled;
       storyStatus.textContent=root.dataset.lang==='en'
-        ? 'Building an animated Reels video…' : 'در حال ساخت Reels متحرک؛ روی سامسونگ مسیر MP4 سازگار به‌صورت خودکار استفاده می‌شود…';
+        ? 'Building Reels… premium effects are enabled automatically when supported.' : 'در حال ساخت Reels؛ افکت‌های پریمیوم در صورت پشتیبانی دستگاه خودکار فعال می‌شوند…';
       try{
         const result=await makeAnimatedReel(activeStoryCard,preparedStoryFile);
         const reelFile=result.file;
@@ -1235,8 +1340,8 @@ document.addEventListener('DOMContentLoaded',()=>{
         const isMp4=result.extension==='mp4';
         storyStatus.textContent=isMp4
           ?(root.dataset.lang==='en'
-            ?'Animated MP4 is ready. Choose Instagram / Reels.'
-            :'ویدیوی متحرک آماده است؛ Instagram / Reels را انتخاب کنید.')
+            ?(result.premium?'Premium animated MP4 is ready. Choose Instagram / Reels.':'Animated MP4 is ready. Choose Instagram / Reels.')
+            :(result.premium?'Reels متحرک پریمیوم آماده است؛ Instagram / Reels را انتخاب کنید.':'ویدیوی متحرک آماده است؛ Instagram / Reels را انتخاب کنید.'))
           :(root.dataset.lang==='en'
             ?'Animated video is ready. This browser produced WebM instead of MP4.'
             :'ویدیوی متحرک آماده است؛ این مرورگر به‌جای MP4 خروجی WebM ساخته است.');
