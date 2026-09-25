@@ -218,13 +218,14 @@ async function ensureAppServer() {
       const db=store.load(),a=db.articles.find(x=>x.id===articleId);
       if(!a||a.status!=="published")return;
       a.shareKit=social.sharePackage(a);
-      if(!automaticDistributionEnabled()&&!options.retry){
+      const manual=options.manual===true;
+      if(!automaticDistributionEnabled()&&!manual){
         a.distributionAutoPausedAt=new Date().toISOString();
         store.save(db);
         return;
       }
       a.distributionRequest=options.retry&&a.distributionRequest?crypto.randomUUID():(a.distributionRequest||a.id+":initial");
-      if(options.retry)a.distributionManualRequest=a.distributionRequest;
+      if(manual)a.distributionManualRequest=a.distributionRequest;
       store.save(db);
     };
     await import("../app.js");
