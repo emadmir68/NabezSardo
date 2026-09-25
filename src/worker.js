@@ -1336,6 +1336,24 @@ async function drainPublications(){
   });
 }
 
+async function refreshOpinionSocialWording(){
+  await applyRuntimeEnv();
+  const db=safeJson(await getState("db"),{});
+  let changed=false;
+  for(const a of db.articles||[]){
+    if(a.status!=='published'||String(a.categoryId||'')!=='opinion')continue;
+    if(Number(a.socialWordingVersion||0)>=2)continue;
+    let result={telegram:{status:'skipped'},rubika:{status:'skipped'}};
+    try{result=await social.updateExisting(a);}
+    catch(err){result={error:String(err&&err.message||err)};}
+    a.socialWordingVersion=2;
+    a.socialWordingRefresh={version:2,at:new Date().toISOString(),result};
+    changed=true;
+  }
+  if(changed)await putState("db",JSON.stringify(db,null,2));
+  return changed;
+}
+
 async function handleCloudflareAdminLogin(request) {
   const auth = await runtimeAuth();
   if (!auth) return new Response("Cloudflare admin authentication is not ready.", { status: 503 });
@@ -1478,6 +1496,7 @@ export default {
     });
     await drainPublications();
     if(isPrimary()){
+      try{await refreshOpinionSocialWording();}catch(err){console.error("opinion-social-refresh",String(err?.message||err));}
       try{await migrateLegacyMediaBatch(10);}catch(err){console.error("arvan-migrate-batch",String(err?.message||err));}
       try{await createDailyArvanBackup();}catch(err){console.error("arvan-backup-tick",String(err?.message||err));}
     }
