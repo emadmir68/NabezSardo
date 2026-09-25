@@ -297,7 +297,8 @@ function html(body, status = 200) {
 
 async function loadDbObject() {
   const text = await getState("db");
-  return safeJson(text, { settings: {}, categories: [], articles: [], contacts: [], citizens: [] });
+  const db=safeJson(text, { settings: {}, categories: [], articles: [], contacts: [], citizens: [] });
+  return store.normalizeEditorialDb(db);
 }
 
 let trafficSchemaReady;
@@ -424,7 +425,7 @@ async function loadPublicDbFast(){
     getState("db"),
     env.DB.prepare("SELECT article_id,views FROM article_view_counts").all()
   ]);
-  const db=safeJson(text,{settings:{},categories:[],articles:[],contacts:[],citizens:[]});
+  const db=store.normalizeEditorialDb(safeJson(text,{settings:{},categories:[],articles:[],contacts:[],citizens:[]}));
   const counts=new Map((viewRows.results||[]).map(x=>[String(x.article_id),Number(x.views||0)]));
   for(const a of db.articles||[])a.views=Number(a.views||0)+Number(counts.get(String(a.id))||0);
   publicDbCache={at:nowMs,db};
