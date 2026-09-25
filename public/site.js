@@ -681,6 +681,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         <p data-news-story-status><span class="lang-fa">در حال آماده‌سازی تصویر استوری…</span><span class="lang-en">Preparing story image…</span></p>
         <div class="news-story-preview" data-news-story-preview></div>
         <button class="btn primary" type="button" data-news-story-native disabled><span class="lang-fa">اشتراک در استوری / اینستاگرام</span><span class="lang-en">Share to Story / Instagram</span></button>
+        <button class="btn ghost" type="button" data-news-reel-card disabled><span class="lang-fa">کارت مخصوص Reels اینستاگرام</span><span class="lang-en">Instagram Reels card</span></button>
         <button class="btn ghost" type="button" data-news-story-download disabled><span class="lang-fa">ذخیره تصویر استوری</span><span class="lang-en">Save story image</span></button>
         <button class="story-sheet-cancel" type="button" data-news-story-close><span class="lang-fa">انصراف</span><span class="lang-en">Cancel</span></button>
       </div>`;
@@ -689,6 +690,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const storyStatus=storySheet.querySelector('[data-news-story-status]');
     const storyPreview=storySheet.querySelector('[data-news-story-preview]');
     const shareBtn=storySheet.querySelector('[data-news-story-native]');
+    const reelBtn=storySheet.querySelector('[data-news-reel-card]');
     const downloadBtn=storySheet.querySelector('[data-news-story-download]');
     let activeStoryCard=null,preparedStoryFile=null,preparedStoryUrl='';
 
@@ -799,7 +801,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       activeStoryCard=card;preparedStoryFile=null;
       if(preparedStoryUrl){URL.revokeObjectURL(preparedStoryUrl);preparedStoryUrl='';}
       storyPreview.innerHTML='';
-      shareBtn.disabled=true;downloadBtn.disabled=true;
+      shareBtn.disabled=true;reelBtn.disabled=true;downloadBtn.disabled=true;
       storyStatus.innerHTML=root.dataset.lang==='en'?'Preparing story image…':'در حال آماده‌سازی تصویر استوری…';
       storySheet.hidden=false;document.body.classList.add('story-sheet-open');
       if(navigator.vibrate)navigator.vibrate(25);
@@ -811,7 +813,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         const previewImg=document.createElement('img');previewImg.src=preparedStoryUrl;previewImg.alt='';
         storyPreview.replaceChildren(previewImg);
         storyStatus.textContent=root.dataset.lang==='en'?'Image + headline are ready for Story.':'عکس و متن خبر برای استوری آماده شد.';
-        shareBtn.disabled=false;downloadBtn.disabled=false;
+        shareBtn.disabled=false;reelBtn.disabled=false;downloadBtn.disabled=false;
       }).catch(err=>{
         console.warn('news story render failed',err);
         storyStatus.textContent=root.dataset.lang==='en'?'Could not prepare the story image.':'ساخت تصویر استوری انجام نشد.';
@@ -839,6 +841,41 @@ document.addEventListener('DOMContentLoaded',()=>{
         }
       }catch(err){if(err&&err.name!=='AbortError')console.warn('news story share failed',err);}
     });
+    reelBtn.addEventListener('click',async()=>{
+      if(!preparedStoryFile||!activeStoryCard)return;
+      const isOpinion=(activeStoryCard.dataset.storyCategoryId||'')==='opinion';
+      const reelFile=new File(
+        [preparedStoryFile],
+        isOpinion?'nabez-sardo-demand-reel.png':'nabez-sardo-news-reel.png',
+        {type:preparedStoryFile.type||'image/png',lastModified:Date.now()}
+      );
+      reelBtn.disabled=true;
+      storyStatus.textContent=root.dataset.lang==='en'
+        ?'Reels card is ready. Choose Instagram / Reels in the share sheet.'
+        :'کارت ۹:۱۶ ریلز آماده است؛ در پنجره اشتراک، Instagram / Reels را انتخاب کنید.';
+      try{
+        if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[reelFile]}))){
+          await navigator.share({files:[reelFile]});
+        }else{
+          const reelUrl=URL.createObjectURL(reelFile);
+          const a=document.createElement('a');a.href=reelUrl;a.download=reelFile.name;a.click();
+          setTimeout(()=>URL.revokeObjectURL(reelUrl),2500);
+          storyStatus.textContent=root.dataset.lang==='en'
+            ?'The 1080×1920 Reels card was saved.'
+            :'کارت ۱۰۸۰×۱۹۲۰ مخصوص ریلز ذخیره شد.';
+        }
+      }catch(err){
+        if(err&&err.name!=='AbortError'){
+          console.warn('news reels card share failed',err);
+          storyStatus.textContent=root.dataset.lang==='en'
+            ?'The Reels card is ready; use Save if Instagram does not appear.'
+            :'کارت ریلز آماده است؛ اگر Instagram نمایش داده نشد، تصویر را ذخیره کنید.';
+        }
+      }finally{
+        if(activeStoryCard)reelBtn.disabled=false;
+      }
+    });
+
     downloadBtn.addEventListener('click',()=>{
       if(!preparedStoryFile)return;
       const a=document.createElement('a');a.href=preparedStoryUrl;a.download=preparedStoryFile.name;a.click();
