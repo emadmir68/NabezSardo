@@ -226,6 +226,7 @@ const DB_FILE = path.join(DATA_DIR, "db.json");
 const ANALYTICS_FILE = path.join(DATA_DIR, "analytics.json");
 const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
 const BACKUP_DIR = path.join(DATA_DIR, "backups");
+const BACKUP_MANIFEST_FILE = path.join(DATA_DIR, "backups-manifest.json");
 
 function ensureDirs() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -747,6 +748,19 @@ async function hydrateBackups() {
     if (!safe || safe !== name || !safe.endsWith(".json")) continue;
     fs.writeFileSync(path.join(BACKUP_DIR, safe), String(row.value || ""), "utf8");
   }
+}
+
+async function hydrateBackupManifest() {
+  ensureDirs();
+  const rows = await env.DB.prepare(
+    "SELECT key,length(value) AS size,updated_at FROM app_state WHERE key LIKE 'backup:%' ORDER BY updated_at DESC LIMIT 12"
+  ).all();
+  const manifest = (rows.results || []).map(row => ({
+    name: String(row.key || "").slice("backup:".length),
+    size: Number(row.size || 0),
+    updatedAt: row.updated_at ? new Date(String(row.updated_at).replace(" ","T")+"Z").toISOString() : new Date().toISOString()
+  })).filter(x => x.name && path.basename(x.name) === x.name && x.name.endsWith(".json"));
+  fs.writeFileSync(BACKUP_MANIFEST_FILE, JSON.stringify(manifest), "utf8");
 }
 
 async function persistBackups() {
@@ -1361,8 +1375,12 @@ async function handleAppSerial(request) {
     await ensureSocialPreviewForPath(url.pathname);
   }
   const includeUploads = request.method === "GET" && url.pathname === "/admin/backup/download";
-  const includeBackups = url.pathname.startsWith("/admin");
+  const isAdmin = url.pathname.startsWith("/admin");
+  const isLogin = url.pathname === "/admin/login";
+  const includeBackups = isAdmin && !isLogin && request.method !== "GET" && request.method !== "HEAD";
+  const includeBackupManifest = request.method === "GET" && url.pathname === "/admin";
   const before = await hydrateState({ includeUploads, includeBackups });
+  if (includeBackupManifest) await hydrateBackupManifest();
   await ensureAppServer();
   const response = await handleAsNodeRequest(PORT, request);
   const states = await flushState(before, request, response);
