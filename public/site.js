@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       const categoryId=card.dataset.storyCategoryId||'';
       const [img,video]=await Promise.all([loadStoryImage(card.dataset.storyImage||''),loadReelVideo(card)]);
 
-      const LW=1080,LH=1920,DURATION=6500;
+      const LW=1080,LH=1920,DURATION=8000;
       const easeOut=x=>1-Math.pow(1-Math.max(0,Math.min(1,x)),3);
       const fade=(t,start,end)=>{
         if(t<=start)return 0;
@@ -1014,13 +1014,29 @@ document.addEventListener('DOMContentLoaded',()=>{
 
       const renderWebCodecsMp4=async()=>{
         if(!canWebCodecs||!storyFile)throw new Error('webcodecs-mp4-unavailable');
-        let bitmap=null;
-        try{bitmap=await createImageBitmap(storyFile)}catch(err){throw new Error('webcodecs-story-image-failed:'+String(err?.message||err))}
+        let storyBitmap=null;
+        try{storyBitmap=await createImageBitmap(storyFile)}catch(err){throw new Error('webcodecs-story-image-failed:'+String(err?.message||err))}
         const profiles=[
-          {width:720,height:1280,fps:15,bitRate:1400000},
-          {width:540,height:960,fps:12,bitRate:900000}
+          {width:720,height:1280,fps:15,bitRate:1550000},
+          {width:540,height:960,fps:12,bitRate:950000}
         ];
         let lastError=null;
+
+        const clamp01=x=>Math.max(0,Math.min(1,x));
+        const easeOut=x=>1-Math.pow(1-clamp01(x),3);
+        const smooth=(t,a,b)=>easeOut((t-a)/(b-a));
+        const drawCoverPremium=(ctx,media,x,y,w,h,zoom=1,shiftX=0,shiftY=0)=>{
+          if(!media)return false;
+          const mw=media.videoWidth||media.naturalWidth||media.width||0;
+          const mh=media.videoHeight||media.naturalHeight||media.height||0;
+          if(!mw||!mh)return false;
+          const scale=Math.max(w/mw,h/mh)*zoom;
+          const sw=w/scale,sh=h/scale;
+          const sx=Math.max(0,Math.min(mw-sw,(mw-sw)/2-shiftX/scale));
+          const sy=Math.max(0,Math.min(mh-sh,(mh-sh)/2-shiftY/scale));
+          try{ctx.drawImage(media,sx,sy,sw,sh,x,y,w,h);return true}catch{return false}
+        };
+
         try{
           for(const profile of profiles){
             const {width,height,fps,bitRate}=profile;
@@ -1050,29 +1066,171 @@ document.addEventListener('DOMContentLoaded',()=>{
                 const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
                 const ctx=canvas.getContext('2d',{alpha:false,desynchronized:true})||canvas.getContext('2d',{alpha:false});
                 if(!ctx)throw new Error('webcodecs-canvas-failed');
+                const logicalScale=width/1080;
 
                 const frames=Math.max(1,Math.round(DURATION/1000*fps));
                 const frameDuration=Math.round(1000000/fps);
                 for(let i=0;i<frames;i++){
                   if(encodeError)throw encodeError;
-                  const p=frames<=1?1:i/(frames-1);
-                  ctx.fillStyle='#070b11';ctx.fillRect(0,0,width,height);
+                  const t=(i/(Math.max(1,frames-1)))*DURATION;
+                  const p=t/DURATION;
+                  ctx.setTransform(logicalScale,0,0,logicalScale,0,0);
 
-                  // Animate the already-approved Story artwork with a subtle
-                  // editorial Ken Burns motion. This keeps text/branding exact
-                  // while avoiding Samsung Internet's MediaRecorder path.
-                  const zoom=1.0+0.035*p;
-                  const dw=width*zoom,dh=height*zoom;
-                  const dx=(width-dw)/2+(Math.sin(p*Math.PI)*8);
-                  const dy=(height-dh)/2-(p*10);
-                  ctx.drawImage(bitmap,dx,dy,dw,dh);
+                  // Cinematic full-bleed background with a slow parallax camera.
+                  ctx.fillStyle='#06090e';ctx.fillRect(0,0,1080,1920);
+                  const media=(video&&video.readyState>=2)?video:img;
+                  const bgZoom=1.055+0.045*p;
+                  const bgX=Math.sin(p*Math.PI*1.05)*22-10;
+                  const bgY=-18*p;
+                  if(!drawCoverPremium(ctx,media,0,0,1080,1920,bgZoom,bgX,bgY)){
+                    drawCoverPremium(ctx,storyBitmap,0,0,1080,1920,1.08,0,-14*p);
+                  }
 
-                  const sweepX=-width*.25+(width*1.5)*p;
-                  const sweep=ctx.createLinearGradient(sweepX-width*.16,0,sweepX+width*.16,0);
-                  sweep.addColorStop(0,'rgba(255,255,255,0)');
-                  sweep.addColorStop(.5,'rgba(242,202,120,.055)');
-                  sweep.addColorStop(1,'rgba(255,255,255,0)');
-                  ctx.fillStyle=sweep;ctx.fillRect(0,0,width,height);
+                  // Editorial darkening keeps headline contrast high.
+                  const vignette=ctx.createRadialGradient(540,720,180,540,900,1180);
+                  vignette.addColorStop(0,'rgba(5,8,13,.04)');
+                  vignette.addColorStop(.58,'rgba(5,8,13,.28)');
+                  vignette.addColorStop(1,'rgba(5,8,13,.84)');
+                  ctx.fillStyle=vignette;ctx.fillRect(0,0,1080,1920);
+
+                  const vertical=ctx.createLinearGradient(0,220,0,1920);
+                  vertical.addColorStop(0,'rgba(5,7,11,.14)');
+                  vertical.addColorStop(.46,'rgba(5,7,11,.12)');
+                  vertical.addColorStop(.68,'rgba(5,7,11,.58)');
+                  vertical.addColorStop(1,'rgba(5,7,11,.96)');
+                  ctx.fillStyle=vertical;ctx.fillRect(0,0,1080,1920);
+
+                  // Burgundy and gold breathing glows.
+                  const breathe=.76+.24*Math.sin(p*Math.PI);
+                  const wine=ctx.createRadialGradient(870,265,20,870,265,630);
+                  wine.addColorStop(0,'rgba(151,34,70,'+(0.25*breathe)+')');
+                  wine.addColorStop(.50,'rgba(91,18,44,'+(0.12*breathe)+')');
+                  wine.addColorStop(1,'rgba(0,0,0,0)');
+                  ctx.fillStyle=wine;ctx.fillRect(0,0,1080,980);
+
+                  const gold=ctx.createRadialGradient(150,1540,20,150,1540,520);
+                  gold.addColorStop(0,'rgba(224,182,109,'+(0.10*breathe)+')');
+                  gold.addColorStop(1,'rgba(224,182,109,0)');
+                  ctx.fillStyle=gold;ctx.fillRect(0,1020,760,900);
+
+                  // Premium glass information panel.
+                  const panelA=smooth(t,1300,2400);
+                  ctx.globalAlpha=.78*panelA;
+                  ctx.fillStyle='rgba(10,14,20,.82)';
+                  rr(ctx,66,945+(1-panelA)*34,948,790,44);ctx.fill();
+                  ctx.strokeStyle='rgba(222,180,102,.25)';ctx.lineWidth=2;
+                  rr(ctx,66,945+(1-panelA)*34,948,790,44);ctx.stroke();
+                  ctx.globalAlpha=1;
+
+                  // Animated top brand.
+                  const brandA=smooth(t,80,850);
+                  ctx.globalAlpha=brandA;
+                  ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+                  ctx.fillStyle='#f4cf83';ctx.font='900 50px Vazirmatn, sans-serif';
+                  const brandX=lang==='en'?96:984;
+                  ctx.fillText(lang==='en'?'NABEZ SARDO':'نبض ساردو',brandX,154+(1-brandA)*24);
+                  ctx.fillStyle='rgba(242,237,226,.72)';ctx.font='600 22px Vazirmatn, sans-serif';
+                  ctx.fillText(lang==='en'?'LOCAL NEWS / SOUTH KERMAN':'رسانه محلی ساردوئیه و جنوب کرمان',brandX,198+(1-brandA)*24);
+                  ctx.globalAlpha=1;
+
+                  // Gold rail draws itself on.
+                  const railA=smooth(t,500,1350);
+                  const rail=ctx.createLinearGradient(96,0,984,0);
+                  rail.addColorStop(0,'rgba(216,173,95,.05)');
+                  rail.addColorStop(.48,'rgba(244,205,132,.95)');
+                  rail.addColorStop(1,'rgba(157,36,73,.45)');
+                  ctx.fillStyle=rail;ctx.fillRect(96,222,888*railA,4);
+
+                  // Category pill rises into the glass panel.
+                  const catA=smooth(t,1200,2100);
+                  ctx.font='800 24px Vazirmatn, sans-serif';
+                  const pillW=Math.min(330,Math.max(150,ctx.measureText(category).width+72));
+                  const pillX=lang==='en'?96:984-pillW;
+                  ctx.globalAlpha=catA;
+                  ctx.fillStyle='rgba(132,29,61,.90)';rr(ctx,pillX,1004+(1-catA)*18,pillW,58,29);ctx.fill();
+                  ctx.strokeStyle='rgba(240,205,140,.28)';ctx.lineWidth=1.5;rr(ctx,pillX,1004+(1-catA)*18,pillW,58,29);ctx.stroke();
+                  ctx.fillStyle='#f3d99e';ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';
+                  ctx.fillText(category,pillX+pillW/2,1042+(1-catA)*18);
+                  ctx.globalAlpha=1;
+
+                  // Headline enters line-by-line with a tiny blur-to-sharp transition.
+                  ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+                  const titleFont=title.length>95?58:title.length>62?64:72;
+                  ctx.font='900 '+titleFont+'px Vazirmatn, sans-serif';
+                  const titleLines=wrapStoryLines(ctx,title,870).slice(0,4);
+                  titleLines.forEach((line,index)=>{
+                    const lineA=smooth(t,1950+index*260,3050+index*260);
+                    ctx.globalAlpha=lineA;
+                    ctx.filter='blur('+((1-lineA)*4).toFixed(1)+'px)';
+                    ctx.fillStyle='#fff8ed';
+                    ctx.fillText(line,lang==='en'?100:980,1175+index*titleFont*1.33+(1-lineA)*28);
+                  });
+                  ctx.filter='none';ctx.globalAlpha=1;
+
+                  // Fine gold separator grows after headline.
+                  const sepA=smooth(t,3250,4050);
+                  const sepW=860*sepA,sepX=540-sepW/2;
+                  if(sepW>3){
+                    const sep=ctx.createLinearGradient(sepX,0,sepX+sepW,0);
+                    sep.addColorStop(0,'rgba(217,176,99,0)');
+                    sep.addColorStop(.18,'rgba(239,202,132,.88)');
+                    sep.addColorStop(.82,'rgba(239,202,132,.88)');
+                    sep.addColorStop(1,'rgba(217,176,99,0)');
+                    ctx.fillStyle=sep;ctx.fillRect(sepX,1488,sepW,3);
+                  }
+
+                  // Lead glides in after headline.
+                  const leadA=smooth(t,3700,4850);
+                  ctx.globalAlpha=leadA;
+                  ctx.fillStyle='rgba(231,235,241,.94)';ctx.font='600 30px Vazirmatn, sans-serif';
+                  ctx.textAlign=lang==='en'?'left':'right';ctx.direction=lang==='en'?'ltr':'rtl';
+                  const leadLines=wrapStoryLines(ctx,lead,850).slice(0,4);
+                  leadLines.forEach((line,index)=>ctx.fillText(line,lang==='en'?105:975,1560+index*48+(1-leadA)*22));
+                  ctx.globalAlpha=1;
+
+                  // Moving gold light sweep across the whole glass panel.
+                  const sweepP=clamp01((t-2800)/3600);
+                  if(sweepP>0&&sweepP<1){
+                    const sweepX=20+(1040*sweepP);
+                    const sweep=ctx.createLinearGradient(sweepX-170,0,sweepX+170,0);
+                    sweep.addColorStop(0,'rgba(255,255,255,0)');
+                    sweep.addColorStop(.48,'rgba(246,213,147,.02)');
+                    sweep.addColorStop(.5,'rgba(246,213,147,.15)');
+                    sweep.addColorStop(.52,'rgba(246,213,147,.02)');
+                    sweep.addColorStop(1,'rgba(255,255,255,0)');
+                    ctx.fillStyle=sweep;rr(ctx,66,945,948,790,44);ctx.fill();
+                  }
+
+                  // End CTA with a restrained premium pulse.
+                  const ctaA=smooth(t,5850,6850);
+                  const pulse=1+(Math.sin((t-5850)/260)*.012*ctaA);
+                  ctx.save();
+                  ctx.translate(540,1770);ctx.scale(pulse,pulse);ctx.translate(-540,-1770);
+                  ctx.globalAlpha=ctaA;
+                  const ctaGlow=ctx.createRadialGradient(540,1775,20,540,1775,390);
+                  ctaGlow.addColorStop(0,'rgba(224,182,109,.18)');
+                  ctaGlow.addColorStop(1,'rgba(224,182,109,0)');
+                  ctx.fillStyle=ctaGlow;ctx.fillRect(110,1680,860,190);
+                  ctx.fillStyle='rgba(8,11,16,.91)';rr(ctx,205,1718,670,104,36);ctx.fill();
+                  ctx.strokeStyle='rgba(231,190,111,.55)';ctx.lineWidth=2;rr(ctx,205,1718,670,104,36);ctx.stroke();
+                  ctx.fillStyle='#f4d48e';ctx.textAlign='center';ctx.direction=lang==='en'?'ltr':'rtl';
+                  ctx.font='800 28px Vazirmatn, sans-serif';
+                  ctx.fillText(lang==='en'?'Read more on NABZESARDO.IR':'ادامه خبر در NABZESARDO.IR',540,1782);
+                  ctx.restore();ctx.globalAlpha=1;
+
+                  // Final edge-light trace.
+                  const edgeA=smooth(t,6500,7600);
+                  if(edgeA>0){
+                    ctx.globalAlpha=.22*edgeA;
+                    const edge=ctx.createLinearGradient(66,0,1014,0);
+                    edge.addColorStop(0,'rgba(224,182,109,0)');
+                    edge.addColorStop(.5,'rgba(244,207,137,.95)');
+                    edge.addColorStop(1,'rgba(224,182,109,0)');
+                    ctx.strokeStyle=edge;ctx.lineWidth=2.5;rr(ctx,66,72,948,1776,48);ctx.stroke();
+                    ctx.globalAlpha=1;
+                  }
+
+                  ctx.setTransform(1,0,0,1,0,0);
 
                   const frame=new VideoFrame(canvas,{
                     timestamp:i*frameDuration,
@@ -1081,10 +1239,9 @@ document.addEventListener('DOMContentLoaded',()=>{
                   encoder.encode(frame,{keyFrame:i===0||i%(fps*2)===0});
                   frame.close();
 
-                  if(encoder.encodeQueueSize>4){
-                    await new Promise(resolve=>setTimeout(resolve,0));
-                  }
+                  if(encoder.encodeQueueSize>4)await new Promise(resolve=>setTimeout(resolve,0));
                 }
+
                 await encoder.flush();
                 if(encodeError)throw encodeError;
                 muxer.finalize();
@@ -1096,20 +1253,20 @@ document.addEventListener('DOMContentLoaded',()=>{
                   extension:'mp4',
                   mimeType:'video/mp4',
                   width,height,
-                  engine:'webcodecs'
+                  engine:'webcodecs-premium'
                 };
               }catch(err){
                 lastError=err;
-                console.warn('animated reels WebCodecs attempt failed',codec,profile.width+'x'+profile.height,String(err?.message||err));
+                console.warn('premium animated reels WebCodecs attempt failed',codec,profile.width+'x'+profile.height,String(err?.message||err));
               }finally{
                 if(encoder){try{encoder.close()}catch{}}
               }
             }
           }
         }finally{
-          if(bitmap&&bitmap.close)bitmap.close();
+          if(storyBitmap&&storyBitmap.close)storyBitmap.close();
         }
-        throw lastError||new Error('webcodecs-mp4-failed');
+        throw lastError||new Error('webcodecs-premium-mp4-failed');
       };
 
       const attempts=[
@@ -1218,7 +1375,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       reelBtn.disabled=true;
       const oldShareDisabled=shareBtn.disabled,oldDownloadDisabled=downloadBtn.disabled;
       storyStatus.textContent=root.dataset.lang==='en'
-        ? 'Building an animated Reels video…' : 'در حال ساخت Reels متحرک؛ روی سامسونگ مسیر MP4 سازگار به‌صورت خودکار استفاده می‌شود…';
+        ? 'Building an animated Reels video…' : 'در حال ساخت Reels متحرک پرمیوم؛ نور، تیتر و موشن سینمایی در حال رندر است…';
       try{
         const result=await makeAnimatedReel(activeStoryCard,preparedStoryFile);
         const reelFile=result.file;
