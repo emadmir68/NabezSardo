@@ -472,7 +472,7 @@ const server=http.createServer(async(req,res)=>{
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
       if(a.status!=='published')return send(res,400,'فقط خبر منتشرشده قابل ارسال است.');
-      try{await articleTools.dispatchAndPersist(a.id,{retry:true});}
+      try{await articleTools.dispatchAndPersist(a.id,{retry:true,manual:true});}
       catch(err){console.error('social redistribution',err);}
       return redirect(res,'/admin/articles/'+a.id+'/share-kit?resent=1');
     }
