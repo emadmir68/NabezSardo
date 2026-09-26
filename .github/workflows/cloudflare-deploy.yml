@@ -207,12 +207,41 @@ jobs:
           test -s /tmp/og-image.bin
           echo "$image_type" | grep -Eq '^image/(png|jpeg|jpg|webp|gif)'
 
+          measure() {
+            label="$1"
+            url="$2"
+            curl -sS -L --max-time 45 -o /dev/null -w "$label\t%{http_code}\t%{time_namelookup}\t%{time_connect}\t%{time_starttransfer}\t%{time_total}\t%{size_download}\n" "$url"
+          }
+          {
+            measure home "$SITE/"
+            measure archive "$SITE/all-news"
+            measure admin_login "$SITE/admin/login"
+            measure article "$SITE$short_path"
+            measure media "$og_image"
+            measure health "$SITE/health"
+          } > /tmp/performance.tsv
+          cat /tmp/performance.tsv
+
           node <<'NODE'
           const fs=require('fs');
           const worker=JSON.parse(fs.readFileSync('/tmp/worker-health.json','utf8'));
           const site=JSON.parse(fs.readFileSync('/tmp/site-health.json','utf8'));
           const cut=JSON.parse(fs.readFileSync('/tmp/cutover.json','utf8'));
+          const performance={};
+          for(const line of fs.readFileSync('/tmp/performance.tsv','utf8').trim().split(/\n+/)){
+            const [name,http,dns,connect,ttfb,total,size]=line.split('\t');
+            if(!name)continue;
+            performance[name]={
+              http:Number(http||0),
+              dns:Number(dns||0),
+              connect:Number(connect||0),
+              ttfb:Number(ttfb||0),
+              total:Number(total||0),
+              bytes:Number(size||0)
+            };
+          }
           const problems=[];
+          const warnings=[];
           if(worker.origin!=='cloudflare'||worker.railwayDependency!==false) problems.push('worker-health-not-independent');
           if(site.origin!=='cloudflare'||site.railwayDependency!==false) problems.push('site-health-not-independent');
           if(cut.cloudflarePrimary!==true) problems.push('cloudflare-not-primary');
@@ -222,14 +251,24 @@ jobs:
           if(cut.storage?.arvanAuthenticated!==true) problems.push('arvan-not-authenticated');
           if(cut.storage?.lastError) problems.push('arvan-last-error:'+cut.storage.lastError);
           if(cut.backup?.lastError) problems.push('backup-last-error:'+cut.backup.lastError);
+          if(cut.backup?.weeklySite?.enabled!==true) problems.push('weekly-site-backup-disabled');
+          if(cut.backup?.weeklySite?.lastError) problems.push('weekly-site-backup-error:'+cut.backup.weeklySite.lastError);
+          for(const [name,row] of Object.entries(performance)){
+            if(row.http!==200) problems.push('performance-http-'+name+':'+row.http);
+            const limit=name==='media'?4:(name==='admin_login'?3.5:3);
+            if(row.total>limit) warnings.push('slow-'+name+':'+row.total.toFixed(3)+'s');
+            if(row.ttfb>2) warnings.push('slow-ttfb-'+name+':'+row.ttfb.toFixed(3)+'s');
+          }
           const report={
             testedAt:new Date().toISOString(),
             commit:process.env.GITHUB_SHA,
             workerHealth:worker,
             siteHealth:site,
             cutover:cut,
+            performance,
             readyForRailwayShutdown:problems.length===0 && cut.readyForRailwayShutdown===true,
-            problems
+            problems,
+            warnings
           };
           fs.writeFileSync('cloudflare-deploy-status.json',JSON.stringify(report,null,2)+'\n');
           if(problems.length){
