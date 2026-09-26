@@ -674,7 +674,10 @@ document.addEventListener('DOMContentLoaded',()=>{
       if(shareVideoLoadPromise)return shareVideoLoadPromise;
       shareVideoLoadPromise=fetchShareVideoFile()
         .then(file=>{
-          if(file)preparedOriginalShareVideoFile=file;
+          if(file){
+            preparedOriginalShareVideoFile=file;
+            if(!preparedShareVideoFile)preparedShareVideoFile=file;
+          }
           return file;
         })
         .catch(err=>{
@@ -686,7 +689,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     };
 
     const ensureTitledShareVideoFile=(label)=>{
-      if(preparedShareVideoFile)return Promise.resolve(preparedShareVideoFile);
+      if(shareVideoHasTitle&&preparedShareVideoFile)return Promise.resolve(preparedShareVideoFile);
       if(shareVideoRenderPromise)return shareVideoRenderPromise;
       shareVideoRenderPromise=ensureOriginalShareVideoFile()
         .then(async original=>{
@@ -697,14 +700,17 @@ document.addEventListener('DOMContentLoaded',()=>{
               label.textContent=root.dataset.lang==='en'?'Adding headline… '+pct+'%':'در حال ثبت تیتر روی فیلم… '+pct+'٪';
             }
           });
-          preparedShareVideoFile=rendered||original;
-          shareVideoHasTitle=Boolean(rendered);
+          if(rendered){
+            preparedShareVideoFile=rendered;
+            shareVideoHasTitle=true;
+          }else if(!preparedShareVideoFile){
+            preparedShareVideoFile=original;
+          }
           return preparedShareVideoFile;
         })
         .catch(err=>{
           console.warn('share titled video preparation failed',err);
-          preparedShareVideoFile=preparedOriginalShareVideoFile;
-          shareVideoHasTitle=false;
+          if(!preparedShareVideoFile)preparedShareVideoFile=preparedOriginalShareVideoFile;
           return preparedShareVideoFile;
         })
         .finally(()=>{shareVideoRenderPromise=null;});
@@ -714,40 +720,69 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(shareVideoBtn){
       const label=shareVideoBtn.querySelector('[data-share-video-label]');
       shareVideoOriginalLabel=label?label.innerHTML:'';
-      const warmOriginal=()=>ensureOriginalShareVideoFile();
-      shareVideoBtn.addEventListener('pointerenter',warmOriginal,{once:true});
-      shareVideoBtn.addEventListener('touchstart',warmOriginal,{once:true,passive:true});
+
+      // Unlike the previous version, begin downloading the uploaded video as soon
+      // as the article page loads. That makes the first real tap behave like
+      // share-with-image instead of using the first tap merely to prepare data.
+      if(label)label.textContent=root.dataset.lang==='en'?'Preparing video…':'در حال آماده‌سازی فیلم…';
+      ensureOriginalShareVideoFile().then(file=>{
+        if(!label)return;
+        if(file)label.innerHTML=shareVideoOriginalLabel;
+        else label.textContent=root.dataset.lang==='en'?'Video unavailable':'آماده‌سازی فیلم انجام نشد';
+      });
+
+      // Title rendering needs an unlocked audio context on mobile. Start it after
+      // the first normal user interaction with the article, without consuming the
+      // share-button click. Until it finishes, the original uploaded file remains
+      // immediately shareable.
+      const warmTitledVideo=()=>{
+        if(shareVideoHasTitle||shareVideoRenderPromise)return;
+        const AudioCtx=window.AudioContext||window.webkitAudioContext;
+        if(!AudioCtx)return;
+        if(!shareVideoAudioContext||shareVideoAudioContext.state==='closed'){
+          try{shareVideoAudioContext=new AudioCtx()}catch{return}
+        }
+        try{shareVideoAudioContext.resume().catch(()=>{})}catch{}
+        ensureTitledShareVideoFile(label).then(file=>{
+          if(!label)return;
+          if(file&&shareVideoHasTitle){
+            label.textContent=root.dataset.lang==='en'?'Share with video':'اشتراک با فیلم';
+          }else{
+            label.innerHTML=shareVideoOriginalLabel;
+          }
+        });
+      };
+      document.addEventListener('pointerdown',warmTitledVideo,{once:true,capture:true});
+      document.addEventListener('touchstart',warmTitledVideo,{once:true,capture:true,passive:true});
     }
 
     if(shareVideoBtn)shareVideoBtn.addEventListener('click',()=>{
       const label=shareVideoBtn.querySelector('[data-share-video-label]');
       const payload=shareText();
+      const preferredFile=preparedShareVideoFile||preparedOriginalShareVideoFile;
 
-      if(!preparedShareVideoFile){
-        const AudioCtx=window.AudioContext||window.webkitAudioContext;
-        if(AudioCtx&&(!shareVideoAudioContext||shareVideoAudioContext.state==='closed')){
+      // Keep the click synchronous just like share-with-image. Native Web Share
+      // requires transient user activation, so this handler never waits for a
+      // render/download before calling navigator.share.
+      if(!preferredFile){
+        if(typeof navigator.share==='function'){
           try{
-            shareVideoAudioContext=new AudioCtx();
-            shareVideoAudioContext.resume().catch(()=>{});
-          }catch{}
-        }
-        if(label)label.textContent=root.dataset.lang==='en'?'Adding headline to video…':'در حال ثبت تیتر روی فیلم…';
-        ensureTitledShareVideoFile(label).then(file=>{
-          if(!label)return;
-          if(!file){
-            label.textContent=root.dataset.lang==='en'?'Video unavailable':'آماده‌سازی فیلم انجام نشد';
-          }else if(shareVideoHasTitle){
-            label.textContent=root.dataset.lang==='en'?'Headline added — tap again to share':'تیتر ثبت شد — دوباره بزن برای اشتراک';
-          }else{
-            label.textContent=root.dataset.lang==='en'?'Original ready — tap again to share':'فایل اصلی آماده است — دوباره بزن برای اشتراک';
+            const result=navigator.share({text:payload});
+            Promise.resolve(result).catch(err=>{
+              if(err&&err.name!=='AbortError')console.warn('article video early fallback failed',err);
+            });
+          }catch(err){
+            console.warn('article video early fallback sync failure',err);
+            copySharePayload();
           }
-          setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},5000);
-        });
+        }else{
+          copySharePayload();
+        }
+        if(label)label.textContent=root.dataset.lang==='en'?'Video is still preparing':'فیلم هنوز در حال آماده‌سازی است';
+        setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1600);
         return;
       }
 
-      // Match the share-with-image behavior: use the native share sheet only.
-      // Never trigger a file download from this button.
       if(typeof navigator.share!=='function'){
         copySharePayload();
         if(label)label.textContent=root.dataset.lang==='en'?'Share unavailable · text copied':'اشتراک مستقیم پشتیبانی نمی‌شود · متن کپی شد';
@@ -755,10 +790,9 @@ document.addEventListener('DOMContentLoaded',()=>{
         return;
       }
 
-      const preferredFile=preparedShareVideoFile;
-      const originalFile=preparedOriginalShareVideoFile;
       const preferredOnly={files:[preferredFile]};
       const preferredWithText={files:[preferredFile],text:payload};
+      const originalFile=preparedOriginalShareVideoFile;
       let sharePayload=null;
 
       try{
@@ -768,7 +802,7 @@ document.addEventListener('DOMContentLoaded',()=>{
           }else if(navigator.canShare(preferredOnly)){
             copySharePayload();
             sharePayload=preferredOnly;
-          }else if(originalFile){
+          }else if(originalFile&&originalFile!==preferredFile){
             const originalWithText={files:[originalFile],text:payload};
             const originalOnly={files:[originalFile]};
             if(navigator.canShare(originalWithText)){
@@ -786,8 +820,6 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
 
       if(!sharePayload){
-        // Same fallback philosophy as image sharing: text/link share only,
-        // never download the media file.
         try{
           const result=navigator.share({text:payload});
           Promise.resolve(result).catch(err=>{
