@@ -49,3 +49,18 @@ test('demand/category Story cards use the same Instagram pipeline',()=>{
   assert.match(js,/navigator\.share\(\{files:\[preparedStoryFile\],title,text:/);
   assert.doesNotMatch(js,/\.latest-grid \[data-story-card\], \.archive-grid \[data-story-card\]/);
 });
+
+
+test('article share-with-video sends the uploaded file unchanged',()=>{
+  const js=fs.readFileSync('public/site.js','utf8');
+  const view=fs.readFileSync('lib/view-public.js','utf8');
+  assert.match(view,/data-article-video=/);
+  assert.match(view,/data-article-video-type=/);
+  assert.match(view,/a\.videoUrl\?\`<button class="article-action article-share-video"/);
+  assert.match(js,/data-article-share-video/);
+  assert.match(js,/fetchShareVideoFile/);
+  assert.match(js,/new File\(\[source\],'nabez-sardo-news\.'\+ext/);
+  assert.match(js,/const fileWithText=\{files:\[preparedShareVideoFile\],text:payload\}/);
+  assert.match(js,/navigator\.share\(sharePayload\)/);
+  assert.doesNotMatch(js,/canvas\.toBlob\([^\n]*video/i);
+});
