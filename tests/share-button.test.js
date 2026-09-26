@@ -64,7 +64,8 @@ test('article share-with-video burns the article headline into the shared video'
   assert.match(js,/ctx\.drawImage\(video,0,0,width,height\)/);
   assert.match(js,/wrapTitle\(title,width-\(margin\*4\),2\)/);
   assert.match(js,/در حال ثبت تیتر روی فیلم/);
-  assert.match(js,/در حال آماده‌سازی فیلم/);\n  assert.match(js,/ensureOriginalShareVideoFile\(\)\.then/);
+  assert.match(js,/در حال آماده‌سازی فیلم/);
+  assert.match(js,/ensureOriginalShareVideoFile\(\)\.then/);
   assert.match(js,/const preferredWithText=\{files:\[preferredFile\],text:payload\}/);
   assert.match(js,/navigator\.share\(sharePayload\)/);
   const videoBlock=js.slice(js.indexOf('let preparedOriginalShareVideoFile=null;'),js.indexOf("if(shareBtn)shareBtn.addEventListener('click'"));
