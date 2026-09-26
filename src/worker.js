@@ -713,6 +713,71 @@ function utcDayOffset(days = 0) {
   return d.toISOString().slice(0, 10);
 }
 
+function isoWeekKey(date = new Date()) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return String(d.getUTCFullYear()) + "-W" + String(week).padStart(2, "0");
+}
+
+async function createWeeklySiteBackup() {
+  const week = isoWeekKey();
+  if ((await getState("site_weekly_backup_week")) === week) {
+    return {
+      ok: true,
+      skipped: true,
+      week,
+      at: await getState("site_weekly_backup_at"),
+      key: await getState("site_weekly_backup_key")
+    };
+  }
+
+  try {
+    const [dbText, analyticsText, mediaRows] = await Promise.all([
+      getState("db"),
+      getState("analytics"),
+      listMedia()
+    ]);
+    if (!dbText) throw new Error("weekly-backup-db-state-missing");
+
+    const payload = JSON.stringify({
+      format: "nabzesardo-weekly-site-backup",
+      version: 1,
+      createdAt: new Date().toISOString(),
+      week,
+      db: safeJson(dbText, {}),
+      analytics: safeJson(analyticsText, {}),
+      media: (mediaRows || []).map(x => ({
+        name: String(x.name || ""),
+        contentType: String(x.content_type || ""),
+        size: Number(x.size || 0),
+        provider: Number(x.chunk_count || 0) === 0 ? "arvan" : "d1"
+      }))
+    }, null, 2);
+
+    const name = "weekly-" + week + ".json";
+    await putState("backup:" + name, payload);
+    await env.DB.prepare(
+      "DELETE FROM app_state WHERE key IN (SELECT key FROM app_state WHERE key LIKE 'backup:weekly-%' ORDER BY updated_at DESC LIMIT -1 OFFSET 12)"
+    ).run();
+
+    const stamp = new Date().toISOString();
+    await putState("site_weekly_backup_week", week);
+    await putState("site_weekly_backup_at", stamp);
+    await putState("site_weekly_backup_key", name);
+    await putState("site_weekly_backup_bytes", String(Buffer.byteLength(payload)));
+    await putState("site_weekly_backup_error", "");
+    return { ok: true, week, at: stamp, key: name, bytes: Buffer.byteLength(payload) };
+  } catch (err) {
+    const message = String(err?.message || err).slice(0, 500);
+    await putState("site_weekly_backup_error", message);
+    console.error("site-weekly-backup", message);
+    return { ok: false, error: message };
+  }
+}
+
 async function createDailyArvanBackup() {
   if (!arvanConfig()) return { ok: false, skipped: true, reason: "arvan-not-configured" };
   const day = utcDayOffset(0);
@@ -1461,13 +1526,17 @@ async function publicSyncStatus() {
   const storageCfg = arvanConfig();
   const storageProbe = await probeArvan();
   const legacyRow = await env.DB.prepare("SELECT COUNT(*) AS count FROM media_meta WHERE chunk_count > 0").first();
-  const [arvanLastSuccess, arvanLastError, backupAt, backupObject, backupBytes, backupError, usage] = await Promise.all([
+  const [arvanLastSuccess, arvanLastError, backupAt, backupObject, backupBytes, backupError, weeklyAt, weeklyKey, weeklyBytes, weeklyError, usage] = await Promise.all([
     getState("arvan_last_success"),
     getState("arvan_last_error"),
     getState("arvan_backup_at"),
     getState("arvan_backup_object"),
     getState("arvan_backup_bytes"),
     getState("arvan_backup_error"),
+    getState("site_weekly_backup_at"),
+    getState("site_weekly_backup_key"),
+    getState("site_weekly_backup_bytes"),
+    getState("site_weekly_backup_error"),
     storageUsageStatus()
   ]);
   return {
@@ -1478,8 +1547,8 @@ async function publicSyncStatus() {
     railwayDependency: false,
     legacySyncEnabled: Boolean(String(env.LEGACY_SYNC_SOURCE_URL || "").trim()),
     syncedAt: at || null,
-    articles: Number(articles || 0),
-    media: Number(media || 0),
+    articles: Array.isArray(db.articles) ? db.articles.length : Number(articles || 0),
+    media: Number(usage.mediaObjects || media || 0),
     aiCovers: auto.filter(a => a.autoCoverSource === "ai").length,
     templateCovers: auto.filter(a => a.autoCoverSource === "template").length,
     fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length,
@@ -1507,10 +1576,20 @@ async function publicSyncStatus() {
       enabled: Boolean(arvanConfig() && backupCryptoMaterial()),
       encrypted: true,
       retentionDays: 30,
+      cadence: "daily",
       lastAt: backupAt || null,
       object: backupObject || null,
       bytes: Number(backupBytes || 0),
-      lastError: backupError || null
+      lastError: backupError || null,
+      weeklySite: {
+        enabled: true,
+        cadence: "weekly",
+        retentionWeeks: 12,
+        lastAt: weeklyAt || null,
+        key: weeklyKey || null,
+        bytes: Number(weeklyBytes || 0),
+        lastError: weeklyError || null
+      }
     },
     usage,
     primary: isPrimary()
@@ -1746,8 +1825,7 @@ export default {
       const before=await hydrateState({includeBackups:false});
       await ensureAppServer();
       await articleTools.schedulerTick();
-      const states=await flushState(before,new Request("https://nabzesardo.ir/__cron"),new Response(null,{status:204}));
-      await persistBackups();
+      await flushState(before,new Request("https://nabzesardo.ir/__cron"),new Response(null,{status:204}));
     });
     await suppressPendingAutomaticPublications();
     await drainPublications();
@@ -1756,6 +1834,7 @@ export default {
         try{await refreshOpinionSocialWording();}catch(err){console.error("opinion-social-refresh",String(err?.message||err));}
       }
       try{await migrateLegacyMediaBatch(10);}catch(err){console.error("arvan-migrate-batch",String(err?.message||err));}
+      try{await createWeeklySiteBackup();}catch(err){console.error("site-weekly-backup-tick",String(err?.message||err));}
       try{await createDailyArvanBackup();}catch(err){console.error("arvan-backup-tick",String(err?.message||err));}
     }
   }
