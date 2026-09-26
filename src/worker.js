@@ -498,8 +498,9 @@ async function handlePublicPreview(request, url, pathname) {
     const slug = m[1];
     const a = (db.articles || []).find(x => x.status === "published" && x.slug === slug);
     if (!a) return html("خبر یافت نشد", 404);
-    const snapshot = await getState("snapshot_article:" + slug);
-    return html(snapshot || views.article(db, a));
+    // Render article pages with the current build so interactive controls and
+    // versioned assets never get stuck on a stale HTML snapshot after deploys.
+    return html(views.article(db, a));
   }
 
   m = pathname.match(/^\/category\/(.+)$/);
