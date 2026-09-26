@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-09-26T08:19:49.167Z",
-  "commit": "5d5090da3a17f546ec9f449ab1183fb0b706a8f1",
+  "testedAt": "2026-09-26T15:50:02.228Z",
+  "commit": "97036c7f7c27faf7a3c5ed5047d58b5d08eaeef5",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-26T08:19:37.034Z"
+    "time": "2026-09-26T15:49:43.469Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-26T08:19:37.253Z"
+    "time": "2026-09-26T15:49:43.699Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 14,
-    "media": 19,
+    "articles": 58,
+    "media": 74,
     "aiCovers": 1,
     "templateCovers": 6,
     "fallbackCovers": 0,
@@ -51,30 +51,91 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-09-26T07:37:06.798Z",
+      "lastSuccessAt": "2026-09-26T08:21:39.163Z",
       "lastError": null
     },
     "backup": {
       "enabled": true,
       "encrypted": true,
       "retentionDays": 30,
+      "cadence": "daily",
       "lastAt": "2026-09-26T00:00:57.461Z",
       "object": "db-backup-2026-09-26.json.enc",
       "bytes": 220923,
-      "lastError": null
+      "lastError": null,
+      "weeklySite": {
+        "enabled": true,
+        "cadence": "weekly",
+        "retentionWeeks": 12,
+        "lastAt": "2026-09-26T15:48:43.913Z",
+        "key": "weekly-2026-W39.json",
+        "bytes": 248707,
+        "lastError": null
+      }
     },
     "usage": {
-      "mediaObjects": 72,
-      "arvanMediaBytes": 41871317,
+      "mediaObjects": 74,
+      "arvanMediaBytes": 42059203,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 0.78,
-      "d1TrackedBytesApprox": 1506953,
+      "d1TrackedBytesApprox": 1704311,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.29
+      "d1UsagePercentApprox": 0.33
     },
     "primary": true,
     "readyForRailwayShutdown": true
   },
+  "performance": {
+    "home": {
+      "http": 200,
+      "dns": 0.000614,
+      "connect": 0.012815,
+      "ttfb": 0.244762,
+      "total": 0.254414,
+      "bytes": 106087
+    },
+    "archive": {
+      "http": 200,
+      "dns": 0.000581,
+      "connect": 0.015171,
+      "ttfb": 0.066295,
+      "total": 0.086979,
+      "bytes": 218477
+    },
+    "admin_login": {
+      "http": 200,
+      "dns": 0.000554,
+      "connect": 0.017046,
+      "ttfb": 1.03763,
+      "total": 1.037716,
+      "bytes": 4296
+    },
+    "article": {
+      "http": 200,
+      "dns": 0.000645,
+      "connect": 0.010161,
+      "ttfb": 0.564122,
+      "total": 0.565052,
+      "bytes": 33962
+    },
+    "media": {
+      "http": 200,
+      "dns": 0.000635,
+      "connect": 0.013412,
+      "ttfb": 0.079672,
+      "total": 0.090163,
+      "bytes": 93739
+    },
+    "health": {
+      "http": 200,
+      "dns": 0.00053,
+      "connect": 0.010119,
+      "ttfb": 0.062675,
+      "total": 0.0627,
+      "bytes": 189
+    }
+  },
   "readyForRailwayShutdown": true,
-  "problems": []
+  "problems": [],
+  "warnings": []
 }
