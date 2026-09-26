@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     const shareBtn=articleRoot.querySelector('[data-article-share]');
     const shareImageBtn=articleRoot.querySelector('[data-article-share-image]');
+    const shareVideoBtn=articleRoot.querySelector('[data-article-share-video]');
     const copyBtn=articleRoot.querySelector('[data-article-copy]');
     const copyMessageBtn=articleRoot.querySelector('[data-article-copy-message]');
     const title=articleRoot.dataset.articleTitle||document.title;
@@ -122,6 +123,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     const shareUrl=new URL(articleRoot.dataset.articleUrl||location.pathname,location.origin).href;
     const shareImageUrl=articleRoot.dataset.articleImage?new URL(articleRoot.dataset.articleImage,location.origin).href:'';
     const shareImageKind=articleRoot.dataset.articleImageKind||(/^.*auto-cover/i.test(articleRoot.dataset.articleImage||'')?'auto':shareImageUrl?'real':'none');
+    const shareVideoUrl=articleRoot.dataset.articleVideo?new URL(articleRoot.dataset.articleVideo,location.origin).href:'';
+    const shareVideoType=articleRoot.dataset.articleVideoType||'video/mp4';
     const articleCategoryId=articleRoot.dataset.articleCategoryId||'';
     const isDemand=articleCategoryId==='opinion';
 
@@ -200,6 +203,23 @@ document.addEventListener('DOMContentLoaded',()=>{
         if(!/^image\//i.test(source.type||''))throw new Error('share image is not an image');
         const type=/^image\/(jpeg|png|webp)$/i.test(source.type)?source.type:'image/jpeg';
         const ext=type.includes('png')?'png':type.includes('webp')?'webp':'jpg';
+        return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
+      }finally{
+        clearTimeout(timer);
+      }
+    };
+
+    const fetchShareVideoFile=async()=>{
+      if(!shareVideoUrl)return null;
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),45000);
+      try{
+        const res=await fetch(shareVideoUrl,{credentials:'same-origin',cache:'force-cache',signal:controller.signal});
+        if(!res.ok)throw new Error('share video fetch '+res.status);
+        const source=await res.blob();
+        const type=/^video\//i.test(source.type||'')?source.type:shareVideoType;
+        if(!/^video\//i.test(type||''))throw new Error('share video is not a video');
+        const ext=/webm/i.test(type)?'webm':/(quicktime|mov)/i.test(type)?'mov':'mp4';
         return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
       }finally{
         clearTimeout(timer);
@@ -450,6 +470,84 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
       if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
       setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1000);
+    });
+
+    let preparedShareVideoFile=null;
+    let shareVideoOriginalLabel='';
+    if(shareVideoBtn){
+      const label=shareVideoBtn.querySelector('[data-share-video-label]');
+      shareVideoOriginalLabel=label?label.innerHTML:'';
+      if(label)label.textContent=root.dataset.lang==='en'?'Preparing video…':'در حال آماده‌سازی فیلم…';
+      fetchShareVideoFile().then(file=>{
+        if(file&&(!navigator.canShare||navigator.canShare({files:[file]}))){
+          preparedShareVideoFile=file;
+          if(label)label.innerHTML=shareVideoOriginalLabel;
+        }else if(label){
+          label.textContent=root.dataset.lang==='en'?'Video sharing unavailable':'اشتراک فایل فیلم پشتیبانی نمی‌شود';
+        }
+      }).catch(err=>{
+        console.warn('share video preload failed',err);
+        if(label)label.innerHTML=shareVideoOriginalLabel;
+      });
+    }
+
+    if(shareVideoBtn)shareVideoBtn.addEventListener('click',()=>{
+      const label=shareVideoBtn.querySelector('[data-share-video-label]');
+      const payload=shareText();
+      if(preparedShareVideoFile&&typeof navigator.share==='function'){
+        const fileOnly={files:[preparedShareVideoFile]};
+        const fileWithText={files:[preparedShareVideoFile],text:payload};
+        let sharePayload=fileWithText;
+        try{
+          if(typeof navigator.canShare==='function'){
+            if(navigator.canShare(fileWithText)){
+              sharePayload=fileWithText;
+            }else if(navigator.canShare(fileOnly)){
+              const ta=document.createElement('textarea');
+              ta.value=payload;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';
+              document.body.appendChild(ta);ta.focus();ta.select();
+              try{document.execCommand('copy');}catch{}
+              ta.remove();
+              sharePayload=fileOnly;
+            }else{
+              sharePayload={text:payload};
+            }
+          }
+        }catch(err){
+          console.warn('article video share capability check failed',err);
+        }
+
+        if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
+        try{
+          const result=navigator.share(sharePayload);
+          Promise.resolve(result)
+            .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
+            .catch(err=>{
+              if(err&&err.name!=='AbortError')console.warn('article video share failed',err);
+            })
+            .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1000));
+        }catch(err){
+          console.warn('article video share sync failure',err);
+          if(label)label.innerHTML=shareVideoOriginalLabel;
+        }
+        return;
+      }
+
+      if(typeof navigator.share==='function'){
+        try{
+          const result=navigator.share({text:payload});
+          Promise.resolve(result).catch(err=>{
+            if(err&&err.name!=='AbortError')console.warn('article video share fallback failed',err);
+          });
+        }catch(err){
+          console.warn('article video share fallback sync failure',err);
+          copySharePayload();
+        }
+      }else{
+        copySharePayload();
+      }
+      if(label)label.textContent=root.dataset.lang==='en'?'Preparing video…':'در حال آماده‌سازی فیلم…';
+      setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1200);
     });
 
     if(shareBtn)shareBtn.addEventListener('click',()=>{
