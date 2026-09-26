@@ -59,8 +59,12 @@ test('article share-with-video sends the uploaded file unchanged',()=>{
   assert.match(view,/a\.videoUrl\?\`<button class="article-action article-share-video"/);
   assert.match(js,/data-article-share-video/);
   assert.match(js,/fetchShareVideoFile/);
-  assert.match(js,/new File\(\[source\],'nabez-sardo-news\.'\+ext/);
+  assert.match(js,/ensureShareVideoFile/);
+  assert.match(js,/preparedShareVideoFile/);
   assert.match(js,/const fileWithText=\{files:\[preparedShareVideoFile\],text:payload\}/);
   assert.match(js,/navigator\.share\(sharePayload\)/);
+  assert.match(js,/downloadOriginalVideo/);
+  assert.match(js,/فیلم دانلود شد · متن کپی شد/);
+  assert.match(js,/آماده شد — دوباره بزن برای اشتراک/);
   assert.doesNotMatch(js,/canvas\.toBlob\([^\n]*video/i);
 });
