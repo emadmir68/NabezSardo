@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const fetchShareVideoFile=async()=>{
       if(!shareVideoUrl)return null;
       const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),45000);
+      const timer=setTimeout(()=>controller.abort(),120000);
       try{
         const res=await fetch(shareVideoUrl,{credentials:'same-origin',cache:'force-cache',signal:controller.signal});
         if(!res.ok)throw new Error('share video fetch '+res.status);
@@ -220,7 +220,12 @@ document.addEventListener('DOMContentLoaded',()=>{
         const type=/^video\//i.test(source.type||'')?source.type:shareVideoType;
         if(!/^video\//i.test(type||''))throw new Error('share video is not a video');
         const ext=/webm/i.test(type)?'webm':/(quicktime|mov)/i.test(type)?'mov':'mp4';
-        return new File([source],'nabez-sardo-news.'+ext,{type,lastModified:Date.now()});
+        let fileName='nabez-sardo-news.'+ext;
+        try{
+          const candidate=decodeURIComponent(new URL(shareVideoUrl).pathname.split('/').pop()||'').replace(/[^a-zA-Z0-9._-]/g,'-');
+          if(candidate&&/\.(mp4|webm|mov)$/i.test(candidate))fileName=candidate;
+        }catch{}
+        return new File([source],fileName,{type,lastModified:Date.now()});
       }finally{
         clearTimeout(timer);
       }
@@ -473,81 +478,138 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
 
     let preparedShareVideoFile=null;
+    let shareVideoLoadPromise=null;
     let shareVideoOriginalLabel='';
+
+    const downloadOriginalVideo=()=>{
+      if(!shareVideoUrl)return false;
+      try{
+        const a=document.createElement('a');
+        a.href=shareVideoUrl;
+        a.download=decodeURIComponent(new URL(shareVideoUrl).pathname.split('/').pop()||'nabez-sardo-video.mp4');
+        a.rel='noopener';
+        a.style.display='none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return true;
+      }catch(err){
+        console.warn('article video download fallback failed',err);
+        try{window.open(shareVideoUrl,'_blank','noopener');return true;}catch{return false;}
+      }
+    };
+
+    const ensureShareVideoFile=()=>{
+      if(preparedShareVideoFile)return Promise.resolve(preparedShareVideoFile);
+      if(shareVideoLoadPromise)return shareVideoLoadPromise;
+      shareVideoLoadPromise=fetchShareVideoFile()
+        .then(file=>{
+          if(file)preparedShareVideoFile=file;
+          return file;
+        })
+        .catch(err=>{
+          console.warn('share video preload failed',err);
+          return null;
+        })
+        .finally(()=>{shareVideoLoadPromise=null;});
+      return shareVideoLoadPromise;
+    };
+
     if(shareVideoBtn){
       const label=shareVideoBtn.querySelector('[data-share-video-label]');
       shareVideoOriginalLabel=label?label.innerHTML:'';
-      if(label)label.textContent=root.dataset.lang==='en'?'Preparing video…':'در حال آماده‌سازی فیلم…';
-      fetchShareVideoFile().then(file=>{
-        if(file&&(!navigator.canShare||navigator.canShare({files:[file]}))){
-          preparedShareVideoFile=file;
-          if(label)label.innerHTML=shareVideoOriginalLabel;
-        }else if(label){
-          label.textContent=root.dataset.lang==='en'?'Video sharing unavailable':'اشتراک فایل فیلم پشتیبانی نمی‌شود';
-        }
-      }).catch(err=>{
-        console.warn('share video preload failed',err);
-        if(label)label.innerHTML=shareVideoOriginalLabel;
+
+      // Warm the original uploaded video in advance. The native file share call
+      // itself still happens directly inside the user's tap, preserving Android
+      // and iOS transient user activation.
+      const warmVideo=()=>ensureShareVideoFile().then(file=>{
+        if(file&&label)label.innerHTML=shareVideoOriginalLabel;
       });
+      if('requestIdleCallback' in window){
+        requestIdleCallback(()=>warmVideo(),{timeout:1200});
+      }else{
+        setTimeout(()=>warmVideo(),250);
+      }
+      shareVideoBtn.addEventListener('pointerenter',warmVideo,{once:true});
+      shareVideoBtn.addEventListener('touchstart',warmVideo,{once:true,passive:true});
     }
 
     if(shareVideoBtn)shareVideoBtn.addEventListener('click',()=>{
       const label=shareVideoBtn.querySelector('[data-share-video-label]');
       const payload=shareText();
-      if(preparedShareVideoFile&&typeof navigator.share==='function'){
-        const fileOnly={files:[preparedShareVideoFile]};
-        const fileWithText={files:[preparedShareVideoFile],text:payload};
-        let sharePayload=fileWithText;
-        try{
-          if(typeof navigator.canShare==='function'){
-            if(navigator.canShare(fileWithText)){
-              sharePayload=fileWithText;
-            }else if(navigator.canShare(fileOnly)){
-              const ta=document.createElement('textarea');
-              ta.value=payload;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';
-              document.body.appendChild(ta);ta.focus();ta.select();
-              try{document.execCommand('copy');}catch{}
-              ta.remove();
-              sharePayload=fileOnly;
-            }else{
-              sharePayload={text:payload};
-            }
-          }
-        }catch(err){
-          console.warn('article video share capability check failed',err);
-        }
 
-        if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
-        try{
-          const result=navigator.share(sharePayload);
-          Promise.resolve(result)
-            .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
-            .catch(err=>{
-              if(err&&err.name!=='AbortError')console.warn('article video share failed',err);
-            })
-            .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1000));
-        }catch(err){
-          console.warn('article video share sync failure',err);
-          if(label)label.innerHTML=shareVideoOriginalLabel;
-        }
+      // Browsers without native Web Share file support must never leave this
+      // control looking dead: download the untouched uploaded video and copy
+      // its ready caption so the user can share it manually.
+      if(typeof navigator.share!=='function'){
+        copySharePayload();
+        downloadOriginalVideo();
+        if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+        setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
         return;
       }
 
-      if(typeof navigator.share==='function'){
-        try{
-          const result=navigator.share({text:payload});
-          Promise.resolve(result).catch(err=>{
-            if(err&&err.name!=='AbortError')console.warn('article video share fallback failed',err);
-          });
-        }catch(err){
-          console.warn('article video share fallback sync failure',err);
-          copySharePayload();
-        }
-      }else{
-        copySharePayload();
+      // A large video may still be loading when the first tap arrives. Keep the
+      // file share tied to a direct tap; prepare it now and make the state clear
+      // instead of silently falling back to text-only sharing.
+      if(!preparedShareVideoFile){
+        if(label)label.textContent=root.dataset.lang==='en'?'Preparing original video…':'در حال آماده‌سازی فیلم اصلی…';
+        ensureShareVideoFile().then(file=>{
+          if(!label)return;
+          if(file){
+            label.textContent=root.dataset.lang==='en'?'Ready — tap again to share':'آماده شد — دوباره بزن برای اشتراک';
+          }else{
+            copySharePayload();
+            downloadOriginalVideo();
+            label.textContent=root.dataset.lang==='en'?'Downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+          }
+          setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},2600);
+        });
+        return;
       }
-      if(label)label.textContent=root.dataset.lang==='en'?'Preparing video…':'در حال آماده‌سازی فیلم…';
-      setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1200);
+
+      const fileOnly={files:[preparedShareVideoFile]};
+      const fileWithText={files:[preparedShareVideoFile],text:payload};
+      let sharePayload=fileWithText;
+      try{
+        if(typeof navigator.canShare==='function'){
+          if(navigator.canShare(fileWithText)){
+            sharePayload=fileWithText;
+          }else if(navigator.canShare(fileOnly)){
+            copySharePayload();
+            sharePayload=fileOnly;
+          }else{
+            copySharePayload();
+            downloadOriginalVideo();
+            if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+            setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
+            return;
+          }
+        }
+      }catch(err){
+        console.warn('article video share capability check failed',err);
+      }
+
+      if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
+      try{
+        const result=navigator.share(sharePayload);
+        Promise.resolve(result)
+          .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
+          .catch(err=>{
+            if(err&&err.name==='AbortError')return;
+            console.warn('article video share failed',err);
+            copySharePayload();
+            downloadOriginalVideo();
+            if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+          })
+          .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800));
+      }catch(err){
+        console.warn('article video share sync failure',err);
+        copySharePayload();
+        downloadOriginalVideo();
+        if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+        setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
+      }
     });
 
     if(shareBtn)shareBtn.addEventListener('click',()=>{
