@@ -669,32 +669,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     let shareVideoOriginalLabel='';
     let shareVideoHasTitle=false;
 
-    const downloadPreparedOrOriginalVideo=()=>{
-      const file=preparedShareVideoFile||preparedOriginalShareVideoFile;
-      if(file){
-        try{
-          const url=URL.createObjectURL(file);
-          const a=document.createElement('a');
-          a.href=url;a.download=file.name||'nabez-sardo-video.mp4';a.rel='noopener';a.style.display='none';
-          document.body.appendChild(a);a.click();a.remove();
-          setTimeout(()=>URL.revokeObjectURL(url),3000);
-          return true;
-        }catch(err){console.warn('article prepared video download failed',err)}
-      }
-      if(!shareVideoUrl)return false;
-      try{
-        const a=document.createElement('a');
-        a.href=shareVideoUrl;
-        a.download=decodeURIComponent(new URL(shareVideoUrl).pathname.split('/').pop()||'nabez-sardo-video.mp4');
-        a.rel='noopener';a.style.display='none';
-        document.body.appendChild(a);a.click();a.remove();
-        return true;
-      }catch(err){
-        console.warn('article video download fallback failed',err);
-        try{window.open(shareVideoUrl,'_blank','noopener');return true;}catch{return false;}
-      }
-    };
-
     const ensureOriginalShareVideoFile=()=>{
       if(preparedOriginalShareVideoFile)return Promise.resolve(preparedOriginalShareVideoFile);
       if(shareVideoLoadPromise)return shareVideoLoadPromise;
@@ -761,47 +735,71 @@ document.addEventListener('DOMContentLoaded',()=>{
         ensureTitledShareVideoFile(label).then(file=>{
           if(!label)return;
           if(!file){
-            copySharePayload();
-            downloadPreparedOrOriginalVideo();
-            label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+            label.textContent=root.dataset.lang==='en'?'Video unavailable':'آماده‌سازی فیلم انجام نشد';
           }else if(shareVideoHasTitle){
             label.textContent=root.dataset.lang==='en'?'Headline added — tap again to share':'تیتر ثبت شد — دوباره بزن برای اشتراک';
           }else{
-            label.textContent=root.dataset.lang==='en'?'Headline unavailable — original ready':'ثبت تیتر ممکن نشد — فایل اصلی آماده است';
+            label.textContent=root.dataset.lang==='en'?'Original ready — tap again to share':'فایل اصلی آماده است — دوباره بزن برای اشتراک';
           }
           setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},5000);
         });
         return;
       }
 
+      // Match the share-with-image behavior: use the native share sheet only.
+      // Never trigger a file download from this button.
       if(typeof navigator.share!=='function'){
         copySharePayload();
-        downloadPreparedOrOriginalVideo();
-        if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+        if(label)label.textContent=root.dataset.lang==='en'?'Share unavailable · text copied':'اشتراک مستقیم پشتیبانی نمی‌شود · متن کپی شد';
         setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
         return;
       }
 
-      const fileOnly={files:[preparedShareVideoFile]};
-      const fileWithText={files:[preparedShareVideoFile],text:payload};
-      let sharePayload=fileWithText;
+      const preferredFile=preparedShareVideoFile;
+      const originalFile=preparedOriginalShareVideoFile;
+      const preferredOnly={files:[preferredFile]};
+      const preferredWithText={files:[preferredFile],text:payload};
+      let sharePayload=null;
+
       try{
         if(typeof navigator.canShare==='function'){
-          if(navigator.canShare(fileWithText)){
-            sharePayload=fileWithText;
-          }else if(navigator.canShare(fileOnly)){
+          if(navigator.canShare(preferredWithText)){
+            sharePayload=preferredWithText;
+          }else if(navigator.canShare(preferredOnly)){
             copySharePayload();
-            sharePayload=fileOnly;
-          }else{
-            copySharePayload();
-            downloadPreparedOrOriginalVideo();
-            if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
-            setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
-            return;
+            sharePayload=preferredOnly;
+          }else if(originalFile){
+            const originalWithText={files:[originalFile],text:payload};
+            const originalOnly={files:[originalFile]};
+            if(navigator.canShare(originalWithText)){
+              sharePayload=originalWithText;
+            }else if(navigator.canShare(originalOnly)){
+              copySharePayload();
+              sharePayload=originalOnly;
+            }
           }
+        }else{
+          sharePayload=preferredWithText;
         }
       }catch(err){
         console.warn('article video share capability check failed',err);
+      }
+
+      if(!sharePayload){
+        // Same fallback philosophy as image sharing: text/link share only,
+        // never download the media file.
+        try{
+          const result=navigator.share({text:payload});
+          Promise.resolve(result).catch(err=>{
+            if(err&&err.name!=='AbortError')console.warn('article video text fallback failed',err);
+          });
+        }catch(err){
+          console.warn('article video text fallback sync failure',err);
+          copySharePayload();
+        }
+        if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
+        setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1200);
+        return;
       }
 
       if(label)label.textContent=root.dataset.lang==='en'?'Opening share…':'در حال باز کردن اشتراک…';
@@ -810,19 +808,13 @@ document.addEventListener('DOMContentLoaded',()=>{
         Promise.resolve(result)
           .then(()=>{if(label)label.textContent=root.dataset.lang==='en'?'Shared':'ارسال شد';})
           .catch(err=>{
-            if(err&&err.name==='AbortError')return;
-            console.warn('article video share failed',err);
-            copySharePayload();
-            downloadPreparedOrOriginalVideo();
-            if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+            if(err&&err.name!=='AbortError')console.warn('article video share failed',err);
           })
           .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800));
       }catch(err){
         console.warn('article video share sync failure',err);
-        copySharePayload();
-        downloadPreparedOrOriginalVideo();
-        if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
-        setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
+        try{navigator.share({text:payload}).catch(()=>copySharePayload())}catch{copySharePayload()}
+        if(label)label.innerHTML=shareVideoOriginalLabel;
       }
     });
 
