@@ -231,6 +231,190 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     };
 
+    const renderTitledShareVideo=async(originalFile,audioContext,onProgress=()=>{})=>{
+      if(!originalFile||typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream)return null;
+      if(!audioContext||audioContext.state==='closed')return null;
+
+      let objectUrl='',video=null,stream=null,audioSource=null,recorder=null;
+      try{
+        try{
+          if(document.fonts&&document.fonts.ready){
+            await Promise.race([document.fonts.ready,new Promise(resolve=>setTimeout(resolve,900))]);
+          }
+        }catch{}
+
+        objectUrl=URL.createObjectURL(originalFile);
+        video=document.createElement('video');
+        video.playsInline=true;
+        video.preload='auto';
+        video.muted=true;
+        video.src=objectUrl;
+
+        await new Promise((resolve,reject)=>{
+          const timer=setTimeout(()=>reject(new Error('share titled video metadata timeout')),20000);
+          const done=()=>{clearTimeout(timer);resolve();};
+          const fail=()=>{clearTimeout(timer);reject(new Error('share titled video load failed'));};
+          if(video.readyState>=1)done();
+          else{
+            video.addEventListener('loadedmetadata',done,{once:true});
+            video.addEventListener('error',fail,{once:true});
+            video.load();
+          }
+        });
+
+        const duration=Number(video.duration||0);
+        const sourceW=Number(video.videoWidth||0);
+        const sourceH=Number(video.videoHeight||0);
+        if(!duration||!Number.isFinite(duration)||!sourceW||!sourceH)return null;
+
+        const maxEdge=1280;
+        const scale=Math.min(1,maxEdge/Math.max(sourceW,sourceH));
+        const width=Math.max(2,Math.round(sourceW*scale/2)*2);
+        const height=Math.max(2,Math.round(sourceH*scale/2)*2);
+        const canvas=document.createElement('canvas');
+        canvas.width=width;canvas.height=height;
+        const ctx=canvas.getContext('2d',{alpha:false,desynchronized:true})||canvas.getContext('2d',{alpha:false});
+        if(!ctx)return null;
+
+        if(audioContext.state==='suspended'){
+          try{await audioContext.resume()}catch{}
+        }
+        if(audioContext.state!=='running')return null;
+
+        let audioBuffer=null;
+        try{
+          const audioBytes=await originalFile.arrayBuffer();
+          audioBuffer=await audioContext.decodeAudioData(audioBytes.slice(0));
+        }catch(err){
+          console.warn('share titled video audio decode failed',err);
+          return null;
+        }
+
+        const audioDestination=audioContext.createMediaStreamDestination();
+        audioSource=audioContext.createBufferSource();
+        audioSource.buffer=audioBuffer;
+        audioSource.connect(audioDestination);
+
+        stream=canvas.captureStream(30);
+        const audioTrack=audioDestination.stream.getAudioTracks()[0];
+        if(!audioTrack)return null;
+        stream.addTrack(audioTrack);
+
+        const candidates=[
+          'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+          'video/mp4',
+          'video/webm;codecs=vp8,opus',
+          'video/webm'
+        ].filter(type=>{try{return MediaRecorder.isTypeSupported(type)}catch{return false}});
+        if(!candidates.length)return null;
+
+        const selectedType=candidates[0];
+        const chunks=[];
+        recorder=new MediaRecorder(stream,{mimeType:selectedType,videoBitsPerSecond:Math.max(1800000,Math.min(6000000,width*height*4.2))});
+        const recorded=new Promise((resolve,reject)=>{
+          recorder.ondataavailable=event=>{if(event.data&&event.data.size)chunks.push(event.data)};
+          recorder.onerror=event=>reject(event?.error||new Error('share titled video recorder failed'));
+          recorder.onstop=()=>{
+            try{
+              const finalType=recorder.mimeType||selectedType;
+              const blob=new Blob(chunks,{type:finalType});
+              if(!blob.size){reject(new Error('share titled video empty'));return;}
+              const ext=/^video\/mp4/i.test(finalType)?'mp4':'webm';
+              resolve(new File([blob],'nabez-sardo-titled-news.'+ext,{type:finalType,lastModified:Date.now()}));
+            }catch(err){reject(err)}
+          };
+        });
+
+        const roundRect=(x,y,w,h,r)=>{
+          const rr=Math.min(r,w/2,h/2);
+          ctx.beginPath();ctx.moveTo(x+rr,y);
+          ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);
+          ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath();
+        };
+        const wrapTitle=(value,maxWidth,maxLines)=>{
+          const words=String(value||'').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+          const lines=[];let line='';let used=0;
+          for(const word of words){
+            const next=line?line+' '+word:word;
+            if(ctx.measureText(next).width<=maxWidth){line=next;used++;continue;}
+            if(line)lines.push(line);
+            line=word;used++;
+            if(lines.length>=maxLines-1)break;
+          }
+          if(line&&lines.length<maxLines)lines.push(line);
+          if(used<words.length&&lines.length){
+            let last=lines[lines.length-1];
+            while(last&&ctx.measureText(last+'…').width>maxWidth)last=last.slice(0,-1).trim();
+            lines[lines.length-1]=last+'…';
+          }
+          return lines.slice(0,maxLines);
+        };
+        const drawFrame=()=>{
+          ctx.setTransform(1,0,0,1,0,0);
+          ctx.fillStyle='#000';ctx.fillRect(0,0,width,height);
+          ctx.drawImage(video,0,0,width,height);
+
+          const margin=Math.max(18,Math.round(width*.035));
+          const fontSize=Math.max(25,Math.min(54,Math.round(width*.047)));
+          const lineHeight=Math.round(fontSize*1.45);
+          ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';
+          ctx.font='800 '+fontSize+'px Vazirmatn, Tahoma, Arial, sans-serif';
+          const lines=wrapTitle(title,width-(margin*4),2);
+          if(lines.length){
+            const boxH=margin*1.25+(lines.length*lineHeight);
+            ctx.fillStyle='rgba(5,8,12,.76)';
+            roundRect(margin,margin,width-(margin*2),boxH,Math.max(14,Math.round(width*.018)));ctx.fill();
+            ctx.fillStyle='#fff';
+            let y=margin+(boxH-(lines.length*lineHeight))/2+(lineHeight/2);
+            for(const line of lines){
+              ctx.fillText(line,width-(margin*2),y);
+              y+=lineHeight;
+            }
+          }
+        };
+
+        video.currentTime=0;
+        drawFrame();
+        recorder.start(1000);
+        audioSource.start(0);
+
+        const ended=new Promise((resolve,reject)=>{
+          const maxMs=Math.min(10*60*1000,Math.max(30000,(duration+30)*1000));
+          const timer=setTimeout(()=>reject(new Error('share titled video render timeout')),maxMs);
+          const finish=()=>{clearTimeout(timer);resolve();};
+          video.addEventListener('ended',finish,{once:true});
+          video.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('share titled video playback failed'));},{once:true});
+        });
+
+        const tick=()=>{
+          if(!video||video.ended)return;
+          try{
+            drawFrame();
+            onProgress(Math.max(0,Math.min(1,Number(video.currentTime||0)/duration)));
+          }catch{}
+          requestAnimationFrame(tick);
+        };
+
+        try{await video.play()}catch(err){throw new Error('share titled video play blocked:'+String(err?.message||err))}
+        requestAnimationFrame(tick);
+        await ended;
+        drawFrame();
+        onProgress(1);
+        try{audioSource.stop()}catch{}
+        if(recorder.state!=='inactive')recorder.stop();
+        return await recorded;
+      }catch(err){
+        console.warn('share titled video render failed',err);
+        try{if(recorder&&recorder.state!=='inactive')recorder.stop()}catch{}
+        return null;
+      }finally{
+        try{if(video)video.pause()}catch{}
+        try{if(audioSource)audioSource.disconnect()}catch{}
+        try{if(stream)stream.getTracks().forEach(track=>track.stop())}catch{}
+        if(objectUrl)URL.revokeObjectURL(objectUrl);
+      }
+    };
+
     const renderBrandedShareCard=async(sourceFile)=>{
       let bitmap=null;
       try{
@@ -477,21 +661,33 @@ document.addEventListener('DOMContentLoaded',()=>{
       setTimeout(()=>{if(label)label.innerHTML=shareImageOriginalLabel;},1000);
     });
 
+    let preparedOriginalShareVideoFile=null;
     let preparedShareVideoFile=null;
     let shareVideoLoadPromise=null;
+    let shareVideoRenderPromise=null;
+    let shareVideoAudioContext=null;
     let shareVideoOriginalLabel='';
+    let shareVideoHasTitle=false;
 
-    const downloadOriginalVideo=()=>{
+    const downloadPreparedOrOriginalVideo=()=>{
+      const file=preparedShareVideoFile||preparedOriginalShareVideoFile;
+      if(file){
+        try{
+          const url=URL.createObjectURL(file);
+          const a=document.createElement('a');
+          a.href=url;a.download=file.name||'nabez-sardo-video.mp4';a.rel='noopener';a.style.display='none';
+          document.body.appendChild(a);a.click();a.remove();
+          setTimeout(()=>URL.revokeObjectURL(url),3000);
+          return true;
+        }catch(err){console.warn('article prepared video download failed',err)}
+      }
       if(!shareVideoUrl)return false;
       try{
         const a=document.createElement('a');
         a.href=shareVideoUrl;
         a.download=decodeURIComponent(new URL(shareVideoUrl).pathname.split('/').pop()||'nabez-sardo-video.mp4');
-        a.rel='noopener';
-        a.style.display='none';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        a.rel='noopener';a.style.display='none';
+        document.body.appendChild(a);a.click();a.remove();
         return true;
       }catch(err){
         console.warn('article video download fallback failed',err);
@@ -499,12 +695,12 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     };
 
-    const ensureShareVideoFile=()=>{
-      if(preparedShareVideoFile)return Promise.resolve(preparedShareVideoFile);
+    const ensureOriginalShareVideoFile=()=>{
+      if(preparedOriginalShareVideoFile)return Promise.resolve(preparedOriginalShareVideoFile);
       if(shareVideoLoadPromise)return shareVideoLoadPromise;
       shareVideoLoadPromise=fetchShareVideoFile()
         .then(file=>{
-          if(file)preparedShareVideoFile=file;
+          if(file)preparedOriginalShareVideoFile=file;
           return file;
         })
         .catch(err=>{
@@ -515,56 +711,74 @@ document.addEventListener('DOMContentLoaded',()=>{
       return shareVideoLoadPromise;
     };
 
+    const ensureTitledShareVideoFile=(label)=>{
+      if(preparedShareVideoFile)return Promise.resolve(preparedShareVideoFile);
+      if(shareVideoRenderPromise)return shareVideoRenderPromise;
+      shareVideoRenderPromise=ensureOriginalShareVideoFile()
+        .then(async original=>{
+          if(!original)return null;
+          const rendered=await renderTitledShareVideo(original,shareVideoAudioContext,progress=>{
+            if(label){
+              const pct=Math.max(1,Math.min(100,Math.round(progress*100)));
+              label.textContent=root.dataset.lang==='en'?'Adding headline… '+pct+'%':'در حال ثبت تیتر روی فیلم… '+pct+'٪';
+            }
+          });
+          preparedShareVideoFile=rendered||original;
+          shareVideoHasTitle=Boolean(rendered);
+          return preparedShareVideoFile;
+        })
+        .catch(err=>{
+          console.warn('share titled video preparation failed',err);
+          preparedShareVideoFile=preparedOriginalShareVideoFile;
+          shareVideoHasTitle=false;
+          return preparedShareVideoFile;
+        })
+        .finally(()=>{shareVideoRenderPromise=null;});
+      return shareVideoRenderPromise;
+    };
+
     if(shareVideoBtn){
       const label=shareVideoBtn.querySelector('[data-share-video-label]');
       shareVideoOriginalLabel=label?label.innerHTML:'';
-
-      // Warm the original uploaded video in advance. The native file share call
-      // itself still happens directly inside the user's tap, preserving Android
-      // and iOS transient user activation.
-      const warmVideo=()=>ensureShareVideoFile().then(file=>{
-        if(file&&label)label.innerHTML=shareVideoOriginalLabel;
-      });
-      if('requestIdleCallback' in window){
-        requestIdleCallback(()=>warmVideo(),{timeout:1200});
-      }else{
-        setTimeout(()=>warmVideo(),250);
-      }
-      shareVideoBtn.addEventListener('pointerenter',warmVideo,{once:true});
-      shareVideoBtn.addEventListener('touchstart',warmVideo,{once:true,passive:true});
+      const warmOriginal=()=>ensureOriginalShareVideoFile();
+      shareVideoBtn.addEventListener('pointerenter',warmOriginal,{once:true});
+      shareVideoBtn.addEventListener('touchstart',warmOriginal,{once:true,passive:true});
     }
 
     if(shareVideoBtn)shareVideoBtn.addEventListener('click',()=>{
       const label=shareVideoBtn.querySelector('[data-share-video-label]');
       const payload=shareText();
 
-      // Browsers without native Web Share file support must never leave this
-      // control looking dead: download the untouched uploaded video and copy
-      // its ready caption so the user can share it manually.
-      if(typeof navigator.share!=='function'){
-        copySharePayload();
-        downloadOriginalVideo();
-        if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
-        setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
+      if(!preparedShareVideoFile){
+        const AudioCtx=window.AudioContext||window.webkitAudioContext;
+        if(AudioCtx&&(!shareVideoAudioContext||shareVideoAudioContext.state==='closed')){
+          try{
+            shareVideoAudioContext=new AudioCtx();
+            shareVideoAudioContext.resume().catch(()=>{});
+          }catch{}
+        }
+        if(label)label.textContent=root.dataset.lang==='en'?'Adding headline to video…':'در حال ثبت تیتر روی فیلم…';
+        ensureTitledShareVideoFile(label).then(file=>{
+          if(!label)return;
+          if(!file){
+            copySharePayload();
+            downloadPreparedOrOriginalVideo();
+            label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+          }else if(shareVideoHasTitle){
+            label.textContent=root.dataset.lang==='en'?'Headline added — tap again to share':'تیتر ثبت شد — دوباره بزن برای اشتراک';
+          }else{
+            label.textContent=root.dataset.lang==='en'?'Headline unavailable — original ready':'ثبت تیتر ممکن نشد — فایل اصلی آماده است';
+          }
+          setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},5000);
+        });
         return;
       }
 
-      // A large video may still be loading when the first tap arrives. Keep the
-      // file share tied to a direct tap; prepare it now and make the state clear
-      // instead of silently falling back to text-only sharing.
-      if(!preparedShareVideoFile){
-        if(label)label.textContent=root.dataset.lang==='en'?'Preparing original video…':'در حال آماده‌سازی فیلم اصلی…';
-        ensureShareVideoFile().then(file=>{
-          if(!label)return;
-          if(file){
-            label.textContent=root.dataset.lang==='en'?'Ready — tap again to share':'آماده شد — دوباره بزن برای اشتراک';
-          }else{
-            copySharePayload();
-            downloadOriginalVideo();
-            label.textContent=root.dataset.lang==='en'?'Downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
-          }
-          setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},2600);
-        });
+      if(typeof navigator.share!=='function'){
+        copySharePayload();
+        downloadPreparedOrOriginalVideo();
+        if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
+        setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
         return;
       }
 
@@ -580,7 +794,7 @@ document.addEventListener('DOMContentLoaded',()=>{
             sharePayload=fileOnly;
           }else{
             copySharePayload();
-            downloadOriginalVideo();
+            downloadPreparedOrOriginalVideo();
             if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
             setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
             return;
@@ -599,14 +813,14 @@ document.addEventListener('DOMContentLoaded',()=>{
             if(err&&err.name==='AbortError')return;
             console.warn('article video share failed',err);
             copySharePayload();
-            downloadOriginalVideo();
+            downloadPreparedOrOriginalVideo();
             if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
           })
           .finally(()=>setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800));
       }catch(err){
         console.warn('article video share sync failure',err);
         copySharePayload();
-        downloadOriginalVideo();
+        downloadPreparedOrOriginalVideo();
         if(label)label.textContent=root.dataset.lang==='en'?'Video downloaded · text copied':'فیلم دانلود شد · متن کپی شد';
         setTimeout(()=>{if(label)label.innerHTML=shareVideoOriginalLabel;},1800);
       }
