@@ -51,20 +51,21 @@ test('demand/category Story cards use the same Instagram pipeline',()=>{
 });
 
 
-test('article share-with-video sends the uploaded file unchanged',()=>{
+test('article share-with-video burns the article headline into the shared video',()=>{
   const js=fs.readFileSync('public/site.js','utf8');
   const view=fs.readFileSync('lib/view-public.js','utf8');
   assert.match(view,/data-article-video=/);
   assert.match(view,/data-article-video-type=/);
   assert.match(view,/a\.videoUrl\?\`<button class="article-action article-share-video"/);
   assert.match(js,/data-article-share-video/);
-  assert.match(js,/fetchShareVideoFile/);
-  assert.match(js,/ensureShareVideoFile/);
-  assert.match(js,/preparedShareVideoFile/);
+  assert.match(js,/renderTitledShareVideo/);
+  assert.match(js,/canvas\.captureStream\(30\)/);
+  assert.match(js,/decodeAudioData/);
+  assert.match(js,/ctx\.drawImage\(video,0,0,width,height\)/);
+  assert.match(js,/wrapTitle\(title,width-\(margin\*4\),2\)/);
+  assert.match(js,/در حال ثبت تیتر روی فیلم/);
+  assert.match(js,/تیتر ثبت شد — دوباره بزن برای اشتراک/);
   assert.match(js,/const fileWithText=\{files:\[preparedShareVideoFile\],text:payload\}/);
   assert.match(js,/navigator\.share\(sharePayload\)/);
-  assert.match(js,/downloadOriginalVideo/);
-  assert.match(js,/فیلم دانلود شد · متن کپی شد/);
-  assert.match(js,/آماده شد — دوباره بزن برای اشتراک/);
-  assert.doesNotMatch(js,/canvas\.toBlob\([^\n]*video/i);
+  assert.match(js,/downloadPreparedOrOriginalVideo/);
 });
