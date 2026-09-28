@@ -6255,3 +6255,40 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
     line-height:1.65!important;
   }
 }
+
+/* Short news: compact rows with legible metadata. */
+.short-timeline-item{min-height:0!important;padding:14px 72px 14px 20px!important}
+.short-timeline-item::before{right:34px!important}
+.short-timeline-item:first-child::before{top:31px!important}
+.short-timeline-item:last-child::before{bottom:31px!important}
+.short-timeline-rail{top:13px!important;right:8px!important;width:52px!important;height:52px!important}
+.short-timeline-no{width:38px!important;height:38px!important;font-size:11px!important;box-shadow:0 0 0 5px rgba(255,255,255,.025)!important}
+.short-timeline-content h3{max-width:none!important;font-size:15px!important;line-height:1.6!important}
+.short-timeline-meta{margin-bottom:4px!important}
+.short-timeline-cat{font-size:11px!important}
+.short-timeline-views{font-size:10px!important;color:#aeb7c2!important}
+.short-timeline-bottom{margin-top:6px!important;gap:12px!important}
+.short-timeline-bottom time{font-size:10.5px!important;color:#aeb7c2!important}
+.short-timeline-link{font-size:10.5px!important}
+.home-short-news-head p{font-size:12px!important;color:#aeb7c2!important}
+
+/* Secondary card details need to remain readable at small widths. */
+.latest-grid .eyebrow,.latest-grid .view-badge,.latest-grid .news-date{font-size:10.5px!important}
+.latest-grid .view-badge,.latest-grid .news-date{color:#aeb7c2!important}
+.popular-row .eyebrow{font-size:10px!important}
+.popular-meta{font-size:10.5px!important;color:#aeb7c2!important}
+.front-brief .news-date{font-size:10px!important;color:#aeb7c2!important}
+
+@media(max-width:760px){
+  .short-timeline-item{padding:13px 54px 13px 13px!important}
+  .short-timeline-item::before{right:25px!important}
+  .short-timeline-item:first-child::before{top:28px!important}
+  .short-timeline-item:last-child::before{bottom:28px!important}
+  .short-timeline-rail{top:12px!important;right:3px!important;width:43px!important;height:43px!important}
+  .short-timeline-no{width:34px!important;height:34px!important;font-size:10px!important}
+  .short-timeline-content h3{font-size:14px!important;line-height:1.6!important}
+  .short-timeline-cat{font-size:10.5px!important}
+  .short-timeline-views{font-size:9.5px!important}
+  .short-timeline-bottom time,.short-timeline-link{font-size:10px!important}
+  .latest-grid .eyebrow,.latest-grid .view-badge,.latest-grid .news-date{font-size:10px!important}
+}

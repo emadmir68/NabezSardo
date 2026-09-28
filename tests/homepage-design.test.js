@@ -2,6 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const {home,article}=require('../lib/view-public');
 const {detectTheme}=require('../lib/auto-cover');
+const {displayImage}=require('../lib/view-common');
 
 function db(settings={}){
   const categories=['incidents','weather','opinion','sardouiyeh','city-village','social','culture','sports','agriculture'].map((id,i)=>({id,name:['حوادث','آب‌وهوا','یادداشت و مطالبه','ساردوئیه','سیاسی','اجتماعی','فرهنگی','ورزش','کشاورزی'][i]}));
@@ -23,7 +24,7 @@ test('placeholder advertising stays out of the reading flow, but a configured ad
   assert.match(home(db({adTitle:'تبلیغ کافه دارما'})),/class="wrap home-ad-slot"/);
 });
 
-test('old automatic agriculture cover is replaced by the neutral branded cover in home cards',()=>{
+test('old automatic agriculture cover follows the incident category across cards and article',()=>{
   const data=db({adEnabled:false});
   data.articles[11].categoryId='incidents';
   data.articles[11].image='/uploads/auto-cover-old.svg';
@@ -31,12 +32,19 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   data.articles[11].imageAuto=true;
   data.articles[11].autoCoverTheme='agriculture';
   const html=home(data);
-  assert.match(html,/src="\/assets\/news-cover.svg"/);
+  assert.match(html,/src="\/assets\/news-cover-incidents.svg"/);
   assert.doesNotMatch(html,/src="\/uploads\/auto-cover-old.svg"/);
   const detail=article(data,data.articles[11]);
-  assert.match(detail,/class="cover" src="\/assets\/news-cover.svg"/);
+  assert.match(detail,/class="cover" src="\/assets\/news-cover-incidents.svg"/);
   assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
-  assert.match(detail,/property="og:image" content="https:\/\/nabzesardo.ir\/assets\/news-cover.svg"/);
+  assert.match(detail,/property="og:image" content="https:\/\/nabzesardo.ir\/assets\/news-cover-incidents.svg"/);
+});
+
+test('automatic covers use restrained category variants while real images stay intact',()=>{
+  assert.equal(displayImage({imageAuto:true,categoryId:'weather',image:'/uploads/auto-cover-a.svg'}),'/assets/news-cover-weather.svg');
+  assert.equal(displayImage({imageAuto:true,categoryId:'social',image:'/uploads/auto-cover-b.svg'}),'/assets/news-cover-social.svg');
+  assert.equal(displayImage({imageAuto:true,categoryId:'culture',image:'/uploads/auto-cover-c.svg'}),'/assets/news-cover-culture.svg');
+  assert.equal(displayImage({image:'/uploads/real-photo.jpg',categoryId:'weather'}),'/uploads/real-photo.jpg');
 });
 
 test('incident category takes priority over a place name containing باغ',async()=>{

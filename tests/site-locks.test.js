@@ -62,5 +62,5 @@ test('article layout lock and social preview fallback stay enabled',()=>{
   const commonSource=fs.readFileSync(path.join(__dirname,'..','lib','view-common.js'),'utf8');
   const publicSource=fs.readFileSync(path.join(__dirname,'..','lib','view-public.js'),'utf8');
   assert.match(commonSource,/\/assets\/article-lock\.css/);
-  assert.match(publicSource,/a\.imageAuto\?displayImage\(a\):\(a\.socialImage\|\|a\.image\|\|'\/assets\/header-mosque-final\.jpg'\)/);
+  assert.match(publicSource,/a\.socialImage\|\|a\.image\|\|'\/assets\/header-mosque-final\.jpg'/);
 });
