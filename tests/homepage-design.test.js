@@ -27,6 +27,7 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   const data=db({adEnabled:false});
   data.articles[11].categoryId='incidents';
   data.articles[11].image='/uploads/auto-cover-old.svg';
+  data.articles[11].socialImage='/uploads/auto-cover-old-social.png';
   data.articles[11].imageAuto=true;
   data.articles[11].autoCoverTheme='agriculture';
   const html=home(data);
@@ -35,6 +36,7 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   const detail=article(data,data.articles[11]);
   assert.match(detail,/class="cover" src="\/assets\/news-cover.svg"/);
   assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
+  assert.match(detail,/property="og:image" content="https:\/\/nabzesardo.ir\/assets\/news-cover.svg"/);
 });
 
 test('incident category takes priority over a place name containing باغ',async()=>{
