@@ -26,6 +26,9 @@ const THEMES={
 function text(v="",n=700){return String(v||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,n)}
 
 function theme(a={},c={}){
+ const id=String(c?.id||a.categoryId||"").toLowerCase();
+ if(id==="incidents")return"incidents";
+ if(id==="weather")return"weather";
  const q=(text(a.title)+" "+text(a.lead)+" "+text(c.name)).toLowerCase();
  if(/مدرس|دانش.?آموز|آموزش|دانشگاه|معلم|کلاس/.test(q))return"education";
  if(/بنزین|بانک|کالابرگ|اقتصاد|قیمت|ارز|بازار|سهمیه/.test(q))return"economy";
@@ -39,7 +42,6 @@ function theme(a={},c={}){
  if(/سلامت|بهداشت|پزشک|بیمار|درمان|بیمارستان/.test(q))return"health";
  if(/وزیر|دولت|مجلس|استاندار|فرماندار|شورا|سیاسی/.test(q))return"politics";
  if(/فرهنگ|هنر|کتاب|جشنواره|رسانه|شعر/.test(q))return"culture";
- const id=String(c?.id||a.categoryId||"").toLowerCase();
  if(id==="agriculture")return"agriculture";
  if(id==="sports")return"sports";
  if(id==="tourism")return"tourism";
