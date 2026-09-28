@@ -83,39 +83,27 @@ function icon(t){
 
 function svg(t){
  const x=THEMES[t]||THEMES.local;
- const labelFa={education:"آموزش",economy:"اقتصاد",agriculture:"کشاورزی",sports:"ورزش",tourism:"گردشگری",incidents:"خبر فوری",politics:"سیاسی",culture:"فرهنگ",roads:"راه و جاده",weather:"هواشناسی",energy:"انرژی",health:"سلامت",local:"ساردوئیه",social:"اجتماعی"}[t]||"خبر محلی";
  return `<svg width="1200" height="675" viewBox="0 0 1200 675" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="40" y1="20" x2="1160" y2="650" gradientUnits="userSpaceOnUse"><stop stop-color="${x.bg1}"/><stop offset=".54" stop-color="${x.bg2}"/><stop offset="1" stop-color="#07090d"/></linearGradient>
-    <radialGradient id="halo" cx="0" cy="0" r="1" gradientTransform="translate(1015 95) rotate(137) scale(480 390)"><stop stop-color="${x.accent}" stop-opacity=".42"/><stop offset=".48" stop-color="${x.accent}" stop-opacity=".10"/><stop offset="1" stop-color="${x.accent}" stop-opacity="0"/></radialGradient>
-    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".095"/><stop offset="1" stop-color="#fff" stop-opacity=".018"/></linearGradient>
-    <linearGradient id="goldline" x1="0" y1="0" x2="1" y2="0"><stop stop-color="${x.accent}" stop-opacity="0"/><stop offset=".5" stop-color="${x.accent2}"/><stop offset="1" stop-color="${x.accent}" stop-opacity="0"/></linearGradient>
-    <pattern id="grain" width="46" height="46" patternUnits="userSpaceOnUse"><circle cx="3" cy="8" r=".7" fill="#fff" opacity=".12"/><circle cx="31" cy="19" r=".55" fill="#fff" opacity=".08"/><circle cx="17" cy="39" r=".5" fill="#fff" opacity=".07"/></pattern>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="20" stdDeviation="24" flood-color="#000" flood-opacity=".38"/></filter>
-    <filter id="soft"><feGaussianBlur stdDeviation="34"/></filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675"><stop stop-color="${x.bg1}"/><stop offset="1" stop-color="${x.bg2}"/></linearGradient>
+    <radialGradient id="g"><stop stop-color="${x.accent}" stop-opacity=".24"/><stop offset="1" stop-color="${x.accent}" stop-opacity="0"/></radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
   </defs>
-  <rect width="1200" height="675" fill="url(#bg)"/><rect width="1200" height="675" fill="url(#halo)"/>
-  <ellipse cx="150" cy="650" rx="340" ry="190" fill="${x.accent}" opacity=".09" filter="url(#soft)"/><rect width="1200" height="675" fill="url(#grain)" opacity=".6"/>
-  <path d="M0 0h365L125 675H0V0Z" fill="#000" opacity=".16"/><path d="M1200 0h-120L880 675h320V0Z" fill="#fff" opacity=".018"/>
-  <path d="M81 72h1038" stroke="url(#goldline)" stroke-width="1.5" opacity=".78"/><path d="M81 603h1038" stroke="#fff" stroke-opacity=".075"/>
-  <g opacity=".055" fill="none" stroke="${x.accent2}"><circle cx="1045" cy="338" r="208"/><circle cx="1045" cy="338" r="246"/><circle cx="1045" cy="338" r="284"/><path d="M760 338h570M1045 53v570"/></g>
-  <g transform="translate(80 112)" filter="url(#shadow)">
-    <rect width="420" height="420" rx="42" fill="url(#glass)" stroke="#fff" stroke-opacity=".11"/><rect x="17" y="17" width="386" height="386" rx="32" fill="#000" fill-opacity=".12" stroke="${x.accent}" stroke-opacity=".22"/>
-    <circle cx="210" cy="210" r="142" fill="${x.accent}" opacity=".07"/><circle cx="210" cy="210" r="112" fill="none" stroke="${x.accent2}" stroke-opacity=".13" stroke-width="2"/>
-    <g transform="translate(-20 34) scale(1.04)">${icon(t)}</g>
-    <rect x="36" y="354" width="126" height="32" rx="16" fill="${x.accent}" fill-opacity=".15" stroke="${x.accent}" stroke-opacity=".32"/><text x="99" y="376" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="800" letter-spacing="2.4" fill="${x.accent2}">NS / 01</text>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <circle cx="1040" cy="86" r="260" fill="url(#g)" filter="url(#blur)"/>
+  <circle cx="165" cy="620" r="230" fill="url(#g)" opacity=".45" filter="url(#blur)"/>
+  <g opacity=".13" stroke="${x.accent2}"><path d="M0 570h1200M0 590h1200M0 610h1200"/><path d="M870 0v675M910 0v675M950 0v675"/></g>
+  <rect x="60" y="58" width="1080" height="559" rx="34" fill="#ffffff" fill-opacity=".018" stroke="#ffffff" stroke-opacity=".08"/>
+  <g transform="translate(105 145)">${icon(t)}</g>
+  <g transform="translate(590 170)">
+    <path d="M0 0h430" stroke="${x.accent}" stroke-width="4" opacity=".8"/>
+    <text x="430" y="68" text-anchor="end" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="4" fill="${x.accent2}">${x.label}</text>
+    <text x="430" y="126" text-anchor="end" font-family="Arial, sans-serif" font-size="46" font-weight="800" letter-spacing="1" fill="#F5F0E8">NABEZ SARDO</text>
+    <text x="430" y="167" text-anchor="end" font-family="Arial, sans-serif" font-size="17" font-weight="600" letter-spacing="3" fill="#ffffff" fill-opacity=".45">LOCAL NEWSROOM</text>
+    <path d="M55 254h122l18-17 21 42 29-75 31 78 23-48 21 20h110" fill="none" stroke="${x.accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="246" cy="204" r="8" fill="${x.accent2}"/>
   </g>
-  <g transform="translate(555 120)">
-    <text x="550" y="20" text-anchor="end" direction="rtl" unicode-bidi="plaintext" font-family="Tahoma,Arial,sans-serif" font-size="18" font-weight="700" fill="${x.accent2}" opacity=".9">نبض ساردو · ${labelFa}</text>
-    <text x="550" y="72" text-anchor="end" font-family="Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="5" fill="#fff" fill-opacity=".42">${x.label} / EDITORIAL</text>
-    <text x="550" y="174" text-anchor="end" font-family="Arial,sans-serif" font-size="62" font-weight="900" letter-spacing="1.5" fill="#F7F2E9">NABEZ</text><text x="550" y="237" text-anchor="end" font-family="Arial,sans-serif" font-size="62" font-weight="300" letter-spacing="8" fill="#F7F2E9">SARDO</text>
-    <rect x="164" y="266" width="386" height="3" rx="2" fill="${x.accent}"/><rect x="462" y="266" width="88" height="3" rx="2" fill="${x.accent2}"/>
-    <g transform="translate(92 312)"><path d="M0 44h90l18-16 19 37 26-70 30 74 24-48 20 23h124" fill="none" stroke="${x.accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="153" cy="-5" r="7" fill="${x.accent2}"/><path d="M355 44h103" stroke="#fff" stroke-opacity=".14" stroke-width="2"/></g>
-    <text x="550" y="432" text-anchor="end" direction="rtl" unicode-bidi="plaintext" font-family="Tahoma,Arial,sans-serif" font-size="18" font-weight="700" fill="#fff" fill-opacity=".66">صدای خبرهای محلی</text>
-    <text x="550" y="466" text-anchor="end" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="3.5" fill="#fff" fill-opacity=".27">SARDOUIYEH · SOUTH KERMAN</text>
-  </g>
-  <g transform="translate(82 626)"><circle cx="7" cy="0" r="4" fill="${x.accent}"/><text x="23" y="5" font-family="Arial,sans-serif" font-size="11" font-weight="700" letter-spacing="2.8" fill="#fff" fill-opacity=".34">NABZESARDO.IR</text></g>
-  <text x="1118" y="631" text-anchor="end" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="2.6" fill="#fff" fill-opacity=".22">PREMIUM AUTO COVER · 16:9</text>
+  <text x="1090" y="582" text-anchor="end" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="3" fill="#ffffff" fill-opacity=".35">AUTO NEWS COVER · 1200 × 675</text>
  </svg>`;
 }
 
@@ -123,7 +111,7 @@ export async function ensureSmartCover({article,category,sourceImage,getMedia,pu
  const src=String(sourceImage||"");
  if(!isFallbackSourceImage(src))return{image:src,imageAuto:false,autoCoverSource:"original",imageWidth:article.imageWidth||null,imageHeight:article.imageHeight||null,imageRatio:article.imageRatio||null,imageOrientation:"landscape"};
  const t=theme(article,category);
- const fp=await sha256Hex(new TextEncoder().encode([text(article.title,260),text(article.lead,500),category?.id||article.categoryId||"",t,"template-v2-luxe"].join("|")));
+ const fp=await sha256Hex(new TextEncoder().encode([text(article.title,260),text(article.lead,500),category?.id||article.categoryId||"",t,"template-v1"].join("|")));
  if(article.imageAuto===true&&article.autoCoverSource==="template"&&article.autoCoverFingerprint===fp&&article.image&&await getMedia(path.basename(String(article.image)))){
   return{image:article.image,imageAuto:true,autoCoverSource:"template",autoCoverTheme:t,autoCoverFingerprint:fp,imageWidth:1200,imageHeight:675,imageRatio:16/9,imageOrientation:"landscape"};
  }
