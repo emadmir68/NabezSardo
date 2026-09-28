@@ -47,3 +47,13 @@ test('incident category takes priority over a place name containing باغ',asyn
   const result=await ensureSmartCover({article,category,sourceImage:'',getMedia:async()=>null,putMedia:async()=>{},sha256Hex:async()=> '0'.repeat(64)});
   assert.equal(result.autoCoverTheme,'incidents');
 });
+
+test('regional focus links to live local news instead of generic category tiles',()=>{
+  const data=db();
+  data.articles[11].location='ساردوئیه';
+  data.articles[10].location='جیرفت';
+  data.articles[9].location='جنوب کرمان';
+  const html=home(data);
+  for(const key of ['sardouiyeh','jiroft','south-kerman'])assert.match(html,new RegExp(`href="/local/${key}"`));
+  assert.doesNotMatch(html,/خبرها و گزارش‌های منتخب این حوزه/);
+});
