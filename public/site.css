@@ -5984,6 +5984,23 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
   }
 }
 
+/* Compact editorial topic navigation on the home page */
+.home-topics-section{margin-top:56px;margin-bottom:48px}
+.home-topics-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}
+.home-topics-head h2{margin:5px 0 4px;font-size:clamp(23px,2.5vw,32px);line-height:1.4}
+.home-topics-head p{margin:0;color:var(--muted,#a4a9b3);font-size:13px}
+.home-topics-head .more{white-space:nowrap}
+.home-topics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.home-topic-card{display:flex;flex-direction:column;gap:13px;min-width:0;min-height:138px;padding:20px 22px;border:1px solid rgba(212,174,103,.19);border-radius:17px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));color:inherit;text-decoration:none;transition:transform .2s,border-color .2s,background .2s}
+.home-topic-card:hover,.home-topic-card:focus-visible{transform:translateY(-3px);border-color:rgba(222,182,105,.6);background:rgba(212,174,103,.09)}
+.home-topic-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.home-topic-top b{font-size:17px;line-height:1.5}
+.home-topic-top>span{color:#d7b773;font-size:21px}
+.home-topic-card>small{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;font-size:12px;line-height:1.7;color:var(--muted,#a4a9b3)}
+.home-topic-count{margin-top:auto;font-size:11px;color:#d7b773}
+@media(max-width:760px){.home-topics-section{margin-top:38px;margin-bottom:36px}.home-topics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-topic-card{min-height:125px;padding:16px}.home-topic-top b{font-size:15px}}
+@media(max-width:460px){.home-topics-head{align-items:start}.home-topics-head p{font-size:11px}.home-topics-head .more{font-size:11px}.home-topics-grid{gap:9px}.home-topic-card{min-height:118px;padding:14px 12px;gap:9px}.home-topic-top b{font-size:14px}.home-topic-card>small{font-size:10px}}
+
 
 /* ===== Short News Timeline v4 — mobile compatibility fix ===== */
 .short-timeline-list,
