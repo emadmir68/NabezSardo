@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {home}=require('../lib/view-public');
+const {home,article}=require('../lib/view-public');
 const {detectTheme}=require('../lib/auto-cover');
 
 function db(settings={}){
@@ -32,6 +32,9 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   const html=home(data);
   assert.match(html,/src="\/assets\/news-cover.svg"/);
   assert.doesNotMatch(html,/src="\/uploads\/auto-cover-old.svg"/);
+  const detail=article(data,data.articles[11]);
+  assert.match(detail,/class="cover" src="\/assets\/news-cover.svg"/);
+  assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
 });
 
 test('incident category takes priority over a place name containing باغ',async()=>{
