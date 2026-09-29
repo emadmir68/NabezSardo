@@ -24,6 +24,17 @@ const THEMES={
 };
 
 function text(v="",n=700){return String(v||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,n)}
+function xml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;")}
+function headlineLines(value){
+ const words=String(value||"").replace(/\s+/g," ").trim().split(" ");
+ const lines=[""];
+ for(const word of words){
+  const i=lines.length-1,next=lines[i]?lines[i]+" "+word:word;
+  if(next.length>24&&lines[i]&&lines.length<2)lines.push(word);
+  else lines[i]=next;
+ }
+ return lines.map(line=>xml(line.length>27?line.slice(0,26).trimEnd()+"…":line));
+}
 
 function theme(a={},c={}){
  const id=String(c?.id||a.categoryId||"").toLowerCase();
@@ -81,29 +92,33 @@ function icon(t){
  return '<path '+common+' d="M104 265h252M133 251V154l97-61 97 61v97M177 251v-69h106v69"/><path d="M118 111c35-27 73-40 112-40 44 0 83 13 116 41" stroke="'+accent2+'" stroke-width="6" opacity=".38" fill="none"/>';
 }
 
-function svg(t){
+function svg(t,title=""){
  const x=THEMES[t]||THEMES.local;
+ const lines=headlineLines(title);
  return `<svg width="1200" height="675" viewBox="0 0 1200 675" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675"><stop stop-color="${x.bg1}"/><stop offset="1" stop-color="${x.bg2}"/></linearGradient>
-    <radialGradient id="g"><stop stop-color="${x.accent}" stop-opacity=".24"/><stop offset="1" stop-color="${x.accent}" stop-opacity="0"/></radialGradient>
-    <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse"><stop stop-color="#090d14"/><stop offset=".55" stop-color="${x.bg1}"/><stop offset="1" stop-color="${x.bg2}"/></linearGradient>
+    <linearGradient id="gold" x1="0" x2="1"><stop stop-color="#8c612f"/><stop offset=".46" stop-color="#f7dda4"/><stop offset="1" stop-color="#ae7a3d"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="${x.accent}" stop-opacity=".26"/><stop offset="1" stop-color="${x.accent}" stop-opacity="0"/></radialGradient>
   </defs>
   <rect width="1200" height="675" fill="url(#bg)"/>
-  <circle cx="1040" cy="86" r="260" fill="url(#g)" filter="url(#blur)"/>
-  <circle cx="165" cy="620" r="230" fill="url(#g)" opacity=".45" filter="url(#blur)"/>
-  <g opacity=".13" stroke="${x.accent2}"><path d="M0 570h1200M0 590h1200M0 610h1200"/><path d="M870 0v675M910 0v675M950 0v675"/></g>
-  <rect x="60" y="58" width="1080" height="559" rx="34" fill="#ffffff" fill-opacity=".018" stroke="#ffffff" stroke-opacity=".08"/>
-  <g transform="translate(105 145)">${icon(t)}</g>
-  <g transform="translate(590 170)">
-    <path d="M0 0h430" stroke="${x.accent}" stroke-width="4" opacity=".8"/>
-    <text x="430" y="68" text-anchor="end" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="4" fill="${x.accent2}">${x.label}</text>
-    <text x="430" y="126" text-anchor="end" font-family="Arial, sans-serif" font-size="46" font-weight="800" letter-spacing="1" fill="#F5F0E8">NABEZ SARDO</text>
-    <text x="430" y="167" text-anchor="end" font-family="Arial, sans-serif" font-size="17" font-weight="600" letter-spacing="3" fill="#ffffff" fill-opacity=".45">LOCAL NEWSROOM</text>
-    <path d="M55 254h122l18-17 21 42 29-75 31 78 23-48 21 20h110" fill="none" stroke="${x.accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="246" cy="204" r="8" fill="${x.accent2}"/>
-  </g>
-  <text x="1090" y="582" text-anchor="end" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="3" fill="#ffffff" fill-opacity=".35">AUTO NEWS COVER · 1200 × 675</text>
+  <circle cx="170" cy="342" r="390" fill="url(#glow)"/>
+  <g fill="none" stroke="#f3d99e" opacity=".14"><circle cx="92" cy="340" r="255"/><circle cx="92" cy="340" r="299"/><circle cx="92" cy="340" r="343"/></g>
+  <path d="M0 525C260 414 396 549 624 470S992 402 1200 462" fill="none" stroke="${x.accent}" stroke-opacity=".18" stroke-width="2"/>
+  <rect x="35" y="35" width="1130" height="605" rx="28" fill="none" stroke="#e9c985" stroke-opacity=".36"/>
+  <rect x="49" y="49" width="1102" height="577" rx="20" fill="none" stroke="#ffffff" stroke-opacity=".07"/>
+  <path d="M81 35h155M964 640h155" stroke="url(#gold)" stroke-width="4"/>
+  <g transform="translate(70 148) scale(.82)" opacity=".6">${icon(t)}</g>
+  <path d="M112 394h106l30-51 42 107 55-150 45 114 32-38h104" fill="none" stroke="#25180d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M112 394h106l30-51 42 107 55-150 45 114 32-38h104" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="826" y="83" width="294" height="55" rx="27.5" fill="#ffffff" fill-opacity=".05" stroke="#e8c788" stroke-opacity=".4"/>
+  <text x="1094" y="120" text-anchor="end" direction="rtl" font-family="DejaVu Sans, sans-serif" font-size="24" font-weight="700" fill="#f8e8c8">نبض ساردو</text>
+  <text x="1098" y="207" text-anchor="end" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="3" fill="${x.accent2}">${x.label}</text>
+  <path d="M620 227h478" stroke="url(#gold)" stroke-width="2" opacity=".75"/>
+  ${lines.map((line,i)=>`<text x="1098" y="${302+i*82}" text-anchor="end" direction="rtl" font-family="DejaVu Sans, sans-serif" font-size="43" font-weight="700" fill="#fff8ee">${line}</text>`).join("")}
+  <path d="M620 522h478" stroke="#e9c985" stroke-opacity=".3"/>
+  <text x="1098" y="574" text-anchor="end" direction="rtl" font-family="DejaVu Sans, sans-serif" font-size="19" fill="#e2d4bd">رسانه محلی ساردوئیه و جنوب کرمان</text>
+  <text x="86" y="581" font-family="Arial, sans-serif" font-size="18" letter-spacing="3" fill="#ead1a2">NABEZ SARDO</text>
  </svg>`;
 }
 
@@ -111,11 +126,11 @@ export async function ensureSmartCover({article,category,sourceImage,getMedia,pu
  const src=String(sourceImage||"");
  if(!isFallbackSourceImage(src))return{image:src,imageAuto:false,autoCoverSource:"original",imageWidth:article.imageWidth||null,imageHeight:article.imageHeight||null,imageRatio:article.imageRatio||null,imageOrientation:"landscape"};
  const t=theme(article,category);
- const fp=await sha256Hex(new TextEncoder().encode([text(article.title,260),text(article.lead,500),category?.id||article.categoryId||"",t,"template-v1"].join("|")));
+ const fp=await sha256Hex(new TextEncoder().encode([text(article.title,260),text(article.lead,500),category?.id||article.categoryId||"",t,"template-v2"].join("|")));
  if(article.imageAuto===true&&article.autoCoverSource==="template"&&article.autoCoverFingerprint===fp&&article.image&&await getMedia(path.basename(String(article.image)))){
   return{image:article.image,imageAuto:true,autoCoverSource:"template",autoCoverTheme:t,autoCoverFingerprint:fp,imageWidth:1200,imageHeight:675,imageRatio:16/9,imageOrientation:"landscape"};
  }
  const name="auto-cover-"+fp.slice(0,18)+".svg";
- if(!(await getMedia(name)))await putMedia(name,Buffer.from(svg(t),"utf8"),"image/svg+xml");
+ if(!(await getMedia(name)))await putMedia(name,Buffer.from(svg(t,article.title),"utf8"),"image/svg+xml");
  return{image:"/uploads/"+name,imageAuto:true,autoCoverSource:"template",autoCoverTheme:t,autoCoverFingerprint:fp,imageWidth:1200,imageHeight:675,imageRatio:16/9,imageOrientation:"landscape"};
 }
