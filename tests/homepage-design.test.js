@@ -30,10 +30,10 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   data.articles[11].imageAuto=true;
   data.articles[11].autoCoverTheme='agriculture';
   const html=home(data);
-  assert.match(html,/src="\/assets\/news-cover.svg\?v=premium-20260929"/);
+  assert.match(html,/src="\/assets\/news-cover-(?:crimson|burgundy)\.svg\?v=colors-20260929"/);
   assert.doesNotMatch(html,/src="\/uploads\/auto-cover-old.svg"/);
   const detail=article(data,data.articles[11]);
-  assert.match(detail,/class="cover" src="\/assets\/news-cover.svg\?v=premium-20260929"/);
+  assert.match(detail,/class="cover" src="\/assets\/news-cover-(?:crimson|burgundy)\.svg\?v=colors-20260929"/);
   assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
 });
 
@@ -46,6 +46,29 @@ test('stories without media or with a legacy placeholder share the premium cover
   assert.equal(displayImage({image:'/uploads/real-photo.jpg'}),'/uploads/real-photo.jpg');
   const html=home(db());
   assert.doesNotMatch(html,/src="\/assets\/placeholder\.svg"/);
+});
+
+test('category palettes separate cover colors, including repeated political stories',()=>{
+  const {displayImage}=require('../lib/view-common');
+  assert.match(displayImage({id:'incident-1',categoryId:'incidents'}),/news-cover-(?:crimson|burgundy)\.svg\?v=colors-20260929$/);
+  assert.match(displayImage({id:'weather-1',categoryId:'weather'}),/news-cover-(?:blue|indigo)\.svg\?v=colors-20260929$/);
+  assert.match(displayImage({id:'farm-1',categoryId:'agriculture'}),/news-cover-(?:olive|green)\.svg\?v=colors-20260929$/);
+  const political=['politics-1','politics-2','politics-3','politics-4'].map(id=>displayImage({id,categoryId:'city-village'}));
+  assert.ok(new Set(political).size>=2);
+  assert.equal(displayImage({id:'photo',categoryId:'incidents',image:'/uploads/real-photo.jpg'}),'/uploads/real-photo.jpg');
+});
+
+test('every category cover URL has a deployable SVG asset',()=>{
+  const fs=require('node:fs');
+  const path=require('node:path');
+  const {displayImage}=require('../lib/view-common');
+  for(const categoryId of ['incidents','weather','agriculture','sports','tourism','social','culture','city-village','opinion','short-news','video','kerman','sardouiyeh']){
+    for(let i=0;i<12;i++){
+      const pathname=displayImage({id:`${categoryId}-${i}`,categoryId}).split('?')[0].replace('/assets/','');
+      const svg=fs.readFileSync(path.join(__dirname,'../public',pathname),'utf8');
+      assert.match(svg,/<svg\b/);
+    }
+  }
 });
 
 test('incident category takes priority over a place name containing باغ',async()=>{
