@@ -37,6 +37,17 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
 });
 
+test('stories without media or with a legacy placeholder share the premium cover while real photos remain',()=>{
+  const {displayImage}=require('../lib/view-common');
+  const premium='/assets/news-cover.svg?v=premium-20260929';
+  assert.equal(displayImage({}),premium);
+  assert.equal(displayImage({image:'/assets/placeholder.svg'}),premium);
+  assert.equal(displayImage({image:'/uploads/placeholder.svg?old=1'}),premium);
+  assert.equal(displayImage({image:'/uploads/real-photo.jpg'}),'/uploads/real-photo.jpg');
+  const html=home(db());
+  assert.doesNotMatch(html,/src="\/assets\/placeholder\.svg"/);
+});
+
 test('incident category takes priority over a place name containing باغ',async()=>{
   const article={title:'واژگونی وانت در هفت‌باغ',lead:'دو مصدوم',categoryId:'incidents'};
   const category={id:'incidents',name:'حوادث'};
