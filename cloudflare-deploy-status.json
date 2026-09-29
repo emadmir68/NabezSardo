@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-09-29T05:13:51.117Z",
-  "commit": "9b6a1a53f14c70cf1a21a13d81cb8e158238021e",
+  "testedAt": "2026-09-29T11:55:25.335Z",
+  "commit": "96c5de0af877fc35a63b927915d48eba6caebc81",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-29T05:13:35.766Z"
+    "time": "2026-09-29T11:55:05.366Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-29T05:13:36.102Z"
+    "time": "2026-09-29T11:55:05.762Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 62,
-    "media": 78,
+    "articles": 63,
+    "media": 83,
     "aiCovers": 1,
     "templateCovers": 6,
     "fallbackCovers": 0,
@@ -51,7 +51,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-09-29T05:09:28.348Z",
+      "lastSuccessAt": "2026-09-29T09:24:37.967Z",
       "lastError": null
     },
     "backup": {
@@ -74,13 +74,13 @@
       }
     },
     "usage": {
-      "mediaObjects": 78,
-      "arvanMediaBytes": 42493225,
+      "mediaObjects": 83,
+      "arvanMediaBytes": 42883807,
       "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 0.79,
-      "d1TrackedBytesApprox": 1912946,
+      "arvanUsagePercentOfFreeTier": 0.8,
+      "d1TrackedBytesApprox": 1917553,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.36
+      "d1UsagePercentApprox": 0.37
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -88,50 +88,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000792,
-      "connect": 0.006137,
-      "ttfb": 0.287718,
-      "total": 0.292533,
-      "bytes": 73208
+      "dns": 0.000607,
+      "connect": 0.041755,
+      "ttfb": 0.937383,
+      "total": 0.950511,
+      "bytes": 73743
     },
     "archive": {
       "http": 200,
-      "dns": 0.000804,
-      "connect": 0.006044,
-      "ttfb": 0.092234,
-      "total": 0.103246,
-      "bytes": 232009
+      "dns": 0.000608,
+      "connect": 0.034902,
+      "ttfb": 0.287007,
+      "total": 0.360492,
+      "bytes": 236588
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000809,
-      "connect": 0.005553,
-      "ttfb": 0.181956,
-      "total": 0.182027,
+      "dns": 0.000607,
+      "connect": 0.037479,
+      "ttfb": 0.357313,
+      "total": 0.35737,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000829,
-      "connect": 0.009982,
-      "ttfb": 0.201525,
-      "total": 0.202112,
-      "bytes": 31568
+      "dns": 0.000592,
+      "connect": 0.047021,
+      "ttfb": 0.211377,
+      "total": 0.217984,
+      "bytes": 33424
     },
     "media": {
       "http": 200,
-      "dns": 0.000777,
-      "connect": 0.009884,
-      "ttfb": 0.053247,
-      "total": 0.055232,
-      "bytes": 67303
+      "dns": 0.000564,
+      "connect": 0.038896,
+      "ttfb": 0.132049,
+      "total": 0.170081,
+      "bytes": 99464
     },
     "health": {
       "http": 200,
-      "dns": 0.000763,
-      "connect": 0.005769,
-      "ttfb": 0.222409,
-      "total": 0.222462,
+      "dns": 0.000599,
+      "connect": 0.047703,
+      "ttfb": 0.201875,
+      "total": 0.201917,
       "bytes": 189
     }
   },
