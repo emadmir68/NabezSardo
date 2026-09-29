@@ -8,6 +8,7 @@ const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
 const {shortArticleCode,previousShortArticleCode,legacyShortArticleCode}=require('./lib/view-common');
+const {LOCAL_HUBS,localMatchesArticle}=require('./lib/local-news');
 
 const PORT=Number(process.env.PORT||3000);
 const IS_CLOUDFLARE=process.env.CLOUDFLARE_WORKER==='1';
@@ -103,28 +104,7 @@ function sitemapXml(db){
     const t=new Date(stamp(a)||0).getTime();
     return t>new Date(stamp(best)||0).getTime()?a:best;
   },null);
-  const localTerms={
-    sardouiyeh:['ساردوئیه','ساردویه','ساردو'],
-    jiroft:['جیرفت'],
-    anbarabad:['عنبرآباد','عنبر اباد','عنبر آباد'],
-    kahnuj:['کهنوج'],
-    'south-kerman':['جنوب کرمان','کرمان جنوبی','جیرفت','عنبرآباد','عنبر اباد','عنبر آباد','کهنوج','ساردوئیه','ساردویه','ساردو']
-  };
-  const seoLocation=a=>{
-    const raw=String(a&&a.location||'').trim();
-    if(!raw)return '';
-    if(raw==='ساردوئیه'){
-      const content=[a&&a.title,a&&a.lead,a&&a.body].filter(Boolean).join(' ');
-      if(a&&a.categoryId!=='sardouiyeh'&&!/ساردوئیه|ساردویه|ساردو/.test(content))return '';
-    }
-    return raw;
-  };
-  const localMatches=(a,key)=>{
-    const terms=localTerms[key]||[];
-    const hay=[seoLocation(a),a.title,a.lead,a.body].filter(Boolean).join(' ');
-    return terms.some(t=>hay.includes(t));
-  };
-  const localLastmod=key=>stamp(latestOf(articles.filter(a=>localMatches(a,key))));
+  const localLastmod=key=>stamp(latestOf(articles.filter(a=>localMatchesArticle(a,LOCAL_HUBS[key]))));
   const latestArticle=latestOf(articles);
   const latestFollowup=(db.followups||[]).reduce((best,x)=>new Date(x.updatedAt||x.createdAt||0)>new Date(best?.updatedAt||best?.createdAt||0)?x:best,null);
   const articleImages=a=>{
@@ -147,8 +127,8 @@ function sitemapXml(db){
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'+urls.map(x=>'<url><loc>'+xmlEsc(x.loc)+'</loc>'+(x.lastmod?'<lastmod>'+xmlEsc(new Date(x.lastmod).toISOString())+'</lastmod>':'')+(x.images||[]).map(src=>'<image:image><image:loc>'+xmlEsc(src)+'</image:loc></image:image>').join('')+'</url>').join('\n')+'\n</urlset>';
 }
 function newsSitemapXml(db){
-  const cutoff=Date.now()-48*60*60*1000;
-  const items=published(db).filter(a=>new Date(a.publishedAt||a.createdAt).getTime()>=cutoff);
+  const current=Date.now(),cutoff=current-48*60*60*1000;
+  const items=published(db).filter(a=>{const t=new Date(a.publishedAt||a.createdAt).getTime();return t>=cutoff&&t<=current;}).slice(0,1000);
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n'+items.map(a=>'<url><loc>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</loc><news:news><news:publication><news:name>نبض ساردو</news:name><news:language>fa</news:language></news:publication><news:publication_date>'+xmlEsc(new Date(a.publishedAt||a.createdAt).toISOString())+'</news:publication_date><news:title>'+xmlEsc(a.title)+'</news:title></news:news></url>').join('\n')+'\n</urlset>';
 }
 function robotsTxt(){

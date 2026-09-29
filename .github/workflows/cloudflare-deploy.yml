@@ -72,6 +72,12 @@ jobs:
           curl -fsS --retry 5 --retry-delay 3 "$SITE/category/weather" -o /tmp/weather.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/sitemap.xml" -o /tmp/sitemap.xml
           curl -fsS --retry 5 --retry-delay 3 "$SITE/feed.xml" -o /tmp/feed.xml
+          curl -fsS --retry 3 --retry-delay 3 "$SITE/news-sitemap.xml" -o /tmp/news-sitemap.xml
+          curl -fsS --retry 3 --retry-delay 3 "$SITE/robots.txt" -o /tmp/robots.txt
+          for seo_path in editorial-policy local/anbarabad local/kahnuj category/short-news; do
+            curl -fsS --retry 3 --retry-delay 3 "$SITE/$seo_path" -o /tmp/seo-page.html
+            grep -q 'rel="canonical"' /tmp/seo-page.html
+          done
           curl -fsS --retry 5 --retry-delay 3 "$SITE/admin/login" -o /tmp/admin-login.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/__cutover/status" -o /tmp/cutover.json
 
