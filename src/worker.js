@@ -21,6 +21,7 @@ function withLocalState(fn){
 const uploadedMediaHashes=new Map();
 const uploadedMediaSignatures=new Map();
 let rasterReady;
+let coverFontReady;
 
 const PORT = 3000;
 const EXPECTED_BACKUP_SHA256 = "b93b59e5a9dde845a2f4ae50674b44ea7f6e8d84ee42013f7593adfddb5f4619";
@@ -71,7 +72,13 @@ async function ensureRasterSocialImage(article){
     const source=await getMedia(name);
     if(!source)throw new Error("social-preview-source-missing");
     rasterReady ||= initWasm(resvgModule);await rasterReady;
-    const png=Buffer.from(new Resvg(source.data||source,{fitTo:{mode:"width",value:1200}}).render().asPng());
+    coverFontReady ||= (async()=>{
+      const response=await env.ASSETS.fetch(new Request("https://nabzesardo.ir/fonts/DejaVuSans.ttf"));
+      if(!response.ok)throw new Error("cover-font-missing");
+      return new Uint8Array(await response.arrayBuffer());
+    })();
+    const font=await coverFontReady;
+    const png=Buffer.from(new Resvg(source.data||source,{fitTo:{mode:"width",value:1200},font:{fontBuffers:[font]}}).render().asPng());
     await putMedia(socialName,png,"image/png");
   }
   const next="/uploads/"+socialName;

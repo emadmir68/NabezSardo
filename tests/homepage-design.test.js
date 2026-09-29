@@ -30,10 +30,10 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   data.articles[11].imageAuto=true;
   data.articles[11].autoCoverTheme='agriculture';
   const html=home(data);
-  assert.match(html,/src="\/assets\/news-cover.svg"/);
+  assert.match(html,/src="\/assets\/news-cover.svg\?v=premium-20260929"/);
   assert.doesNotMatch(html,/src="\/uploads\/auto-cover-old.svg"/);
   const detail=article(data,data.articles[11]);
-  assert.match(detail,/class="cover" src="\/assets\/news-cover.svg"/);
+  assert.match(detail,/class="cover" src="\/assets\/news-cover.svg\?v=premium-20260929"/);
   assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
 });
 
@@ -44,4 +44,18 @@ test('incident category takes priority over a place name containing باغ',asyn
   const {ensureSmartCover}=await import('../src/smart-cover.js');
   const result=await ensureSmartCover({article,category,sourceImage:'',getMedia:async()=>null,putMedia:async()=>{},sha256Hex:async()=> '0'.repeat(64)});
   assert.equal(result.autoCoverTheme,'incidents');
+});
+
+test('new automatic cover carries a safe Persian headline and keeps real photography',async()=>{
+  const {ensureSmartCover}=await import('../src/smart-cover.js');
+  let stored='';
+  const args={article:{title:'خبر مهم ساردو <امروز> و تازه‌های جنوب کرمان',lead:'گزارش محلی',categoryId:'social'},category:{id:'social',name:'اجتماعی'},getMedia:async()=>null,putMedia:async(_name,data)=>{stored=data.toString('utf8')},sha256Hex:async()=> '1'.repeat(64)};
+  const generated=await ensureSmartCover({...args,sourceImage:''});
+  assert.equal(generated.imageAuto,true);
+  assert.match(stored,/خبر مهم ساردو &lt;امروز&gt;/);
+  assert.doesNotMatch(stored,/<امروز>/);
+  assert.match(stored,/نبض ساردو/);
+  const original=await ensureSmartCover({...args,sourceImage:'/uploads/real-photo.jpg'});
+  assert.equal(original.image,'/uploads/real-photo.jpg');
+  assert.equal(original.imageAuto,false);
 });
