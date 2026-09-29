@@ -55,6 +55,8 @@ test('category palettes separate cover colors, including repeated political stor
   assert.match(displayImage({id:'farm-1',categoryId:'agriculture'}),/news-cover-(?:olive|green)\.svg\?v=colors-20260929$/);
   const political=['politics-1','politics-2','politics-3','politics-4'].map(id=>displayImage({id,categoryId:'city-village'}));
   assert.ok(new Set(political).size>=2);
+  const shortNews=Array.from({length:12},(_,i)=>displayImage({id:`short-${i}`,categoryId:'short-news'}));
+  assert.ok(new Set(shortNews).size>=5);
   assert.equal(displayImage({id:'photo',categoryId:'incidents',image:'/uploads/real-photo.jpg'}),'/uploads/real-photo.jpg');
 });
 
