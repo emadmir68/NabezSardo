@@ -453,7 +453,7 @@ async function handleFastPublic(request,url,pathname,ctx){
   if(pathname==="/nabez60")return Response.redirect(new URL("/all-news",request.url).toString(),301);
   if(pathname==="/briefs")return Response.redirect(new URL("/category/short-news",request.url).toString(),301);
   const recognized=
-    pathname==="/"||pathname==="/all-news"||pathname==="/search"||pathname==="/about"||pathname==="/editorial-policy"||pathname==="/contact"||pathname==="/send-news"||
+    pathname==="/"||pathname==="/all-news"||pathname==="/search"||pathname==="/about"||pathname==="/editorial-policy"||pathname==="/follow-up"||pathname==="/contact"||pathname==="/send-news"||
     /^\/local\/(sardouiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(pathname)||/^\/(?:n|news)\//.test(pathname)||/^\/category\//.test(pathname);
   if(!recognized)return null;
   const db=await loadPublicDbFast();
@@ -463,6 +463,7 @@ async function handleFastPublic(request,url,pathname,ctx){
   else if(pathname==="/search")body=views.search(db,url.searchParams.get("q")||"");
   else if(pathname==="/about")body=views.simple(db,"about");
   else if(pathname==="/editorial-policy")body=views.editorialPolicy(db);
+  else if(pathname==="/follow-up")body=views.followup(db);
   else if(pathname==="/contact")body=views.simple(db,"contact",url.searchParams.get("ok")==="1");
   else if(pathname==="/send-news")body=views.simple(db,"send-news",url.searchParams.get("ok")==="1",url.searchParams.get("uploadError")||"");
   else if(pathname.startsWith("/local/")){

@@ -27,6 +27,14 @@ test('local hubs and editorial policy have crawlable internal links',()=>{
  assert.match(html,/href="\/editorial-policy"/);
 });
 
+test('publisher identity, newsroom contact and utility-page indexing stay explicit',()=>{
+ assert.match(views.home(db),/\/assets\/logo\.svg/);
+ assert.match(views.article(db,db.articles[0]),/\/assets\/logo\.svg/);
+ assert.match(views.simple(db,'contact'),/راه ارتباط رسمی/);
+ assert.match(views.simple(db,'send-news'),/name="robots" content="noindex,follow"/);
+ assert.match(views.followup(db),/name="robots" content="noindex,follow"/);
+});
+
 test('every canonical page advertised by the sitemap is reachable',async t=>{
  const {spawn}=require('node:child_process'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'news-seo-')),port=28000+Math.floor(Math.random()*10000),base='http://127.0.0.1:'+port;
