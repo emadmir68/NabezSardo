@@ -64,3 +64,21 @@ test('article layout lock and social preview fallback stay enabled',()=>{
   assert.match(commonSource,/\/assets\/article-lock\.css/);
   assert.match(publicSource,/a\.socialImage\|\|\(a\.image\?displayImage\(a\):'\/assets\/header-mosque-final\.jpg'\)/);
 });
+
+test('approved production distribution and infrastructure remain enabled',()=>{
+  const config=JSON.parse(fs.readFileSync(path.join(__dirname,'..','wrangler.jsonc'),'utf8'));
+  assert.equal(config.vars.AUTO_DISTRIBUTION_ENABLED,'1');
+  assert.equal(config.vars.CLOUDFLARE_PRIMARY,'1');
+  assert.equal(config.vars.CUTOVER_MODE,'cloudflare-only');
+  assert.equal(config.vars.ARVAN_BUCKET,'nabzesardo');
+  assert.ok(config.triggers.crons.includes('*/1 * * * *'));
+});
+
+test('approved header and hero retain their image, dashboard path and article stylesheet',()=>{
+  const header=common.header(baseDb());
+  const styles=fs.readFileSync(path.join(__dirname,'..','public','site.css'),'utf8');
+  assert.match(header,/href="\/admin"/);
+  assert.match(header,/href="\/send-news"/);
+  assert.match(styles,/\.hero-fixed-photo\s*\{[^}]*header-mosque-fixed\.jpg/s);
+  assert.match(common.shell('عنوان','متن'),/\/assets\/article-lock\.css/);
+});
