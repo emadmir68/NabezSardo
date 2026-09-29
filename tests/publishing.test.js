@@ -33,6 +33,18 @@ test('checkpoint is durable before the next network delivery',async()=>{
  assert.deepEqual(events,['telegram:sending','telegram','telegram:sent','rubika:sending','rubika','rubika:sent']);
  assert.equal(out.telegram.messageId,22);assert.equal(out.rubika.messageId,'33');
 });
+test('new articles default to Telegram and Rubika while WhatsApp stays opt-in',async()=>{
+ const calls=[];
+ global.fetch=async url=>{
+   calls.push(String(url));
+   return Response.json(String(url).includes('telegram')?{ok:true,result:{message_id:22}}:{status:'OK',data:{message_id:'33'}});
+ };
+ const out=await social.dispatch({id:'new',title:'خبر تازه'});
+ assert.equal(calls.length,2);
+ assert.equal(out.telegram.status,'sent');
+ assert.equal(out.rubika.status,'sent');
+ assert.equal(out.whatsapp.status,'disabled');
+});
 test('WhatsApp retry sends only recipients with definite failures',async()=>{
  process.env.WHATSAPP_ACCESS_TOKEN='test';process.env.WHATSAPP_PHONE_NUMBER_ID='test';process.env.WHATSAPP_TO='one,two,three';
  const sent=[];global.fetch=async(url,options)=>{sent.push(JSON.parse(options.body).to);return Response.json({messages:[{id:'42'}]})};
