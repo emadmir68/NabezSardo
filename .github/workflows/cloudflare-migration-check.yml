@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - cloudflare-migration
+      - 'design/**'
+  pull_request:
+    branches:
+      - cloudflare-migration
   workflow_dispatch:
 
 jobs:
@@ -29,6 +33,12 @@ jobs:
           node --check lib/analytics.js
           node --check lib/article-tools.js
           node --check lib/auto-cover.js
+          node --check lib/view-common.js
+          node --check lib/view-public.js
+          node --check public/site.js
+
+      - name: Publication regression tests
+        run: npm test
 
       - name: Cloudflare bundle dry run
         run: npx wrangler deploy --dry-run --outdir .wrangler-dist

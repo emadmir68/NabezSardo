@@ -19,3 +19,15 @@ This repository serves the live news site at https://nabzesardo.ir. Treat the cu
 ## Before deployment
 
 Run `npm test`; its approved-behavior checks are a deployment gate. Inspect the diff for incidental changes to the areas above. After deployment, check the production health and cutover endpoints and the GitHub Actions deployment result. Any intentional change to this baseline needs an explicit owner request and a matching test update.
+
+
+## Owner-requested refinements approved 2026-09-30
+
+- Keep six latest stories in publication order, including featured and short news. Place that section after top stories and before short news and promotional sections.
+- Use larger, brighter listing headings and dates while retaining compact rows. Archive pages show 12 stories with combined search/category/Tehran-date filters.
+- Focus cards link to real categories or search and show a current story when available.
+- Category fallback covers retain their varied premium palettes and now use subject artwork. Preserve the original assets as rollback sources.
+- The two known designation-only headlines may present the news lead as the title and the designation as a kicker. Keep stored editorial data untouched.
+- Congratulatory/condolence messages use the announcement label instead of a breaking-news label.
+- Article sharing includes a separate full-text, no-photo Story option. Read the complete article text, paginate at readable size, preserve all paragraphs, and offer numbered PNGs, native file sharing, and an all-pages ZIP. Existing photo/video/story sharing remains available.
+- The owner requests feature-by-feature rollback for any change they dislike. Keep independent commits; see DESIGN_CHANGELOG_2026-09-30.md. The header/hero and locked article reading layout still apply.
