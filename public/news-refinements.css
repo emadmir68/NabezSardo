@@ -1,0 +1,36 @@
+/* Owner-approved reading refinements, September 2026. Scoped to news listings. */
+html .frontpage-desk,html .latest-section,html .popular-section{padding-top:28px;padding-bottom:22px}
+html .front-brief h3{font-size:16px!important;line-height:1.8!important;-webkit-line-clamp:3}
+html .front-lead h2{line-height:1.75!important}
+html .front-lead-copy>p{font-size:14px!important;line-height:1.9!important;color:#bfc7d3}
+html .latest-grid .card h3,html .archive-grid .card h3{font-size:18px!important;line-height:1.8!important;-webkit-line-clamp:3;min-height:0!important;margin:8px 0!important}
+html .latest-grid .card p,html .archive-grid .card p{font-size:14px!important;line-height:1.9!important;color:#b9c4d3!important}
+html .frontpage-desk .news-date,html .latest-grid .news-date,html .archive-grid .news-date,html .popular-meta time,html .short-timeline-bottom time{font-size:12px!important;line-height:1.8!important;color:#b2bece!important}
+html .frontpage-desk .eyebrow,html .latest-grid .eyebrow,html .archive-grid .eyebrow,html .popular-row .eyebrow,html .short-timeline-cat{font-size:12px!important;letter-spacing:0!important}
+html .frontpage-desk .view-badge,html .latest-grid .view-badge,html .archive-grid .view-badge,html .short-timeline-views{font-size:11px!important}
+html .frontpage-desk .more,html .latest-section .more,html .archive-grid .more,html .popular-section .more,html .home-short-news-section .more,html .short-timeline-link{font-size:13px!important;line-height:1.8!important;min-height:32px;display:inline-flex;align-items:center}
+html .popular-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+html .popular-row h3{font-size:16px!important;line-height:1.8!important}
+html .popular-meta{font-size:12px!important;color:#b2bece!important;gap:8px!important}
+html .short-timeline-item{min-height:0!important;padding-top:14px!important;padding-bottom:14px!important}
+html .short-timeline-content h3{font-size:17px!important;line-height:1.85!important;margin:7px 0!important}
+html .short-timeline-bottom{gap:8px 18px!important;flex-wrap:wrap!important;margin-top:8px!important}
+html .home-short-news-head p{font-size:13px!important;line-height:1.9!important;color:#b2bece!important}
+html .home-topic-card small{font-size:13px!important;line-height:1.85!important;color:#bfc9d8!important}
+html .home-topic-count{font-size:12px!important}
+.front-brief-copy,.popular-row>div,.card .pad{min-width:0}
+.news-date{overflow-wrap:anywhere}
+@media(max-width:1000px){
+  html .popular-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+  html .front-brief h3{font-size:16px!important}
+  html .latest-grid .card h3,html .archive-grid .card h3{font-size:16px!important;-webkit-line-clamp:3}
+  html .latest-grid .magazine-card{grid-template-columns:112px minmax(0,1fr)!important}
+  html .popular-list{grid-template-columns:1fr!important}
+  html .popular-row h3{font-size:16px!important}
+  html .short-timeline-content h3{font-size:16px!important}
+  html .home-short-news-head .more{font-size:12px!important}
+  html .front-brief{min-height:116px!important}
+  html .short-timeline-bottom time{flex-basis:100%}
+}
