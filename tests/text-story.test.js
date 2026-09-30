@@ -3,6 +3,31 @@ const assert=require('node:assert/strict');
 const {wrapText,paginateStory,storyParagraphs}=require('../public/text-story');
 const measure=(text,font)=>Array.from(text).length*font*.48;
 
+test('body rows are justified across pages except each paragraph ending and headlines',()=>{
+  const body=('خبر مردم جیرفت و ساردوئیه با جزئیات کامل برای خوانندگان '.repeat(30)).trim();
+  const pages=paginateStory({title:'عنوان خبر',body:body+'\nپایان خبر.'},measure);
+  assert.ok(pages.length>1);
+  assert.equal(pages[0].items[0].justify,false);
+  assert.equal(pages[0].items.at(-1).justify,true);
+  const rows=pages.flatMap(p=>p.items).filter(x=>x.kind==='body');
+  assert.equal(rows.at(-2).justify,false);
+  assert.equal(rows.at(-1).justify,false);
+  assert.ok(rows.slice(0,-2).every(x=>x.justify));
+});
+
+test('justification fills the row without changing Persian words, numbers or their order',()=>{
+  const {justifyText}=require('../public/text-story');
+  const metric=text=>Array.from(text).reduce((sum,c)=>sum+(c==='\u200a'?2:10),0);
+  for(const text of ['خبر مردم جیرفت','ویزیت ۸۰۰ و 600']){
+    const result=justifyText(text,200,metric);
+    assert.equal(result.replace(/\u200a/g,''),text);
+    assert.ok(metric(result)<=200);
+    assert.ok(metric(result)>198);
+  }
+  assert.equal(justifyText('پایان',200,metric),'پایان');
+  assert.equal(justifyText('خبر کوتاه',820,metric),'خبر کوتاه');
+});
+
 test('full text flows into numbered story pages without omissions or overflowing the safe area',()=>{
   const body=Array.from({length:120},(_,i)=>'بند '+i+' ـ خبر مردم ساردوئیه و جنوب کرمان با جزئیات کامل.').join('\n\n')+'\n\nپایان واقعی خبر';
   const input={title:'متن کامل خبر منطقه',lead:'خلاصه مستقل',body};
