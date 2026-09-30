@@ -30,10 +30,10 @@ test('old automatic agriculture cover is replaced by the neutral branded cover i
   data.articles[11].imageAuto=true;
   data.articles[11].autoCoverTheme='agriculture';
   const html=home(data);
-  assert.match(html,/src="\/assets\/news-cover-(?:crimson|burgundy)\.svg\?v=colors-20260929"/);
+  assert.match(html,/src="\/assets\/news-cover-incidents-(?:crimson|burgundy)\.svg\?v=topics-20260930"/);
   assert.doesNotMatch(html,/src="\/uploads\/auto-cover-old.svg"/);
   const detail=article(data,data.articles[11]);
-  assert.match(detail,/class="cover" src="\/assets\/news-cover-(?:crimson|burgundy)\.svg\?v=colors-20260929"/);
+  assert.match(detail,/class="cover" src="\/assets\/news-cover-incidents-(?:crimson|burgundy)\.svg\?v=topics-20260930"/);
   assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
 });
 
@@ -50,9 +50,9 @@ test('stories without media or with a legacy placeholder share the premium cover
 
 test('category palettes separate cover colors, including repeated political stories',()=>{
   const {displayImage}=require('../lib/view-common');
-  assert.match(displayImage({id:'incident-1',categoryId:'incidents'}),/news-cover-(?:crimson|burgundy)\.svg\?v=colors-20260929$/);
-  assert.match(displayImage({id:'weather-1',categoryId:'weather'}),/news-cover-(?:blue|indigo)\.svg\?v=colors-20260929$/);
-  assert.match(displayImage({id:'farm-1',categoryId:'agriculture'}),/news-cover-(?:olive|green)\.svg\?v=colors-20260929$/);
+  assert.match(displayImage({id:'incident-1',categoryId:'incidents'}),/news-cover-incidents-(?:crimson|burgundy)\.svg\?v=topics-20260930$/);
+  assert.match(displayImage({id:'weather-1',categoryId:'weather'}),/news-cover-weather-(?:blue|indigo)\.svg\?v=topics-20260930$/);
+  assert.match(displayImage({id:'farm-1',categoryId:'agriculture'}),/news-cover-agriculture-(?:olive|green)\.svg\?v=topics-20260930$/);
   const political=['politics-1','politics-2','politics-3','politics-4'].map(id=>displayImage({id,categoryId:'city-village'}));
   assert.ok(new Set(political).size>=2);
   const shortNews=Array.from({length:12},(_,i)=>displayImage({id:`short-${i}`,categoryId:'short-news'}));
@@ -94,4 +94,22 @@ test('new automatic cover carries a safe Persian headline and keeps real photogr
   const original=await ensureSmartCover({...args,sourceImage:'/uploads/real-photo.jpg'});
   assert.equal(original.image,'/uploads/real-photo.jpg');
   assert.equal(original.imageAuto,false);
+});
+
+test('fallback covers contain distinct category artwork and preserve the branded palette assets',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const {TOPICS,COVER_PALETTES,decorateCover}=require('../lib/cover-variants');
+ const symbols=new Set();
+ for(const [category,topic] of Object.entries(TOPICS)){
+  symbols.add(topic.art);
+  for(const color of COVER_PALETTES[category]){
+   const base=fs.readFileSync(path.join(__dirname,'../public/news-cover'+(color==='gold'?'':'-'+color)+'.svg'),'utf8');
+   const asset=fs.readFileSync(path.join(__dirname,'../public/news-cover-'+category+'-'+color+'.svg'),'utf8');
+   assert.equal(asset,decorateCover(base,category));
+   assert.ok(asset.includes(topic.label));
+   assert.match(asset,/width="1200" height="675"/);
+   assert.match(asset,/scale\(4.7\)/);
+  }
+ }
+ assert.equal(symbols.size,Object.keys(TOPICS).length);
 });

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="کاور فرهنگ نبض ساردو">
+ <defs>
+  <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#100d17"/><stop offset=".52" stop-color="#261021"/><stop offset="1" stop-color="#4b1837"/></linearGradient>
+  <linearGradient id="gold" x2="1"><stop stop-color="#8f416d"/><stop offset=".47" stop-color="#f4a9ca"/><stop offset="1" stop-color="#bf638e"/></linearGradient>
+  <radialGradient id="glow"><stop stop-color="#a73e6b" stop-opacity=".28"/><stop offset="1" stop-color="#a73e6b" stop-opacity="0"/></radialGradient>
+  <pattern id="grain" width="64" height="64" patternUnits="userSpaceOnUse"><circle cx="8" cy="9" r=".7" fill="#fff" opacity=".1"/><circle cx="45" cy="31" r=".65" fill="#fff" opacity=".07"/><circle cx="24" cy="52" r=".5" fill="#fff" opacity=".06"/></pattern>
+ </defs>
+ <rect width="1200" height="675" fill="url(#bg)"/>
+ <circle cx="600" cy="335" r="440" fill="url(#glow)"/>
+ <rect width="1200" height="675" fill="url(#grain)"/>
+ <g fill="none" stroke="#d788ae" opacity=".13"><circle cx="600" cy="340" r="195"/><circle cx="600" cy="340" r="246"/><circle cx="600" cy="340" r="297"/><circle cx="600" cy="340" r="349"/></g>
+ <path d="M0 556C220 495 354 538 502 504S826 460 1200 530M0 579C247 510 385 566 556 524S877 490 1200 550" fill="none" stroke="#d788ae" stroke-opacity=".14" stroke-width="2"/>
+ <rect x="35" y="35" width="1130" height="605" rx="28" fill="none" stroke="#d788ae" stroke-opacity=".39"/>
+ <rect x="49" y="49" width="1102" height="577" rx="20" fill="none" stroke="#ffffff" stroke-opacity=".07"/>
+ <path d="M88 35h176M936 640h176" stroke="url(#gold)" stroke-width="4"/>
+<g transform="translate(449 172) scale(4.7)" fill="none" stroke="url(#gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M32 17C21 9 12 9 4 13v39c10-4 18-3 28 4 10-7 18-8 28-4V13c-8-4-17-4-28 4ZM32 17v39"/><path d="M12 24c5-1 9 0 13 3M12 34c5-1 9 0 13 3M39 27c4-3 8-4 13-3M39 37c4-3 8-4 13-3"/></g>
+ <text x="600" y="495" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="41" font-weight="700" fill="#f9e7c2">نبض ساردو</text>
+ <text x="600" y="548" text-anchor="middle" font-family="DejaVu Sans, sans-serif" font-size="24" fill="#d3b991">فرهنگ</text>
+ <text x="600" y="114" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" letter-spacing="5" fill="#e1c18d">NABEZ SARDO  ·  LOCAL NEWSROOM</text>
+ <circle cx="102" cy="583" r="4" fill="#d788ae"/><circle cx="1098" cy="91" r="4" fill="#d788ae"/>
+<g transform="translate(480 550) scale(.22)" aria-hidden="true"> <path d="M160 327h184l43-66 73 157 76-225 80 185 54-56h183" fill="none" stroke="#4b1837" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M160 327h184l43-66 73 157 76-225 80 185 54-56h183" fill="none" stroke="url(#gold)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M160 323h184l43-66 73 157 76-225 80 185 54-56h183" fill="none" stroke="#f4a9ca" stroke-opacity=".5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+</svg>
