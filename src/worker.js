@@ -459,7 +459,7 @@ async function handleFastPublic(request,url,pathname,ctx){
   const db=await loadPublicDbFast();
   let body="",status=200,articleId="";
   if(pathname==="/")body=views.home(db);
-  else if(pathname==="/all-news")body=views.archive(db,url.searchParams.get("q")||"");
+  else if(pathname==="/all-news")body=views.archive(db,Object.fromEntries(url.searchParams));
   else if(pathname==="/search")body=views.search(db,url.searchParams.get("q")||"");
   else if(pathname==="/about")body=views.simple(db,"about");
   else if(pathname==="/editorial-policy")body=views.editorialPolicy(db);
@@ -496,7 +496,7 @@ async function handlePublicPreview(request, url, pathname) {
     return Response.json({ ok: true, name: "nabzesardo-cloudflare", migrated: true, primary: isPrimary(), origin: "cloudflare", railwayDependency: false, storage: arvanConfig() ? "arvan" : "d1" });
   }
   if (pathname === "/") return html(views.home(db));
-  if (pathname === "/all-news") return html(views.archive(db, url.searchParams.get("q") || ""));
+  if (pathname === "/all-news") return html(views.archive(db,Object.fromEntries(url.searchParams)));
   if (pathname === "/search") return html(views.search(db, url.searchParams.get("q") || ""));
   if (pathname === "/about") return html(views.simple(db, "about"));
   if (pathname === "/contact") return html(views.simple(db, "contact", url.searchParams.get("ok") === "1"));

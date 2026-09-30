@@ -36,7 +36,8 @@ test('today follows Tehran midnight and the last week is a rolling seven-day int
  assert.equal(browseNews(entries,{period:'week'},now).total,3);
 });
 test('archive controls are labeled and pagination preserves active filters',()=>{
- const html=archive(db,{q:'کشاورزی',category:'agriculture',period:'month',page:1});
+ const liveDb={...db,articles:articles.map((a,i)=>({...a,createdAt:new Date(Date.now()-i*3600000).toISOString()}))};
+ const html=archive(liveDb,{q:'کشاورزی',category:'agriculture',period:'month',page:1});
  assert.match(html,/id="archive-category"/);
  assert.match(html,/id="archive-period"/);
  assert.match(html,/aria-label="صفحه‌های آرشیو"/);
