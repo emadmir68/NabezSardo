@@ -1,9 +1,9 @@
 /* Owner-approved reading refinements, September 2026. Scoped to news listings. */
 html .frontpage-desk,html .latest-section,html .popular-section{padding-top:28px;padding-bottom:22px}
-html .front-brief h3{font-size:16px!important;line-height:1.8!important;-webkit-line-clamp:3}
+html .front-brief h3{font-size:16px!important;line-height:1.8!important;-webkit-line-clamp:3!important}
 html .front-lead h2{line-height:1.75!important}
-html .front-lead-copy>p{font-size:14px!important;line-height:1.9!important;color:#bfc7d3}
-html .latest-grid .card h3,html .archive-grid .card h3{font-size:18px!important;line-height:1.8!important;-webkit-line-clamp:3;min-height:0!important;margin:8px 0!important}
+html .front-lead-copy>p{font-size:14px!important;line-height:1.9!important;color:#bfc7d3!important}
+html .latest-grid .card h3,html .archive-grid .card h3{font-size:18px!important;line-height:1.8!important;-webkit-line-clamp:3!important;min-height:0!important;margin:8px 0!important}
 html .latest-grid .card p,html .archive-grid .card p{font-size:14px!important;line-height:1.9!important;color:#b9c4d3!important}
 html .frontpage-desk .news-date,html .latest-grid .news-date,html .archive-grid .news-date,html .popular-meta time,html .short-timeline-bottom time{font-size:12px!important;line-height:1.8!important;color:#b2bece!important}
 html .frontpage-desk .eyebrow,html .latest-grid .eyebrow,html .archive-grid .eyebrow,html .popular-row .eyebrow,html .short-timeline-cat{font-size:12px!important;letter-spacing:0!important}
@@ -25,7 +25,7 @@ html .home-topic-count{font-size:12px!important}
 }
 @media(max-width:760px){
   html .front-brief h3{font-size:16px!important}
-  html .latest-grid .card h3,html .archive-grid .card h3{font-size:16px!important;-webkit-line-clamp:3}
+  html .latest-grid .card h3,html .archive-grid .card h3{font-size:16px!important;-webkit-line-clamp:3!important}
   html .latest-grid .magazine-card{grid-template-columns:112px minmax(0,1fr)!important}
   html .popular-list{grid-template-columns:1fr!important}
   html .popular-row h3{font-size:16px!important}
@@ -67,3 +67,6 @@ html .focus .topic p{font-size:14px!important;line-height:1.9!important;color:#b
 .breaking[data-desk-kind="announcement"] .breaking-label{color:#e6c182!important}
 .breaking[data-desk-kind="announcement"] .breaking-label-dot,.breaking[data-desk-kind="desk"] .breaking-label-dot,.breaking[data-desk-kind="off"] .breaking-label-dot{animation:none!important;box-shadow:none!important;background:#b6a075!important}
 .breaking:not([data-desk-kind="breaking"]) .breaking-label-pulse{animation:none!important}
+
+html .latest-grid .magazine-card .more{font-size:13px!important}
+html .short-timeline-bottom time{white-space:normal!important}
