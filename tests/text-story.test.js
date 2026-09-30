@@ -40,3 +40,32 @@ test('very long titles also paginate instead of being clipped or shrinking the b
   assert.equal(pages.flatMap(p=>p.items).map(i=>i.text).join(' ').replace(/\s+/g,' ').trim(),(title+' متن انتهایی').replace(/\s+/g,' ').trim());
   assert.ok(pages.flatMap(p=>p.items).filter(i=>i.kind==='body').every(i=>i.font===52));
 });
+
+test('rich text is read in full with paragraph breaks and HTML entities already decoded by the DOM',()=>{
+ const {extractText}=require('../public/text-story');
+ const text=value=>({nodeType:3,nodeValue:value});
+ const node=(tag,...children)=>({nodeType:1,tagName:tag,childNodes:children,getAttribute:()=>null});
+ const body=node('DIV',node('P',text('بند اول & خبر'),node('STRONG',text(' مهم'))),node('P',text('بند دوم'),node('BR'),text('ادامهٔ کامل')),node('SCRIPT',text('do not include')),node('STYLE',text('CSS')));
+ assert.equal(extractText(body),'بند اول & خبر مهم\n\nبند دوم\nادامهٔ کامل');
+});
+test('the all-pages download is a standard ZIP containing every ordered page and valid CRC checksums',async()=>{
+ const {zipFiles,crc32}=require('../public/text-story');
+ assert.equal(crc32(new TextEncoder().encode('123456789')),0xcbf43926);
+ const files=[1,2,3].map(i=>({name:'story-00'+i+'.png',arrayBuffer:async()=>new TextEncoder().encode('page '+i).buffer}));
+ const blob=await zipFiles(files),bytes=new Uint8Array(await blob.arrayBuffer()),view=new DataView(bytes.buffer);
+ let position=0;
+ for(let i=0;i<files.length;i++){
+  assert.equal(view.getUint32(position,true),0x04034b50);
+  assert.equal(view.getUint16(position+8,true),0);
+  const size=view.getUint32(position+18,true),nameLength=view.getUint16(position+26,true);
+  const name=new TextDecoder().decode(bytes.slice(position+30,position+30+nameLength));
+  assert.equal(name,files[i].name);
+  const data=bytes.slice(position+30+nameLength,position+30+nameLength+size);
+  assert.equal(new TextDecoder().decode(data),'page '+(i+1));
+  assert.equal(view.getUint32(position+14,true),crc32(data));
+  position+=30+nameLength+size;
+ }
+ assert.equal(view.getUint32(position,true),0x02014b50);
+ assert.equal(view.getUint32(bytes.length-22,true),0x06054b50);
+ assert.equal(view.getUint16(bytes.length-12,true),files.length);
+});

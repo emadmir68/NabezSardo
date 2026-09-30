@@ -51,7 +51,7 @@
   }
   function extractText(node){
     if(!node)return '';
-    const blockTags=new Set(['P','DIV','SECTION','ARTICLE','H1','H2','H3','H4','H5','H6','LI','UL','OL','BLOCKQUOTE','TR','TABLE','PRE','FIGCAPTION']);
+    const blockTags=new Set(['P','DIV','SECTION','ARTICLE','H1','H2','H3','H4','H5','H6','LI','UL','OL','BLOCKQUOTE','TR','TABLE','PRE','FIGCAPTION','TD','TH']);
     function visit(n){
       if(n.nodeType===3)return n.nodeValue||'';
       if(n.nodeType!==1)return '';
@@ -110,7 +110,7 @@
     ctx.fillText(input.url.replace(/^https?:\/\//,''),540,1732);
   }
   async function renderStories(input,onProgress=()=>{},isCancelled=()=>false){
-    try{if(document.fonts)await Promise.race([document.fonts.load('500 52px Vazirmatn'),new Promise(resolve=>setTimeout(resolve,4000))]);}catch{}
+    try{if(document.fonts)await Promise.race([Promise.all([document.fonts.load('500 52px Vazirmatn'),document.fonts.load('800 68px Vazirmatn')]),new Promise(resolve=>setTimeout(resolve,4000))]);}catch{}
     const canvas=document.createElement('canvas');canvas.width=WIDTH;canvas.height=HEIGHT;
     const ctx=canvas.getContext('2d',{alpha:false});
     if(!ctx)throw new Error('story-canvas-unavailable');

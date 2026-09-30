@@ -42,6 +42,13 @@ test('every canonical page advertised by the sitemap is reachable',async t=>{
  const child=spawn(process.execPath,['app.js'],{env:{...process.env,PORT:String(port),DATA_DIR:dir,CLOUDFLARE_WORKER:'1',PUBLIC_BASE_URL:base},stdio:['ignore','pipe','pipe']});
  t.after(()=>{child.kill();fs.rmSync(dir,{recursive:true,force:true})});
  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('server timeout')),10000);child.stdout.on('data',data=>{if(String(data).includes('running on')){clearTimeout(timer);resolve()}});child.on('error',reject)});
+ const filtered=await (await fetch(base+'/all-news?category=short-news&q='+encodeURIComponent('کهنوج'))).text();
+ assert.match(filtered,/data-story-title-fa="خبر کوتاه کهنوج"/);
+ assert.doesNotMatch(filtered,/data-story-title-fa="خبر عنبر آباد"/);
+ assert.match(filtered,/id="archive-category"/);
+ const detail=await (await fetch(base+'/news/short')).text();
+ assert.match(detail,/data-article-text-story/);
+ assert.match(detail,/\/assets\/text-story.js/);
  const map=await (await fetch(base+'/sitemap.xml')).text();
  const urls=[...map.matchAll(/<url><loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
  assert.ok(urls.length>5);
