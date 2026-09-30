@@ -50,3 +50,5 @@ html .home-topic-count{font-size:12px!important}
 .archive-pagination a:focus-visible,.archive-pagination a:hover{outline:2px solid #e4b96b;outline-offset:2px}
 @media(max-width:1000px){.archive-filters{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.archive-filters{grid-template-columns:1fr}.archive-filters input,.archive-filters select{font-size:16px}.archive-pagination{gap:6px}.archive-pagination a,.archive-page-current{padding:6px 10px}}
+
+.story-kicker{font-size:12px;line-height:1.8;color:#bfc9d8;margin:6px 0 2px;overflow-wrap:anywhere}
