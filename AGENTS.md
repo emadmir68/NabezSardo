@@ -31,4 +31,5 @@ Run `npm test`; its approved-behavior checks are a deployment gate. Inspect the 
 - Congratulatory/condolence messages use the announcement label instead of a breaking-news label.
 - Article sharing includes a separate full-text, no-photo Story option. Read the complete article text, paginate at readable size, preserve all paragraphs, and offer numbered PNGs, native file sharing, and an all-pages ZIP. Existing photo/video/story sharing remains available.
 - Following the owner's feedback that the text Story looked too simple, use a layered navy/gold frame, pulse branding, category strip, stronger title treatment, and explicit continuation/end markers. Preserve complete text and readable pagination.
+- Text Story body rows are justified for tidy edges. Keep paragraph endings and headlines naturally aligned; balance word gaps without stretching letters, breaking Persian shaping or reordering numbers.
 - The owner requests feature-by-feature rollback for any change they dislike. Keep independent commits; see DESIGN_CHANGELOG_2026-09-30.md. The header/hero and locked article reading layout still apply.

@@ -41,13 +41,30 @@
     blocks.forEach((block,index)=>{
       if(index&&page.items.length)y+=22;
       const lines=wrapText(block.text,CONTENT_WIDTH,text=>measure(text,block.font,block.weight));
-      for(const text of lines){
+      for(const [lineIndex,text] of lines.entries()){
         if(y+block.height>CONTENT_BOTTOM)nextPage();
-        page.items.push({...block,text,y});y+=block.height;
+        page.items.push({...block,text,y,justify:block.kind==='body'&&lineIndex<lines.length-1});y+=block.height;
       }
     });
     nextPage();
     return pages.length?pages:[{items:[]}];
+  }
+  function justifyText(text,maxWidth,measure){
+    const gaps=(text.match(/ /g)||[]).length,extra=maxWidth-measure(text);
+    // Keep the whole shaped line together: Persian joins, bidi and numbers
+    // retain their logical order. Hair spaces add evenly balanced word gaps.
+    if(!gaps||extra<=0||extra/gaps>52)return text;
+    const step=measure(' \u200a')-measure(' ');
+    if(!(step>0))return text;
+    for(let count=Math.floor(extra/step);count>0;count--){
+      let gap=0;
+      const padded=text.replace(/ /g,()=>{
+        const before=Math.floor(gap*count/gaps);gap++;
+        return ' '+'\u200a'.repeat(Math.floor(gap*count/gaps)-before);
+      });
+      if(measure(padded)<=maxWidth)return padded;
+    }
+    return text;
   }
   function extractText(node){
     if(!node)return '';
@@ -135,7 +152,8 @@
     const number=n=>Number(n).toLocaleString(en?'en-US':'fa-IR');
     for(const item of page.items){
       ctx.font=item.weight+' '+item.font+'px Vazirmatn, Tahoma, sans-serif';
-      ctx.fillStyle=item.kind==='title'?'#ffe8b8':'#edf1f7';ctx.fillText(item.text,edge,item.y);
+      const text=item.justify?justifyText(item.text,CONTENT_WIDTH,value=>ctx.measureText(value).width):item.text;
+      ctx.fillStyle=item.kind==='title'?'#ffe8b8':'#edf1f7';ctx.fillText(text,edge,item.y);
     }
     ctx.fillStyle='#e1bd7b';ctx.font='700 28px Vazirmatn, Tahoma, sans-serif';
     ctx.fillText(index===total-1?(en?'END OF STORY':'پایان خبر'):(en?'CONTINUED ON NEXT STORY':'ادامه در استوری بعدی ←'),edge,1701);
@@ -253,7 +271,7 @@
     downloadOne.addEventListener('click',()=>{if(files[index])download(files[index],files[index].name);});
     downloadAll.addEventListener('click',saveAll);
   }
-  const api={wrapText,paginateStory,storyParagraphs,extractText,zipFiles,crc32};
+  const api={wrapText,paginateStory,justifyText,storyParagraphs,extractText,zipFiles,crc32};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   if(typeof document!=='undefined'){
     global.NabezTextStory=api;
