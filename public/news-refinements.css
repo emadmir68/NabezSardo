@@ -52,3 +52,14 @@ html .home-topic-count{font-size:12px!important}
 @media(max-width:560px){.archive-filters{grid-template-columns:1fr}.archive-filters input,.archive-filters select{font-size:16px}.archive-pagination{gap:6px}.archive-pagination a,.archive-page-current{padding:6px 10px}}
 
 .story-kicker{font-size:12px;line-height:1.8;color:#bfc9d8;margin:6px 0 2px;overflow-wrap:anywhere}
+
+html .focus .topic{min-height:180px!important;display:flex;flex-direction:column;padding:18px!important}
+html .focus .topic h3{font-size:18px!important;line-height:1.8!important;margin:8px 0!important}
+html .focus .topic p{font-size:14px!important;line-height:1.9!important;color:#becbdc!important}
+.focus-topic-link,.focus-latest-story{color:inherit;text-decoration:none}
+.focus-topic-link:hover,.focus-latest-story:hover{text-decoration:underline;text-underline-offset:4px}
+.focus-topic-link:focus-visible,.focus-latest-story:focus-visible,.focus-topic-links a:focus-visible{outline:2px solid #e4b96b;outline-offset:3px}
+.focus-topic-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}
+.focus-topic-links a{display:inline-flex;align-items:center;min-height:36px;color:#e4c48e;font-size:12px;text-decoration:none}
+@media(max-width:1000px){html .focus .topics{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){html .focus .topics{grid-template-columns:1fr!important}html .focus .topic{min-height:0!important}}
