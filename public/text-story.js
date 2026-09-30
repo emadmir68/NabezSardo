@@ -1,7 +1,7 @@
 /* Complete text-only stories. Layout helpers are shared with Node regression tests. */
 (function(global){
   'use strict';
-  const WIDTH=1080,HEIGHT=1920,CONTENT_TOP=300,CONTENT_BOTTOM=1650,CONTENT_WIDTH=880;
+  const WIDTH=1080,HEIGHT=1920,CONTENT_TOP=346,CONTENT_BOTTOM=1650,CONTENT_WIDTH=820;
   function clean(value){return String(value||'').replace(/[ \t\r]+/g,' ').trim();}
   function storyParagraphs(input){
     const body=String(input.body||'').split(/\n+/).map(clean).filter(Boolean);
@@ -34,7 +34,7 @@
   }
   function paginateStory(input,measure){
     const blocks=[];
-    if(clean(input.title))blocks.push({text:input.title,kind:'title',font:68,height:98,weight:800});
+    if(clean(input.title))blocks.push({text:input.title,kind:'title',font:76,height:110,weight:800});
     storyParagraphs(input).forEach(text=>blocks.push({text,kind:'body',font:52,height:78,weight:500}));
     const pages=[];let page={items:[]},y=CONTENT_TOP;
     function nextPage(){if(page.items.length)pages.push(page);page={items:[]};y=CONTENT_TOP;}
@@ -87,30 +87,68 @@
     return new Blob([...chunks,...directory,end],{type:'application/zip'});
   }
   function drawPage(ctx,page,index,total,input){
-    const en=input.lang==='en',edge=en?100:980;
+    const en=input.lang==='en',edge=en?130:950;
+    const round=(x,y,w,h,r)=>{
+      ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+    };
+    const pulse=(x,y,scale,color,width)=>{
+      ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.strokeStyle=color;ctx.lineWidth=width;
+      ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();
+      [[0,38],[38,38],[49,23],[64,57],[82,6],[99,49],[114,31],[129,38],[163,38]].forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));
+      ctx.stroke();ctx.restore();
+    };
     const gradient=ctx.createLinearGradient(0,0,WIDTH,HEIGHT);
-    gradient.addColorStop(0,'#101923');gradient.addColorStop(.6,'#0c1017');gradient.addColorStop(1,'#20151d');
+    gradient.addColorStop(0,'#18212e');gradient.addColorStop(.44,'#080d15');gradient.addColorStop(1,'#271423');
     ctx.fillStyle=gradient;ctx.fillRect(0,0,WIDTH,HEIGHT);
-    ctx.strokeStyle='#927343';ctx.lineWidth=2;ctx.strokeRect(60,118,960,1684);
+    const glow=ctx.createRadialGradient(990,240,0,990,240,940);
+    glow.addColorStop(0,'rgba(202,165,91,.19)');glow.addColorStop(.55,'rgba(122,49,79,.08)');glow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=glow;ctx.fillRect(0,0,WIDTH,HEIGHT);
+    ctx.strokeStyle='rgba(231,199,135,.055)';ctx.lineWidth=1;
+    for(let x=-HEIGHT;x<WIDTH;x+=90){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+HEIGHT,HEIGHT);ctx.stroke();}
+    pulse(-130,1410,7,'rgba(213,168,95,.045)',.7);
+    ctx.fillStyle='#b39157';ctx.fillRect(58,128,6,142);
+    ctx.strokeStyle='rgba(232,202,141,.28)';ctx.lineWidth=2;round(58,116,964,1700,34);ctx.stroke();
     ctx.direction=en?'ltr':'rtl';ctx.textAlign=en?'left':'right';ctx.textBaseline='top';
-    ctx.fillStyle='#f2cd88';ctx.font='800 58px Vazirmatn, Tahoma, sans-serif';
-    ctx.fillText(en?'NABEZ SARDO':'نبض ساردو',edge,160);
-    ctx.fillStyle='#bfc8d4';ctx.font='500 30px Vazirmatn, Tahoma, sans-serif';
-    ctx.fillText(en?'FULL STORY · NO PHOTO':'متن کامل خبر · بدون عکس',edge,237);
-    ctx.save();ctx.direction='ltr';ctx.textAlign=en?'right':'left';ctx.font='600 32px Vazirmatn, Tahoma, sans-serif';
+    const brandX=en?248:828;
+    pulse(en?100:846,160,.7,'#f0cc86',4);
+    ctx.fillStyle='#f1d295';ctx.font='800 54px Vazirmatn, Tahoma, sans-serif';
+    ctx.fillText(en?'NABEZ SARDO':'نبض ساردو',brandX,146);
+    ctx.fillStyle='#96a5b9';ctx.font='500 25px Vazirmatn, Tahoma, sans-serif';
+    ctx.fillText(en?'LOCAL NEWSROOM / SOUTH KERMAN':'صدای خبرهای محلی · جنوب کرمان',brandX,210);
+    ctx.fillStyle='rgba(183,143,76,.12)';round(110,260,860,48,24);ctx.fill();
+    ctx.fillStyle='#d7bc8d';ctx.font='700 27px Vazirmatn, Tahoma, sans-serif';
+    const category=String(input.category|| (en?'LOCAL REPORT':'گزارش محلی'));
+    ctx.fillText(category,edge,266);
+    ctx.save();ctx.direction='ltr';ctx.textAlign=en?'right':'left';ctx.font='600 25px Arial, sans-serif';
+    ctx.fillText(index===0?'NEWS / FULL STORY':'NEWS / CONTINUED',en?950:130,271);ctx.restore();
+    const panel=ctx.createLinearGradient(90,322,990,1648);
+    panel.addColorStop(0,'rgba(37,42,52,.92)');panel.addColorStop(1,'rgba(15,21,31,.95)');
+    ctx.fillStyle=panel;round(90,322,900,1346,26);ctx.fill();
+    ctx.strokeStyle='rgba(206,220,241,.08)';ctx.lineWidth=1;ctx.stroke();
+    const titleItems=page.items.filter(item=>item.kind==='title');
+    if(titleItems.length){
+      const last=titleItems[titleItems.length-1];
+      ctx.fillStyle='rgba(201,156,81,.06)';round(106,330,868,Math.min(last.y+last.height+8,1660)-330,18);ctx.fill();
+      ctx.fillStyle='#e2b96b';ctx.fillRect(en?108:965,350,4,Math.min(110,last.y+last.height-350));
+    }
     const number=n=>Number(n).toLocaleString(en?'en-US':'fa-IR');
-    ctx.fillText(number(index+1)+' / '+number(total),en?980:100,184);ctx.restore();
-    ctx.fillStyle='#c89e5e';ctx.fillRect(100,282,880,3);
     for(const item of page.items){
       ctx.font=item.weight+' '+item.font+'px Vazirmatn, Tahoma, sans-serif';
-      ctx.fillStyle=item.kind==='title'?'#ffe7b5':'#f1f4f8';ctx.fillText(item.text,edge,item.y);
+      ctx.fillStyle=item.kind==='title'?'#ffe8b8':'#edf1f7';ctx.fillText(item.text,edge,item.y);
     }
-    ctx.fillStyle='#c89e5e';ctx.fillRect(100,1684,880,2);
-    ctx.direction='ltr';ctx.textAlign='center';ctx.fillStyle='#d5b87e';ctx.font='500 27px Arial, sans-serif';
-    ctx.fillText(input.url.replace(/^https?:\/\//,''),540,1732);
+    ctx.fillStyle='#e1bd7b';ctx.font='700 28px Vazirmatn, Tahoma, sans-serif';
+    ctx.fillText(index===total-1?(en?'END OF STORY':'پایان خبر'):(en?'CONTINUED ON NEXT STORY':'ادامه در استوری بعدی ←'),edge,1701);
+    ctx.save();ctx.direction='ltr';ctx.textAlign=en?'right':'left';ctx.fillStyle='#a8b5c6';ctx.font='600 29px Vazirmatn, Tahoma, sans-serif';
+    ctx.fillText(number(index+1)+' / '+number(total),en?950:130,1701);ctx.restore();
+    ctx.fillStyle='rgba(207,167,100,.25)';ctx.fillRect(130,1750,820,1);
+    ctx.direction='ltr';ctx.textAlign='center';ctx.fillStyle='#aab6c6';ctx.font='500 24px Arial, sans-serif';
+    ctx.fillText(input.url.replace(/^https?:\/\//,''),540,1770);
+    ctx.fillStyle='#d7b370';round(320,1844,440,5,2);ctx.fill();
+    ctx.fillStyle='#fff0c5';round(320,1844,440*((index+1)/total),5,2);ctx.fill();
   }
   async function renderStories(input,onProgress=()=>{},isCancelled=()=>false){
-    try{if(document.fonts)await Promise.race([Promise.all([document.fonts.load('500 52px Vazirmatn'),document.fonts.load('800 68px Vazirmatn')]),new Promise(resolve=>setTimeout(resolve,4000))]);}catch{}
+    try{if(document.fonts)await Promise.race([Promise.all([document.fonts.load('500 52px Vazirmatn'),document.fonts.load('800 76px Vazirmatn')]),new Promise(resolve=>setTimeout(resolve,4000))]);}catch{}
     const canvas=document.createElement('canvas');canvas.width=WIDTH;canvas.height=HEIGHT;
     const ctx=canvas.getContext('2d',{alpha:false});
     if(!ctx)throw new Error('story-canvas-unavailable');
@@ -163,7 +201,8 @@
       const body=article.querySelector('.article-body .lang-'+lang)||article.querySelector('.article-body .lang-fa');
       const deck=article.querySelector('.article-deck .lang-'+lang)||article.querySelector('.article-deck .lang-fa');
       const heading=article.querySelector('h1 .lang-'+lang)||article.querySelector('h1 .lang-fa');
-      const input={title:heading?.textContent||article.dataset.articleTitle||'',lead:extractText(deck),body:extractText(body),lang,url:new URL(article.dataset.articleUrl||location.pathname,location.origin).href};
+      const category=article.querySelector('.article-category-pill .lang-'+lang)||article.querySelector('.article-category-pill .lang-fa');
+      const input={title:heading?.textContent||article.dataset.articleTitle||'',lead:extractText(deck),body:extractText(body),category:category?.textContent||'',lang,url:new URL(article.dataset.articleUrl||location.pathname,location.origin).href};
       try{
         const result=await renderStories(input,(done,total)=>{if(current===token)status.textContent='آماده‌سازی صفحه '+done.toLocaleString('fa-IR')+' از '+total.toLocaleString('fa-IR');},()=>current!==token);
         if(current!==token||!result)return;
