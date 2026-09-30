@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-09-29T12:10:19.225Z",
-  "commit": "79a1f995420599f7731e6334e05f61fff0d9acb5",
+  "testedAt": "2026-09-30T19:58:48.778Z",
+  "commit": "5af5d83b4d377fae4fc6d3036f87260fed50d7b5",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-29T12:10:09.826Z"
+    "time": "2026-09-30T19:58:12.691Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-09-29T12:10:10.055Z"
+    "time": "2026-09-30T19:58:13.068Z"
   },
   "cutover": {
     "ok": true,
@@ -29,10 +29,10 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 63,
-    "media": 83,
+    "articles": 65,
+    "media": 89,
     "aiCovers": 1,
-    "templateCovers": 6,
+    "templateCovers": 7,
     "fallbackCovers": 0,
     "adminReady": true,
     "analyticsTotal": 4813,
@@ -51,7 +51,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-09-29T09:24:37.967Z",
+      "lastSuccessAt": "2026-09-30T19:34:38.867Z",
       "lastError": null
     },
     "backup": {
@@ -59,9 +59,9 @@
       "encrypted": true,
       "retentionDays": 30,
       "cadence": "daily",
-      "lastAt": "2026-09-29T00:00:30.278Z",
-      "object": "db-backup-2026-09-29.json.enc",
-      "bytes": 263371,
+      "lastAt": "2026-09-30T00:01:06.139Z",
+      "object": "db-backup-2026-09-30.json.enc",
+      "bytes": 307407,
       "lastError": null,
       "weeklySite": {
         "enabled": true,
@@ -74,11 +74,11 @@
       }
     },
     "usage": {
-      "mediaObjects": 83,
-      "arvanMediaBytes": 42883807,
+      "mediaObjects": 89,
+      "arvanMediaBytes": 43645586,
       "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 0.8,
-      "d1TrackedBytesApprox": 1917553,
+      "arvanUsagePercentOfFreeTier": 0.81,
+      "d1TrackedBytesApprox": 1929073,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.37
     },
@@ -88,54 +88,57 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000817,
-      "connect": 0.002637,
-      "ttfb": 0.098821,
-      "total": 0.099679,
-      "bytes": 74027
+      "dns": 0.000582,
+      "connect": 0.051641,
+      "ttfb": 0.489657,
+      "total": 0.505885,
+      "bytes": 70146
     },
     "archive": {
       "http": 200,
-      "dns": 0.000798,
-      "connect": 0.002993,
-      "ttfb": 0.092188,
-      "total": 0.096252,
-      "bytes": 236825
+      "dns": 0.000559,
+      "connect": 0.160505,
+      "ttfb": 3.189407,
+      "total": 3.228082,
+      "bytes": 55090
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000765,
-      "connect": 0.003307,
-      "ttfb": 0.341699,
-      "total": 0.341782,
-      "bytes": 4160
+      "dns": 0.000592,
+      "connect": 0.049702,
+      "ttfb": 0.584152,
+      "total": 0.584211,
+      "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.00079,
-      "connect": 0.002455,
-      "ttfb": 0.085976,
-      "total": 0.086049,
-      "bytes": 33774
+      "dns": 0.000567,
+      "connect": 0.163439,
+      "ttfb": 0.674575,
+      "total": 0.701256,
+      "bytes": 38963
     },
     "media": {
       "http": 200,
-      "dns": 0.000822,
-      "connect": 0.003507,
-      "ttfb": 0.047056,
-      "total": 0.052649,
-      "bytes": 99464
+      "dns": 0.000561,
+      "connect": 0.065509,
+      "ttfb": 0.219141,
+      "total": 0.295911,
+      "bytes": 113512
     },
     "health": {
       "http": 200,
-      "dns": 0.00095,
-      "connect": 0.005244,
-      "ttfb": 0.040735,
-      "total": 0.040779,
+      "dns": 0.000573,
+      "connect": 0.03601,
+      "ttfb": 0.121543,
+      "total": 0.12159,
       "bytes": 189
     }
   },
   "readyForRailwayShutdown": true,
   "problems": [],
-  "warnings": []
+  "warnings": [
+    "slow-archive:3.228s",
+    "slow-ttfb-archive:3.189s"
+  ]
 }
