@@ -102,4 +102,13 @@ assert.strictEqual(
   'agriculture'
 );
 
+assert.strictEqual(
+  monitor.guessCategory({
+    title:'بیش از ۴۰۰ کیلومتر راه روستایی استان کرمان در کمتر از ۶ ماه آسفالت شد',
+    lead:'راهداری از توسعه زیرساخت جاده‌ای خبر داد',
+    body:''
+  }),
+  'city-village'
+);
+
 console.log('news-monitor tests: ok');
