@@ -1,0 +1,30 @@
+name: Inspect Imported Categories
+
+on:
+  push:
+    branches:
+      - diagnostic/news-monitor-live
+    paths:
+      - ".github/workflows/inspect-imported-categories.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - name: Read recent imported categories
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT json_extract(j.value,'$.id') AS id, json_extract(j.value,'$.title') AS title, json_extract(j.value,'$.categoryId') AS category_id, json_extract(j.value,'$.ingestedAt') AS ingested_at FROM app_state, json_each(app_state.value,'$.articles') AS j WHERE app_state.key='db' AND json_extract(j.value,'$.imported')=1 ORDER BY json_extract(j.value,'$.ingestedAt') DESC LIMIT 20;"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
