@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-09T07:02:48.007Z",
-  "commit": "6cb2c3f044a5af36a394ed6b28c0591e76dc8a39",
+  "testedAt": "2026-10-09T07:15:15.868Z",
+  "commit": "6b168bca78a162f7f789b6f0bfd5ccbdd695a8b2",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T07:02:38.818Z"
+    "time": "2026-10-09T07:14:54.933Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T07:02:39.145Z"
+    "time": "2026-10-09T07:14:55.301Z"
   },
   "cutover": {
     "ok": true,
@@ -40,16 +40,16 @@
       "enabled": true,
       "autoPublish": true,
       "intervalMinutes": 15,
-      "maxPerHour": 2,
+      "maxPerHour": 4,
       "maxAgeHours": 48,
-      "lastRunAt": "2026-10-09T06:53:44.362Z",
+      "lastRunAt": "2026-10-09T07:09:46.423Z",
       "lastRunResult": {
         "discovered": 100,
         "queued": 0,
         "duplicates": 0,
-        "filtered": 3,
+        "filtered": 5,
         "errors": 0,
-        "durationMs": 3030,
+        "durationMs": 3401,
         "stale": 0,
         "baseline": 0
       },
@@ -58,8 +58,8 @@
         "published": 2,
         "duplicate": 0,
         "rejected": 5,
-        "sourcesOn": 3,
-        "sources": 9
+        "sourcesOn": 7,
+        "sources": 13
       },
       "sources": [
         {
@@ -68,8 +68,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-09T06:53:41.332Z",
-          "lastSuccessAt": "2026-10-09T06:53:42.755Z",
+          "lastCheckedAt": "2026-10-09T07:09:43.022Z",
+          "lastSuccessAt": "2026-10-09T07:09:44.706Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -79,8 +79,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-09T06:53:42.755Z",
-          "lastSuccessAt": "2026-10-09T06:53:43.449Z",
+          "lastCheckedAt": "2026-10-09T07:09:44.706Z",
+          "lastSuccessAt": "2026-10-09T07:09:45.509Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -112,8 +112,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-09T06:53:43.449Z",
-          "lastSuccessAt": "2026-10-09T06:53:44.362Z",
+          "lastCheckedAt": "2026-10-09T07:09:45.509Z",
+          "lastSuccessAt": "2026-10-09T07:09:46.423Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -144,7 +144,7 @@
           "name": "ایرنا — سراسری",
           "enabled": false,
           "type": "html",
-          "scope": "national",
+          "scope": "country",
           "lastCheckedAt": null,
           "lastSuccessAt": null,
           "lastDiscovered": 0,
@@ -155,7 +155,51 @@
           "name": "ایسنا — صفحه اصلی",
           "enabled": false,
           "type": "html",
-          "scope": "national",
+          "scope": "country",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "mehr-politics",
+          "name": "خبرگزاری مهر — سیاست کشور",
+          "enabled": true,
+          "type": "html",
+          "scope": "country",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "mehr-society",
+          "name": "خبرگزاری مهر — جامعه کشور",
+          "enabled": true,
+          "type": "html",
+          "scope": "country",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "mehr-tech",
+          "name": "خبرگزاری مهر — فناوری",
+          "enabled": true,
+          "type": "html",
+          "scope": "country",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "mehr-world",
+          "name": "خبرگزاری مهر — بین‌الملل",
+          "enabled": true,
+          "type": "html",
+          "scope": "world",
           "lastCheckedAt": null,
           "lastSuccessAt": null,
           "lastDiscovered": 0,
@@ -205,7 +249,7 @@
       "arvanMediaBytes": 43912138,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 0.82,
-      "d1TrackedBytesApprox": 2317250,
+      "d1TrackedBytesApprox": 2319217,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.44
     },
@@ -215,50 +259,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000675,
-      "connect": 0.003513,
-      "ttfb": 0.046338,
-      "total": 0.048837,
-      "bytes": 77240
+      "dns": 0.00084,
+      "connect": 0.002501,
+      "ttfb": 0.678702,
+      "total": 0.679633,
+      "bytes": 77016
     },
     "archive": {
       "http": 200,
-      "dns": 0.000631,
-      "connect": 0.003201,
-      "ttfb": 0.186844,
-      "total": 0.187108,
-      "bytes": 59148
+      "dns": 0.000846,
+      "connect": 0.002285,
+      "ttfb": 0.642916,
+      "total": 0.643146,
+      "bytes": 58922
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000662,
-      "connect": 0.003445,
-      "ttfb": 0.133272,
-      "total": 0.133374,
-      "bytes": 4296
+      "dns": 0.000849,
+      "connect": 0.003026,
+      "ttfb": 0.326934,
+      "total": 0.326998,
+      "bytes": 4160
     },
     "article": {
       "http": 200,
-      "dns": 0.000687,
-      "connect": 0.003292,
-      "ttfb": 0.087246,
-      "total": 0.087304,
-      "bytes": 46333
+      "dns": 0.000826,
+      "connect": 0.002591,
+      "ttfb": 0.319481,
+      "total": 0.319548,
+      "bytes": 46165
     },
     "media": {
       "http": 200,
-      "dns": 0.000653,
-      "connect": 0.002907,
-      "ttfb": 0.043126,
-      "total": 0.04358,
+      "dns": 0.0008,
+      "connect": 0.003054,
+      "ttfb": 0.042875,
+      "total": 0.042923,
       "bytes": 38520
     },
     "health": {
       "http": 200,
-      "dns": 0.000608,
-      "connect": 0.003021,
-      "ttfb": 0.082587,
-      "total": 0.082633,
+      "dns": 0.001472,
+      "connect": 0.003231,
+      "ttfb": 0.042735,
+      "total": 0.04278,
       "bytes": 189
     }
   },
