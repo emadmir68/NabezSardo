@@ -85,4 +85,21 @@ assert.deepStrictEqual(secondSources,['k1','n1','s1','w1']);
 const thirdSources=monitor.sourcesForRun(sourceRotationMonitor).map(x=>x.id);
 assert.deepStrictEqual(thirdSources,['k1','n1','t1','w1']);
 
+assert.strictEqual(
+  monitor.guessCategory({
+    title:'طالبی: دانش‌آموزان برتر علمی و فرهنگی کرمان سالانه تجلیل شوند',
+    lead:'استاندار کرمان بر حمایت از استعدادهای برتر تاکید کرد',
+    body:'در ادامه درباره محصولات کشاورزی و باغ‌ها نیز سخن گفته شد'
+  }),
+  'culture'
+);
+assert.strictEqual(
+  monitor.guessCategory({
+    title:'برداشت خرما در جنوب کرمان آغاز شد',
+    lead:'کشاورزان از افزایش محصول خبر دادند',
+    body:''
+  }),
+  'agriculture'
+);
+
 console.log('news-monitor tests: ok');
