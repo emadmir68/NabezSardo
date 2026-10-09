@@ -30,4 +30,13 @@ assert.strictEqual(monitor.freshness(new Date(Date.now()-72*60*60*1000).toISOStr
 assert.strictEqual(monitor.freshness('',48),null);
 
 
+
+assert.strictEqual(monitor.hasKeyword('استان کرمان امروز بارانی است','کرمان'),true);
+assert.strictEqual(monitor.hasKeyword('کرمانشاه میزبان مسابقات شد','کرمان'),false);
+assert.strictEqual(monitor.hasKeyword('خبر تازه از شهر بابک','شهر بابک'),true);
+
+const fakeMonitor={settings:{keywords:'کرمان,جیرفت,رفسنجان'}};
+assert.strictEqual(monitor.relevant(fakeMonitor,{scope:'kerman'},{title:'قم میزبان رقابت کشوری',lead:'قم- این مسابقات با حضور ورزشکاران برگزار شد',body:'نام کرمان در متن طولانی آمده است'}),false);
+assert.strictEqual(monitor.relevant(fakeMonitor,{scope:'kerman'},{title:'طرح توسعه پایدار کرمان',lead:'کرمان- استاندار کرمان خبر داد',body:''}),true);
+
 console.log('news-monitor tests: ok');
