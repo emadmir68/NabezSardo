@@ -1,0 +1,1 @@
+rerun live news monitor diagnostics after cron media persistence deploy
