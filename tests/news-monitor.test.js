@@ -39,4 +39,32 @@ const fakeMonitor={settings:{keywords:'کرمان,جیرفت,رفسنجان'}};
 assert.strictEqual(monitor.relevant(fakeMonitor,{scope:'kerman'},{title:'قم میزبان رقابت کشوری',lead:'قم- این مسابقات با حضور ورزشکاران برگزار شد',body:'نام کرمان در متن طولانی آمده است'}),false);
 assert.strictEqual(monitor.relevant(fakeMonitor,{scope:'kerman'},{title:'طرح توسعه پایدار کرمان',lead:'کرمان- استاندار کرمان خبر داد',body:''}),true);
 
+assert.strictEqual(monitor.relevant(fakeMonitor,{scope:'country'},{title:'خبر مهم اقتصادی کشور',lead:'',body:''}),true);
+assert.strictEqual(monitor.relevant(fakeMonitor,{scope:'world'},{title:'تحولات مهم اروپا',lead:'',body:''}),true);
+assert.deepStrictEqual(monitor.desiredMix(4),{local:2,country:1,world:1});
+
+const mixMonitor={
+  settings:{maxPerHour:4,keywords:'کرمان'},
+  mixCursor:0,
+  sources:[
+    {id:'k1',scope:'kerman',topic:'local'},
+    {id:'p1',scope:'country',topic:'politics'},
+    {id:'s1',scope:'country',topic:'social'},
+    {id:'t1',scope:'country',topic:'technology'},
+    {id:'w1',scope:'world',topic:'world'}
+  ],
+  queue:[
+    {id:'l1',status:'pending',sourceId:'k1',publishedAt:'2026-10-09T10:00:00Z'},
+    {id:'l2',status:'pending',sourceId:'k1',publishedAt:'2026-10-09T09:59:00Z'},
+    {id:'c1',status:'pending',sourceId:'p1',publishedAt:'2026-10-09T09:58:00Z'},
+    {id:'c2',status:'pending',sourceId:'s1',publishedAt:'2026-10-09T09:57:00Z'},
+    {id:'w1q',status:'pending',sourceId:'w1',publishedAt:'2026-10-09T09:56:00Z'}
+  ]
+};
+const mixIds=monitor.selectPublishIds({articles:[]},mixMonitor,4);
+assert.strictEqual(mixIds.length,4);
+assert.ok(mixIds.includes('l1')&&mixIds.includes('l2'));
+assert.ok(mixIds.includes('c1'));
+assert.ok(mixIds.includes('w1q'));
+
 console.log('news-monitor tests: ok');
