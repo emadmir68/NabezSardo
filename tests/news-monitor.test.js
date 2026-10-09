@@ -67,4 +67,22 @@ assert.ok(mixIds.includes('l1')&&mixIds.includes('l2'));
 assert.ok(mixIds.includes('c1'));
 assert.ok(mixIds.includes('w1q'));
 
+const sourceRotationMonitor={
+  sourceCycleCursor:0,
+  sources:[
+    {id:'k1',scope:'kerman',topic:'local',enabled:true},
+    {id:'n1',scope:'national',topic:'local',enabled:true},
+    {id:'p1',scope:'country',topic:'politics',enabled:true},
+    {id:'s1',scope:'country',topic:'social',enabled:true},
+    {id:'t1',scope:'country',topic:'technology',enabled:true},
+    {id:'w1',scope:'world',topic:'world',enabled:true}
+  ]
+};
+const firstSources=monitor.sourcesForRun(sourceRotationMonitor).map(x=>x.id);
+assert.deepStrictEqual(firstSources,['k1','n1','p1','w1']);
+const secondSources=monitor.sourcesForRun(sourceRotationMonitor).map(x=>x.id);
+assert.deepStrictEqual(secondSources,['k1','n1','s1','w1']);
+const thirdSources=monitor.sourcesForRun(sourceRotationMonitor).map(x=>x.id);
+assert.deepStrictEqual(thirdSources,['k1','n1','t1','w1']);
+
 console.log('news-monitor tests: ok');
