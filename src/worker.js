@@ -1852,7 +1852,7 @@ export default {
       await ensureAppServer();
       await articleTools.schedulerTick();
       try{await newsMonitor.tick();}catch(err){console.error("news-monitor-tick",String(err?.message||err));}
-      await flushState(before,new Request("https://nabzesardo.ir/__cron"),new Response(null,{status:204}));
+      await flushState(before,new Request("https://nabzesardo.ir/__cron",{method:"POST"}),new Response(null,{status:204}));
     });
     await suppressPendingAutomaticPublications();
     await drainPublications();
