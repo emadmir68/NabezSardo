@@ -1530,6 +1530,7 @@ async function publicSyncStatus() {
     getState("last_public_sync_media")
   ]);
   const db = await loadDbObject();
+  const monitorState=newsMonitor.snapshot(db);
   const runtimeSecrets = await decryptRuntimeSecrets();
   const analyticsState = safeJson(await getState("analytics"), {});
   const auto = (db.articles || []).filter(a => a.imageAuto === true);
@@ -1564,6 +1565,21 @@ async function publicSyncStatus() {
     fallbackCovers: auto.filter(a => a.autoCoverSource === "fallback").length,
     adminReady: Boolean(await runtimeAuth()),
     analyticsTotal: Number(analyticsState.allTimePageViews || 0),
+    newsMonitor: {
+      enabled: monitorState.settings?.enabled !== false,
+      autoPublish: monitorState.settings?.autoPublish === true,
+      intervalMinutes: Number(monitorState.settings?.intervalMinutes || 15),
+      maxPerHour: Number(monitorState.settings?.maxPerHour || 4),
+      maxAgeHours: Number(monitorState.settings?.maxAgeHours || 48),
+      lastRunAt: monitorState.lastRunAt || null,
+      lastRunResult: monitorState.lastRunResult || null,
+      counts: monitorState.counts || {},
+      sources: (monitorState.sources || []).map(s=>({
+        id:s.id,name:s.name,enabled:s.enabled!==false,type:s.type,scope:s.scope,
+        lastCheckedAt:s.lastCheckedAt||null,lastSuccessAt:s.lastSuccessAt||null,
+        lastDiscovered:Number(s.lastDiscovered||0),lastError:s.lastError||''
+      }))
+    },
     integrationsReady: {
       telegram: Boolean(runtimeSecrets.TELEGRAM_BOT_TOKEN && runtimeSecrets.TELEGRAM_CHAT_ID),
       rubika: Boolean(runtimeSecrets.RUBIKA_BOT_TOKEN && runtimeSecrets.RUBIKA_CHAT_ID),
