@@ -1,0 +1,30 @@
+name: Force Category Migration
+
+on:
+  push:
+    branches:
+      - diagnostic/news-monitor-live
+    paths:
+      - ".github/workflows/force-category-migration.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  force:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - name: Force category migration on next cron tick
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="UPDATE app_state SET value=json_set(value,'$.newsMonitor.lastRunAt',NULL,'$.newsMonitor.categoryClassifierVersion',0), updated_at=datetime('now') WHERE key='db';"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
