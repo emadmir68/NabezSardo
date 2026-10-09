@@ -25,4 +25,9 @@ assert.strictEqual(monitor.guessLocation(parsed),'جیرفت');
 assert.ok(monitor.titleSimilarity('فرماندار جیرفت از اجرای طرح جدید خبر داد','اجرای طرح جدید در جیرفت به گفته فرماندار')>0.5);
 assert.strictEqual(monitor.fingerprint('الف','متن'),monitor.fingerprint('الف','متن'));
 
+assert.strictEqual(monitor.freshness(new Date(Date.now()-2*60*60*1000).toISOString(),48),true);
+assert.strictEqual(monitor.freshness(new Date(Date.now()-72*60*60*1000).toISOString(),48),false);
+assert.strictEqual(monitor.freshness('',48),null);
+
+
 console.log('news-monitor tests: ok');
