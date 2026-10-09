@@ -46,9 +46,10 @@ jobs:
               const image=(html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i)||[])[1]||'';
               let imageHttp=null,imageType='';
               if(image){
-                const imageRes=await fetch(image,{method:'HEAD',headers:{'cache-control':'no-cache'}});
+                const imageRes=await fetch(image,{headers:{'cache-control':'no-cache'}});
+                const imageBytes=Buffer.from(await imageRes.arrayBuffer()).length;
                 imageHttp=imageRes.status;
-                imageType=imageRes.headers.get('content-type')||'';
+                imageType=(imageRes.headers.get('content-type')||'')+'; bytes='+imageBytes;
               }
               const video=/<video\b/i.test(html);
               out.push({title:row.title,path:row.path,http:res.status,bodyChars:text.length,image:Boolean(image),imageHttp,imageType,video});
