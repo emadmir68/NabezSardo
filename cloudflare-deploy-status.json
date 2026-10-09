@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-09T06:13:13.954Z",
-  "commit": "bc3f0f3b5f7c53787630c2fc69b7e10a608c7e6c",
+  "testedAt": "2026-10-09T06:29:59.149Z",
+  "commit": "ef4c42a656fc7494b6ea287b8c6ef0e623e27d4c",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T06:12:42.185Z"
+    "time": "2026-10-09T06:29:48.772Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T06:12:42.717Z"
+    "time": "2026-10-09T06:29:49.232Z"
   },
   "cutover": {
     "ok": true,
@@ -36,6 +36,109 @@
     "fallbackCovers": 0,
     "adminReady": true,
     "analyticsTotal": 4813,
+    "newsMonitor": {
+      "enabled": true,
+      "autoPublish": true,
+      "intervalMinutes": 15,
+      "maxPerHour": 2,
+      "maxAgeHours": 48,
+      "lastRunAt": "2026-10-09T06:19:33.036Z",
+      "lastRunResult": {
+        "discovered": 0,
+        "queued": 0,
+        "duplicates": 0,
+        "filtered": 0,
+        "errors": 1,
+        "durationMs": 2593
+      },
+      "counts": {
+        "pending": 0,
+        "published": 0,
+        "duplicate": 0,
+        "rejected": 0,
+        "sourcesOn": 4,
+        "sources": 7
+      },
+      "sources": [
+        {
+          "id": "irna-kerman",
+          "name": "ایرنا — استان کرمان (موقتاً غیرفعال)",
+          "enabled": false,
+          "type": "html",
+          "scope": "kerman",
+          "lastCheckedAt": "2026-10-09T06:19:30.443Z",
+          "lastSuccessAt": "2026-10-09T06:19:30.867Z",
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "isna-kerman",
+          "name": "ایسنا — RSS سراسری با فیلتر کرمان",
+          "enabled": true,
+          "type": "rss",
+          "scope": "national",
+          "lastCheckedAt": "2026-10-09T06:19:30.867Z",
+          "lastSuccessAt": "2026-10-09T06:19:31.294Z",
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "jiroft-halil",
+          "name": "جیرفت هلیل",
+          "enabled": true,
+          "type": "html",
+          "scope": "jiroft",
+          "lastCheckedAt": "2026-10-09T06:19:31.294Z",
+          "lastSuccessAt": "2026-10-09T06:19:32.374Z",
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "konarsandal",
+          "name": "کنارصندل",
+          "enabled": true,
+          "type": "html",
+          "scope": "jiroft",
+          "lastCheckedAt": "2026-10-09T06:19:32.374Z",
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "irna-national",
+          "name": "ایرنا — سراسری",
+          "enabled": false,
+          "type": "html",
+          "scope": "national",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "isna-national",
+          "name": "ایسنا — صفحه اصلی",
+          "enabled": false,
+          "type": "html",
+          "scope": "national",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "tasnim-kerman",
+          "name": "تسنیم — استان کرمان",
+          "enabled": true,
+          "type": "html",
+          "scope": "kerman",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        }
+      ]
+    },
     "integrationsReady": {
       "telegram": true,
       "rubika": true,
@@ -78,7 +181,7 @@
       "arvanMediaBytes": 43799360,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 0.82,
-      "d1TrackedBytesApprox": 2184274,
+      "d1TrackedBytesApprox": 2185010,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.42
     },
@@ -88,50 +191,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000593,
-      "connect": 0.009943,
-      "ttfb": 0.407481,
-      "total": 0.410159,
+      "dns": 0.000769,
+      "connect": 0.018686,
+      "ttfb": 0.250333,
+      "total": 0.255398,
       "bytes": 71827
     },
     "archive": {
       "http": 200,
-      "dns": 0.000619,
-      "connect": 0.017989,
-      "ttfb": 0.320026,
-      "total": 0.323896,
-      "bytes": 56188
+      "dns": 0.000793,
+      "connect": 0.019008,
+      "ttfb": 0.117772,
+      "total": 0.122384,
+      "bytes": 56280
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000654,
-      "connect": 0.009868,
-      "ttfb": 0.515711,
-      "total": 0.51577,
+      "dns": 0.002137,
+      "connect": 0.020222,
+      "ttfb": 0.300966,
+      "total": 0.30103,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000657,
-      "connect": 0.017678,
-      "ttfb": 0.096971,
-      "total": 0.100487,
-      "bytes": 47861
+      "dns": 0.000789,
+      "connect": 0.0237,
+      "ttfb": 0.227705,
+      "total": 0.231507,
+      "bytes": 47953
     },
     "media": {
       "http": 200,
-      "dns": 0.000626,
-      "connect": 0.009473,
-      "ttfb": 0.058266,
-      "total": 0.074722,
+      "dns": 0.000765,
+      "connect": 0.019137,
+      "ttfb": 0.087065,
+      "total": 0.1113,
       "bytes": 153774
     },
     "health": {
       "http": 200,
-      "dns": 0.000616,
-      "connect": 0.010158,
-      "ttfb": 0.044895,
-      "total": 0.04501,
+      "dns": 0.000756,
+      "connect": 0.018795,
+      "ttfb": 0.07945,
+      "total": 0.079493,
       "bytes": 189
     }
   },
