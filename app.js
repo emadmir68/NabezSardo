@@ -7,6 +7,7 @@ const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullB
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
+const newsMonitor=require('./lib/news-monitor');
 const {shortArticleCode,previousShortArticleCode,legacyShortArticleCode}=require('./lib/view-common');
 const {LOCAL_HUBS,localMatchesArticle}=require('./lib/local-news');
 
@@ -328,7 +329,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&m){const c=db.categories.find(x=>x.id===m[1]);if(!c)return send(res,404,'دسته‌بندی یافت نشد');analytics.track(req,p);return send(res,200,views.category(db,c));}
 
   if(p.startsWith('/admin')&&p!=='/admin/login'&&!authed(req))return redirect(res,'/admin/login');
-  if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams,articleTools.socialStatus(),analytics.snapshot()));
+  if(req.method==='GET'&&p==='/admin')return send(res,200,views.admin(db,listBackups(),u.searchParams,articleTools.socialStatus(),analytics.snapshot(),newsMonitor.snapshot(db)));
   if(req.method==='GET'&&p==='/admin/articles/new')return send(res,200,views.editor(db));
   if(req.method==='GET'&&p==='/admin/followups/new')return send(res,200,views.followupEditor(db));
   m=p.match(/^\/admin\/articles\/([^/]+)\/share-kit$/);
@@ -371,6 +372,31 @@ const server=http.createServer(async(req,res)=>{
     }
 
     if(p.startsWith('/admin')&&!authed(req))return redirect(res,'/admin/login');
+    if(p==='/admin/news-monitor/settings'){
+      newsMonitor.saveSettings(f);
+      return redirect(res,'/admin?monitorSaved=1#monitor');
+    }
+    if(p==='/admin/news-monitor/source/add'){
+      try{newsMonitor.addSource(f);return redirect(res,'/admin?monitorSaved=1#monitor');}
+      catch(err){console.error('news monitor source add',err);return redirect(res,'/admin?monitorError=1#monitor');}
+    }
+    if(p==='/admin/news-monitor/run'){
+      try{
+        const result=await newsMonitor.run();
+        return redirect(res,'/admin?monitorRun='+(result&&result.ok?'1':'0')+'#monitor');
+      }catch(err){console.error('news monitor run',err);return redirect(res,'/admin?monitorError=1#monitor');}
+    }
+    m=p.match(/^\/admin\/news-monitor\/source\/([^/]+)\/toggle$/);
+    if(m){newsMonitor.toggleSource(m[1]);return redirect(res,'/admin#monitor');}
+    m=p.match(/^\/admin\/news-monitor\/source\/([^/]+)\/delete$/);
+    if(m){newsMonitor.deleteSource(m[1]);return redirect(res,'/admin#monitor');}
+    m=p.match(/^\/admin\/news-monitor\/candidate\/([^/]+)\/publish$/);
+    if(m){
+      try{await newsMonitor.publishCandidate(m[1]);return redirect(res,'/admin?monitorPublished=1#monitor');}
+      catch(err){console.error('news monitor publish',err);return redirect(res,'/admin?monitorError=1#monitor');}
+    }
+    m=p.match(/^\/admin\/news-monitor\/candidate\/([^/]+)\/reject$/);
+    if(m){newsMonitor.rejectCandidate(m[1]);return redirect(res,'/admin#monitor');}
     if(p==='/admin/upload/image'){
       const file=files.image||files.imageFile;
       if(!file||!file.data||!file.data.length)return send(res,400,JSON.stringify({ok:false,error:'فایلی انتخاب نشده است'}),'application/json; charset=utf-8');
