@@ -12,6 +12,7 @@ import { Resvg, initWasm } from "@resvg/resvg-wasm";
 import resvgModule from "@resvg/resvg-wasm/index_bg.wasm";
 import social from "../lib/social.js";
 import publishing from "../lib/publishing-state.js";
+import newsMonitor from "../lib/news-monitor.js";
 let stateSerial=Promise.resolve();
 function withLocalState(fn){
   const work=stateSerial.then(fn,fn);
@@ -1834,6 +1835,7 @@ export default {
       const before=await hydrateState({includeBackups:false});
       await ensureAppServer();
       await articleTools.schedulerTick();
+      try{await newsMonitor.tick();}catch(err){console.error("news-monitor-tick",String(err?.message||err));}
       await flushState(before,new Request("https://nabzesardo.ir/__cron"),new Response(null,{status:204}));
     });
     await suppressPendingAutomaticPublications();
