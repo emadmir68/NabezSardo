@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-09T06:43:09.571Z",
-  "commit": "86ce3141dfda06d4f72568c59798c759180c8582",
+  "testedAt": "2026-10-09T07:02:48.007Z",
+  "commit": "6cb2c3f044a5af36a394ed6b28c0591e76dc8a39",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T06:42:57.219Z"
+    "time": "2026-10-09T07:02:38.818Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T06:42:57.601Z"
+    "time": "2026-10-09T07:02:39.145Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 66,
-    "media": 90,
+    "articles": 68,
+    "media": 92,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,17 +42,48 @@
       "intervalMinutes": 15,
       "maxPerHour": 2,
       "maxAgeHours": 48,
-      "lastRunAt": null,
-      "lastRunResult": null,
+      "lastRunAt": "2026-10-09T06:53:44.362Z",
+      "lastRunResult": {
+        "discovered": 100,
+        "queued": 0,
+        "duplicates": 0,
+        "filtered": 3,
+        "errors": 0,
+        "durationMs": 3030,
+        "stale": 0,
+        "baseline": 0
+      },
       "counts": {
-        "pending": 0,
-        "published": 0,
+        "pending": 6,
+        "published": 2,
         "duplicate": 0,
-        "rejected": 0,
+        "rejected": 5,
         "sourcesOn": 3,
         "sources": 9
       },
       "sources": [
+        {
+          "id": "yjc-kerman",
+          "name": "باشگاه خبرنگاران جوان — کرمان",
+          "enabled": true,
+          "type": "html",
+          "scope": "kerman",
+          "lastCheckedAt": "2026-10-09T06:53:41.332Z",
+          "lastSuccessAt": "2026-10-09T06:53:42.755Z",
+          "lastDiscovered": 40,
+          "lastError": ""
+        },
+        {
+          "id": "mehr-kerman",
+          "name": "خبرگزاری مهر — کرمان",
+          "enabled": true,
+          "type": "html",
+          "scope": "kerman",
+          "lastCheckedAt": "2026-10-09T06:53:42.755Z",
+          "lastSuccessAt": "2026-10-09T06:53:43.449Z",
+          "lastDiscovered": 30,
+          "lastError": ""
+        },
         {
           "id": "tasnim-kerman",
           "name": "تسنیم — استان کرمان (خطای دسترسی از Worker)",
@@ -81,9 +112,9 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
+          "lastCheckedAt": "2026-10-09T06:53:43.449Z",
+          "lastSuccessAt": "2026-10-09T06:53:44.362Z",
+          "lastDiscovered": 30,
           "lastError": ""
         },
         {
@@ -129,28 +160,6 @@
           "lastSuccessAt": null,
           "lastDiscovered": 0,
           "lastError": ""
-        },
-        {
-          "id": "mehr-kerman",
-          "name": "خبرگزاری مهر — کرمان",
-          "enabled": true,
-          "type": "html",
-          "scope": "kerman",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
-        },
-        {
-          "id": "yjc-kerman",
-          "name": "باشگاه خبرنگاران جوان — کرمان",
-          "enabled": true,
-          "type": "html",
-          "scope": "kerman",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
         }
       ]
     },
@@ -169,7 +178,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-01T16:42:46.338Z",
+      "lastSuccessAt": "2026-10-09T06:53:49.513Z",
       "lastError": null
     },
     "backup": {
@@ -192,13 +201,13 @@
       }
     },
     "usage": {
-      "mediaObjects": 90,
-      "arvanMediaBytes": 43799360,
+      "mediaObjects": 92,
+      "arvanMediaBytes": 43912138,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 0.82,
-      "d1TrackedBytesApprox": 2190377,
+      "d1TrackedBytesApprox": 2317250,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.42
+      "d1UsagePercentApprox": 0.44
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -206,50 +215,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000743,
-      "connect": 0.015902,
-      "ttfb": 0.158138,
-      "total": 0.162688,
-      "bytes": 71735
+      "dns": 0.000675,
+      "connect": 0.003513,
+      "ttfb": 0.046338,
+      "total": 0.048837,
+      "bytes": 77240
     },
     "archive": {
       "http": 200,
-      "dns": 0.000981,
-      "connect": 0.017964,
-      "ttfb": 0.14551,
-      "total": 0.149311,
-      "bytes": 56280
+      "dns": 0.000631,
+      "connect": 0.003201,
+      "ttfb": 0.186844,
+      "total": 0.187108,
+      "bytes": 59148
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.00073,
-      "connect": 0.016833,
-      "ttfb": 0.22162,
-      "total": 0.221675,
+      "dns": 0.000662,
+      "connect": 0.003445,
+      "ttfb": 0.133272,
+      "total": 0.133374,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000777,
-      "connect": 0.016056,
-      "ttfb": 0.150158,
-      "total": 0.15299,
-      "bytes": 47861
+      "dns": 0.000687,
+      "connect": 0.003292,
+      "ttfb": 0.087246,
+      "total": 0.087304,
+      "bytes": 46333
     },
     "media": {
       "http": 200,
-      "dns": 0.000806,
-      "connect": 0.016707,
-      "ttfb": 0.076996,
-      "total": 0.098278,
-      "bytes": 153774
+      "dns": 0.000653,
+      "connect": 0.002907,
+      "ttfb": 0.043126,
+      "total": 0.04358,
+      "bytes": 38520
     },
     "health": {
       "http": 200,
-      "dns": 0.000671,
-      "connect": 0.012465,
-      "ttfb": 0.061329,
-      "total": 0.061358,
+      "dns": 0.000608,
+      "connect": 0.003021,
+      "ttfb": 0.082587,
+      "total": 0.082633,
       "bytes": 189
     }
   },
