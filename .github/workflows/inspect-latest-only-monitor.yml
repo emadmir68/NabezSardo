@@ -1,0 +1,31 @@
+name: Inspect Latest-Only Monitor State
+
+on:
+  push:
+    branches:
+      - diagnostic/news-monitor-live
+    paths:
+      - ".github/workflows/inspect-latest-only-monitor.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - name: Read latest-only monitor state
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT json_extract(value,'$.newsMonitor.settings.maxAgeHours') AS max_age_hours, json_extract(value,'$.newsMonitor.latestOnlyPolicyVersion') AS policy_version, (SELECT COUNT(*) FROM json_each(value,'$.newsMonitor.queue') q WHERE json_extract(q.value,'$.status')='pending') AS pending_count, (SELECT COUNT(*) FROM json_each(value,'$.newsMonitor.queue') q WHERE json_extract(q.value,'$.rejectionReason')='pre-latest-only-backlog') AS old_backlog_rejected FROM app_state WHERE key='db';"
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT json_extract(s.value,'$.id') AS source_id, json_extract(s.value,'$.latestSeenPublishedAt') AS latest_seen, json_extract(s.value,'$.lastCheckedAt') AS last_checked FROM app_state, json_each(app_state.value,'$.newsMonitor.sources') s WHERE app_state.key='db' AND json_extract(s.value,'$.enabled')=1 ORDER BY source_id;"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
