@@ -32,6 +32,7 @@ jobs:
           node --check lib/store.js
           node --check lib/analytics.js
           node --check lib/article-tools.js
+          node --check lib/news-monitor.js
           node --check lib/auto-cover.js
           node --check lib/view-common.js
           node --check lib/view-public.js
