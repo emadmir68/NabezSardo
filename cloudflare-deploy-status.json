@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-09T06:32:42.377Z",
-  "commit": "a891325e04d7c419ef1e76ff24587c5e274127d7",
+  "testedAt": "2026-10-09T06:43:09.571Z",
+  "commit": "86ce3141dfda06d4f72568c59798c759180c8582",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T06:32:29.563Z"
+    "time": "2026-10-09T06:42:57.219Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T06:32:29.846Z"
+    "time": "2026-10-09T06:42:57.601Z"
   },
   "cutover": {
     "ok": true,
@@ -49,10 +49,21 @@
         "published": 0,
         "duplicate": 0,
         "rejected": 0,
-        "sourcesOn": 4,
-        "sources": 7
+        "sourcesOn": 3,
+        "sources": 9
       },
       "sources": [
+        {
+          "id": "tasnim-kerman",
+          "name": "تسنیم — استان کرمان (خطای دسترسی از Worker)",
+          "enabled": false,
+          "type": "html",
+          "scope": "kerman",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
         {
           "id": "irna-kerman",
           "name": "ایرنا — استان کرمان (موقتاً غیرفعال)",
@@ -66,7 +77,7 @@
         },
         {
           "id": "isna-kerman",
-          "name": "ایسنا — RSS سراسری با فیلتر کرمان",
+          "name": "ایسنا — RSS سراسری با فیلتر استان کرمان",
           "enabled": true,
           "type": "rss",
           "scope": "national",
@@ -77,8 +88,8 @@
         },
         {
           "id": "jiroft-halil",
-          "name": "جیرفت هلیل",
-          "enabled": true,
+          "name": "جیرفت هلیل (نیازمند adapter اختصاصی)",
+          "enabled": false,
           "type": "html",
           "scope": "jiroft",
           "lastCheckedAt": null,
@@ -88,8 +99,8 @@
         },
         {
           "id": "konarsandal",
-          "name": "کنارصندل",
-          "enabled": true,
+          "name": "کنارصندل (خطای SSL از Worker)",
+          "enabled": false,
           "type": "html",
           "scope": "jiroft",
           "lastCheckedAt": null,
@@ -120,8 +131,19 @@
           "lastError": ""
         },
         {
-          "id": "tasnim-kerman",
-          "name": "تسنیم — استان کرمان",
+          "id": "mehr-kerman",
+          "name": "خبرگزاری مهر — کرمان",
+          "enabled": true,
+          "type": "html",
+          "scope": "kerman",
+          "lastCheckedAt": null,
+          "lastSuccessAt": null,
+          "lastDiscovered": 0,
+          "lastError": ""
+        },
+        {
+          "id": "yjc-kerman",
+          "name": "باشگاه خبرنگاران جوان — کرمان",
           "enabled": true,
           "type": "html",
           "scope": "kerman",
@@ -174,7 +196,7 @@
       "arvanMediaBytes": 43799360,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 0.82,
-      "d1TrackedBytesApprox": 2185010,
+      "d1TrackedBytesApprox": 2190377,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.42
     },
@@ -184,50 +206,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000602,
-      "connect": 0.01735,
-      "ttfb": 0.516476,
-      "total": 0.521635,
+      "dns": 0.000743,
+      "connect": 0.015902,
+      "ttfb": 0.158138,
+      "total": 0.162688,
       "bytes": 71735
     },
     "archive": {
       "http": 200,
-      "dns": 0.000633,
-      "connect": 0.01257,
-      "ttfb": 0.305486,
-      "total": 0.307805,
-      "bytes": 56188
+      "dns": 0.000981,
+      "connect": 0.017964,
+      "ttfb": 0.14551,
+      "total": 0.149311,
+      "bytes": 56280
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000646,
-      "connect": 0.014422,
-      "ttfb": 0.160575,
-      "total": 0.160639,
+      "dns": 0.00073,
+      "connect": 0.016833,
+      "ttfb": 0.22162,
+      "total": 0.221675,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000617,
-      "connect": 0.026619,
-      "ttfb": 0.161557,
-      "total": 0.166284,
-      "bytes": 47953
+      "dns": 0.000777,
+      "connect": 0.016056,
+      "ttfb": 0.150158,
+      "total": 0.15299,
+      "bytes": 47861
     },
     "media": {
       "http": 200,
-      "dns": 0.000639,
-      "connect": 0.024506,
-      "ttfb": 0.09468,
-      "total": 0.114955,
+      "dns": 0.000806,
+      "connect": 0.016707,
+      "ttfb": 0.076996,
+      "total": 0.098278,
       "bytes": 153774
     },
     "health": {
       "http": 200,
-      "dns": 0.000637,
-      "connect": 0.019314,
-      "ttfb": 0.060668,
-      "total": 0.060704,
+      "dns": 0.000671,
+      "connect": 0.012465,
+      "ttfb": 0.061329,
+      "total": 0.061358,
       "bytes": 189
     }
   },
