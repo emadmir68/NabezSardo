@@ -13,16 +13,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Read live monitor status
+      - name: Read live monitor status and newest stories
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS --retry 3 --retry-delay 2 https://nabzesardo.ir/__sync/status -o /tmp/status.json
+          curl -fsS -H 'cache-control: no-cache' --retry 3 --retry-delay 2 https://nabzesardo.ir/__sync/status -o /tmp/status.json
+          curl -fsS -H 'cache-control: no-cache' --retry 3 --retry-delay 2 https://nabzesardo.ir/all-news -o /tmp/archive.html
           node <<'NODE'
           const fs=require('fs');
           const data=JSON.parse(fs.readFileSync('/tmp/status.json','utf8'));
+          const html=fs.readFileSync('/tmp/archive.html','utf8');
+          const cards=[...html.matchAll(/<article\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
+          const newest=cards.slice(0,5).map(x=>({title:x[1],path:x[2]}));
           console.log(JSON.stringify({
             testedAt:new Date().toISOString(),
-            newsMonitor:data.newsMonitor||null
+            newsMonitor:data.newsMonitor||null,
+            archiveCards:cards.length,
+            newest
           },null,2));
+          fs.writeFileSync('/tmp/newest.json',JSON.stringify(newest.slice(0,2)));
+          NODE
+          node <<'NODE'
+          const fs=require('fs');
+          const newest=JSON.parse(fs.readFileSync('/tmp/newest.json','utf8'));
+          (async()=>{
+            const out=[];
+            for(const row of newest){
+              const res=await fetch('https://nabzesardo.ir'+row.path,{headers:{'cache-control':'no-cache'}});
+              const html=await res.text();
+              const body=(html.match(/<div[^>]+class="[^"]*article-body[^"]*"[^>]*>([\s\S]*?)<\/div>/i)||[])[1]||'';
+              const text=body.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+              const image=(html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i)||[])[1]||'';
+              const video=/<video\b/i.test(html);
+              out.push({title:row.title,path:row.path,http:res.status,bodyChars:text.length,image:Boolean(image),video});
+            }
+            console.log('NEWEST_DETAIL='+JSON.stringify(out));
+          })().catch(err=>{console.error(err);process.exit(1)});
           NODE
