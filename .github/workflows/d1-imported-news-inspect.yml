@@ -20,11 +20,16 @@ jobs:
         with:
           node-version: "22"
       - run: npm install --no-audit --no-fund
-      - name: Inspect imported articles in D1
+      - name: Inspect imported articles and media in D1
         shell: bash
         run: |
           set -euo pipefail
-          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT json_extract(j.value,'$.id') AS id, json_extract(j.value,'$.title') AS title, json_extract(j.value,'$.lead') AS lead, json_extract(j.value,'$.sourceId') AS source_id, json_extract(j.value,'$.sourceUrl') AS source_url, json_extract(j.value,'$.ingestedAt') AS ingested_at FROM app_state, json_each(app_state.value,'$.articles') AS j WHERE app_state.key='db' AND json_extract(j.value,'$.imported')=1 ORDER BY json_extract(j.value,'$.ingestedAt') DESC LIMIT 20;"
+          echo "IMPORTED_ARTICLES"
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT json_extract(j.value,'$.id') AS id, json_extract(j.value,'$.title') AS title, json_extract(j.value,'$.image') AS image, json_extract(j.value,'$.socialImage') AS social_image, json_extract(j.value,'$.sourceId') AS source_id, json_extract(j.value,'$.ingestedAt') AS ingested_at FROM app_state, json_each(app_state.value,'$.articles') AS j WHERE app_state.key='db' AND json_extract(j.value,'$.imported')=1 ORDER BY json_extract(j.value,'$.ingestedAt') DESC LIMIT 20;"
+          echo "LATEST_MEDIA_META"
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT name,content_type,size,chunk_count,updated_at FROM media_meta ORDER BY updated_at DESC LIMIT 30;"
+          echo "ARVAN_STATE"
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT key,value,updated_at FROM app_state WHERE key IN ('arvan_last_success','arvan_last_error','arvan_media_pending','arvan_media_last_run') ORDER BY key;"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
