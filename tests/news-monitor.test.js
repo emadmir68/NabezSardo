@@ -28,6 +28,8 @@ assert.strictEqual(monitor.fingerprint('الف','متن'),monitor.fingerprint('�
 assert.strictEqual(monitor.freshness(new Date(Date.now()-2*60*60*1000).toISOString(),48),true);
 assert.strictEqual(monitor.freshness(new Date(Date.now()-72*60*60*1000).toISOString(),48),false);
 assert.strictEqual(monitor.freshness('',48),null);
+assert.strictEqual(monitor.freshness(new Date(Date.now()-2*60*60*1000).toISOString(),6),true);
+assert.strictEqual(monitor.freshness(new Date(Date.now()-8*60*60*1000).toISOString(),6),false);
 
 
 
