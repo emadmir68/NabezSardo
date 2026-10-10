@@ -126,7 +126,21 @@ jobs:
           if(byPath.size!==cards.length){
             throw new Error('Published news contains duplicate compact URLs');
           }
-          console.log('published_compact_links='+cards.length);
+          const openings=[...html.matchAll(/<article\b[^>]*data-story-card[^>]*>/g)].map(x=>x[0]);
+          const attr=(tag,name)=>{
+            const m=tag.match(new RegExp('\\\\b'+name+'="([^"]*)"'));
+            return m?m[1]:'';
+          };
+          const storyKeys=new Set();
+          for(const tag of openings){
+            const title=attr(tag,'data-story-title-fa').replace(/\\s+/g,' ').trim();
+            const lead=attr(tag,'data-story-lead-fa').replace(/\\s+/g,' ').trim();
+            if(!title||!lead)continue;
+            const key=title+'|'+lead;
+            if(storyKeys.has(key))throw new Error('Published archive contains duplicate title/lead content: '+title);
+            storyKeys.add(key);
+          }
+          console.log('published_compact_links='+cards.length+' unique_story_keys='+storyKeys.size);
           NODE
           short_path=$(cat /tmp/short-path.txt)
           echo "short_article_path=$short_path"
