@@ -27,9 +27,9 @@ test('concurrent monitor publications collapse to one published article identity
 });
 test('legacy published duplicates are normalized without removing unrelated drafts',()=>{
  const db={categories:[],articles:[
-  {id:'one',status:'published',slug:'same-story',title:'خبر'},
-  {id:'two',status:'published',slug:'same-story',title:'خبر'},
-  {id:'draft',status:'draft',slug:'same-story',title:'پیش نویس'}
+  {id:'one',status:'published',slug:'same-story',title:'خبر',lead:'لید خبر'},
+  {id:'two',status:'published',slug:'same-story-2',title:'خبر',lead:'لید خبر'},
+  {id:'draft',status:'draft',slug:'same-story',title:'پیش نویس',lead:'لید خبر'}
  ]};
  store.normalizeEditorialDb(db);
  assert.equal(db.articles.length,2);
