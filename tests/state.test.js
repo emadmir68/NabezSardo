@@ -1,6 +1,7 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');
 const {DatabaseSync}=require('node:sqlite');
 const reliability=require('../lib/publishing-state');
+const store=require('../lib/store');
 function database(){const sql=new DatabaseSync(':memory:');sql.exec('CREATE TABLE app_state(key TEXT PRIMARY KEY,value TEXT,updated_at TEXT)');return {prepare(query){const s=sql.prepare(query);let args=[];return {bind(...a){args=a;return this},async run(){const r=s.run(...args);return {meta:{changes:Number(r.changes)}}},async first(){return s.get(...args)||null},async all(){return {results:s.all(...args)}}}}};}
 test('concurrent saves retain both new articles and delivered channel state',async()=>{
  const db=database(),base={articles:[{id:'a',title:'old',distribution:{}}]};
@@ -14,6 +15,26 @@ test('concurrent saves retain both new articles and delivered channel state',asy
 test('concurrent same-form submissions create only one article',()=>{
  const base={articles:[]};const after={articles:[{id:'same',title:'خبر'}]};
  assert.equal(reliability.mergeChanges(base,after,after).articles.length,1);
+});
+test('concurrent monitor publications collapse to one published article identity',()=>{
+ const base={articles:[]};
+ const left={articles:[{id:'left',status:'published',slug:'same-story',imported:true,sourceFingerprint:'fingerprint-1',title:'خبر تکراری'}]};
+ const right={articles:[{id:'right',status:'published',slug:'same-story-2',imported:true,sourceFingerprint:'fingerprint-1',title:'خبر تکراری'}]};
+ const first=reliability.mergeChanges(base,left,base);
+ const actual=reliability.mergeChanges(base,right,first);
+ assert.equal(actual.articles.length,1);
+ assert.equal(actual.articles[0].sourceFingerprint,'fingerprint-1');
+});
+test('legacy published duplicates are normalized without removing unrelated drafts',()=>{
+ const db={categories:[],articles:[
+  {id:'one',status:'published',slug:'same-story',title:'خبر'},
+  {id:'two',status:'published',slug:'same-story',title:'خبر'},
+  {id:'draft',status:'draft',slug:'same-story',title:'پیش نویس'}
+ ]};
+ store.normalizeEditorialDb(db);
+ assert.equal(db.articles.length,2);
+ assert.equal(db.articles.filter(x=>x.status==='published').length,1);
+ assert.ok(db.articles.some(x=>x.id==='draft'));
 });
 test('deleting an article during delivery does not resurrect it',()=>{
  assert.deepEqual(reliability.mergeChanges({articles:[{id:'a',title:'one'}]},{articles:[{id:'a',title:'one',distribution:{telegram:{status:'sent'}}}]},{articles:[]}),{articles:[]});
