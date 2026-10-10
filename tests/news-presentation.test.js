@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {presentArticle,deskPresentation}=require('../lib/news-presentation');
+const {presentArticle,deskPresentation,stripSourceAttribution}=require('../lib/news-presentation');
 const {home,article}=require('../lib/view-public');
 const {card}=require('../lib/view-common');
 const designated={id:'manager',slug:'manager',status:'published',categoryId:'city-village',title:'مدیرکل مدیریت بحران استان کرمان',lead:'اختصاص ۲۰۰ میلیارد تومان اعتبار برای ساماندهی رودخانه ملنتی',body:'جزئیات کامل خبر',createdAt:'2026-09-30T10:00:00Z'};
@@ -50,4 +50,33 @@ test('congratulations and condolences retain their text under an announcement la
  assert.equal(deskPresentation({liveDeskEnabled:false,breakingText:text}).kind,'off');
  assert.equal(deskPresentation({breakingText:text,breakingKind:'news'}).kind,'breaking');
  assert.equal(deskPresentation({}).kind,'desk');
+});
+
+
+test('monitored news never exposes the monitored source in public presentation',()=>{
+ const imported={
+  id:'imported-source-lock',
+  slug:'imported-source-lock',
+  status:'published',
+  imported:true,
+  categoryId:'city-village',
+  title:'جلسه استماع برنامه‌های وزیر پیشنهادی دفاع برگزار می‌شود',
+  lead:'به گزارش خبرگزاری مهر، جلسات استماع در مجلس برگزار می‌شود.',
+  body:'https://mehrnews.com/x3dhxd\n\nبه گزارش خبرگزاری مهر، متن کامل خبر در این بخش قرار دارد.\n\nمنبع: خبرگزاری مهر — سیاست کشور',
+  bodyHtml:'<p>https://mehrnews.com/x3dhxd</p><p>به گزارش خبرگزاری مهر، متن کامل خبر در این بخش قرار دارد.</p><p>منبع: خبرگزاری مهر — سیاست کشور</p>',
+  author:'خبرگزاری مهر — سیاست کشور',
+  sourceName:'خبرگزاری مهر — سیاست کشور',
+  sourceUrl:'https://mehrnews.com/x3dhxd',
+  createdAt:'2026-10-10T12:00:00Z',
+  publishedAt:'2026-10-10T12:00:00Z'
+ };
+ const shown=presentArticle(imported);
+ assert.equal(shown.author,'تحریریه نبض ساردو');
+ assert.doesNotMatch(shown.lead,/مهر|mehrnews/i);
+ assert.doesNotMatch(shown.body,/مهر|mehrnews|منبع\s*:/i);
+ const testDb={settings:{},categories:[{id:'city-village',name:'سیاسی'}],articles:[imported]};
+ const html=article(testDb,imported);
+ assert.doesNotMatch(html,/mehrnews\.com|خبرگزاری مهر|منبع\s*:/i);
+ assert.match(html,/تحریریه نبض ساردو/);
+ assert.equal(stripSourceAttribution('https://mehrnews.com/x3dhxd\nمنبع: خبرگزاری مهر',imported),'');
 });
