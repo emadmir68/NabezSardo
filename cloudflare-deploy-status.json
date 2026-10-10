@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-09T08:10:56.237Z",
-  "commit": "876a2e01aa19770926b0cf45ae513b88cc7fffce",
+  "testedAt": "2026-10-10T07:42:07.393Z",
+  "commit": "9abbd86d03be6c65ea3eaa95a6a6bb3cacac93f5",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T08:10:37.257Z"
+    "time": "2026-10-10T07:41:54.686Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-09T08:10:37.537Z"
+    "time": "2026-10-10T07:41:54.958Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 70,
-    "media": 96,
+    "articles": 101,
+    "media": 144,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,11 +42,29 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": null,
-      "lastRunResult": null,
+      "lastRunAt": "2026-10-10T06:22:51.275Z",
+      "lastRunResult": {
+        "discovered": 179,
+        "queued": 12,
+        "duplicates": 0,
+        "filtered": 18,
+        "errors": 0,
+        "durationMs": 4107,
+        "stale": 0,
+        "baseline": 0,
+        "budgetSkipped": 0,
+        "detailFetches": 12,
+        "activeSources": [
+          "yjc-kerman",
+          "mehr-kerman",
+          "isna-kerman",
+          "mehr-tech",
+          "mehr-world"
+        ]
+      },
       "counts": {
-        "pending": 0,
-        "published": 4,
+        "pending": 81,
+        "published": 46,
         "duplicate": 0,
         "rejected": 63,
         "sourcesOn": 7,
@@ -59,8 +77,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-09T07:33:46.527Z",
-          "lastSuccessAt": "2026-10-09T07:33:46.764Z",
+          "lastCheckedAt": "2026-10-10T06:22:50.215Z",
+          "lastSuccessAt": "2026-10-10T06:22:51.275Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -70,9 +88,9 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-09T07:16:56.147Z",
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
+          "lastCheckedAt": "2026-10-10T06:22:49.513Z",
+          "lastSuccessAt": "2026-10-10T06:22:50.215Z",
+          "lastDiscovered": 40,
           "lastError": ""
         },
         {
@@ -81,8 +99,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-09T07:33:46.297Z",
-          "lastSuccessAt": "2026-10-09T07:33:46.527Z",
+          "lastCheckedAt": "2026-10-10T04:46:14.800Z",
+          "lastSuccessAt": "2026-10-10T04:46:15.163Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -92,8 +110,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-09T07:20:48.806Z",
-          "lastSuccessAt": "2026-10-09T07:20:49.064Z",
+          "lastCheckedAt": "2026-10-09T21:23:00.703Z",
+          "lastSuccessAt": "2026-10-09T21:23:01.719Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -103,8 +121,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-09T07:33:43.146Z",
-          "lastSuccessAt": "2026-10-09T07:33:44.690Z",
+          "lastCheckedAt": "2026-10-10T06:22:47.168Z",
+          "lastSuccessAt": "2026-10-10T06:22:48.444Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -114,9 +132,9 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-09T07:33:44.690Z",
-          "lastSuccessAt": "2026-10-09T07:33:45.470Z",
-          "lastDiscovered": 30,
+          "lastCheckedAt": "2026-10-10T06:22:48.444Z",
+          "lastSuccessAt": "2026-10-10T06:22:49.108Z",
+          "lastDiscovered": 29,
           "lastError": ""
         },
         {
@@ -147,8 +165,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-09T07:33:45.470Z",
-          "lastSuccessAt": "2026-10-09T07:33:46.297Z",
+          "lastCheckedAt": "2026-10-10T06:22:49.108Z",
+          "lastSuccessAt": "2026-10-10T06:22:49.513Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -213,7 +231,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-09T07:17:43.717Z",
+      "lastSuccessAt": "2026-10-10T06:22:59.375Z",
       "lastError": null
     },
     "backup": {
@@ -221,9 +239,9 @@
       "encrypted": true,
       "retentionDays": 30,
       "cadence": "daily",
-      "lastAt": "2026-10-09T00:50:56.777Z",
-      "object": "db-backup-2026-10-09.json.enc",
-      "bytes": 342735,
+      "lastAt": "2026-10-10T04:46:30.390Z",
+      "object": "db-backup-2026-10-10.json.enc",
+      "bytes": 3034859,
       "lastError": null,
       "weeklySite": {
         "enabled": true,
@@ -236,13 +254,13 @@
       }
     },
     "usage": {
-      "mediaObjects": 96,
-      "arvanMediaBytes": 44123928,
+      "mediaObjects": 144,
+      "arvanMediaBytes": 46579514,
       "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 0.82,
-      "d1TrackedBytesApprox": 2784405,
+      "arvanUsagePercentOfFreeTier": 0.87,
+      "d1TrackedBytesApprox": 4156007,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.53
+      "d1UsagePercentApprox": 0.79
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -250,50 +268,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000631,
-      "connect": 0.009759,
-      "ttfb": 0.064211,
-      "total": 0.072709,
-      "bytes": 78483
+      "dns": 0.001107,
+      "connect": 0.009577,
+      "ttfb": 0.390813,
+      "total": 0.396626,
+      "bytes": 75184
     },
     "archive": {
       "http": 200,
-      "dns": 0.000664,
-      "connect": 0.009326,
-      "ttfb": 0.054335,
-      "total": 0.056323,
-      "bytes": 62823
+      "dns": 0.000957,
+      "connect": 0.009947,
+      "ttfb": 0.055694,
+      "total": 0.058276,
+      "bytes": 69364
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000641,
-      "connect": 0.009788,
-      "ttfb": 0.677675,
-      "total": 0.677737,
-      "bytes": 4296
+      "dns": 0.000657,
+      "connect": 0.007958,
+      "ttfb": 0.343395,
+      "total": 0.34353,
+      "bytes": 4160
     },
     "article": {
       "http": 200,
-      "dns": 0.000647,
-      "connect": 0.011703,
-      "ttfb": 0.460109,
-      "total": 0.461577,
-      "bytes": 49076
+      "dns": 0.000816,
+      "connect": 0.018838,
+      "ttfb": 0.065451,
+      "total": 0.0666,
+      "bytes": 40456
     },
     "media": {
       "http": 200,
-      "dns": 0.000664,
-      "connect": 0.009508,
-      "ttfb": 0.054165,
-      "total": 0.063247,
-      "bytes": 103664
+      "dns": 0.00073,
+      "connect": 0.007239,
+      "ttfb": 0.078911,
+      "total": 0.080002,
+      "bytes": 63859
     },
     "health": {
       "http": 200,
-      "dns": 0.000607,
-      "connect": 0.009737,
-      "ttfb": 0.041746,
-      "total": 0.041777,
+      "dns": 0.000767,
+      "connect": 0.008226,
+      "ttfb": 0.066618,
+      "total": 0.066655,
       "bytes": 189
     }
   },
