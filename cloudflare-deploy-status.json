@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-10T07:42:07.393Z",
-  "commit": "9abbd86d03be6c65ea3eaa95a6a6bb3cacac93f5",
+  "testedAt": "2026-10-10T07:44:27.723Z",
+  "commit": "c9922d1e32d3a399a627ab32beb7b7fd2bf49a9e",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-10T07:41:54.686Z"
+    "time": "2026-10-10T07:44:13.791Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-10T07:41:54.958Z"
+    "time": "2026-10-10T07:44:14.052Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 101,
-    "media": 144,
+    "articles": 105,
+    "media": 133,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,31 +42,31 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": "2026-10-10T06:22:51.275Z",
+      "lastRunAt": "2026-10-10T07:42:12.597Z",
       "lastRunResult": {
         "discovered": 179,
-        "queued": 12,
+        "queued": 9,
         "duplicates": 0,
-        "filtered": 18,
+        "filtered": 17,
         "errors": 0,
-        "durationMs": 4107,
-        "stale": 0,
+        "durationMs": 4770,
+        "stale": 1,
         "baseline": 0,
         "budgetSkipped": 0,
-        "detailFetches": 12,
+        "detailFetches": 10,
         "activeSources": [
           "yjc-kerman",
           "mehr-kerman",
           "isna-kerman",
-          "mehr-tech",
+          "mehr-politics",
           "mehr-world"
         ]
       },
       "counts": {
-        "pending": 81,
-        "published": 46,
+        "pending": 86,
+        "published": 47,
         "duplicate": 0,
-        "rejected": 63,
+        "rejected": 27,
         "sourcesOn": 7,
         "sources": 13
       },
@@ -77,8 +77,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-10T06:22:50.215Z",
-          "lastSuccessAt": "2026-10-10T06:22:51.275Z",
+          "lastCheckedAt": "2026-10-10T07:42:11.870Z",
+          "lastSuccessAt": "2026-10-10T07:42:12.597Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -110,8 +110,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-09T21:23:00.703Z",
-          "lastSuccessAt": "2026-10-09T21:23:01.719Z",
+          "lastCheckedAt": "2026-10-10T07:42:10.358Z",
+          "lastSuccessAt": "2026-10-10T07:42:11.870Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -121,8 +121,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-10T06:22:47.168Z",
-          "lastSuccessAt": "2026-10-10T06:22:48.444Z",
+          "lastCheckedAt": "2026-10-10T07:42:07.827Z",
+          "lastSuccessAt": "2026-10-10T07:42:09.292Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -132,8 +132,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-10T06:22:48.444Z",
-          "lastSuccessAt": "2026-10-10T06:22:49.108Z",
+          "lastCheckedAt": "2026-10-10T07:42:09.292Z",
+          "lastSuccessAt": "2026-10-10T07:42:09.817Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -165,8 +165,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-10T06:22:49.108Z",
-          "lastSuccessAt": "2026-10-10T06:22:49.513Z",
+          "lastCheckedAt": "2026-10-10T07:42:09.817Z",
+          "lastSuccessAt": "2026-10-10T07:42:10.358Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -231,7 +231,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-10T06:22:59.375Z",
+      "lastSuccessAt": "2026-10-10T07:42:19.583Z",
       "lastError": null
     },
     "backup": {
@@ -254,13 +254,13 @@
       }
     },
     "usage": {
-      "mediaObjects": 144,
-      "arvanMediaBytes": 46579514,
+      "mediaObjects": 133,
+      "arvanMediaBytes": 45987442,
       "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 0.87,
-      "d1TrackedBytesApprox": 4156007,
+      "arvanUsagePercentOfFreeTier": 0.86,
+      "d1TrackedBytesApprox": 3869173,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.79
+      "d1UsagePercentApprox": 0.74
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -268,50 +268,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.001107,
-      "connect": 0.009577,
-      "ttfb": 0.390813,
-      "total": 0.396626,
-      "bytes": 75184
+      "dns": 0.000722,
+      "connect": 0.006932,
+      "ttfb": 0.271003,
+      "total": 0.276801,
+      "bytes": 78301
     },
     "archive": {
       "http": 200,
-      "dns": 0.000957,
-      "connect": 0.009947,
-      "ttfb": 0.055694,
-      "total": 0.058276,
-      "bytes": 69364
+      "dns": 0.00055,
+      "connect": 0.008387,
+      "ttfb": 0.069074,
+      "total": 0.071711,
+      "bytes": 69543
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000657,
-      "connect": 0.007958,
-      "ttfb": 0.343395,
-      "total": 0.34353,
+      "dns": 0.000457,
+      "connect": 0.00785,
+      "ttfb": 0.428516,
+      "total": 0.428541,
       "bytes": 4160
     },
     "article": {
       "http": 200,
-      "dns": 0.000816,
-      "connect": 0.018838,
-      "ttfb": 0.065451,
-      "total": 0.0666,
-      "bytes": 40456
+      "dns": 0.000566,
+      "connect": 0.008266,
+      "ttfb": 0.330467,
+      "total": 0.332284,
+      "bytes": 55412
     },
     "media": {
       "http": 200,
-      "dns": 0.00073,
-      "connect": 0.007239,
-      "ttfb": 0.078911,
-      "total": 0.080002,
-      "bytes": 63859
+      "dns": 0.000462,
+      "connect": 0.006414,
+      "ttfb": 0.050127,
+      "total": 0.051426,
+      "bytes": 51212
     },
     "health": {
       "http": 200,
-      "dns": 0.000767,
-      "connect": 0.008226,
-      "ttfb": 0.066618,
-      "total": 0.066655,
+      "dns": 0.000392,
+      "connect": 0.007136,
+      "ttfb": 0.040398,
+      "total": 0.040417,
       "bytes": 189
     }
   },
