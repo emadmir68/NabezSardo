@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-10T07:48:19.127Z",
-  "commit": "9f4b3e6278e1fdaafe40ef6bdc3422a2636be9bf",
+  "testedAt": "2026-10-10T16:04:55.418Z",
+  "commit": "5388a832ffb14dd77f6a8b2896b3a286f81d2858",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-10T07:47:47.882Z"
+    "time": "2026-10-10T16:04:29.628Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-10T07:47:48.246Z"
+    "time": "2026-10-10T16:04:29.891Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 105,
-    "media": 134,
+    "articles": 121,
+    "media": 163,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,31 +42,31 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": "2026-10-10T07:42:12.597Z",
+      "lastRunAt": "2026-10-10T15:55:28.590Z",
       "lastRunResult": {
         "discovered": 179,
-        "queued": 9,
+        "queued": 1,
         "duplicates": 0,
-        "filtered": 17,
+        "filtered": 10,
         "errors": 0,
-        "durationMs": 4770,
-        "stale": 1,
+        "durationMs": 6035,
+        "stale": 0,
         "baseline": 0,
         "budgetSkipped": 0,
-        "detailFetches": 10,
+        "detailFetches": 1,
         "activeSources": [
           "yjc-kerman",
           "mehr-kerman",
           "isna-kerman",
-          "mehr-politics",
+          "mehr-society",
           "mehr-world"
         ]
       },
       "counts": {
-        "pending": 86,
-        "published": 47,
+        "pending": 120,
+        "published": 41,
         "duplicate": 0,
-        "rejected": 27,
+        "rejected": 0,
         "sourcesOn": 7,
         "sources": 13
       },
@@ -77,8 +77,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-10T07:42:11.870Z",
-          "lastSuccessAt": "2026-10-10T07:42:12.597Z",
+          "lastCheckedAt": "2026-10-10T15:55:27.961Z",
+          "lastSuccessAt": "2026-10-10T15:55:28.590Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -88,8 +88,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-10T06:22:49.513Z",
-          "lastSuccessAt": "2026-10-10T06:22:50.215Z",
+          "lastCheckedAt": "2026-10-10T15:16:34.991Z",
+          "lastSuccessAt": "2026-10-10T15:16:35.389Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -99,8 +99,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-10T04:46:14.800Z",
-          "lastSuccessAt": "2026-10-10T04:46:15.163Z",
+          "lastCheckedAt": "2026-10-10T15:55:27.642Z",
+          "lastSuccessAt": "2026-10-10T15:55:27.961Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -110,8 +110,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-10T07:42:10.358Z",
-          "lastSuccessAt": "2026-10-10T07:42:11.870Z",
+          "lastCheckedAt": "2026-10-10T15:34:02.417Z",
+          "lastSuccessAt": "2026-10-10T15:34:03.095Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -121,8 +121,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-10T07:42:07.827Z",
-          "lastSuccessAt": "2026-10-10T07:42:09.292Z",
+          "lastCheckedAt": "2026-10-10T15:55:22.555Z",
+          "lastSuccessAt": "2026-10-10T15:55:24.936Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -132,8 +132,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-10T07:42:09.292Z",
-          "lastSuccessAt": "2026-10-10T07:42:09.817Z",
+          "lastCheckedAt": "2026-10-10T15:55:24.936Z",
+          "lastSuccessAt": "2026-10-10T15:55:26.283Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -165,8 +165,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-10T07:42:09.817Z",
-          "lastSuccessAt": "2026-10-10T07:42:10.358Z",
+          "lastCheckedAt": "2026-10-10T15:55:26.283Z",
+          "lastSuccessAt": "2026-10-10T15:55:27.642Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -231,7 +231,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-10T07:47:51.771Z",
+      "lastSuccessAt": "2026-10-10T15:34:17.148Z",
       "lastError": null
     },
     "backup": {
@@ -254,13 +254,13 @@
       }
     },
     "usage": {
-      "mediaObjects": 134,
-      "arvanMediaBytes": 46100009,
+      "mediaObjects": 163,
+      "arvanMediaBytes": 47559150,
       "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 0.86,
-      "d1TrackedBytesApprox": 3869237,
+      "arvanUsagePercentOfFreeTier": 0.89,
+      "d1TrackedBytesApprox": 4169211,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.74
+      "d1UsagePercentApprox": 0.8
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -268,50 +268,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000559,
-      "connect": 0.011648,
-      "ttfb": 0.634098,
-      "total": 0.642773,
-      "bytes": 78437
+      "dns": 0.000634,
+      "connect": 0.01596,
+      "ttfb": 0.344403,
+      "total": 0.356041,
+      "bytes": 76292
     },
     "archive": {
       "http": 200,
-      "dns": 0.000467,
-      "connect": 0.01153,
-      "ttfb": 0.654092,
-      "total": 0.656772,
-      "bytes": 69587
+      "dns": 0.000592,
+      "connect": 0.014389,
+      "ttfb": 0.338169,
+      "total": 0.342884,
+      "bytes": 70830
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000399,
-      "connect": 0.013148,
-      "ttfb": 0.723828,
-      "total": 0.723893,
+      "dns": 0.000617,
+      "connect": 0.011493,
+      "ttfb": 0.644702,
+      "total": 0.644761,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000421,
-      "connect": 0.010229,
-      "ttfb": 0.657504,
-      "total": 0.659635,
-      "bytes": 55674
+      "dns": 0.000606,
+      "connect": 0.014204,
+      "ttfb": 1.380567,
+      "total": 1.382553,
+      "bytes": 42199
     },
     "media": {
       "http": 200,
-      "dns": 0.000453,
-      "connect": 0.011028,
-      "ttfb": 0.055538,
-      "total": 0.05774,
-      "bytes": 51212
+      "dns": 0.000634,
+      "connect": 0.016623,
+      "ttfb": 0.128326,
+      "total": 0.129533,
+      "bytes": 20553
     },
     "health": {
       "http": 200,
-      "dns": 0.000412,
-      "connect": 0.011079,
-      "ttfb": 0.051962,
-      "total": 0.051983,
+      "dns": 0.000634,
+      "connect": 0.011161,
+      "ttfb": 0.056399,
+      "total": 0.056455,
       "bytes": 189
     }
   },
