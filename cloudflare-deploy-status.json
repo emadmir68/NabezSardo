@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-10T16:04:55.418Z",
-  "commit": "5388a832ffb14dd77f6a8b2896b3a286f81d2858",
+  "testedAt": "2026-10-10T16:08:57.167Z",
+  "commit": "01a3ed823657dd5857162c0263cc60aaa6a19e1d",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-10T16:04:29.628Z"
+    "time": "2026-10-10T16:08:28.686Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-10T16:04:29.891Z"
+    "time": "2026-10-10T16:08:29.079Z"
   },
   "cutover": {
     "ok": true,
@@ -268,50 +268,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000634,
-      "connect": 0.01596,
-      "ttfb": 0.344403,
-      "total": 0.356041,
+      "dns": 0.00083,
+      "connect": 0.019909,
+      "ttfb": 0.450325,
+      "total": 0.468882,
       "bytes": 76292
     },
     "archive": {
       "http": 200,
-      "dns": 0.000592,
-      "connect": 0.014389,
-      "ttfb": 0.338169,
-      "total": 0.342884,
-      "bytes": 70830
+      "dns": 0.000766,
+      "connect": 0.018894,
+      "ttfb": 1.142284,
+      "total": 1.14773,
+      "bytes": 70738
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000617,
-      "connect": 0.011493,
-      "ttfb": 0.644702,
-      "total": 0.644761,
+      "dns": 0.000826,
+      "connect": 0.018892,
+      "ttfb": 0.825566,
+      "total": 0.825626,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000606,
-      "connect": 0.014204,
-      "ttfb": 1.380567,
-      "total": 1.382553,
+      "dns": 0.000858,
+      "connect": 0.018721,
+      "ttfb": 0.332264,
+      "total": 0.335059,
       "bytes": 42199
     },
     "media": {
       "http": 200,
-      "dns": 0.000634,
-      "connect": 0.016623,
-      "ttfb": 0.128326,
-      "total": 0.129533,
+      "dns": 0.000849,
+      "connect": 0.018741,
+      "ttfb": 0.109291,
+      "total": 0.110598,
       "bytes": 20553
     },
     "health": {
       "http": 200,
-      "dns": 0.000634,
-      "connect": 0.011161,
-      "ttfb": 0.056399,
-      "total": 0.056455,
+      "dns": 0.00081,
+      "connect": 0.018986,
+      "ttfb": 0.080589,
+      "total": 0.080635,
       "bytes": 189
     }
   },
