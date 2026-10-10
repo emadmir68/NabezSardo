@@ -18,12 +18,12 @@ test('concurrent same-form submissions create only one article',()=>{
 });
 test('concurrent monitor publications collapse to one published article identity',()=>{
  const base={articles:[]};
- const left={articles:[{id:'left',status:'published',slug:'same-story',imported:true,sourceFingerprint:'fingerprint-1',title:'خبر تکراری'}]};
- const right={articles:[{id:'right',status:'published',slug:'same-story-2',imported:true,sourceFingerprint:'fingerprint-1',title:'خبر تکراری'}]};
+ const left={articles:[{id:'left',status:'published',slug:'same-story',imported:true,sourceFingerprint:'fingerprint-1',title:'خبر تکراری',lead:'لید یکسان خبر'}]};
+ const right={articles:[{id:'right',status:'published',slug:'same-story-2',imported:true,sourceFingerprint:'fingerprint-2',title:'خبر تکراری',lead:'لید یکسان خبر'}]};
  const first=reliability.mergeChanges(base,left,base);
  const actual=reliability.mergeChanges(base,right,first);
  assert.equal(actual.articles.length,1);
- assert.equal(actual.articles[0].sourceFingerprint,'fingerprint-1');
+ assert.equal(actual.articles[0].title,'خبر تکراری');
 });
 test('legacy published duplicates are normalized without removing unrelated drafts',()=>{
  const db={categories:[],articles:[
