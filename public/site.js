@@ -114,7 +114,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     const shareBtn=articleRoot.querySelector('[data-article-share]');
     const shareImageBtn=articleRoot.querySelector('[data-article-share-image]');
-    const instagramPostBtn=articleRoot.querySelector('[data-article-instagram-post]');
     const shareVideoBtn=articleRoot.querySelector('[data-article-share-video]');
     const copyBtn=articleRoot.querySelector('[data-article-copy]');
     const copyMessageBtn=articleRoot.querySelector('[data-article-copy-message]');
