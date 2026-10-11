@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-11T13:21:10.366Z",
-  "commit": "0b182750103720cbc7ac8b898c922c3e770b30ad",
+  "testedAt": "2026-10-11T13:23:31.670Z",
+  "commit": "0b36a72701f71b8278d4c65115f6cec3109e5349",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:20:43.366Z"
+    "time": "2026-10-11T13:23:00.869Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:20:43.646Z"
+    "time": "2026-10-11T13:23:01.292Z"
   },
   "cutover": {
     "ok": true,
@@ -30,7 +30,7 @@
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
     "articles": 154,
-    "media": 211,
+    "media": 209,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,24 +42,24 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": "2026-10-11T13:09:08.982Z",
+      "lastRunAt": "2026-10-11T13:23:10.319Z",
       "lastRunResult": {
         "discovered": 198,
         "queued": 2,
         "duplicates": 0,
         "filtered": 9,
         "errors": 0,
-        "durationMs": 10295,
-        "stale": 0,
+        "durationMs": 10399,
+        "stale": 1,
         "baseline": 0,
         "budgetSkipped": 0,
-        "detailFetches": 2,
+        "detailFetches": 3,
         "activeSources": [
           "telegram-konarsandal",
           "yjc-kerman",
           "mehr-kerman",
           "isna-kerman",
-          "mehr-society",
+          "mehr-tech",
           "mehr-world"
         ]
       },
@@ -78,8 +78,8 @@
           "enabled": true,
           "type": "telegram",
           "scope": "jiroft",
-          "lastCheckedAt": "2026-10-11T13:08:58.687Z",
-          "lastSuccessAt": "2026-10-11T13:09:00.297Z",
+          "lastCheckedAt": "2026-10-11T13:22:59.920Z",
+          "lastSuccessAt": "2026-10-11T13:23:00.740Z",
           "lastDiscovered": 19,
           "lastError": ""
         },
@@ -89,8 +89,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-11T13:09:07.193Z",
-          "lastSuccessAt": "2026-10-11T13:09:08.982Z",
+          "lastCheckedAt": "2026-10-11T13:23:08.985Z",
+          "lastSuccessAt": "2026-10-11T13:23:10.319Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -100,8 +100,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-11T12:43:07.808Z",
-          "lastSuccessAt": "2026-10-11T12:43:09.629Z",
+          "lastCheckedAt": "2026-10-11T13:23:07.177Z",
+          "lastSuccessAt": "2026-10-11T13:23:08.985Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -133,8 +133,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T13:09:00.297Z",
-          "lastSuccessAt": "2026-10-11T13:09:03.050Z",
+          "lastCheckedAt": "2026-10-11T13:23:00.740Z",
+          "lastSuccessAt": "2026-10-11T13:23:03.718Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -144,8 +144,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T13:09:03.050Z",
-          "lastSuccessAt": "2026-10-11T13:09:04.773Z",
+          "lastCheckedAt": "2026-10-11T13:23:03.718Z",
+          "lastSuccessAt": "2026-10-11T13:23:05.459Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -177,8 +177,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-11T13:09:04.773Z",
-          "lastSuccessAt": "2026-10-11T13:09:06.348Z",
+          "lastCheckedAt": "2026-10-11T13:23:05.459Z",
+          "lastSuccessAt": "2026-10-11T13:23:07.177Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -266,11 +266,11 @@
       }
     },
     "usage": {
-      "mediaObjects": 211,
-      "arvanMediaBytes": 68741498,
+      "mediaObjects": 209,
+      "arvanMediaBytes": 68636343,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 1.28,
-      "d1TrackedBytesApprox": 4200248,
+      "d1TrackedBytesApprox": 4193407,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.8
     },
@@ -280,50 +280,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000584,
-      "connect": 0.009859,
-      "ttfb": 0.722411,
-      "total": 0.731462,
-      "bytes": 98250
+      "dns": 0.000746,
+      "connect": 0.002527,
+      "ttfb": 0.4593,
+      "total": 0.460629,
+      "bytes": 98525
     },
     "archive": {
       "http": 200,
-      "dns": 0.000647,
-      "connect": 0.00963,
-      "ttfb": 0.696434,
-      "total": 0.705238,
+      "dns": 0.000748,
+      "connect": 0.002646,
+      "ttfb": 0.96682,
+      "total": 0.968106,
       "bytes": 89889
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000683,
-      "connect": 0.009559,
-      "ttfb": 0.757837,
-      "total": 0.757891,
+      "dns": 0.000887,
+      "connect": 0.00305,
+      "ttfb": 0.685118,
+      "total": 0.685177,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000666,
-      "connect": 0.010404,
-      "ttfb": 0.36367,
-      "total": 0.36506,
+      "dns": 0.000705,
+      "connect": 0.005739,
+      "ttfb": 0.937405,
+      "total": 0.938306,
       "bytes": 49146
     },
     "media": {
       "http": 200,
-      "dns": 0.000654,
-      "connect": 0.009513,
-      "ttfb": 0.181377,
-      "total": 0.182659,
+      "dns": 0.000718,
+      "connect": 0.003046,
+      "ttfb": 0.054543,
+      "total": 0.055041,
       "bytes": 51516
     },
     "health": {
       "http": 200,
-      "dns": 0.00067,
-      "connect": 0.009685,
-      "ttfb": 0.051336,
-      "total": 0.051401,
+      "dns": 0.000735,
+      "connect": 0.002616,
+      "ttfb": 0.038237,
+      "total": 0.038282,
       "bytes": 189
     }
   },
