@@ -14,6 +14,18 @@ const rows=monitor.parseListHtml(listing,'https://example.com/');
 assert.strictEqual(rows.length,1);
 assert.ok(rows[0].url.includes('/news/123456/jiroft'));
 
+const telegramHtml='<div class="tgme_widget_message_wrap"><div class="tgme_widget_message text_not_supported_wrap js-widget_message" data-post="konarsandal/150001"><a class="tgme_widget_message_photo_wrap" style="background-image:url(\'https://cdn.example.com/news.jpg\')"></a><div class="tgme_widget_message_text js-message_text" dir="auto">⭕️فرماندار جیرفت از اجرای طرح جدید آب‌رسانی خبر داد<br>این طرح برای روستاهای جنوب کرمان اجرا می‌شود و عملیات آن از هفته آینده آغاز خواهد شد.<br>@konarsandal</div><time datetime="2026-10-11T11:30:00+00:00"></time></div></div><div class="tgme_widget_message_wrap"><div class="tgme_widget_message text_not_supported_wrap js-widget_message" data-post="konarsandal/150002"><div class="tgme_widget_message_text js-message_text" dir="auto">⭕️ افتتاحیه فروشگاه نمونه با ۲۰ درصد تخفیف<br>آدرس: جیرفت خیابان نمونه<br>تماس: 09131234567<br>@konarsandal</div><time datetime="2026-10-11T11:31:00+00:00"></time></div></div>';
+const telegramRows=monitor.parseTelegramPage(telegramHtml,'https://t.me/s/konarsandal');
+assert.strictEqual(telegramRows.length,1);
+assert.strictEqual(telegramRows[0].url,'https://t.me/konarsandal/150001');
+assert.ok(telegramRows[0].title.includes('فرماندار جیرفت'));
+assert.ok(telegramRows[0].description.includes('جنوب کرمان'));
+assert.ok(!telegramRows[0].description.includes('@konarsandal'));
+assert.strictEqual(telegramRows[0].imageUrl,'https://cdn.example.com/news.jpg');
+assert.strictEqual(telegramRows[0].publishedAt,'2026-10-11T11:30:00+00:00');
+assert.strictEqual(monitor.telegramLooksLikeAd('فروشگاه نمونه آدرس: جیرفت تماس: 09131234567'),true);
+assert.strictEqual(monitor.telegramLooksLikeAd('فرماندار جیرفت از افتتاح پروژه آب‌رسانی خبر داد'),false);
+
 const article='<!doctype html><html><head><meta property="og:title" content="بارش در جیرفت"><meta property="og:image" content="/img/a.jpg"><meta property="article:published_time" content="2026-10-09T08:00:00+03:30"></head><body><article><h1>بارش در جیرفت</h1><p>هواشناسی از آغاز بارش در شهرستان جیرفت خبر داد و از شهروندان خواست نکات ایمنی را رعایت کنند.</p><p>این سامانه بارشی تا پایان روز در جنوب استان کرمان فعال خواهد بود و احتمال آبگرفتگی وجود دارد.</p></article></body></html>';
 const parsed=monitor.extractArticle(article,'https://example.com/news/123',{});
 assert.strictEqual(parsed.title,'بارش در جیرفت');
@@ -63,6 +75,17 @@ const mixMonitor={
     {id:'w1q',status:'pending',sourceId:'w1',publishedAt:'2026-10-09T09:56:00Z'}
   ]
 };
+const reviewGateMonitor={
+  settings:{maxPerHour:4},
+  mixCursor:0,
+  sources:[{id:'tg',scope:'jiroft',topic:'local'},{id:'k1',scope:'kerman',topic:'local'}],
+  queue:[
+    {id:'telegram-review',status:'pending',sourceId:'tg',manualReviewRequired:true,publishedAt:'2026-10-11T10:00:00Z'},
+    {id:'regular-local',status:'pending',sourceId:'k1',publishedAt:'2026-10-11T09:59:00Z'}
+  ]
+};
+assert.deepStrictEqual(monitor.selectPublishIds({articles:[]},reviewGateMonitor,1),['regular-local']);
+
 const mixIds=monitor.selectPublishIds({articles:[]},mixMonitor,4);
 assert.strictEqual(mixIds.length,4);
 assert.ok(mixIds.includes('l1')&&mixIds.includes('l2'));
