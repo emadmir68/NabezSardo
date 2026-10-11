@@ -962,3 +962,36 @@ input[type="file"]{overflow:hidden}
   .adminbar{padding-inline:7px!important}
   .gallery-list{grid-template-columns:1fr!important}
 }
+
+
+/* News monitor mobile checkbox/radio width repair */
+@media(max-width:760px){
+  .admin-dashboard-content .form input[type="checkbox"],
+  .admin-dashboard-content .form input[type="radio"],
+  .admin-dashboard-content .live-desk-toggle input[type="checkbox"],
+  .admin-dashboard-content .live-desk-toggle input[type="radio"]{
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    flex:0 0 18px!important;
+    margin:2px 0 0!important;
+    padding:0!important;
+  }
+  .admin-dashboard-content .live-desk-toggle{
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:flex-start!important;
+    gap:11px!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  .admin-dashboard-content .live-desk-toggle>span{
+    flex:1 1 auto!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    text-align:right!important;
+    direction:rtl!important;
+  }
+}
