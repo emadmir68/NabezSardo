@@ -193,6 +193,8 @@ jobs:
 
           curl -A "$META_UA" -fsS --retry 5 --retry-delay 3 "$SITE$short_path" -o /tmp/short-article.html
           grep -q 'data-article-root' /tmp/short-article.html
+          grep -q 'data-article-instagram-post' /tmp/short-article.html
+          grep -q '/assets/instagram-post.js' /tmp/short-article.html
           grep -Fq "data-article-url=\"$short_path\"" /tmp/short-article.html
           grep -q 'property="og:type" content="article"' /tmp/short-article.html
           grep -q 'property="og:title" content="[^"]\+"' /tmp/short-article.html
