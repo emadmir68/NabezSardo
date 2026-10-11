@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {presentArticle,deskPresentation,stripSourceAttribution}=require('../lib/news-presentation');
+const {presentArticle,deskPresentation,stripSourceAttribution,cleanImportedTypography}=require('../lib/news-presentation');
 const {home,article}=require('../lib/view-public');
 const {card}=require('../lib/view-common');
 const designated={id:'manager',slug:'manager',status:'published',categoryId:'city-village',title:'مدیرکل مدیریت بحران استان کرمان',lead:'اختصاص ۲۰۰ میلیارد تومان اعتبار برای ساماندهی رودخانه ملنتی',body:'جزئیات کامل خبر',createdAt:'2026-09-30T10:00:00Z'};
@@ -52,6 +52,33 @@ test('congratulations and condolences retain their text under an announcement la
  assert.equal(deskPresentation({}).kind,'desk');
 });
 
+
+test('monitored Persian text is normalized and decorative Telegram bullets become paragraphs',()=>{
+ const imported={
+  id:'telegram-clean',
+  slug:'telegram-clean',
+  status:'published',
+  imported:true,
+  categoryId:'social',
+  title:'داستان جیرفت: کشتوصنعت با سرمایه‌گذاری در مسئولیت های اجتماعی، از ورزش و اشتغال تا توسعه صنایع تبدیلی نقش آفرینی کند',
+  lead:'',
+  body:'⭕ داستان جیرفت: کشتوصنعت با سرمایه‌گذاری در مسئولیت های اجتماعی، از ورزش و اشتغال تا توسعه صنایع تبدیلی نقش آفرینی کند 🔷 در دیدار مهندس بینا، مدیرعامل کشتوصنعت، به همراه اعضای هیئت مدیره با حسن صابر، ظرفیت‌های همکاری بررسی شد. 🔷 حسن صابر بر به روز شدن فعالیت‌های اقتصادی و سرمایه‌گذاری در مسئولیت های اجتماعی تاکید کرد.',
+  bodyHtml:'',
+  sourceName:'تلگرام — کانال خبری کنارصندل',
+  createdAt:'2026-10-11T12:00:00Z'
+ };
+ const shown=presentArticle(imported);
+ assert.match(shown.title,/کشت و صنعت/);
+ assert.match(shown.title,/مسئولیت‌های اجتماعی/);
+ assert.match(shown.title,/نقش‌آفرینی/);
+ assert.doesNotMatch(shown.body,/⭕|🔷/u);
+ assert.doesNotMatch(shown.body,/^داستان جیرفت:/);
+ assert.match(shown.body,/هیئت‌مدیره/);
+ assert.match(shown.body,/به‌روز/);
+ assert.match(shown.bodyHtml,/<p>در دیدار/);
+ assert.ok((shown.bodyHtml.match(/<p>/g)||[]).length>=2);
+ assert.equal(cleanImportedTypography('کشتوصنعت و مسئولیت های اجتماعی'),'کشت و صنعت و مسئولیت‌های اجتماعی');
+});
 
 test('monitored news never exposes the monitored source in public presentation',()=>{
  const imported={
