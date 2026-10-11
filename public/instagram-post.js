@@ -9,6 +9,8 @@ const lead=clean(root.dataset.articleLead||'');
 const bodyEl=$('.article-body .lang-fa');
 const fullBody=clean(bodyEl?(bodyEl.innerText||bodyEl.textContent||''):'')||lead;
 const imgUrl=root.dataset.articleImage?new URL(root.dataset.articleImage,location.origin).href:'';
+const videoUrl=root.dataset.articleVideo?new URL(root.dataset.articleVideo,location.origin).href:'';
+const videoType=root.dataset.articleVideoType||'video/mp4';
 const kind=root.dataset.articleImageKind||'none';
 const catId=root.dataset.articleCategoryId||'';
 const url=new URL(root.dataset.articleUrl||location.pathname,location.origin).href;
@@ -45,6 +47,16 @@ const download=file=>{
   const u=URL.createObjectURL(file),a=document.createElement('a');
   a.href=u;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(u),1800);
+};
+const videoExt=type=>/webm/i.test(type)?'webm':/quicktime|mov/i.test(type)?'mov':'mp4';
+const loadVideoFile=async()=>{
+  if(!videoUrl)return null;
+  const r=await fetch(videoUrl,{credentials:'same-origin',cache:'no-store'});
+  if(!r.ok)throw new Error('video-fetch-'+r.status);
+  const b=await r.blob();
+  const type=b.type&&/^video\//i.test(b.type)?b.type:(videoType||'video/mp4');
+  if(!/^video\//i.test(type))throw new Error('invalid-video-type');
+  return new File([b],'nabez-sardo-video.'+videoExt(type),{type});
 };
 const cover=(c,bm,x,y,w,h)=>{
   const s=Math.max(w/bm.width,h/bm.height),sw=w/s,sh=h/s;
@@ -118,11 +130,12 @@ async function make(){
   c.fillStyle=cg;rr(c,46,54,cw,62,20);c.fill();
   c.textAlign='center';c.fillStyle='#36101e';c.fillText(cat,46+cw/2,86);
 
-  c.fillStyle='rgba(70,10,31,.92)';rr(c,718,46,316,90,25);c.fill();
-  c.strokeStyle='rgba(240,204,126,.58)';c.lineWidth=1.6;rr(c,718,46,316,90,25);c.stroke();
-  c.textAlign='right';c.fillStyle='#fff9ef';c.font='900 35px Vazirmatn,Arial';c.fillText('نبض ساردو',975,82);
+  c.fillStyle='rgba(70,10,31,.92)';rr(c,698,50,336,88,25);c.fill();
+  c.strokeStyle='rgba(240,204,126,.58)';c.lineWidth=1.6;rr(c,698,50,336,88,25);c.stroke();
+  c.strokeStyle='rgba(240,204,126,.28)';c.lineWidth=1.2;c.beginPath();c.moveTo(830,68);c.lineTo(830,119);c.stroke();
   c.strokeStyle='#e6bb67';c.lineWidth=3;c.lineCap='round';c.lineJoin='round';
-  c.beginPath();c.moveTo(748,90);c.lineTo(770,90);c.lineTo(780,75);c.lineTo(793,106);c.lineTo(807,67);c.lineTo(821,103);c.lineTo(835,83);c.lineTo(849,90);c.stroke();
+  c.beginPath();c.moveTo(720,94);c.lineTo(738,94);c.lineTo(747,80);c.lineTo(758,106);c.lineTo(771,72);c.lineTo(783,104);c.lineTo(795,86);c.lineTo(810,94);c.stroke();
+  c.textAlign='right';c.fillStyle='#fff9ef';c.font='900 32px Vazirmatn,Arial';c.fillText('نبض ساردو',1002,94);
 
   c.textBaseline='top';c.textAlign='right';c.direction='rtl';
   c.fillStyle='#efd19a';c.font='700 22px Vazirmatn,Arial';
@@ -176,13 +189,39 @@ btn.disabled=true;set('در حال آماده‌سازی پست…');
 make().then(f=>{file=f;btn.disabled=!f;set('پست اینستاگرام')}).catch(()=>{btn.disabled=false;set('پست اینستاگرام')});
 
 btn.addEventListener('click',async()=>{
+  const copied=await copyText(caption);
+
+  if(videoUrl){
+    try{
+      set(copied?'متن خبر کپی شد • آماده‌سازی ویدئو…':'در حال آماده‌سازی ویدئو…');
+      const videoFile=await loadVideoFile();
+      if(videoFile&&navigator.share&&(!navigator.canShare||navigator.canShare({files:[videoFile]}))){
+        set(copied?'ویدئو آماده شد • متن خبر کپی شد':'ویدئو آماده شد');
+        await navigator.share({files:[videoFile],title});
+        reset();
+        return;
+      }
+      if(videoFile&&!navigator.share){
+        download(videoFile);
+        set(copied?'ویدئو ذخیره شد • متن خبر کپی شد':'ویدئو ذخیره شد');
+        reset();
+        return;
+      }
+    }catch(err){
+      if(err?.name==='AbortError'){
+        if(copied)set('متن خبر کپی شد');
+        reset();
+        return;
+      }
+      set('ارسال ویدئو مستقیم نشد • ساخت کارت…');
+    }
+  }
+
   if(!file)file=await make();
   if(!file){set('خطا در ساخت پست');reset();return;}
 
-  const copied=await copyText(caption);
   set(copied?'متن خبر کپی شد • انتخاب اینستاگرام':'پست آماده است');
   const share={files:[file],text:caption,title};
-
   try{
     if(navigator.share&&(!navigator.canShare||navigator.canShare(share))){
       await navigator.share(share);
