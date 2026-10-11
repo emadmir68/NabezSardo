@@ -86,6 +86,17 @@ const reviewGateMonitor={
 };
 assert.deepStrictEqual(monitor.selectPublishIds({articles:[]},reviewGateMonitor,1),['regular-local']);
 
+const approvedTelegramMonitor={
+  settings:{maxPerHour:4},
+  mixCursor:0,
+  sources:[{id:'tg',scope:'jiroft',topic:'local'},{id:'k1',scope:'kerman',topic:'local'}],
+  queue:[
+    {id:'telegram-approved',status:'pending',sourceId:'tg',manualReviewRequired:false,telegramBatchApproved:true,publishedAt:'2026-10-11T09:50:00Z'},
+    {id:'regular-newer',status:'pending',sourceId:'k1',publishedAt:'2026-10-11T10:00:00Z'}
+  ]
+};
+assert.deepStrictEqual(monitor.selectPublishIds({articles:[]},approvedTelegramMonitor,1),['telegram-approved']);
+
 const mixIds=monitor.selectPublishIds({articles:[]},mixMonitor,4);
 assert.strictEqual(mixIds.length,4);
 assert.ok(mixIds.includes('l1')&&mixIds.includes('l2'));
