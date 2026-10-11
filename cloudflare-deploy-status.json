@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-11T13:23:31.670Z",
-  "commit": "0b36a72701f71b8278d4c65115f6cec3109e5349",
+  "testedAt": "2026-10-11T13:31:34.752Z",
+  "commit": "bcd85009819816c3d79f2a4ac6fd5a8ffac72c53",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:23:00.869Z"
+    "time": "2026-10-11T13:31:06.528Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:23:01.292Z"
+    "time": "2026-10-11T13:31:06.889Z"
   },
   "cutover": {
     "ok": true,
@@ -42,27 +42,8 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": "2026-10-11T13:23:10.319Z",
-      "lastRunResult": {
-        "discovered": 198,
-        "queued": 2,
-        "duplicates": 0,
-        "filtered": 9,
-        "errors": 0,
-        "durationMs": 10399,
-        "stale": 1,
-        "baseline": 0,
-        "budgetSkipped": 0,
-        "detailFetches": 3,
-        "activeSources": [
-          "telegram-konarsandal",
-          "yjc-kerman",
-          "mehr-kerman",
-          "isna-kerman",
-          "mehr-tech",
-          "mehr-world"
-        ]
-      },
+      "lastRunAt": null,
+      "lastRunResult": null,
       "counts": {
         "pending": 103,
         "published": 54,
@@ -280,50 +261,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000746,
-      "connect": 0.002527,
-      "ttfb": 0.4593,
-      "total": 0.460629,
+      "dns": 0.000758,
+      "connect": 0.002694,
+      "ttfb": 0.733037,
+      "total": 0.734332,
       "bytes": 98525
     },
     "archive": {
       "http": 200,
-      "dns": 0.000748,
-      "connect": 0.002646,
-      "ttfb": 0.96682,
-      "total": 0.968106,
+      "dns": 0.00079,
+      "connect": 0.00249,
+      "ttfb": 0.399366,
+      "total": 0.400559,
       "bytes": 89889
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000887,
-      "connect": 0.00305,
-      "ttfb": 0.685118,
-      "total": 0.685177,
+      "dns": 0.000811,
+      "connect": 0.002633,
+      "ttfb": 0.890626,
+      "total": 0.890684,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000705,
-      "connect": 0.005739,
-      "ttfb": 0.937405,
-      "total": 0.938306,
+      "dns": 0.00081,
+      "connect": 0.002566,
+      "ttfb": 0.828009,
+      "total": 0.828076,
       "bytes": 49146
     },
     "media": {
       "http": 200,
-      "dns": 0.000718,
-      "connect": 0.003046,
-      "ttfb": 0.054543,
-      "total": 0.055041,
+      "dns": 0.000738,
+      "connect": 0.002354,
+      "ttfb": 0.04619,
+      "total": 0.04691,
       "bytes": 51516
     },
     "health": {
       "http": 200,
-      "dns": 0.000735,
-      "connect": 0.002616,
-      "ttfb": 0.038237,
-      "total": 0.038282,
+      "dns": 0.000744,
+      "connect": 0.002592,
+      "ttfb": 0.036784,
+      "total": 0.036812,
       "bytes": 189
     }
   },
