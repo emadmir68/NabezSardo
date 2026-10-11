@@ -101,7 +101,7 @@ const mixMonitor={
 const reviewGateMonitor={
   settings:{maxPerHour:4},
   mixCursor:0,
-  sources:[{id:'tg',scope:'jiroft',topic:'local'},{id:'k1',scope:'kerman',topic:'local'}],
+  sources:[{id:'tg',type:'telegram',scope:'jiroft',topic:'local'},{id:'k1',type:'html',scope:'kerman',topic:'local'}],
   queue:[
     {id:'telegram-review',status:'pending',sourceId:'tg',manualReviewRequired:true,publishedAt:'2026-10-11T10:00:00Z'},
     {id:'regular-local',status:'pending',sourceId:'k1',publishedAt:'2026-10-11T09:59:00Z'}
@@ -112,7 +112,7 @@ assert.deepStrictEqual(monitor.selectPublishIds({articles:[]},reviewGateMonitor,
 const approvedTelegramMonitor={
   settings:{maxPerHour:4},
   mixCursor:0,
-  sources:[{id:'tg',scope:'jiroft',topic:'local'},{id:'k1',scope:'kerman',topic:'local'}],
+  sources:[{id:'tg',type:'telegram',scope:'jiroft',topic:'local'},{id:'k1',type:'html',scope:'kerman',topic:'local'}],
   queue:[
     {id:'telegram-approved',status:'pending',sourceId:'tg',manualReviewRequired:false,telegramBatchApproved:true,publishedAt:'2026-10-11T09:50:00Z'},
     {id:'regular-newer',status:'pending',sourceId:'k1',publishedAt:'2026-10-11T10:00:00Z'}
@@ -120,11 +120,36 @@ const approvedTelegramMonitor={
 };
 assert.deepStrictEqual(monitor.selectPublishIds({articles:[]},approvedTelegramMonitor,1),['telegram-approved']);
 
+const recentTelegramMonitor={
+  settings:{maxPerHour:4},
+  mixCursor:0,
+  sources:[{id:'tg',type:'telegram',scope:'jiroft',topic:'local'},{id:'k1',type:'html',scope:'kerman',topic:'local'}],
+  queue:[
+    {id:'telegram-next',status:'pending',sourceId:'tg',manualReviewRequired:false,publishedAt:new Date().toISOString()},
+    {id:'regular-fallback',status:'pending',sourceId:'k1',publishedAt:new Date(Date.now()-60000).toISOString()}
+  ]
+};
+const recentTelegramDb={articles:[{
+  id:'already-published-tg',
+  imported:true,
+  sourceId:'tg',
+  publishedAt:new Date(Date.now()-5*60*1000).toISOString()
+}]};
+assert.strictEqual(monitor.telegramPublishedRecently(recentTelegramDb,recentTelegramMonitor,15),true);
+assert.deepStrictEqual(monitor.selectPublishIds(recentTelegramDb,recentTelegramMonitor,4),['regular-fallback']);
+
+const dueTelegramDb={articles:[{
+  id:'old-published-tg',
+  imported:true,
+  sourceId:'tg',
+  publishedAt:new Date(Date.now()-20*60*1000).toISOString()
+}]};
+assert.strictEqual(monitor.telegramPublishedRecently(dueTelegramDb,recentTelegramMonitor,15),false);
+assert.deepStrictEqual(monitor.selectPublishIds(dueTelegramDb,recentTelegramMonitor,4),['telegram-next']);
+
 const mixIds=monitor.selectPublishIds({articles:[]},mixMonitor,4);
-assert.strictEqual(mixIds.length,4);
-assert.ok(mixIds.includes('l1')&&mixIds.includes('l2'));
-assert.ok(mixIds.includes('c1'));
-assert.ok(mixIds.includes('w1q'));
+assert.strictEqual(mixIds.length,1);
+assert.strictEqual(mixIds[0],'l1');
 
 const sourceRotationMonitor={
   sourceCycleCursor:0,
