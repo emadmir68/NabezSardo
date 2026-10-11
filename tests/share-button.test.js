@@ -49,3 +49,18 @@ test('demand/category Story cards use the same Instagram pipeline',()=>{
   assert.match(js,/navigator\.share\(\{files:\[preparedStoryFile\],title,text:/);
   assert.doesNotMatch(js,/\.latest-grid \[data-story-card\], \.archive-grid \[data-story-card\]/);
 });
+
+
+test('standalone Instagram post button does not replace Story or share-with-image',()=>{
+  const view=fs.readFileSync('lib/view-public.js','utf8');
+  const site=fs.readFileSync('public/site.js','utf8');
+  const instagram=fs.readFileSync('public/instagram-post.js','utf8');
+  assert.match(view,/data-article-instagram-post/);
+  assert.match(view,/\/assets\/instagram-post\.js/);
+  assert.match(instagram,/const W=1080,H=1350/);
+  assert.match(instagram,/nabez-sardo-instagram-post\.jpg/);
+  assert.match(instagram,/پست اینستاگرام/);
+  assert.doesNotMatch(instagram,/data-news-story|data-story-card|makeNewsStory/);
+  assert.match(site,/data-article-share-image/);
+  assert.match(site,/document\.querySelectorAll\('\[data-story-card\]'\)/);
+});
