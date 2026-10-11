@@ -1,0 +1,3 @@
+Trigger Cloudflare production deploy for local-news priority update.
+Source main commit: bbd7a93fae5901984b858d97321c5ee39ef36632
+Synced presentation commit: 136783a3e788c433c6b0b588468a897baee31b5c
