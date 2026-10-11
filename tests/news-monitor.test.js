@@ -37,6 +37,29 @@ assert.strictEqual(monitor.guessLocation(parsed),'جیرفت');
 assert.ok(monitor.titleSimilarity('فرماندار جیرفت از اجرای طرح جدید خبر داد','اجرای طرح جدید در جیرفت به گفته فرماندار')>0.5);
 assert.strictEqual(monitor.fingerprint('الف','متن'),monitor.fingerprint('الف','متن'));
 
+const fariabA={
+  title:'عامل شهادت رئیس پلیس پیشگیری فاریاب به هلاکت رسید',
+  lead:'کرمان-فرمانده انتظامی استان کرمان گفت: فردی که با اقدام تروریستی، در عصر روز ۱۶ مهرماه، رئیس پلیس پیشگیری فاریاب را به شهادت رسانده بود، در پی اقدامات عملیاتی پلیس استان به هلاکت رسید.',
+  body:'کرمان-فرمانده انتظامی استان کرمان گفت: فردی که با اقدام تروریستی، در عصر روز ۱۶ مهرماه، رئیس پلیس پیشگیری فاریاب را به شهادت رسانده بود، در پی اقدامات عملیاتی پلیس استان به هلاکت رسید. سردار جلیل موقوفه‌ئی گفت تلاش‌های تخصصی و عملیاتی پلیس برای شناسایی عاملان این جنایت دنبال شد.',
+  location:'فاریاب',categoryId:'incidents',publishedAt:'2026-10-10T19:04:00Z'
+};
+const fariabB={
+  title:'عامل ترور مدافع امنیت در فاریاب به هلاکت رسید',
+  lead:'فرمانده انتظامی استان کرمان گفت: فردی که با اقدام تروریستی ۱۶ مهرماه، رئیس پلیس پیشگیری فاریاب را به شهادت رسانده بود، در پی اقدامات عملیاتی پلیس استان به هلاکت رسید.',
+  body:'فرمانده انتظامی استان کرمان گفت: فردی که با اقدام تروریستی ۱۶ مهرماه، رئیس پلیس پیشگیری فاریاب را به شهادت رسانده بود، در پی اقدامات عملیاتی پلیس استان به هلاکت رسید.',
+  location:'فاریاب',categoryId:'incidents',publishedAt:'2026-10-10T19:04:00Z'
+};
+assert.ok(monitor.textContainmentSimilarity(fariabA,fariabB)>=0.94);
+assert.strictEqual(monitor.sameEventDuplicate(fariabA,fariabB),true);
+
+const distinctFariab={
+  title:'پیکر شهید جمشیدی در بافت تشییع و تدفین شد',
+  lead:'مراسم تشییع پیکر شهید مهدی جمشیدی در شهرستان بافت برگزار شد.',
+  body:'مراسم تشییع پیکر شهید مهدی جمشیدی با حضور مردم و مسئولان برگزار شد.',
+  location:'بافت',categoryId:'incidents',publishedAt:'2026-10-11T09:00:00Z'
+};
+assert.strictEqual(monitor.sameEventDuplicate(fariabA,distinctFariab),false);
+
 assert.strictEqual(monitor.freshness(new Date(Date.now()-2*60*60*1000).toISOString(),48),true);
 assert.strictEqual(monitor.freshness(new Date(Date.now()-72*60*60*1000).toISOString(),48),false);
 assert.strictEqual(monitor.freshness('',48),null);
