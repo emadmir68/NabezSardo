@@ -1,0 +1,24 @@
+(()=>{
+const $=s=>document.querySelector(s),root=$('[data-article-root]'),btn=$('[data-article-instagram-post]');
+if(!root||!btn)return;
+const lab=btn.querySelector('[data-instagram-post-label]'),title=root.dataset.articleTitle||document.title,lead=(root.dataset.articleLead||'').replace(/\s+/g,' ').trim(),imgUrl=root.dataset.articleImage?new URL(root.dataset.articleImage,location.origin).href:'',kind=root.dataset.articleImageKind||'none',catId=root.dataset.articleCategoryId||'',url=new URL(root.dataset.articleUrl||location.pathname,location.origin).href,isDemand=catId==='opinion';
+const cats={'sardouiyeh':'ساردوئیه','city-village':'سیاسی','social':'اجتماعی','culture':'فرهنگی','sports':'ورزش','agriculture':'کشاورزی','tourism':'گردشگری','kerman':'استان کرمان','video':'ویدئو','short-news':'خبر کوتاه','opinion':'یادداشت و مطالبه'};
+const set=t=>{if(lab)lab.textContent=t},rr=(c,x,y,w,h,r)=>{c.beginPath();c.roundRect(x,y,w,h,r);};
+async function make(){
+ if(document.fonts?.ready)await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,700))]);
+ let bm=null;if(imgUrl&&kind==='real'){try{const r=await fetch(imgUrl,{credentials:'same-origin',cache:'force-cache'}),b=await r.blob();if(r.ok&&/^image\//i.test(b.type)&&typeof createImageBitmap==='function')bm=await createImageBitmap(b)}catch{}}
+ const W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');if(!c)return null;
+ if(bm){const s=Math.max(W/bm.width,H/bm.height),sw=W/s,sh=H/s;c.drawImage(bm,(bm.width-sw)/2,(bm.height-sh)/2,sw,sh,0,0,W,H)}else{const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#17131a');g.addColorStop(1,'#0a090d');c.fillStyle=g;c.fillRect(0,0,W,H)}
+ const p=c.createLinearGradient(0,480,0,H);p.addColorStop(0,'rgba(90,13,37,0)');p.addColorStop(.34,'rgba(103,16,44,.80)');p.addColorStop(.72,'rgba(82,12,34,.97)');p.addColorStop(1,'rgba(43,7,19,.995)');c.fillStyle=p;c.fillRect(0,0,W,H);
+ const cat=cats[catId]||'خبر';c.font='800 24px Vazirmatn,Arial';const cw=Math.max(165,Math.min(330,c.measureText(cat).width+72)),cg=c.createLinearGradient(42,0,42+cw,0);cg.addColorStop(0,'#b88e4c');cg.addColorStop(.5,'#f0d58d');cg.addColorStop(1,'#c39c57');c.fillStyle=cg;rr(c,42,58,cw,60,20);c.fill();c.direction='rtl';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#35131e';c.fillText(cat,42+cw/2,89);
+ c.fillStyle='rgba(91,13,38,.96)';rr(c,724,52,314,84,24);c.fill();c.strokeStyle='rgba(232,190,109,.58)';c.lineWidth=1.5;rr(c,724,52,314,84,24);c.stroke();c.textAlign='right';c.fillStyle='#fff8ec';c.font='900 34px Vazirmatn,Arial';c.fillText('نبض ساردو',968,96);
+ c.textBaseline='top';c.fillStyle='#f0d39b';c.font='700 22px Vazirmatn,Arial';c.fillText('نبض ساردو  •  روایت خبر',1008,690);
+ const wrap=(t,w,m)=>{const a=String(t||'').split(/\s+/),o=[];let l='';for(const x of a){const n=l?l+' '+x:x;if(c.measureText(n).width<=w)l=n;else{if(l)o.push(l);l=x;if(o.length>=m-1)break}}if(l&&o.length<m)o.push(l);return o.slice(0,m)};
+ const fs=title.length>110?48:title.length>75?54:60;c.font='900 '+fs+'px Vazirmatn,Arial';const tl=wrap(title,920,3);let y=748;tl.forEach((x,i)=>{c.fillStyle=i===1?'#f3bd43':'#fffaf3';c.fillText(x,1008,y);y+=fs*1.34});
+ if(lead){let s=30;c.font='500 '+s+'px Vazirmatn,Arial';let ls=wrap(lead,920,2),lh=s*1.5,top=1194-ls.length*lh;while(s>24&&top<y+16){s-=2;c.font='500 '+s+'px Vazirmatn,Arial';ls=wrap(lead,920,2);lh=s*1.5;top=1194-ls.length*lh}c.fillStyle='rgba(255,245,236,.88)';let sy=top;ls.forEach(x=>{c.fillText(x,1008,sy);sy+=lh})}
+ c.fillStyle='rgba(232,190,109,.82)';c.fillRect(62,1218,956,2);c.font='700 27px Vazirmatn,Arial';c.direction='ltr';c.textAlign='left';c.fillStyle='#fff8ef';c.fillText('nabzesardo.ir',66,1250);c.direction='rtl';c.textAlign='right';c.fillStyle='#f0d39b';c.fillText(isDemand?'متن کامل مطالبه در کپشن':'ادامه خبر در کپشن',1014,1250);
+ const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',.92));bm?.close?.();return b?new File([b],'nabez-sardo-instagram-post.jpg',{type:'image/jpeg'}):null;
+}
+let file=null;btn.disabled=true;set('در حال آماده‌سازی پست…');make().then(f=>{file=f;btn.disabled=!f;set('پست اینستاگرام')}).catch(()=>{btn.disabled=false;set('پست اینستاگرام')});
+btn.addEventListener('click',async()=>{if(!file)file=await make();if(!file)return;const text='📰 '+title+'\n\n'+(lead?lead+'\n\n':'')+(isDemand?'متن کامل مطالبه در نبض ساردو 👇':'ادامه خبر در نبض ساردو 👇')+'\n'+url,a={files:[file],text};try{if(navigator.share&&(!navigator.canShare||navigator.canShare(a)))await navigator.share(a);else if(navigator.share)await navigator.share({files:[file]});else throw 0}catch(e){if(e?.name==='AbortError')return;const u=URL.createObjectURL(file),x=document.createElement('a');x.href=u;x.download=file.name;x.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}});
+})();
