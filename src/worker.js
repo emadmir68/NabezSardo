@@ -7,7 +7,7 @@ import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
 import store from "../lib/store.js";
 import views from "../lib/view-public.js";
-import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
+import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";\nimport { cleanMonitoredImage, cleanMonitoredVideo } from "./monitored-media-cleaner.js";
 import { Resvg, initWasm } from "@resvg/resvg-wasm";
 import resvgModule from "@resvg/resvg-wasm/index_bg.wasm";
 import social from "../lib/social.js";
@@ -222,6 +222,8 @@ async function ensureAppServer() {
   globalThis.setTimeout = () => 0;
   globalThis.setInterval = () => 0;
   try {
+    articleTools.cleanMonitoredImage = async ({file,sourceUrl,sourceId}={}) => cleanMonitoredImage({file,ai:env.AI,sourceUrl,sourceId});
+    articleTools.cleanMonitoredVideo = async ({file,sourceUrl,sourceId}={}) => cleanMonitoredVideo({file,ai:env.AI,sourceUrl,sourceId});
     articleTools.dispatchAndPersist = async (articleId,options={}) => {
       const db=store.load(),a=db.articles.find(x=>x.id===articleId);
       if(!a||a.status!=="published")return;
