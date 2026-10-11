@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-11T13:31:34.752Z",
-  "commit": "bcd85009819816c3d79f2a4ac6fd5a8ffac72c53",
+  "testedAt": "2026-10-11T13:41:28.950Z",
+  "commit": "5e9694939d2a18d14ded8a41ef9282ea108d47bf",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:31:06.528Z"
+    "time": "2026-10-11T13:41:00.654Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:31:06.889Z"
+    "time": "2026-10-11T13:41:01.011Z"
   },
   "cutover": {
     "ok": true,
@@ -30,7 +30,7 @@
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
     "articles": 154,
-    "media": 209,
+    "media": 210,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,8 +42,27 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": null,
-      "lastRunResult": null,
+      "lastRunAt": "2026-10-11T13:31:33.214Z",
+      "lastRunResult": {
+        "discovered": 198,
+        "queued": 1,
+        "duplicates": 0,
+        "filtered": 5,
+        "errors": 0,
+        "durationMs": 8379,
+        "stale": 0,
+        "baseline": 0,
+        "budgetSkipped": 0,
+        "detailFetches": 1,
+        "activeSources": [
+          "telegram-konarsandal",
+          "yjc-kerman",
+          "mehr-kerman",
+          "isna-kerman",
+          "mehr-politics",
+          "mehr-world"
+        ]
+      },
       "counts": {
         "pending": 103,
         "published": 54,
@@ -59,8 +78,8 @@
           "enabled": true,
           "type": "telegram",
           "scope": "jiroft",
-          "lastCheckedAt": "2026-10-11T13:22:59.920Z",
-          "lastSuccessAt": "2026-10-11T13:23:00.740Z",
+          "lastCheckedAt": "2026-10-11T13:31:24.835Z",
+          "lastSuccessAt": "2026-10-11T13:31:25.484Z",
           "lastDiscovered": 19,
           "lastError": ""
         },
@@ -70,8 +89,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-11T13:23:08.985Z",
-          "lastSuccessAt": "2026-10-11T13:23:10.319Z",
+          "lastCheckedAt": "2026-10-11T13:31:32.346Z",
+          "lastSuccessAt": "2026-10-11T13:31:33.214Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -103,8 +122,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-11T12:53:06.684Z",
-          "lastSuccessAt": "2026-10-11T12:53:07.154Z",
+          "lastCheckedAt": "2026-10-11T13:31:31.011Z",
+          "lastSuccessAt": "2026-10-11T13:31:32.346Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -114,8 +133,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T13:23:00.740Z",
-          "lastSuccessAt": "2026-10-11T13:23:03.718Z",
+          "lastCheckedAt": "2026-10-11T13:31:25.484Z",
+          "lastSuccessAt": "2026-10-11T13:31:27.952Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -125,8 +144,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T13:23:03.718Z",
-          "lastSuccessAt": "2026-10-11T13:23:05.459Z",
+          "lastCheckedAt": "2026-10-11T13:31:27.952Z",
+          "lastSuccessAt": "2026-10-11T13:31:29.309Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -158,8 +177,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-11T13:23:05.459Z",
-          "lastSuccessAt": "2026-10-11T13:23:07.177Z",
+          "lastCheckedAt": "2026-10-11T13:31:29.309Z",
+          "lastSuccessAt": "2026-10-11T13:31:31.011Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -224,7 +243,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-11T13:17:30.113Z",
+      "lastSuccessAt": "2026-10-11T13:41:13.822Z",
       "lastError": null
     },
     "backup": {
@@ -247,11 +266,11 @@
       }
     },
     "usage": {
-      "mediaObjects": 209,
-      "arvanMediaBytes": 68636343,
+      "mediaObjects": 210,
+      "arvanMediaBytes": 68739254,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 1.28,
-      "d1TrackedBytesApprox": 4193407,
+      "d1TrackedBytesApprox": 4184100,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.8
     },
@@ -261,50 +280,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000758,
-      "connect": 0.002694,
-      "ttfb": 0.733037,
-      "total": 0.734332,
-      "bytes": 98525
+      "dns": 0.000839,
+      "connect": 0.00286,
+      "ttfb": 0.719127,
+      "total": 0.721299,
+      "bytes": 98527
     },
     "archive": {
       "http": 200,
-      "dns": 0.00079,
-      "connect": 0.00249,
-      "ttfb": 0.399366,
-      "total": 0.400559,
-      "bytes": 89889
+      "dns": 0.000739,
+      "connect": 0.002307,
+      "ttfb": 0.605954,
+      "total": 0.606809,
+      "bytes": 89891
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000811,
-      "connect": 0.002633,
-      "ttfb": 0.890626,
-      "total": 0.890684,
+      "dns": 0.000818,
+      "connect": 0.002273,
+      "ttfb": 0.7026,
+      "total": 0.70266,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.00081,
-      "connect": 0.002566,
-      "ttfb": 0.828009,
-      "total": 0.828076,
-      "bytes": 49146
+      "dns": 0.000755,
+      "connect": 0.002451,
+      "ttfb": 0.36756,
+      "total": 0.36788,
+      "bytes": 49240
     },
     "media": {
       "http": 200,
-      "dns": 0.000738,
-      "connect": 0.002354,
-      "ttfb": 0.04619,
-      "total": 0.04691,
+      "dns": 0.000791,
+      "connect": 0.002636,
+      "ttfb": 0.044539,
+      "total": 0.044745,
       "bytes": 51516
     },
     "health": {
       "http": 200,
-      "dns": 0.000744,
-      "connect": 0.002592,
-      "ttfb": 0.036784,
-      "total": 0.036812,
+      "dns": 0.000733,
+      "connect": 0.0025,
+      "ttfb": 0.037012,
+      "total": 0.037048,
       "bytes": 189
     }
   },
