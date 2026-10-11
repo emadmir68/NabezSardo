@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-11T13:10:18.410Z",
-  "commit": "26fc1439ce8837833d9c7a63c9b32cde48307a1c",
+  "testedAt": "2026-10-11T13:21:10.366Z",
+  "commit": "0b182750103720cbc7ac8b898c922c3e770b30ad",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:09:49.420Z"
+    "time": "2026-10-11T13:20:43.366Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:09:49.747Z"
+    "time": "2026-10-11T13:20:43.646Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 153,
-    "media": 208,
+    "articles": 154,
+    "media": 211,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -64,9 +64,9 @@
         ]
       },
       "counts": {
-        "pending": 105,
-        "published": 53,
-        "duplicate": 2,
+        "pending": 103,
+        "published": 54,
+        "duplicate": 3,
         "rejected": 0,
         "sourcesOn": 8,
         "sources": 14
@@ -243,7 +243,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-11T13:00:27.713Z",
+      "lastSuccessAt": "2026-10-11T13:17:30.113Z",
       "lastError": null
     },
     "backup": {
@@ -266,13 +266,13 @@
       }
     },
     "usage": {
-      "mediaObjects": 208,
-      "arvanMediaBytes": 68526180,
+      "mediaObjects": 211,
+      "arvanMediaBytes": 68741498,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 1.28,
-      "d1TrackedBytesApprox": 4226869,
+      "d1TrackedBytesApprox": 4200248,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 0.81
+      "d1UsagePercentApprox": 0.8
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -280,50 +280,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.00064,
-      "connect": 0.012196,
-      "ttfb": 0.769264,
-      "total": 0.779007,
-      "bytes": 98876
+      "dns": 0.000584,
+      "connect": 0.009859,
+      "ttfb": 0.722411,
+      "total": 0.731462,
+      "bytes": 98250
     },
     "archive": {
       "http": 200,
-      "dns": 0.000615,
-      "connect": 0.011683,
-      "ttfb": 0.623103,
-      "total": 0.631695,
-      "bytes": 90489
+      "dns": 0.000647,
+      "connect": 0.00963,
+      "ttfb": 0.696434,
+      "total": 0.705238,
+      "bytes": 89889
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000603,
-      "connect": 0.012071,
-      "ttfb": 0.751252,
-      "total": 0.751315,
-      "bytes": 4160
+      "dns": 0.000683,
+      "connect": 0.009559,
+      "ttfb": 0.757837,
+      "total": 0.757891,
+      "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000585,
-      "connect": 0.009466,
-      "ttfb": 0.378126,
-      "total": 0.379789,
-      "bytes": 51258
+      "dns": 0.000666,
+      "connect": 0.010404,
+      "ttfb": 0.36367,
+      "total": 0.36506,
+      "bytes": 49146
     },
     "media": {
       "http": 200,
-      "dns": 0.000602,
-      "connect": 0.01177,
-      "ttfb": 0.06287,
-      "total": 0.073586,
-      "bytes": 102911
+      "dns": 0.000654,
+      "connect": 0.009513,
+      "ttfb": 0.181377,
+      "total": 0.182659,
+      "bytes": 51516
     },
     "health": {
       "http": 200,
-      "dns": 0.000612,
-      "connect": 0.011952,
-      "ttfb": 0.055078,
-      "total": 0.055123,
+      "dns": 0.00067,
+      "connect": 0.009685,
+      "ttfb": 0.051336,
+      "total": 0.051401,
       "bytes": 189
     }
   },
