@@ -7,3 +7,4 @@ fix-share-image-nonblocking=2026-09-24T20:04Z
 final-share-card=2026-09-24T20:23Z
 luxury-no-photo-share-card=2026-09-24T20:45Z
 cron-media-persistence redeploy 2026-10-09
+standalone-instagram-post-live=2026-10-11
