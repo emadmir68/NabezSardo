@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-11T12:43:18.877Z",
-  "commit": "78dfa56547213646c7cfdb01be270f119b02e44d",
+  "testedAt": "2026-10-11T12:53:34.339Z",
+  "commit": "d076a8c3691d749e768130fd88edfce38117798e",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T12:42:54.334Z"
+    "time": "2026-10-11T12:53:04.535Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T12:42:54.801Z"
+    "time": "2026-10-11T12:53:04.879Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 148,
-    "media": 202,
+    "articles": 152,
+    "media": 206,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,43 +42,55 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": "2026-10-11T12:20:06.746Z",
+      "lastRunAt": "2026-10-11T12:53:09.345Z",
       "lastRunResult": {
-        "discovered": 179,
-        "queued": 1,
+        "discovered": 198,
+        "queued": 2,
         "duplicates": 0,
-        "filtered": 11,
+        "filtered": 6,
         "errors": 0,
-        "durationMs": 8793,
+        "durationMs": 9752,
         "stale": 0,
         "baseline": 0,
         "budgetSkipped": 0,
-        "detailFetches": 1,
+        "detailFetches": 2,
         "activeSources": [
+          "telegram-konarsandal",
           "yjc-kerman",
           "mehr-kerman",
           "isna-kerman",
-          "mehr-society",
+          "mehr-politics",
           "mehr-world"
         ]
       },
       "counts": {
-        "pending": 110,
-        "published": 49,
-        "duplicate": 1,
+        "pending": 105,
+        "published": 53,
+        "duplicate": 2,
         "rejected": 0,
         "sourcesOn": 8,
         "sources": 14
       },
       "sources": [
         {
+          "id": "telegram-konarsandal",
+          "name": "تلگرام — کانال خبری کنارصندل",
+          "enabled": true,
+          "type": "telegram",
+          "scope": "jiroft",
+          "lastCheckedAt": "2026-10-11T12:52:59.593Z",
+          "lastSuccessAt": "2026-10-11T12:53:00.116Z",
+          "lastDiscovered": 19,
+          "lastError": ""
+        },
+        {
           "id": "mehr-world",
           "name": "خبرگزاری مهر — بین‌الملل",
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-11T12:20:06.291Z",
-          "lastSuccessAt": "2026-10-11T12:20:06.746Z",
+          "lastCheckedAt": "2026-10-11T12:53:07.154Z",
+          "lastSuccessAt": "2026-10-11T12:53:09.345Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -88,8 +100,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-11T11:46:03.518Z",
-          "lastSuccessAt": "2026-10-11T11:46:06.657Z",
+          "lastCheckedAt": "2026-10-11T12:43:07.808Z",
+          "lastSuccessAt": "2026-10-11T12:43:09.629Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -110,8 +122,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-11T12:04:09.316Z",
-          "lastSuccessAt": "2026-10-11T12:04:12.445Z",
+          "lastCheckedAt": "2026-10-11T12:53:06.684Z",
+          "lastSuccessAt": "2026-10-11T12:53:07.154Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -121,8 +133,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T12:19:57.953Z",
-          "lastSuccessAt": "2026-10-11T12:20:00.919Z",
+          "lastCheckedAt": "2026-10-11T12:53:00.116Z",
+          "lastSuccessAt": "2026-10-11T12:53:02.963Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -132,8 +144,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T12:20:00.919Z",
-          "lastSuccessAt": "2026-10-11T12:20:02.630Z",
+          "lastCheckedAt": "2026-10-11T12:53:02.963Z",
+          "lastSuccessAt": "2026-10-11T12:53:04.725Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -165,8 +177,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-11T12:20:02.630Z",
-          "lastSuccessAt": "2026-10-11T12:20:04.541Z",
+          "lastCheckedAt": "2026-10-11T12:53:04.725Z",
+          "lastSuccessAt": "2026-10-11T12:53:06.684Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -213,17 +225,6 @@
           "lastSuccessAt": null,
           "lastDiscovered": 0,
           "lastError": ""
-        },
-        {
-          "id": "telegram-konarsandal",
-          "name": "تلگرام — کانال خبری کنارصندل",
-          "enabled": true,
-          "type": "telegram",
-          "scope": "jiroft",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
         }
       ]
     },
@@ -242,7 +243,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-11T11:30:28.941Z",
+      "lastSuccessAt": "2026-10-11T12:48:31.109Z",
       "lastError": null
     },
     "backup": {
@@ -265,11 +266,11 @@
       }
     },
     "usage": {
-      "mediaObjects": 202,
-      "arvanMediaBytes": 68132444,
+      "mediaObjects": 206,
+      "arvanMediaBytes": 68421025,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 1.27,
-      "d1TrackedBytesApprox": 4232685,
+      "d1TrackedBytesApprox": 4232242,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.81
     },
@@ -279,50 +280,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000697,
-      "connect": 0.002319,
-      "ttfb": 0.661814,
-      "total": 0.66284,
-      "bytes": 79093
+      "dns": 0.00072,
+      "connect": 0.011654,
+      "ttfb": 0.399977,
+      "total": 0.41095,
+      "bytes": 87067
     },
     "archive": {
       "http": 200,
-      "dns": 0.000732,
-      "connect": 0.002567,
-      "ttfb": 0.041556,
-      "total": 0.042885,
-      "bytes": 71581
+      "dns": 0.000734,
+      "connect": 0.012134,
+      "ttfb": 0.508237,
+      "total": 0.518951,
+      "bytes": 80223
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000672,
-      "connect": 0.002523,
-      "ttfb": 1.146891,
-      "total": 1.146951,
+      "dns": 0.000747,
+      "connect": 0.011713,
+      "ttfb": 0.537834,
+      "total": 0.5379,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000768,
-      "connect": 0.002596,
-      "ttfb": 0.604047,
-      "total": 0.606282,
-      "bytes": 69664
+      "dns": 0.000724,
+      "connect": 0.00903,
+      "ttfb": 0.967082,
+      "total": 0.96797,
+      "bytes": 47966
     },
     "media": {
       "http": 200,
-      "dns": 0.000767,
-      "connect": 0.002635,
-      "ttfb": 0.049985,
-      "total": 0.050525,
-      "bytes": 30307
+      "dns": 0.000738,
+      "connect": 0.011445,
+      "ttfb": 0.0938,
+      "total": 0.095631,
+      "bytes": 41078
     },
     "health": {
       "http": 200,
-      "dns": 0.000662,
-      "connect": 0.002767,
-      "ttfb": 0.034619,
-      "total": 0.034648,
+      "dns": 0.000637,
+      "connect": 0.012906,
+      "ttfb": 0.056071,
+      "total": 0.056099,
       "bytes": 189
     }
   },
