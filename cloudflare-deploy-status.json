@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-11T13:07:26.037Z",
-  "commit": "25f07cfbffac59d2f02a251430b88800e395ed5a",
+  "testedAt": "2026-10-11T13:10:18.410Z",
+  "commit": "26fc1439ce8837833d9c7a63c9b32cde48307a1c",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:07:05.513Z"
+    "time": "2026-10-11T13:09:49.420Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-11T13:07:05.971Z"
+    "time": "2026-10-11T13:09:49.747Z"
   },
   "cutover": {
     "ok": true,
@@ -42,14 +42,14 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": "2026-10-11T12:53:09.345Z",
+      "lastRunAt": "2026-10-11T13:09:08.982Z",
       "lastRunResult": {
         "discovered": 198,
         "queued": 2,
         "duplicates": 0,
-        "filtered": 6,
+        "filtered": 9,
         "errors": 0,
-        "durationMs": 9752,
+        "durationMs": 10295,
         "stale": 0,
         "baseline": 0,
         "budgetSkipped": 0,
@@ -59,13 +59,13 @@
           "yjc-kerman",
           "mehr-kerman",
           "isna-kerman",
-          "mehr-politics",
+          "mehr-society",
           "mehr-world"
         ]
       },
       "counts": {
-        "pending": 104,
-        "published": 54,
+        "pending": 105,
+        "published": 53,
         "duplicate": 2,
         "rejected": 0,
         "sourcesOn": 8,
@@ -78,8 +78,8 @@
           "enabled": true,
           "type": "telegram",
           "scope": "jiroft",
-          "lastCheckedAt": "2026-10-11T12:52:59.593Z",
-          "lastSuccessAt": "2026-10-11T12:53:00.116Z",
+          "lastCheckedAt": "2026-10-11T13:08:58.687Z",
+          "lastSuccessAt": "2026-10-11T13:09:00.297Z",
           "lastDiscovered": 19,
           "lastError": ""
         },
@@ -89,8 +89,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-11T12:53:07.154Z",
-          "lastSuccessAt": "2026-10-11T12:53:09.345Z",
+          "lastCheckedAt": "2026-10-11T13:09:07.193Z",
+          "lastSuccessAt": "2026-10-11T13:09:08.982Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -111,8 +111,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-11T12:20:04.541Z",
-          "lastSuccessAt": "2026-10-11T12:20:06.291Z",
+          "lastCheckedAt": "2026-10-11T13:09:06.348Z",
+          "lastSuccessAt": "2026-10-11T13:09:07.193Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -133,8 +133,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T12:53:00.116Z",
-          "lastSuccessAt": "2026-10-11T12:53:02.963Z",
+          "lastCheckedAt": "2026-10-11T13:09:00.297Z",
+          "lastSuccessAt": "2026-10-11T13:09:03.050Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -144,8 +144,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-11T12:53:02.963Z",
-          "lastSuccessAt": "2026-10-11T12:53:04.725Z",
+          "lastCheckedAt": "2026-10-11T13:09:03.050Z",
+          "lastSuccessAt": "2026-10-11T13:09:04.773Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -177,8 +177,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-11T12:53:04.725Z",
-          "lastSuccessAt": "2026-10-11T12:53:06.684Z",
+          "lastCheckedAt": "2026-10-11T13:09:04.773Z",
+          "lastSuccessAt": "2026-10-11T13:09:06.348Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -270,7 +270,7 @@
       "arvanMediaBytes": 68526180,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 1.28,
-      "d1TrackedBytesApprox": 4237673,
+      "d1TrackedBytesApprox": 4226869,
       "d1FreeTierDatabaseLimitBytes": 524288000,
       "d1UsagePercentApprox": 0.81
     },
@@ -280,50 +280,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000922,
-      "connect": 0.019125,
-      "ttfb": 0.464961,
-      "total": 0.48173,
-      "bytes": 98920
+      "dns": 0.00064,
+      "connect": 0.012196,
+      "ttfb": 0.769264,
+      "total": 0.779007,
+      "bytes": 98876
     },
     "archive": {
       "http": 200,
-      "dns": 0.000708,
-      "connect": 0.012439,
-      "ttfb": 0.277483,
-      "total": 0.289509,
-      "bytes": 90533
+      "dns": 0.000615,
+      "connect": 0.011683,
+      "ttfb": 0.623103,
+      "total": 0.631695,
+      "bytes": 90489
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000826,
-      "connect": 0.021283,
-      "ttfb": 0.359425,
-      "total": 0.359486,
-      "bytes": 4296
+      "dns": 0.000603,
+      "connect": 0.012071,
+      "ttfb": 0.751252,
+      "total": 0.751315,
+      "bytes": 4160
     },
     "article": {
       "http": 200,
-      "dns": 0.000875,
-      "connect": 0.015205,
-      "ttfb": 0.238644,
-      "total": 0.241598,
-      "bytes": 51428
+      "dns": 0.000585,
+      "connect": 0.009466,
+      "ttfb": 0.378126,
+      "total": 0.379789,
+      "bytes": 51258
     },
     "media": {
       "http": 200,
-      "dns": 0.000676,
-      "connect": 0.023718,
-      "ttfb": 0.084844,
-      "total": 0.103291,
+      "dns": 0.000602,
+      "connect": 0.01177,
+      "ttfb": 0.06287,
+      "total": 0.073586,
       "bytes": 102911
     },
     "health": {
       "http": 200,
-      "dns": 0.000642,
-      "connect": 0.014285,
-      "ttfb": 0.06072,
-      "total": 0.060749,
+      "dns": 0.000612,
+      "connect": 0.011952,
+      "ttfb": 0.055078,
+      "total": 0.055123,
       "bytes": 189
     }
   },
