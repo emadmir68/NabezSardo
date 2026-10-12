@@ -43,6 +43,10 @@
     {
       "pattern": "nabzesardo.ir/*",
       "zone_name": "nabzesardo.ir"
+    },
+    {
+      "pattern": "www.nabzesardo.ir",
+      "custom_domain": true
     }
   ]
 }

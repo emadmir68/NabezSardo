@@ -1766,6 +1766,11 @@ async function handleAppSerial(request) {
 export default {
   async fetch(request, _bindings, ctx) {
     const url = new URL(request.url);
+    if (url.hostname.toLowerCase() === "www.nabzesardo.ir") {
+      url.protocol = "https:";
+      url.hostname = "nabzesardo.ir";
+      return Response.redirect(url.toString(), 301);
+    }
     if (url.protocol === "http:") {
       url.protocol = "https:";
       return Response.redirect(url.toString(), 301);
