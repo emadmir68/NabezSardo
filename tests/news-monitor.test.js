@@ -25,4 +25,9 @@ assert.strictEqual(monitor.guessLocation(parsed),'جیرفت');
 assert.ok(monitor.titleSimilarity('فرماندار جیرفت از اجرای طرح جدید خبر داد','اجرای طرح جدید در جیرفت به گفته فرماندار')>0.5);
 assert.strictEqual(monitor.fingerprint('الف','متن'),monitor.fingerprint('الف','متن'));
 
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'پیام تسلیت در پی درگذشت یکی از شهروندان',body:'با خانواده داغدار ابراز همدردی شد'}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'آگهی فروش ویژه خدمات اینترنتی',body:'برای خرید و ثبت سفارش با شماره تماس درج شده تماس بگیرید'}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'افزایش فروش محصولات کشاورزی جنوب کرمان',body:'گزارش رسمی از رشد فروش و صادرات محصولات منطقه منتشر شد'}),'');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'درگذشت راننده در سانحه جاده‌ای',body:'پلیس علت حادثه را اعلام کرد'}),'');
+
 console.log('news-monitor tests: ok');
