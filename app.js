@@ -17,7 +17,7 @@ const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
 const ROOT=__dirname;
 const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
 const APP_VERSION=String(process.env.RAILWAY_GIT_COMMIT_SHA||process.env.RAILWAY_DEPLOYMENT_ID||process.env.RAILWAY_REPLICA_ID||'dev').slice(0,80);
-// Canonical-host redirect revision: 1
+// Canonical-host redirect revision: 2
 
 function headers(type='text/html; charset=utf-8'){
   return {'Content-Type':type,'X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'};
@@ -221,6 +221,12 @@ const server=http.createServer(async(req,res)=>{
  try{
   const u=new URL(req.url,'http://localhost'),p=decodeURIComponent(u.pathname);
   const incomingHost=String(req.headers.host||'').toLowerCase().split(':')[0];
+  if(incomingHost==='www.nabzesardo.ir'){
+    const target=PUBLIC_BASE+(req.url||'/');
+    res.writeHead(301,{...headers(),Location:target,'Cache-Control':'public, max-age=3600'});
+    res.end();
+    return;
+  }
   if(incomingHost.endsWith('.up.railway.app')&&p!=='/health'){
     const target=PUBLIC_BASE+(req.url||'/');
     res.writeHead(301,{...headers(),Location:target,'Cache-Control':'public, max-age=3600'});
