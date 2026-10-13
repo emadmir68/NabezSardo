@@ -35,4 +35,13 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({title:'لطفاً ای
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'پیام مردمی: لطفاً وضعیت این خیابان بررسی شود',body:'متن ارسالی شهروند'}),'non-news-message');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سلام فرمانده در جیرفت اجرا شد',body:'این برنامه فرهنگی با حضور دانش‌آموزان برگزار شد'}),'');
 
+const store=require('../lib/store');
+const publicRows=store.published({articles:[
+  {id:'bad1',status:'published',imported:true,title:'بسم الله الرحمن الرحیم',body:'متن غیرخبری',publishedAt:'2026-10-13T06:00:00Z'},
+  {id:'bad2',status:'published',imported:true,title:'سلام این وضعیت پاسداران ۳ در مرکز شهر هست لطفاً بررسی کنید',body:'پیام خام شهروندی',publishedAt:'2026-10-13T06:01:00Z'},
+  {id:'good1',status:'published',imported:true,title:'سلام فرمانده در جیرفت اجرا شد',body:'برنامه فرهنگی برگزار شد',publishedAt:'2026-10-13T06:02:00Z'},
+  {id:'manual1',status:'published',imported:false,title:'بسم الله الرحمن الرحیم',body:'انتشار دستی تحریریه',publishedAt:'2026-10-13T06:03:00Z'}
+]});
+assert.deepStrictEqual(publicRows.map(x=>x.id),['manual1','good1']);
+
 console.log('news-monitor tests: ok');
