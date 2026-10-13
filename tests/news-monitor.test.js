@@ -29,5 +29,10 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({title:'پیام تسل
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'آگهی فروش ویژه خدمات اینترنتی',body:'برای خرید و ثبت سفارش با شماره تماس درج شده تماس بگیرید'}),'advertisement');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'افزایش فروش محصولات کشاورزی جنوب کرمان',body:'گزارش رسمی از رشد فروش و صادرات محصولات منطقه منتشر شد'}),'');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'درگذشت راننده در سانحه جاده‌ای',body:'پلیس علت حادثه را اعلام کرد'}),'');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سلام این وضعیت پاسداران ۳ در مرکز شهر روبروی دفتر امام جمعه هست لطفا بررسی کنید',body:'شاید نیروهای شهرداری بی‌خبرند؛ لطفاً رسیدگی شود'}),'non-news-message');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'بسم الله الرحمن الرحیم',body:'اللهم عجل لولیک الفرج'}),'non-news-message');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'لطفاً این موضوع را پیگیری و به مسئولان اعلام کنید',body:'این متن یک پیام شهروندی است'}),'non-news-message');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'پیام مردمی: لطفاً وضعیت این خیابان بررسی شود',body:'متن ارسالی شهروند'}),'non-news-message');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سلام فرمانده در جیرفت اجرا شد',body:'این برنامه فرهنگی با حضور دانش‌آموزان برگزار شد'}),'');
 
 console.log('news-monitor tests: ok');
