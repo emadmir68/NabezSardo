@@ -216,6 +216,7 @@ const store=require('../lib/store');
 const publicRows=store.published({articles:[
   {id:'bad1',status:'published',imported:true,title:'بسم الله الرحمن الرحیم',body:'متن غیرخبری',publishedAt:'2026-10-13T06:00:00Z'},
   {id:'bad2',status:'published',imported:true,title:'سلام این وضعیت پاسداران ۳ در مرکز شهر هست لطفاً بررسی کنید',body:'پیام خام شهروندی',publishedAt:'2026-10-13T06:01:00Z'},
+  {id:'bad3',status:'published',imported:true,title:'چگونه به کاهش اضطراب دیگران کمک کنیم؟',body:'چند توصیه عمومی برای آرامش',publishedAt:'2026-10-13T06:01:30Z'},
   {id:'good1',status:'published',imported:true,title:'سلام فرمانده در جیرفت اجرا شد',body:'این برنامه فرهنگی برگزار شد',publishedAt:'2026-10-13T06:02:00Z'},
   {id:'manual1',status:'published',imported:false,title:'بسم الله الرحمن الرحیم',body:'انتشار دستی تحریریه',publishedAt:'2026-10-13T06:03:00Z'}
 ]});
