@@ -1763,6 +1763,26 @@ async function handleAppSerial(request) {
   return response;
 }
 
+async function runBackgroundMaintenance(){
+  await withLocalState(async()=>{
+    const before=await hydrateState({includeBackups:false});
+    await ensureAppServer();
+    await articleTools.schedulerTick();
+    try{await newsMonitor.tick();}catch(err){console.error("news-monitor-tick",String(err?.message||err));}
+    await flushState(before,new Request("https://nabzesardo.ir/__cron",{method:"POST"}),new Response(null,{status:204}));
+  });
+  await suppressPendingAutomaticPublications();
+  await drainPublications();
+  if(isPrimary()){
+    if(automaticDistributionEnabled()){
+      try{await refreshOpinionSocialWording();}catch(err){console.error("opinion-social-refresh",String(err?.message||err));}
+    }
+    try{await migrateLegacyMediaBatch(10);}catch(err){console.error("arvan-migrate-batch",String(err?.message||err));}
+    try{await createWeeklySiteBackup();}catch(err){console.error("site-weekly-backup-tick",String(err?.message||err));}
+    try{await createDailyArvanBackup();}catch(err){console.error("arvan-backup-tick",String(err?.message||err));}
+  }
+}
+
 export default {
   async fetch(request, _bindings, ctx) {
     const url = new URL(request.url);
@@ -1851,26 +1871,30 @@ export default {
     return handleApp(request);
   },
 
-  async scheduled() {
+  async scheduled(controller) {
     if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1") {
       return;
     }
-    await withLocalState(async()=>{
-      const before=await hydrateState({includeBackups:false});
-      await ensureAppServer();
-      await articleTools.schedulerTick();
-      try{await newsMonitor.tick();}catch(err){console.error("news-monitor-tick",String(err?.message||err));}
-      await flushState(before,new Request("https://nabzesardo.ir/__cron",{method:"POST"}),new Response(null,{status:204}));
-    });
-    await suppressPendingAutomaticPublications();
-    await drainPublications();
-    if(isPrimary()){
-      if(automaticDistributionEnabled()){
-        try{await refreshOpinionSocialWording();}catch(err){console.error("opinion-social-refresh",String(err?.message||err));}
+    if(env.BACKGROUND_QUEUE){
+      await env.BACKGROUND_QUEUE.send({
+        type:"scheduled-maintenance",
+        scheduledTime:Number(controller?.scheduledTime||Date.now()),
+        cron:String(controller?.cron||"")
+      });
+      return;
+    }
+    await runBackgroundMaintenance();
+  },
+
+  async queue(batch) {
+    for(const message of batch.messages){
+      try{
+        await runBackgroundMaintenance();
+        message.ack();
+      }catch(err){
+        console.error("background-queue",String(err?.stack||err?.message||err));
+        message.retry({delaySeconds:60});
       }
-      try{await migrateLegacyMediaBatch(10);}catch(err){console.error("arvan-migrate-batch",String(err?.message||err));}
-      try{await createWeeklySiteBackup();}catch(err){console.error("site-weekly-backup-tick",String(err?.message||err));}
-      try{await createDailyArvanBackup();}catch(err){console.error("arvan-backup-tick",String(err?.message||err));}
     }
   }
 };
