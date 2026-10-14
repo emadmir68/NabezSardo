@@ -48,6 +48,19 @@ jobs:
           fs.writeFileSync(p,s);
           NODE
 
+      - name: Ensure background queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          if npx wrangler queues info nabezsardo-background >/dev/null 2>&1; then
+            echo "Queue already exists"
+          else
+            npx wrangler queues create nabezsardo-background
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Deploy Worker
         run: npx wrangler deploy
         env:
