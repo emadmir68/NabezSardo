@@ -60,3 +60,24 @@ test('every canonical page advertised by the sitemap is reachable',async t=>{
    assert.doesNotMatch(html,/<meta name="robots" content="noindex/);
  }
 });
+
+
+test('untranslated article renders one Persian original with bilingual-mode fallback',()=>{
+ const a={...db.articles[1],lead:'لید نمونه محلی',body:'متن نمونه محلی',bodyHtml:'<p>متن نمونه محلی</p>'};
+ const html=views.article(db,a);
+ assert.match(html,/<h1><span class="lang-fa article-fa-fallback">خبر عنبر آباد<\/span><\/h1>/);
+ assert.match(html,/<p class="lead article-deck"><span class="lang-fa article-fa-fallback">لید نمونه محلی<\/span><\/p>/);
+ assert.match(html,/<div class="body rich-content article-body"><div class="lang-fa article-fa-fallback"><p>متن نمونه محلی<\/p><\/div><\/div>/);
+ assert.doesNotMatch(html,/<h1>[^<]*<span class="lang-en">خبر عنبر آباد<\/span>/);
+});
+test('translated article preserves distinct English title, lead and body',()=>{
+ const a={...db.articles[1],lead:'لید نمونه محلی',body:'متن نمونه محلی',bodyHtml:'<p>متن نمونه محلی</p>',titleEn:'Anbarabad local report',leadEn:'English lead',bodyEn:'English story'};
+ const html=views.article(db,a);
+ assert.match(html,/<h1><span class="lang-fa">خبر عنبر آباد<\/span><span class="lang-en">Anbarabad local report<\/span><\/h1>/);
+ assert.match(html,/<p class="lead article-deck"><span class="lang-fa">لید نمونه محلی<\/span><span class="lang-en">English lead<\/span><\/p>/);
+ assert.match(html,/<div class="body rich-content article-body"><div class="lang-fa"><p>متن نمونه محلی<\/p><\/div><div class="lang-en"><p>English story<\/p><\/div><\/div>/);
+});
+test('article fallback has explicit RTL display rules for English mode',()=>{
+ const css=require('node:fs').readFileSync(require('node:path').join(__dirname,'../public/site.css'),'utf8');
+ assert.match(css,/html\[data-lang="en"\] \.article-premium \.article-body \.article-fa-fallback/);
+});

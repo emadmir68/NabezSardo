@@ -6239,3 +6239,18 @@ main,section,.wrap,.page,.article,.frontpage-desk,.latest-section,.popular-secti
     line-height:1.65!important;
   }
 }
+
+
+/* Article language fallback: show one Persian original in either mode when
+   no English translation exists. Never duplicate Persian text in the DOM. */
+html[data-lang="en"] .article-premium h1 .article-fa-fallback,
+html[data-lang="en"] .article-premium .article-deck .article-fa-fallback {
+  display:block!important;
+  direction:rtl!important;
+  text-align:right!important;
+}
+html[data-lang="en"] .article-premium .article-body .article-fa-fallback {
+  display:block!important;
+  direction:rtl!important;
+  text-align:right!important;
+}
