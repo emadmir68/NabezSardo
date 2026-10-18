@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-17T05:53:40.813Z",
-  "commit": "abb98b325fceaf0e4581aeba0a1566e11602982e",
+  "testedAt": "2026-10-18T05:32:32.508Z",
+  "commit": "d77ff48c041a9561040a0352b66948f5d88d22cb",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-17T05:53:27.584Z"
+    "time": "2026-10-18T05:32:19.260Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-17T05:53:27.795Z"
+    "time": "2026-10-18T05:32:19.801Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 179,
-    "media": 258,
+    "articles": 178,
+    "media": 263,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -42,32 +42,13 @@
       "intervalMinutes": 15,
       "maxPerHour": 4,
       "maxAgeHours": 6,
-      "lastRunAt": "2026-10-17T05:02:31.810Z",
-      "lastRunResult": {
-        "discovered": 198,
-        "queued": 8,
-        "duplicates": 0,
-        "filtered": 17,
-        "errors": 0,
-        "durationMs": 9851,
-        "stale": 8,
-        "baseline": 0,
-        "budgetSkipped": 0,
-        "detailFetches": 11,
-        "activeSources": [
-          "telegram-konarsandal",
-          "yjc-kerman",
-          "mehr-kerman",
-          "isna-kerman",
-          "mehr-tech",
-          "mehr-world"
-        ]
-      },
+      "lastRunAt": null,
+      "lastRunResult": null,
       "counts": {
-        "pending": 135,
-        "published": 20,
-        "duplicate": 4,
-        "rejected": 1,
+        "pending": 141,
+        "published": 14,
+        "duplicate": 3,
+        "rejected": 2,
         "sourcesOn": 8,
         "sources": 14
       },
@@ -78,9 +59,9 @@
           "enabled": true,
           "type": "telegram",
           "scope": "jiroft",
-          "lastCheckedAt": "2026-10-17T05:02:21.959Z",
-          "lastSuccessAt": "2026-10-17T05:02:22.651Z",
-          "lastDiscovered": 19,
+          "lastCheckedAt": "2026-10-17T21:33:41.712Z",
+          "lastSuccessAt": "2026-10-17T21:33:42.425Z",
+          "lastDiscovered": 18,
           "lastError": ""
         },
         {
@@ -89,8 +70,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-17T05:02:29.290Z",
-          "lastSuccessAt": "2026-10-17T05:02:31.810Z",
+          "lastCheckedAt": "2026-10-17T21:33:52.182Z",
+          "lastSuccessAt": "2026-10-17T21:33:54.664Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -100,8 +81,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-17T05:02:28.730Z",
-          "lastSuccessAt": "2026-10-17T05:02:29.290Z",
+          "lastCheckedAt": "2026-10-17T21:33:49.198Z",
+          "lastSuccessAt": "2026-10-17T21:33:52.182Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -111,8 +92,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-16T20:31:16.208Z",
-          "lastSuccessAt": "2026-10-16T20:31:19.425Z",
+          "lastCheckedAt": "2026-10-17T06:17:20.410Z",
+          "lastSuccessAt": "2026-10-17T06:17:23.102Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -122,8 +103,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-16T18:00:16.778Z",
-          "lastSuccessAt": "2026-10-16T18:00:19.518Z",
+          "lastCheckedAt": "2026-10-17T06:01:37.074Z",
+          "lastSuccessAt": "2026-10-17T06:01:39.456Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -133,8 +114,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-17T05:02:22.651Z",
-          "lastSuccessAt": "2026-10-17T05:02:25.778Z",
+          "lastCheckedAt": "2026-10-17T21:33:42.425Z",
+          "lastSuccessAt": "2026-10-17T21:33:44.934Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -144,8 +125,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-17T05:02:25.778Z",
-          "lastSuccessAt": "2026-10-17T05:02:27.125Z",
+          "lastCheckedAt": "2026-10-17T21:33:44.934Z",
+          "lastSuccessAt": "2026-10-17T21:33:47.781Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -177,8 +158,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-17T05:02:27.125Z",
-          "lastSuccessAt": "2026-10-17T05:02:28.730Z",
+          "lastCheckedAt": "2026-10-17T21:33:47.781Z",
+          "lastSuccessAt": "2026-10-17T21:33:49.198Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -243,7 +224,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-17T05:16:07.505Z",
+      "lastSuccessAt": "2026-10-17T21:33:58.033Z",
       "lastError": null
     },
     "backup": {
@@ -266,13 +247,13 @@
       }
     },
     "usage": {
-      "mediaObjects": 258,
-      "arvanMediaBytes": 71914260,
+      "mediaObjects": 263,
+      "arvanMediaBytes": 72160446,
       "arvanFreeTierBytes": 5368709120,
       "arvanUsagePercentOfFreeTier": 1.34,
-      "d1TrackedBytesApprox": 6203839,
+      "d1TrackedBytesApprox": 6219398,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 1.18
+      "d1UsagePercentApprox": 1.19
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -280,50 +261,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000776,
-      "connect": 0.002546,
-      "ttfb": 0.231803,
-      "total": 0.233287,
-      "bytes": 86763
+      "dns": 0.000742,
+      "connect": 0.003846,
+      "ttfb": 0.222108,
+      "total": 0.225314,
+      "bytes": 88066
     },
     "archive": {
       "http": 200,
-      "dns": 0.000728,
-      "connect": 0.00296,
-      "ttfb": 0.053612,
-      "total": 0.055605,
-      "bytes": 80728
+      "dns": 0.000769,
+      "connect": 0.002628,
+      "ttfb": 0.189659,
+      "total": 0.190963,
+      "bytes": 83763
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.00072,
-      "connect": 0.003042,
-      "ttfb": 0.427728,
-      "total": 0.42779,
+      "dns": 0.000736,
+      "connect": 0.003423,
+      "ttfb": 0.240155,
+      "total": 0.240219,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000695,
-      "connect": 0.003648,
-      "ttfb": 0.17879,
-      "total": 0.179154,
-      "bytes": 41149
+      "dns": 0.000785,
+      "connect": 0.00264,
+      "ttfb": 0.198519,
+      "total": 0.198583,
+      "bytes": 40377
     },
     "media": {
       "http": 200,
-      "dns": 0.000681,
-      "connect": 0.002466,
-      "ttfb": 0.131673,
-      "total": 0.133841,
-      "bytes": 112567
+      "dns": 0.000741,
+      "connect": 0.003015,
+      "ttfb": 0.054763,
+      "total": 0.056679,
+      "bytes": 103664
     },
     "health": {
       "http": 200,
-      "dns": 0.000727,
-      "connect": 0.003129,
-      "ttfb": 0.047383,
-      "total": 0.04741,
+      "dns": 0.000749,
+      "connect": 0.003044,
+      "ttfb": 0.04822,
+      "total": 0.048253,
       "bytes": 189
     }
   },
