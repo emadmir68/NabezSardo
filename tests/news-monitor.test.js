@@ -34,6 +34,12 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({title:'بسم الله
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'لطفاً این موضوع را پیگیری و به مسئولان اعلام کنید',body:'این متن یک پیام شهروندی است'}),'non-news-message');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'پیام مردمی: لطفاً وضعیت این خیابان بررسی شود',body:'متن ارسالی شهروند'}),'non-news-message');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سلام فرمانده در جیرفت اجرا شد',body:'این برنامه فرهنگی با حضور دانش‌آموزان برگزار شد'}),'');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'واکاوی بایسته‌های مشارکت نسل نو در معادلات پیشرفت جنوب کرمان',body:'یادداشتی تحلیلی'}),'opinion-or-non-news');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'به نام باور بی منت',body:'متن شخصی'}),'opinion-or-non-news');
+const relSettings={settings:{keywords:'ساردوئیه,جیرفت,جنوب کرمان,عنبرآباد,کهنوج,فاریاب,رودبار جنوب,منوجان,قلعه گنج,جازموریان,کرمان'}};
+assert.strictEqual(monitor.relevant(relSettings,{scope:'kerman'},{title:'ویزیت پنج‌دقیقه‌ای، در این زمان واقعاً چقدر می‌توان بیمار را شناخت؟',lead:'گزارش سلامت',body:'گزارش عمومی پزشکی'}),false);
+assert.strictEqual(monitor.relevant(relSettings,{scope:'kerman'},{title:'افتتاح طرح جدید در کرمان',lead:'استاندار کرمان خبر داد',body:'متن خبر'}),true);
+assert.strictEqual(monitor.relevant(relSettings,{scope:'jiroft'},{title:'افتتاح طرح جدید',lead:'جزئیات اعلام شد',body:'این طرح در شهرستان جیرفت به بهره‌برداری رسید'}),true);
 
 const store=require('../lib/store');
 const publicRows=store.published({articles:[
