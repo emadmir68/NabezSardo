@@ -1725,6 +1725,26 @@ async function handleCloudflareAdminLogin(request) {
   return handleApp(new Request(request.url, { method: "POST", headers, body, redirect: "manual" }));
 }
 
+let liveNonNewsCleanupEnsured=false;
+async function ensureLiveNonNewsCleanup(){
+  if(liveNonNewsCleanupEnsured)return;
+  const marker=await getState("live_nonnews_cleanup_v2");
+  if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
+  const raw=await getState("db");
+  if(!raw){return;}
+  const before=safeJson(raw,{settings:{},categories:[],articles:[],contacts:[],citizens:[]});
+  const after=structuredClone(before);
+  newsMonitor.ensure(after);
+  const beforeCount=Array.isArray(before.articles)?before.articles.length:0;
+  const afterCount=Array.isArray(after.articles)?after.articles.length:0;
+  if(JSON.stringify(before)!==JSON.stringify(after)){
+    await publishing.commitChanges(env.DB,before,after);
+  }
+  await putState("live_nonnews_cleanup_v2","1");
+  console.log("live-nonnews-cleanup-v2","removed="+String(Math.max(0,beforeCount-afterCount)));
+  liveNonNewsCleanupEnsured=true;
+}
+
 let cutoverBackupEnsured=false;
 async function ensureCutoverBackup() {
   if(cutoverBackupEnsured)return;
@@ -1855,6 +1875,7 @@ export default {
 
     if (isPrimary()) {
       await ensureCutoverBackup();
+      await ensureLiveNonNewsCleanup();
       const fastPublic=await handleFastPublic(request,url,p,ctx);
       if(fastPublic)return fastPublic;
       return handleApp(request);
