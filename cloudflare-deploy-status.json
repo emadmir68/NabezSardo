@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-18T05:32:32.508Z",
-  "commit": "d77ff48c041a9561040a0352b66948f5d88d22cb",
+  "testedAt": "2026-10-20T07:22:02.406Z",
+  "commit": "628a00a957e7fd57874d7218dd4653941cccac89",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-18T05:32:19.260Z"
+    "time": "2026-10-20T07:21:46.710Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,7 +19,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-18T05:32:19.801Z"
+    "time": "2026-10-20T07:21:47.005Z"
   },
   "cutover": {
     "ok": true,
@@ -29,8 +29,8 @@
     "railwayDependency": false,
     "legacySyncEnabled": false,
     "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 178,
-    "media": 263,
+    "articles": 180,
+    "media": 268,
     "aiCovers": 1,
     "templateCovers": 7,
     "fallbackCovers": 0,
@@ -39,15 +39,15 @@
     "newsMonitor": {
       "enabled": true,
       "autoPublish": true,
-      "intervalMinutes": 15,
-      "maxPerHour": 4,
+      "intervalMinutes": 240,
+      "maxPerHour": 2,
       "maxAgeHours": 6,
       "lastRunAt": null,
       "lastRunResult": null,
       "counts": {
-        "pending": 141,
-        "published": 14,
-        "duplicate": 3,
+        "pending": 148,
+        "published": 8,
+        "duplicate": 2,
         "rejected": 2,
         "sourcesOn": 8,
         "sources": 14
@@ -59,9 +59,9 @@
           "enabled": true,
           "type": "telegram",
           "scope": "jiroft",
-          "lastCheckedAt": "2026-10-17T21:33:41.712Z",
-          "lastSuccessAt": "2026-10-17T21:33:42.425Z",
-          "lastDiscovered": 18,
+          "lastCheckedAt": "2026-10-19T21:30:38.161Z",
+          "lastSuccessAt": "2026-10-19T21:30:38.846Z",
+          "lastDiscovered": 20,
           "lastError": ""
         },
         {
@@ -70,8 +70,8 @@
           "enabled": true,
           "type": "html",
           "scope": "world",
-          "lastCheckedAt": "2026-10-17T21:33:52.182Z",
-          "lastSuccessAt": "2026-10-17T21:33:54.664Z",
+          "lastCheckedAt": "2026-10-19T21:30:50.702Z",
+          "lastSuccessAt": "2026-10-19T21:30:52.405Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -81,8 +81,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-17T21:33:49.198Z",
-          "lastSuccessAt": "2026-10-17T21:33:52.182Z",
+          "lastCheckedAt": "2026-10-19T21:30:47.179Z",
+          "lastSuccessAt": "2026-10-19T21:30:50.702Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -92,8 +92,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-17T06:17:20.410Z",
-          "lastSuccessAt": "2026-10-17T06:17:23.102Z",
+          "lastCheckedAt": "2026-10-19T04:58:37.309Z",
+          "lastSuccessAt": "2026-10-19T04:58:40.901Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -103,8 +103,8 @@
           "enabled": true,
           "type": "html",
           "scope": "country",
-          "lastCheckedAt": "2026-10-17T06:01:37.074Z",
-          "lastSuccessAt": "2026-10-17T06:01:39.456Z",
+          "lastCheckedAt": "2026-10-18T09:11:05.887Z",
+          "lastSuccessAt": "2026-10-18T09:11:08.717Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -114,8 +114,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-17T21:33:42.425Z",
-          "lastSuccessAt": "2026-10-17T21:33:44.934Z",
+          "lastCheckedAt": "2026-10-19T21:30:38.846Z",
+          "lastSuccessAt": "2026-10-19T21:30:41.027Z",
           "lastDiscovered": 40,
           "lastError": ""
         },
@@ -125,8 +125,8 @@
           "enabled": true,
           "type": "html",
           "scope": "kerman",
-          "lastCheckedAt": "2026-10-17T21:33:44.934Z",
-          "lastSuccessAt": "2026-10-17T21:33:47.781Z",
+          "lastCheckedAt": "2026-10-19T21:30:41.027Z",
+          "lastSuccessAt": "2026-10-19T21:30:45.887Z",
           "lastDiscovered": 29,
           "lastError": ""
         },
@@ -158,8 +158,8 @@
           "enabled": true,
           "type": "rss",
           "scope": "national",
-          "lastCheckedAt": "2026-10-17T21:33:47.781Z",
-          "lastSuccessAt": "2026-10-17T21:33:49.198Z",
+          "lastCheckedAt": "2026-10-19T21:30:45.887Z",
+          "lastSuccessAt": "2026-10-19T21:30:47.179Z",
           "lastDiscovered": 30,
           "lastError": ""
         },
@@ -224,7 +224,7 @@
       "bucket": "nabzesardo",
       "region": "ir-thr-at1",
       "legacyPending": 0,
-      "lastSuccessAt": "2026-10-17T21:33:58.033Z",
+      "lastSuccessAt": "2026-10-19T21:30:56.531Z",
       "lastError": null
     },
     "backup": {
@@ -232,28 +232,28 @@
       "encrypted": true,
       "retentionDays": 30,
       "cadence": "daily",
-      "lastAt": "2026-10-17T05:02:42.322Z",
-      "object": "db-backup-2026-10-17.json.enc",
-      "bytes": 4170307,
+      "lastAt": "2026-10-19T04:58:54.866Z",
+      "object": "db-backup-2026-10-19.json.enc",
+      "bytes": 4398271,
       "lastError": null,
       "weeklySite": {
         "enabled": true,
         "cadence": "weekly",
         "retentionWeeks": 12,
-        "lastAt": "2026-10-12T18:23:06.644Z",
-        "key": "weekly-2026-W42.json",
-        "bytes": 3322402,
+        "lastAt": "2026-10-19T04:58:50.652Z",
+        "key": "weekly-2026-W43.json",
+        "bytes": 3505841,
         "lastError": null
       }
     },
     "usage": {
-      "mediaObjects": 263,
-      "arvanMediaBytes": 72160446,
+      "mediaObjects": 268,
+      "arvanMediaBytes": 72544767,
       "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 1.34,
-      "d1TrackedBytesApprox": 6219398,
+      "arvanUsagePercentOfFreeTier": 1.35,
+      "d1TrackedBytesApprox": 8612892,
       "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 1.19
+      "d1UsagePercentApprox": 1.64
     },
     "primary": true,
     "readyForRailwayShutdown": true
@@ -261,50 +261,50 @@
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000742,
-      "connect": 0.003846,
-      "ttfb": 0.222108,
-      "total": 0.225314,
-      "bytes": 88066
+      "dns": 0.000781,
+      "connect": 0.006579,
+      "ttfb": 0.223472,
+      "total": 0.228847,
+      "bytes": 89373
     },
     "archive": {
       "http": 200,
-      "dns": 0.000769,
-      "connect": 0.002628,
-      "ttfb": 0.189659,
-      "total": 0.190963,
-      "bytes": 83763
+      "dns": 0.000775,
+      "connect": 0.006501,
+      "ttfb": 0.220266,
+      "total": 0.225712,
+      "bytes": 84839
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000736,
-      "connect": 0.003423,
-      "ttfb": 0.240155,
-      "total": 0.240219,
+      "dns": 0.000787,
+      "connect": 0.006364,
+      "ttfb": 0.30413,
+      "total": 0.304186,
       "bytes": 4296
     },
     "article": {
       "http": 200,
-      "dns": 0.000785,
-      "connect": 0.00264,
-      "ttfb": 0.198519,
-      "total": 0.198583,
-      "bytes": 40377
+      "dns": 0.000752,
+      "connect": 0.006408,
+      "ttfb": 0.233986,
+      "total": 0.234863,
+      "bytes": 44911
     },
     "media": {
       "http": 200,
-      "dns": 0.000741,
-      "connect": 0.003015,
-      "ttfb": 0.054763,
-      "total": 0.056679,
-      "bytes": 103664
+      "dns": 0.000802,
+      "connect": 0.00623,
+      "ttfb": 0.070369,
+      "total": 0.080457,
+      "bytes": 164191
     },
     "health": {
       "http": 200,
-      "dns": 0.000749,
-      "connect": 0.003044,
-      "ttfb": 0.04822,
-      "total": 0.048253,
+      "dns": 0.000747,
+      "connect": 0.006568,
+      "ttfb": 0.059065,
+      "total": 0.059113,
       "bytes": 189
     }
   },
