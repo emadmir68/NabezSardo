@@ -1,11 +1,5 @@
-verify-permanent-compact-article-links-20260924
-verify-deep-social-sharing=2026-09-24T18:38Z
-share-with-image=2026-09-24T19:28Z
-fix-share-image-button=2026-09-24T19:45Z
-share-card-redesign=2026-09-24T19:58Z
-fix-share-image-nonblocking=2026-09-24T20:04Z
-final-share-card=2026-09-24T20:23Z
-luxury-no-photo-share-card=2026-09-24T20:45Z
-cron-media-persistence redeploy 2026-10-09
-standalone-instagram-post-live=2026-10-11
-pinterest-3d-news-hero-live=a5bf54082cb15c964eb7e8ad5ff72b0e85c8fa08
+Claude homepage production redeploy
+source-main-commit: d101679a738d5d662121fb50f5cbf2e1320d36f1
+synced-cloudflare-commit: 7509ba1cc2489c14fc7d95315db2ffc8ef685e52
+requested-date: 2026-10-21
+reason: deploy synced Claude homepage design to Cloudflare production
