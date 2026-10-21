@@ -1,0 +1,41 @@
+name: Mobile Visual Audit
+
+on:
+  workflow_run:
+    workflows: ["Deploy Nabez Sardo Cloudflare Worker"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  audit:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout production branch
+        uses: actions/checkout@v4
+        with:
+          ref: cloudflare-migration
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Audit mobile rendering
+        run: node scripts/mobile-visual-audit.mjs
+        env:
+          SITE_URL: https://nabzesardo.ir
+
+      - name: Upload mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-visual-audit
+          path: /tmp/nabez-visual
+          if-no-files-found: ignore
