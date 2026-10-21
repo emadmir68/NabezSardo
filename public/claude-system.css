@@ -1,3 +1,4 @@
+@font-face{font-family:"NabezLocal";src:url("/assets/fonts/DejaVuSans.ttf") format("truetype");font-display:swap;font-weight:100 900;font-style:normal}
 /* Nabez Sardo — Spatial Glass system */
 :root{
   --room:#1f1712;
@@ -23,7 +24,7 @@ html[data-theme="burgundy"]{--amber:#d76f83;--edge-strong:rgba(215,111,131,.34)}
   min-height:100vh;
   color:var(--ink);
   background:var(--room)!important;
-  font-family:"Vazirmatn",Tahoma,system-ui,sans-serif;
+  font-family:"NabezLocal",Tahoma,system-ui,sans-serif;
 }
 .public-shell::before{
   content:"";
@@ -46,7 +47,7 @@ html[data-theme="burgundy"]{--amber:#d76f83;--edge-strong:rgba(215,111,131,.34)}
     radial-gradient(ellipse at 50% 32%,rgba(31,23,18,.08),rgba(31,23,18,.91) 73%),
     linear-gradient(to top,var(--room) 0,rgba(31,23,18,.88) 27%,transparent 60%);
 }
-.public-shell :where(h1,h2,h3,h4,.brand){font-family:"Vazirmatn",Tahoma,sans-serif}
+.public-shell :where(h1,h2,h3,h4,.brand){font-family:"NabezLocal",Tahoma,sans-serif}
 .public-shell a{color:inherit;text-decoration:none}
 .public-shell :where(a,button,input,textarea,select):focus-visible{outline:2px solid var(--amber)!important;outline-offset:3px}
 .public-shell .wrap{width:min(1100px,100%);padding-inline:12px}
@@ -288,7 +289,7 @@ html[data-theme="burgundy"]{--amber:#d76f83;--edge-strong:rgba(215,111,131,.34)}
 .public-shell .article-premium .article-body .lang-fa{
   max-width:760px!important;
   color:#f1e5d6!important;
-  font-family:"Noto Naskh Arabic",Tahoma,Arial,sans-serif!important;
+  font-family:"Noto Naskh Arabic","NabezLocal",Tahoma,Arial,sans-serif!important;
   font-size:20px!important;
   line-height:2.15!important;
 }
@@ -381,4 +382,27 @@ html[data-theme="burgundy"]{--amber:#d76f83;--edge-strong:rgba(215,111,131,.34)}
 }
 @media(prefers-reduced-motion:reduce){
   .public-shell :where(.card,.btn,.spatial-rail a){transition:none!important}
+}
+
+/* unified capsule navigation + privacy controls */
+.public-shell .site-capsule .main{display:flex;align-items:center;gap:8px}
+.public-shell .site-inline-nav{display:flex;align-items:center;gap:3px;min-width:0;overflow-x:auto;scrollbar-width:none;flex:1 1 auto}
+.public-shell .site-inline-nav::-webkit-scrollbar{display:none}
+.public-shell .site-inline-nav a{flex:0 0 auto;padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px;font-weight:800}
+.public-shell .site-inline-nav a:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+.public-shell .header-spacer{display:none}
+.public-shell .header-search-round{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border:1px solid var(--edge);border-radius:50%;background:rgba(255,255,255,.05);font-size:19px}
+.public-shell .header-send{flex:0 0 auto;padding-inline:14px!important}
+.hp-field{position:absolute!important;inset:auto auto auto -10000px!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
+.privacy-note{font-size:12px;color:var(--muted);line-height:1.8;margin:6px 0 0}
+.turnstile-wrap{min-height:65px;display:flex;align-items:center;justify-content:flex-start;overflow:hidden}
+@media(max-width:760px){
+  .public-shell .site-inline-nav a:nth-child(n+5){display:none}
+  .public-shell .header-send{font-size:11px!important;padding-inline:10px!important}
+  .public-shell .header-search-round{width:34px;height:34px;flex-basis:34px}
+}
+@media(max-width:520px){
+  .public-shell .site-inline-nav a:nth-child(n+3){display:none}
+  .public-shell .site-capsule .main{gap:5px}
+  .public-shell .header-send{display:none!important}
 }
