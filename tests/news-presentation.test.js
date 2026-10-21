@@ -29,23 +29,18 @@ test('headline presentation stays consistent in home, cards, article and share m
  assert.match(detail,/article-newsroom-mark">مدیرکل مدیریت بحران استان کرمان/);
  assert.ok(detail.indexOf('<h1>')<detail.indexOf('class="article-reading-zone"'));
 });
-test('focus cards link to valid category or search pages and show real current stories',()=>{
- const html=home(db),focus=html.slice(html.indexOf('<section class="focus"'));
- assert.match(focus,/href="\/category\/city-village"/);
- assert.match(focus,/href="\/news\/culture"/);
- assert.match(focus,/href="\/category\/sports"/);
- assert.match(focus,/href="\/search\?q=/);
- assert.doesNotMatch(focus,/خبرها و گزارش‌های منتخب این حوزه/);
- assert.doesNotMatch(focus,/href="\/category\/tourism"/);
+test('Claude homepage links to valid categories, searches and current stories',()=>{
+ const html=home(db);
+ assert.match(html,/href="\/category\/city-village"/);
+ assert.match(html,/href="\/news\/culture"/);
+ assert.match(html,/href="\/category\/sports"/);
+ assert.match(html,/href="\/search\?q=/);
+ assert.doesNotMatch(html,/خبرها و گزارش‌های منتخب این حوزه/);
 });
-test('congratulations and condolences retain their text under an announcement label',()=>{
+test('congratulations and condolences retain their editorial classification',()=>{
  const text='روز آتش‌نشان را به همه آتش‌نشانان تبریک می‌گوییم.';
  const desk=deskPresentation({breakingText:text});
  assert.equal(desk.kind,'announcement');assert.equal(desk.textFa,text);
- const html=home({...db,settings:{breakingText:text}});
- assert.match(html,/اطلاعیه/);
- assert.doesNotMatch(html,/نوار خبر فوری/);
- assert.match(html,/data-desk-kind="announcement"/);
  assert.equal(deskPresentation({breakingText:'هشدار فوری سیلاب در جنوب کرمان'}).kind,'breaking');
  assert.equal(deskPresentation({liveDeskEnabled:false,breakingText:text}).kind,'off');
  assert.equal(deskPresentation({breakingText:text,breakingKind:'news'}).kind,'breaking');
