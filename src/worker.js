@@ -442,13 +442,47 @@ async function loadPublicDbFast(){
   publicDbCache={at:nowMs,db};
   return db;
 }
-function fastHtml(body,status=200){
-  return new Response(body,{status,headers:{
-    "content-type":"text/html; charset=utf-8",
-    "cache-control":"public, max-age=0, must-revalidate",
+function securityHeaders(){
+  return {
     "x-content-type-options":"nosniff",
     "x-frame-options":"SAMEORIGIN",
     "referrer-policy":"strict-origin-when-cross-origin",
+    "strict-transport-security":"max-age=31536000; includeSubDomains",
+    "permissions-policy":"camera=(), microphone=(), geolocation=()",
+    "content-security-policy":"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+  };
+}
+let publicRateSchemaReady=false;
+async function enforcePublicRateLimit(request,pathname){
+  const limits={"/send-news":3,"/contact":8,"/admin/login":12};
+  const limit=limits[pathname];
+  if(!limit||request.method!=="POST")return null;
+  const len=Number(request.headers.get("content-length")||0);
+  if(pathname==="/send-news"&&len>16*1024*1024){
+    return new Response("حجم درخواست بیش از حد مجاز است.",{status:413,headers:{...securityHeaders(),"content-type":"text/plain; charset=utf-8"}});
+  }
+  if(!publicRateSchemaReady){
+    await env.DB.prepare("CREATE TABLE IF NOT EXISTS request_rate_limits (rate_key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires_at INTEGER NOT NULL)").run();
+    publicRateSchemaReady=true;
+  }
+  const ip=String(request.headers.get("cf-connecting-ip")||request.headers.get("x-forwarded-for")||"unknown").split(",")[0].trim();
+  const digest=await sha256Hex(new TextEncoder().encode(ip));
+  const hour=Math.floor(Date.now()/3600000);
+  const rateKey=pathname+":"+hour+":"+digest.slice(0,32);
+  const expires=(hour+2)*3600000;
+  await env.DB.prepare("INSERT INTO request_rate_limits(rate_key,count,expires_at) VALUES(?,1,?) ON CONFLICT(rate_key) DO UPDATE SET count=count+1").bind(rateKey,expires).run();
+  const row=await env.DB.prepare("SELECT count FROM request_rate_limits WHERE rate_key=?").bind(rateKey).first();
+  if(Number(row?.count||0)>limit){
+    return new Response("تعداد درخواست‌ها بیش از حد مجاز است؛ کمی بعد دوباره تلاش کنید.",{status:429,headers:{...securityHeaders(),"content-type":"text/plain; charset=utf-8","retry-after":"3600"}});
+  }
+  if(Math.random()<0.02)env.DB.prepare("DELETE FROM request_rate_limits WHERE expires_at<?").bind(Date.now()).run().catch(()=>{});
+  return null;
+}
+function fastHtml(body,status=200){
+  return new Response(body,{status,headers:{
+    ...securityHeaders(),
+    "content-type":"text/html; charset=utf-8",
+    "cache-control":"public, max-age=0, must-revalidate",
     "x-nabzesardo-runtime":"cloudflare-fast-public-v1"
   }});
 }
@@ -1745,6 +1779,33 @@ async function ensureLiveNonNewsCleanup(){
   liveNonNewsCleanupEnsured=true;
 }
 
+let privacyCleanupEnsured=false;
+async function ensurePrivacyCleanup(){
+  if(privacyCleanupEnsured)return;
+  const done=await getState("privacy_cleanup_v1");
+  if(done==="1"){privacyCleanupEnsured=true;return;}
+  const raw=await getState("db");
+  const before=safeJson(raw,null);
+  if(!before||typeof before!=="object"){privacyCleanupEnsured=true;return;}
+  const after=structuredClone(before);
+  const cutoff=Date.now()-180*24*60*60*1000;
+  const removedMedia=[];
+  after.citizens=(Array.isArray(after.citizens)?after.citizens:[]).filter(item=>{
+    if(item&&Object.prototype.hasOwnProperty.call(item,"rewardCard"))delete item.rewardCard;
+    const keep=(Date.parse(item?.createdAt||"")||Date.now())>=cutoff;
+    if(!keep&&item?.mediaUrl)removedMedia.push(path.basename(String(item.mediaUrl)));
+    return keep;
+  });
+  after.contacts=(Array.isArray(after.contacts)?after.contacts:[]).filter(item=>(Date.parse(item?.createdAt||"")||Date.now())>=cutoff);
+  if(JSON.stringify(before)!==JSON.stringify(after)){
+    await publishing.commitChanges(env.DB,before,after);
+    for(const name of removedMedia){try{await deleteMedia(name);}catch{}}
+    publicDbCache={at:0,db:null};
+  }
+  await putState("privacy_cleanup_v1","1");
+  privacyCleanupEnsured=true;
+}
+
 let cutoverBackupEnsured=false;
 async function ensureCutoverBackup() {
   if(cutoverBackupEnsured)return;
@@ -1857,6 +1918,11 @@ export default {
       catch (err) { return Response.json({ ok: false, error: String(err?.message || err) }, { status: 502 }); }
     }
 
+    if (isPrimary() && request.method === "POST" && ["/admin/login","/contact","/send-news"].includes(p)) {
+      const limited=await enforcePublicRateLimit(request,p);
+      if(limited)return limited;
+    }
+
     if (isPrimary() && p === "/admin/login" && request.method === "POST") {
       return handleCloudflareAdminLogin(request);
     }
@@ -1875,6 +1941,7 @@ export default {
 
     if (isPrimary()) {
       await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
       await ensureLiveNonNewsCleanup();
       const fastPublic=await handleFastPublic(request,url,p,ctx);
       if(fastPublic)return fastPublic;
