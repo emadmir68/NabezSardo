@@ -8,6 +8,8 @@ on:
       - "public/**"
       - "lib/view-public.js"
       - "lib/view-common.js"
+      - "lib/view-home-claude.js"
+      - "lib/views-v2.js"
       - ".github/workflows/sync-public-design-to-cloudflare.yml"
   workflow_dispatch:
 
@@ -33,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           git fetch origin main
-          git checkout origin/main -- public lib/view-public.js lib/view-common.js
+          git checkout origin/main -- public lib/view-public.js lib/view-common.js lib/view-home-claude.js lib/views-v2.js
 
           if git diff --cached --quiet && git diff --quiet; then
             echo "No public design changes to sync."
@@ -42,6 +44,6 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public lib/view-public.js lib/view-common.js
+          git add public lib/view-public.js lib/view-common.js lib/view-home-claude.js lib/views-v2.js
           git commit -m "Sync public design from main"
           git push origin HEAD:cloudflare-migration
