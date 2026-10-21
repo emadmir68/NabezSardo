@@ -9,6 +9,8 @@ const lead=clean(root.dataset.articleLead||'');
 const bodyEl=$('.article-body .lang-fa');
 const fullBody=clean(bodyEl?(bodyEl.innerText||bodyEl.textContent||''):'')||lead;
 const imgUrl=root.dataset.articleImage?new URL(root.dataset.articleImage,location.origin).href:'';
+const videoUrl=root.dataset.articleVideo?new URL(root.dataset.articleVideo,location.origin).href:'';
+const videoType=root.dataset.articleVideoType||'video/mp4';
 const kind=root.dataset.articleImageKind||'none';
 const catId=root.dataset.articleCategoryId||'';
 const url=new URL(root.dataset.articleUrl||location.pathname,location.origin).href;
@@ -46,6 +48,16 @@ const download=file=>{
   a.href=u;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(u),1800);
 };
+const videoExt=type=>/webm/i.test(type)?'webm':/quicktime|mov/i.test(type)?'mov':'mp4';
+const loadVideoFile=async()=>{
+  if(!videoUrl)return null;
+  const r=await fetch(videoUrl,{credentials:'same-origin',cache:'no-store'});
+  if(!r.ok)throw new Error('video-fetch-'+r.status);
+  const b=await r.blob();
+  const type=b.type&&/^video\//i.test(b.type)?b.type:(videoType||'video/mp4');
+  if(!/^video\//i.test(type))throw new Error('invalid-video-type');
+  return new File([b],'nabez-sardo-video.'+videoExt(type),{type});
+};
 const cover=(c,bm,x,y,w,h)=>{
   const s=Math.max(w/bm.width,h/bm.height),sw=w/s,sh=h/s;
   c.drawImage(bm,(bm.width-sw)/2,(bm.height-sh)/2,sw,sh,x,y,w,h);
@@ -81,29 +93,33 @@ async function make(){
   if(!c)return null;
 
   const base=c.createLinearGradient(0,0,0,H);
-  base.addColorStop(0,'#171017');base.addColorStop(.52,'#4b0f28');base.addColorStop(1,'#220812');
+  base.addColorStop(0,'#0b0f14');base.addColorStop(.52,'#111722');base.addColorStop(1,'#090c11');
   c.fillStyle=base;c.fillRect(0,0,W,H);
 
   if(bm)cover(c,bm,0,0,W,PHOTO_H);
   else{
     const empty=c.createLinearGradient(0,0,W,PHOTO_H);
-    empty.addColorStop(0,'#24212a');empty.addColorStop(1,'#111017');
+    empty.addColorStop(0,'#1b222d');empty.addColorStop(1,'#0b0f14');
     c.fillStyle=empty;c.fillRect(0,0,W,PHOTO_H);
   }
 
   const vignette=c.createLinearGradient(0,0,0,PHOTO_H);
-  vignette.addColorStop(0,'rgba(10,8,13,.18)');
-  vignette.addColorStop(.55,'rgba(42,6,19,.03)');
-  vignette.addColorStop(.78,'rgba(71,10,31,.62)');
-  vignette.addColorStop(1,'rgba(72,11,32,.98)');
+  vignette.addColorStop(0,'rgba(5,8,12,.16)');
+  vignette.addColorStop(.55,'rgba(10,15,22,.04)');
+  vignette.addColorStop(.78,'rgba(10,15,22,.58)');
+  vignette.addColorStop(1,'rgba(9,13,19,.96)');
   c.fillStyle=vignette;c.fillRect(0,0,W,PHOTO_H);
 
   const panel=c.createLinearGradient(0,650,0,H);
-  panel.addColorStop(0,'rgba(96,16,44,.03)');
-  panel.addColorStop(.12,'rgba(96,16,44,.88)');
-  panel.addColorStop(.54,'rgba(76,12,34,.985)');
-  panel.addColorStop(1,'rgba(31,6,15,1)');
+  panel.addColorStop(0,'rgba(18,24,34,.03)');
+  panel.addColorStop(.12,'rgba(16,22,31,.90)');
+  panel.addColorStop(.54,'rgba(12,17,24,.985)');
+  panel.addColorStop(1,'rgba(7,10,14,1)');
   c.fillStyle=panel;c.fillRect(0,620,W,H-620);
+  const editorialGlow=c.createRadialGradient(860,760,20,860,760,420);
+  editorialGlow.addColorStop(0,'rgba(188,151,83,.10)');editorialGlow.addColorStop(1,'rgba(188,151,83,0)');
+  c.fillStyle=editorialGlow;c.fillRect(0,610,W,740);
+  c.fillStyle='rgba(121,34,49,.22)';c.fillRect(0,618,W,3);
 
   const topShade=c.createLinearGradient(0,0,0,190);
   topShade.addColorStop(0,'rgba(0,0,0,.56)');topShade.addColorStop(1,'rgba(0,0,0,0)');
@@ -114,18 +130,19 @@ async function make(){
   c.font='800 25px Vazirmatn,Arial';
   const cw=Math.max(168,Math.min(320,c.measureText(cat).width+76));
   const cg=c.createLinearGradient(46,0,46+cw,0);
-  cg.addColorStop(0,'#b58a45');cg.addColorStop(.48,'#f3d895');cg.addColorStop(1,'#c49a57');
+  cg.addColorStop(0,'#9f7e47');cg.addColorStop(.48,'#dfc58f');cg.addColorStop(1,'#b18d51');
   c.fillStyle=cg;rr(c,46,54,cw,62,20);c.fill();
-  c.textAlign='center';c.fillStyle='#36101e';c.fillText(cat,46+cw/2,86);
+  c.textAlign='center';c.fillStyle='#16130e';c.fillText(cat,46+cw/2,86);
 
-  c.fillStyle='rgba(70,10,31,.92)';rr(c,718,46,316,90,25);c.fill();
-  c.strokeStyle='rgba(240,204,126,.58)';c.lineWidth=1.6;rr(c,718,46,316,90,25);c.stroke();
-  c.textAlign='right';c.fillStyle='#fff9ef';c.font='900 35px Vazirmatn,Arial';c.fillText('نبض ساردو',975,82);
-  c.strokeStyle='#e6bb67';c.lineWidth=3;c.lineCap='round';c.lineJoin='round';
-  c.beginPath();c.moveTo(748,90);c.lineTo(770,90);c.lineTo(780,75);c.lineTo(793,106);c.lineTo(807,67);c.lineTo(821,103);c.lineTo(835,83);c.lineTo(849,90);c.stroke();
+  c.fillStyle='rgba(13,18,26,.94)';rr(c,698,50,336,88,25);c.fill();
+  c.strokeStyle='rgba(214,184,122,.58)';c.lineWidth=1.6;rr(c,698,50,336,88,25);c.stroke();
+  c.strokeStyle='rgba(214,184,122,.22)';c.lineWidth=1.2;c.beginPath();c.moveTo(830,68);c.lineTo(830,119);c.stroke();
+  c.strokeStyle='#d4b476';c.lineWidth=3;c.lineCap='round';c.lineJoin='round';
+  c.beginPath();c.moveTo(720,94);c.lineTo(738,94);c.lineTo(747,80);c.lineTo(758,106);c.lineTo(771,72);c.lineTo(783,104);c.lineTo(795,86);c.lineTo(810,94);c.stroke();
+  c.textAlign='right';c.fillStyle='#f4f1e9';c.font='900 32px Vazirmatn,Arial';c.fillText('نبض ساردو',1002,94);
 
   c.textBaseline='top';c.textAlign='right';c.direction='rtl';
-  c.fillStyle='#efd19a';c.font='700 22px Vazirmatn,Arial';
+  c.fillStyle='#cdb784';c.font='700 22px Vazirmatn,Arial';
   c.fillText('NABEZ SARDO  •  LOCAL NEWS',1008,690);
 
   let titleSize=title.length>120?46:title.length>86?52:60;
@@ -136,7 +153,7 @@ async function make(){
   }
   let y=735;
   titleLines.forEach((line,i)=>{
-    c.fillStyle=i===1?'#f4c24d':'#fffaf2';
+    c.fillStyle=i===1?'#d7b36a':'#f4f1ea';
     c.fillText(line,1008,y);
     y+=titleSize*1.32;
   });
@@ -152,18 +169,18 @@ async function make(){
       need=y+18+leadLines.length*leadSize*1.48;
     }
     let ly=y+18;
-    c.fillStyle='rgba(255,246,238,.90)';
+    c.fillStyle='rgba(229,232,236,.88)';
     for(const line of leadLines){c.fillText(line,1008,ly);ly+=leadSize*1.48;}
   }
 
-  c.fillStyle='rgba(235,190,107,.78)';c.fillRect(64,1222,952,2);
+  c.fillStyle='rgba(190,157,94,.66)';c.fillRect(64,1222,952,2);
   c.textBaseline='middle';
   c.font='700 25px Vazirmatn,Arial';
-  c.direction='ltr';c.textAlign='left';c.fillStyle='#fff8ee';c.fillText('nabzesardo.ir',66,1266);
-  c.direction='rtl';c.textAlign='right';c.fillStyle='#f0d39b';
+  c.direction='ltr';c.textAlign='left';c.fillStyle='#ece9e2';c.fillText('nabzesardo.ir',66,1266);
+  c.direction='rtl';c.textAlign='right';c.fillStyle='#cbb47f';
   c.fillText(isDemand?'متن کامل مطالبه در کپشن':'متن کامل خبر در کپشن',1014,1266);
 
-  c.font='600 18px Vazirmatn,Arial';c.fillStyle='rgba(255,247,239,.62)';
+  c.font='600 18px Vazirmatn,Arial';c.fillStyle='rgba(214,219,226,.54)';
   c.fillText('رسانه محلی ساردوئیه و جنوب کرمان',1014,1306);
 
   const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',.93));
@@ -176,13 +193,39 @@ btn.disabled=true;set('در حال آماده‌سازی پست…');
 make().then(f=>{file=f;btn.disabled=!f;set('پست اینستاگرام')}).catch(()=>{btn.disabled=false;set('پست اینستاگرام')});
 
 btn.addEventListener('click',async()=>{
+  const copied=await copyText(caption);
+
+  if(videoUrl){
+    try{
+      set(copied?'متن خبر کپی شد • آماده‌سازی ویدئو…':'در حال آماده‌سازی ویدئو…');
+      const videoFile=await loadVideoFile();
+      if(videoFile&&navigator.share&&(!navigator.canShare||navigator.canShare({files:[videoFile]}))){
+        set(copied?'ویدئو آماده شد • متن خبر کپی شد':'ویدئو آماده شد');
+        await navigator.share({files:[videoFile],title});
+        reset();
+        return;
+      }
+      if(videoFile&&!navigator.share){
+        download(videoFile);
+        set(copied?'ویدئو ذخیره شد • متن خبر کپی شد':'ویدئو ذخیره شد');
+        reset();
+        return;
+      }
+    }catch(err){
+      if(err?.name==='AbortError'){
+        if(copied)set('متن خبر کپی شد');
+        reset();
+        return;
+      }
+      set('ارسال ویدئو مستقیم نشد • ساخت کارت…');
+    }
+  }
+
   if(!file)file=await make();
   if(!file){set('خطا در ساخت پست');reset();return;}
 
-  const copied=await copyText(caption);
   set(copied?'متن خبر کپی شد • انتخاب اینستاگرام':'پست آماده است');
   const share={files:[file],text:caption,title};
-
   try{
     if(navigator.share&&(!navigator.canShare||navigator.canShare(share))){
       await navigator.share(share);
