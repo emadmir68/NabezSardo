@@ -13,7 +13,7 @@
     "DATA_DIR": "/tmp/nabzesardo",
     "NODE_ENV": "production",
     "PUBLIC_BASE_URL": "https://nabzesardo.ir",
-    "PREVIEW_READONLY": "0",
+    "PREVIEW_READONLY": "1",
     "CLOUDFLARE_PRIMARY": "1",
     "CUTOVER_MODE": "cloudflare-only",
     "AUTO_DISTRIBUTION_ENABLED": "1",
@@ -37,8 +37,8 @@
   "ai": {
     "binding": "AI"
   },
-  "workers_dev": true,
-  "preview_urls": true,
+  "workers_dev": false,
+  "preview_urls": false,
   "routes": [
     {
       "pattern": "nabzesardo.ir/*",
