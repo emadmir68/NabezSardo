@@ -3,7 +3,7 @@
   const st=$('stage'),dots=$('dots');
   if(st){
     const cards=[...st.querySelectorAll('[data-slide]')];
-    let index=0,startX=null,faves={},autoTimer=null;
+    let index=0,startX=null,faves={},autoTimer=null,autoPaused=false;
     try{faves=JSON.parse(localStorage.getItem('nabez-claude-faves')||'{}')||{}}catch{}
     const syncPlayer=()=>{
       const c=cards[index];if(!c)return;
@@ -22,14 +22,19 @@
         c.style.pointerEvents=a>2?'none':'auto';
         c.classList.toggle('on',a===0);
         c.setAttribute('aria-hidden',a?'true':'false');
-        if(dots&&dots.children[k])dots.children[k].className=a?'':'on';
+        c.tabIndex=a===0?0:-1;
+        c.querySelectorAll('a,button').forEach(el=>{el.tabIndex=a===0?0:-1});
+        if(dots&&dots.children[k]){
+          dots.children[k].className=a?'':'on';
+          dots.children[k].setAttribute('aria-current',a?'false':'true');
+        }
       });
       syncPlayer();
     };
     const normalize=n=>cards.length?((n%cards.length)+cards.length)%cards.length:0;
     const scheduleAuto=()=>{
       clearTimeout(autoTimer);
-      if(cards.length<2||document.hidden||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+      if(cards.length<2||document.hidden||autoPaused||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
       autoTimer=setTimeout(()=>{go(index+1)},6000);
     };
     const go=(n)=>{
@@ -40,10 +45,18 @@
     cards.forEach((c,k)=>{
       c.addEventListener('click',e=>{if(k!==index){e.preventDefault();go(k)}});
       c.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&k!==index){e.preventDefault();go(k)}});
-      c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%')});
+      if(matchMedia('(pointer:fine)').matches)c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%')});
     });
     if($('nx'))$('nx').addEventListener('click',()=>go(index+1));
     if($('pv'))$('pv').addEventListener('click',()=>go(index-1));
+    if(dots)[...dots.querySelectorAll('[data-dot]')].forEach(b=>b.addEventListener('click',()=>go(Number(b.dataset.dot||0))));
+    if($('ap'))$('ap').addEventListener('click',()=>{
+      autoPaused=!autoPaused;
+      $('ap').setAttribute('aria-pressed',autoPaused?'true':'false');
+      $('ap').setAttribute('aria-label',autoPaused?'ادامه چرخش خودکار':'توقف چرخش خودکار');
+      if($('apx'))$('apx').textContent=autoPaused?'▶':'Ⅱ';
+      if(autoPaused)clearTimeout(autoTimer);else scheduleAuto();
+    });
     if($('hv'))$('hv').addEventListener('click',()=>{const c=cards[index];if(!c)return;faves[c.dataset.url]=!faves[c.dataset.url];try{localStorage.setItem('nabez-claude-faves',JSON.stringify(faves))}catch{}syncPlayer()});
     st.addEventListener('pointerdown',e=>{startX=e.clientX});
     st.addEventListener('pointerup',e=>{if(startX===null)return;const d=e.clientX-startX;startX=null;if(Math.abs(d)>45)go(index+(d<0?1:-1))});
