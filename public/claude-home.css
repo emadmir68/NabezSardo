@@ -271,3 +271,156 @@ body.claude-home-body .spatial-rail{
   body.claude-home-body .stage{height:530px!important;min-height:500px!important}
   body.claude-home-body .card{width:min(300px,82vw)!important;height:510px!important}
 }
+
+
+/* Mobile hardening — cache-safe spatial glass */
+body.claude-home-body{
+  --bg:#1f1712!important;
+  --bg2:#120d09!important;
+  --text:#f6ece0!important;
+  --muted:#cdbba7!important;
+  --glass:rgba(255,244,230,.085)!important;
+  --edge:rgba(255,239,220,.17)!important;
+  --ink:#f6ece0!important;
+  --g1:#b96d2d!important;
+  --g2:#f2a93b!important;
+  --g3:#ffd8a0!important;
+  color-scheme:dark!important;
+  background:#1f1712!important;
+  color:#f6ece0!important;
+}
+@media(prefers-color-scheme:light){
+  body.claude-home-body{
+    --bg:#1f1712!important;
+    --bg2:#120d09!important;
+    --text:#f6ece0!important;
+    --muted:#cdbba7!important;
+    --glass:rgba(255,244,230,.085)!important;
+    --edge:rgba(255,239,220,.17)!important;
+    color-scheme:dark!important;
+  }
+}
+body.claude-home-body .home-nav{
+  position:static!important;
+  inset:auto!important;
+  width:auto!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+body.claude-home-body .home-nav a{
+  display:block!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+body.claude-home-body .home-nav a:first-child{
+  background:var(--amber)!important;
+  color:#17120d!important;
+}
+body.claude-home-body .tb{
+  background:rgba(31,23,18,.48)!important;
+  border:1px solid var(--edge)!important;
+}
+body.claude-home-body .tb input{
+  color:#f6ece0!important;
+  background:transparent!important;
+}
+body.claude-home-body .tb input::placeholder{
+  color:#cdbba7!important;
+  opacity:.9;
+}
+body.claude-home-body .pn h2{
+  font-size:clamp(19px,4.8vw,24px)!important;
+  line-height:1.65!important;
+}
+body.claude-home-body .pn p{
+  color:#eadccb!important;
+}
+@media(max-width:900px){
+  body.claude-home-body .spatial-rail,
+  .public-shell .spatial-rail{
+    display:none!important;
+  }
+  body.claude-home-body .hd{
+    min-height:52px!important;
+    padding:6px 8px!important;
+    gap:6px!important;
+  }
+  body.claude-home-body .hd .brand{
+    flex:0 0 auto;
+    padding:4px 6px!important;
+    font-size:15px!important;
+  }
+  body.claude-home-body .hd .brand svg{
+    width:38px!important;
+    height:15px!important;
+  }
+  body.claude-home-body .home-nav{
+    display:flex!important;
+    flex:1 1 auto!important;
+    gap:2px!important;
+    overflow-x:auto!important;
+  }
+  body.claude-home-body .home-nav a{
+    padding:5px 8px!important;
+    font-size:11.5px!important;
+    white-space:nowrap!important;
+  }
+  body.claude-home-body .search-round{
+    width:34px!important;
+    height:34px!important;
+    flex-basis:34px!important;
+    font-size:18px!important;
+  }
+}
+@media(max-width:640px){
+  body.claude-home-body .hero{
+    padding-top:30px!important;
+  }
+  body.claude-home-body .hero h1{
+    font-size:34px!important;
+    line-height:1.35!important;
+  }
+  body.claude-home-body .hero p{
+    font-size:13px!important;
+    line-height:1.8!important;
+  }
+  body.claude-home-body .tb{
+    height:44px!important;
+    margin-top:13px!important;
+  }
+  body.claude-home-body .stage{
+    height:500px!important;
+    min-height:480px!important;
+    margin-top:14px!important;
+  }
+  body.claude-home-body .card{
+    width:min(300px,84vw)!important;
+    height:490px!important;
+  }
+  body.claude-home-body .card .pn{
+    padding:14px!important;
+  }
+  body.claude-home-body .pn h2{
+    font-size:20px!important;
+    line-height:1.65!important;
+  }
+}
+@media(max-width:420px){
+  body.claude-home-body .home-nav a:nth-child(n+4){
+    display:none!important;
+  }
+  body.claude-home-body .hero h1{
+    font-size:32px!important;
+  }
+}
