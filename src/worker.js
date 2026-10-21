@@ -1877,6 +1877,10 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const p = decodeURIComponent(url.pathname);
+    const internalRoute=/^\/(?:__migration(?:\/|$)|__sync(?:\/|$)|__cutover(?:\/|$))/.test(p);
+    if(internalRoute&&!isAuthorizedMigration(request)){
+      return new Response("Not found",{status:404,headers:securityHeaders()});
+    }
 
     if (p === "/health" && request.method === "GET") {
       return Response.json({
