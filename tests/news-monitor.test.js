@@ -148,8 +148,10 @@ assert.strictEqual(monitor.telegramPublishedRecently(dueTelegramDb,recentTelegra
 assert.deepStrictEqual(monitor.selectPublishIds(dueTelegramDb,recentTelegramMonitor,4),['telegram-next']);
 
 const mixIds=monitor.selectPublishIds({articles:[]},mixMonitor,4);
-assert.strictEqual(mixIds.length,1);
-assert.strictEqual(mixIds[0],'l1');
+assert.deepStrictEqual(mixIds,['l1','l2']);
+assert.deepStrictEqual(monitor.desiredMix(2),{local:2,country:0,world:0});
+assert.strictEqual(monitor.candidateQualityReason({title:'یه فرصت طلایی برای ثبت نام',lead:'عضویت در کانال 👇 و ثبت نام از لینک زیر',body:'برای ثبت نام و عضویت در کانال از لینک زیر استفاده کنید و این فرصت طلایی را از دست ندهید.'}),'cta-or-promotional');
+assert.strictEqual(monitor.candidateQualityReason({title:'فرماندار جیرفت از افتتاح طرح جدید آب‌رسانی خبر داد',lead:'این طرح در روستاهای جنوب کرمان اجرا می‌شود.',body:'عملیات اجرایی طرح آب‌رسانی با حضور مسئولان آغاز شد و طبق اعلام فرمانداری، چند روستای منطقه را پوشش خواهد داد.'}),'');
 
 const sourceRotationMonitor={
   sourceCycleCursor:0,
