@@ -28,7 +28,9 @@ test('local hubs and editorial policy have crawlable internal links',()=>{
 });
 
 test('publisher identity, newsroom contact and utility-page indexing stay explicit',()=>{
- assert.match(views.home(db),/\/assets\/logo\.svg/);
+ const homeHtml=views.home(db);
+ assert.match(homeHtml,/class="brand"/);
+ assert.match(homeHtml,/نبض ساردو/);
  assert.match(views.article(db,db.articles[0]),/\/assets\/logo\.svg/);
  assert.match(views.simple(db,'contact'),/راه ارتباط رسمی/);
  assert.match(views.simple(db,'send-news'),/name="robots" content="noindex,follow"/);
