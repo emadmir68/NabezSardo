@@ -9,18 +9,21 @@ function db(settings={}){
   return {categories,articles,settings:{adEnabled:true,adTitle:'جای تبلیغات شما اینجاست',adText:'برای رزرو این جایگاه با نبض ساردو در ارتباط باشید',adLink:'/contact',...settings}};
 }
 
-test('home has one citizen callout and a compact six-category navigation',()=>{
+test('home keeps the Claude citizen CTA and category navigation',()=>{
   const html=home(db());
-  assert.equal((html.match(/class="wrap promo-slot promo-citizen"/g)||[]).length,1);
-  assert.doesNotMatch(html,/class="wrap citizen"/);
-  assert.equal((html.match(/class="home-topic-card"/g)||[]).length,6);
+  assert.equal((html.match(/class="cta glass"/g)||[]).length,1);
+  assert.match(html,/شما هم خبرنگار ساردوئیه‌اید/);
+  assert.match(html,/href="\/send-news"/);
+  assert.match(html,/موضوع‌ها/);
+  assert.match(html,/href="\/category\/incidents"/);
+  assert.match(html,/href="\/category\/weather"/);
   assert.doesNotMatch(html,/TOPIC TERMINAL|nabez@newsroom/);
   assert.match(html,/href="\/all-news"/);
 });
 
-test('placeholder advertising stays out of the reading flow, but a configured ad appears',()=>{
+test('Claude homepage stays free of legacy advertising blocks',()=>{
   assert.doesNotMatch(home(db()),/class="wrap home-ad-slot"/);
-  assert.match(home(db({adTitle:'تبلیغ کافه دارما'})),/class="wrap home-ad-slot"/);
+  assert.doesNotMatch(home(db({adTitle:'تبلیغ کافه دارما'})),/class="wrap home-ad-slot"/);
 });
 
 test('old automatic agriculture cover is replaced by the neutral branded cover in home cards',()=>{
