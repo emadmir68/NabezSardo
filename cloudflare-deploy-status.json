@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-21T17:27:22.807Z",
-  "commit": "8c03634c913c30d0f3aa70d5592052446915afb7",
+  "testedAt": "2026-10-21T18:08:26.033Z",
+  "commit": "727e5ca97cc08f5ea56b9facd57a6fbb9205bd90",
   "workerHealth": {
     "ok": true,
     "name": "nabzesardo-cloudflare",
@@ -9,7 +9,7 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-21T17:26:48.592Z"
+    "time": "2026-10-21T18:07:58.069Z"
   },
   "siteHealth": {
     "ok": true,
@@ -19,311 +19,64 @@
     "railwayDependency": false,
     "cutoverMode": "cloudflare-only",
     "storage": "arvan",
-    "time": "2026-10-21T17:26:48.872Z"
+    "time": "2026-10-21T18:07:58.069Z"
   },
   "cutover": {
-    "ok": true,
-    "source": "cloudflare-d1+arvan",
-    "cutoverMode": "cloudflare-only",
     "cloudflarePrimary": true,
     "railwayDependency": false,
-    "legacySyncEnabled": false,
-    "syncedAt": "2026-09-22T18:21:17.289Z",
-    "articles": 186,
-    "media": 276,
-    "aiCovers": 1,
-    "templateCovers": 7,
-    "fallbackCovers": 0,
-    "adminReady": true,
-    "analyticsTotal": 4813,
-    "newsMonitor": {
-      "enabled": true,
-      "autoPublish": true,
-      "intervalMinutes": 240,
-      "maxPerHour": 2,
-      "maxAgeHours": 6,
-      "lastRunAt": "2026-10-21T17:19:39.445Z",
-      "lastRunResult": {
-        "discovered": 197,
-        "queued": 9,
-        "duplicates": 0,
-        "filtered": 18,
-        "stale": 13,
-        "baseline": 0,
-        "errors": 0,
-        "budgetSkipped": 0,
-        "detailFetches": 18,
-        "activeSources": [
-          "telegram-konarsandal",
-          "yjc-kerman",
-          "mehr-kerman",
-          "isna-kerman",
-          "mehr-tech",
-          "mehr-world"
-        ],
-        "durationMs": 22346
-      },
-      "counts": {
-        "pending": 146,
-        "published": 9,
-        "duplicate": 3,
-        "rejected": 2,
-        "sourcesOn": 8,
-        "sources": 14
-      },
-      "sources": [
-        {
-          "id": "telegram-konarsandal",
-          "name": "تلگرام — کانال خبری کنارصندل",
-          "enabled": true,
-          "type": "telegram",
-          "scope": "jiroft",
-          "lastCheckedAt": "2026-10-21T17:19:17.099Z",
-          "lastSuccessAt": "2026-10-21T17:19:17.813Z",
-          "lastDiscovered": 17,
-          "lastError": ""
-        },
-        {
-          "id": "mehr-world",
-          "name": "خبرگزاری مهر — بین‌الملل",
-          "enabled": true,
-          "type": "html",
-          "scope": "world",
-          "lastCheckedAt": "2026-10-21T17:19:36.794Z",
-          "lastSuccessAt": "2026-10-21T17:19:39.445Z",
-          "lastDiscovered": 40,
-          "lastError": ""
-        },
-        {
-          "id": "mehr-tech",
-          "name": "خبرگزاری مهر — فناوری",
-          "enabled": true,
-          "type": "html",
-          "scope": "country",
-          "lastCheckedAt": "2026-10-21T17:19:32.531Z",
-          "lastSuccessAt": "2026-10-21T17:19:36.794Z",
-          "lastDiscovered": 40,
-          "lastError": ""
-        },
-        {
-          "id": "mehr-society",
-          "name": "خبرگزاری مهر — جامعه کشور",
-          "enabled": true,
-          "type": "html",
-          "scope": "country",
-          "lastCheckedAt": "2026-10-21T12:31:40.110Z",
-          "lastSuccessAt": "2026-10-21T12:31:43.020Z",
-          "lastDiscovered": 40,
-          "lastError": ""
-        },
-        {
-          "id": "mehr-politics",
-          "name": "خبرگزاری مهر — سیاست کشور",
-          "enabled": true,
-          "type": "html",
-          "scope": "country",
-          "lastCheckedAt": "2026-10-21T07:42:54.261Z",
-          "lastSuccessAt": "2026-10-21T07:42:57.411Z",
-          "lastDiscovered": 40,
-          "lastError": ""
-        },
-        {
-          "id": "yjc-kerman",
-          "name": "باشگاه خبرنگاران جوان — کرمان",
-          "enabled": true,
-          "type": "html",
-          "scope": "kerman",
-          "lastCheckedAt": "2026-10-21T17:19:17.813Z",
-          "lastSuccessAt": "2026-10-21T17:19:21.945Z",
-          "lastDiscovered": 40,
-          "lastError": ""
-        },
-        {
-          "id": "mehr-kerman",
-          "name": "خبرگزاری مهر — کرمان",
-          "enabled": true,
-          "type": "html",
-          "scope": "kerman",
-          "lastCheckedAt": "2026-10-21T17:19:21.945Z",
-          "lastSuccessAt": "2026-10-21T17:19:24.034Z",
-          "lastDiscovered": 30,
-          "lastError": ""
-        },
-        {
-          "id": "tasnim-kerman",
-          "name": "تسنیم — استان کرمان (خطای دسترسی از Worker)",
-          "enabled": false,
-          "type": "html",
-          "scope": "kerman",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
-        },
-        {
-          "id": "irna-kerman",
-          "name": "ایرنا — استان کرمان (موقتاً غیرفعال)",
-          "enabled": false,
-          "type": "html",
-          "scope": "kerman",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
-        },
-        {
-          "id": "isna-kerman",
-          "name": "ایسنا — RSS سراسری با فیلتر استان کرمان",
-          "enabled": true,
-          "type": "rss",
-          "scope": "national",
-          "lastCheckedAt": "2026-10-21T17:19:24.034Z",
-          "lastSuccessAt": "2026-10-21T17:19:32.531Z",
-          "lastDiscovered": 30,
-          "lastError": ""
-        },
-        {
-          "id": "jiroft-halil",
-          "name": "جیرفت هلیل (نیازمند adapter اختصاصی)",
-          "enabled": false,
-          "type": "html",
-          "scope": "jiroft",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
-        },
-        {
-          "id": "konarsandal",
-          "name": "کنارصندل (خطای SSL از Worker)",
-          "enabled": false,
-          "type": "html",
-          "scope": "jiroft",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
-        },
-        {
-          "id": "irna-national",
-          "name": "ایرنا — سراسری",
-          "enabled": false,
-          "type": "html",
-          "scope": "country",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
-        },
-        {
-          "id": "isna-national",
-          "name": "ایسنا — صفحه اصلی",
-          "enabled": false,
-          "type": "html",
-          "scope": "country",
-          "lastCheckedAt": null,
-          "lastSuccessAt": null,
-          "lastDiscovered": 0,
-          "lastError": ""
-        }
-      ]
-    },
-    "integrationsReady": {
-      "telegram": true,
-      "rubika": true,
-      "whatsapp": false,
-      "googleVerification": true
-    },
-    "fastLoginReady": true,
+    "cutoverMode": "cloudflare-only",
     "storage": {
-      "provider": "arvan",
-      "arvanConfigured": true,
-      "arvanAuthenticated": true,
-      "probeStatus": 200,
-      "bucket": "nabzesardo",
-      "region": "ir-thr-at1",
-      "legacyPending": 0,
-      "lastSuccessAt": "2026-10-21T17:23:30.711Z",
-      "lastError": null
+      "provider": "arvan"
     },
-    "backup": {
-      "enabled": true,
-      "encrypted": true,
-      "retentionDays": 30,
-      "cadence": "daily",
-      "lastAt": "2026-10-21T07:43:13.583Z",
-      "object": "db-backup-2026-10-21.json.enc",
-      "bytes": 4538255,
-      "lastError": null,
-      "weeklySite": {
-        "enabled": true,
-        "cadence": "weekly",
-        "retentionWeeks": 12,
-        "lastAt": "2026-10-19T04:58:50.652Z",
-        "key": "weekly-2026-W43.json",
-        "bytes": 3505841,
-        "lastError": null
-      }
-    },
-    "usage": {
-      "mediaObjects": 276,
-      "arvanMediaBytes": 73575326,
-      "arvanFreeTierBytes": 5368709120,
-      "arvanUsagePercentOfFreeTier": 1.37,
-      "d1TrackedBytesApprox": 8656558,
-      "d1FreeTierDatabaseLimitBytes": 524288000,
-      "d1UsagePercentApprox": 1.65
-    },
-    "primary": true,
     "readyForRailwayShutdown": true
   },
   "performance": {
     "home": {
       "http": 200,
-      "dns": 0.000654,
-      "connect": 0.009407,
-      "ttfb": 0.676799,
-      "total": 0.677754,
-      "bytes": 42276
+      "dns": 0.000629,
+      "connect": 0.009775,
+      "ttfb": 0.139862,
+      "total": 0.140542,
+      "bytes": 39438
     },
     "archive": {
       "http": 200,
-      "dns": 0.000686,
-      "connect": 0.00975,
-      "ttfb": 0.729818,
-      "total": 0.738552,
-      "bytes": 83948
+      "dns": 0.000637,
+      "connect": 0.010544,
+      "ttfb": 0.578138,
+      "total": 0.580495,
+      "bytes": 60059
     },
     "admin_login": {
       "http": 200,
-      "dns": 0.000697,
-      "connect": 0.009347,
-      "ttfb": 0.821914,
-      "total": 0.82197,
-      "bytes": 4304
+      "dns": 0.000664,
+      "connect": 0.009661,
+      "ttfb": 0.63327,
+      "total": 0.63394,
+      "bytes": 4116
     },
     "article": {
       "http": 200,
-      "dns": 0.000697,
-      "connect": 0.009654,
-      "ttfb": 0.563555,
-      "total": 0.564508,
-      "bytes": 42482
+      "dns": 0.000651,
+      "connect": 0.009673,
+      "ttfb": 0.633713,
+      "total": 0.6345,
+      "bytes": 33344
     },
     "media": {
       "http": 200,
-      "dns": 0.00071,
-      "connect": 0.009878,
-      "ttfb": 0.113643,
-      "total": 0.123986,
+      "dns": 0.000672,
+      "connect": 0.009853,
+      "ttfb": 0.094577,
+      "total": 0.106288,
       "bytes": 112567
     },
     "health": {
       "http": 200,
-      "dns": 0.000659,
-      "connect": 0.010228,
-      "ttfb": 0.055707,
-      "total": 0.055745,
+      "dns": 0.000693,
+      "connect": 0.010253,
+      "ttfb": 0.0911,
+      "total": 0.091148,
       "bytes": 189
     }
   },
