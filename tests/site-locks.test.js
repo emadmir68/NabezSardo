@@ -74,11 +74,13 @@ test('approved production distribution and infrastructure remain enabled',()=>{
   assert.ok(config.triggers.crons.includes('*/1 * * * *'));
 });
 
-test('approved header and hero retain their image, dashboard path and article stylesheet',()=>{
+test('public header stays compact, public-only and article stylesheet remains loaded',()=>{
   const header=common.header(baseDb());
   const styles=fs.readFileSync(path.join(__dirname,'..','public','site.css'),'utf8');
-  assert.match(header,/href="\/admin"/);
+  assert.match(header,/class="site-capsule"/);
+  assert.doesNotMatch(header,/href="\/admin"/);
   assert.match(header,/href="\/send-news"/);
+  assert.match(header,/href="\/search"/);
   assert.match(styles,/\.hero-fixed-photo\s*\{[^}]*header-mosque-fixed\.jpg/s);
   assert.match(common.shell('عنوان','متن'),/\/assets\/article-lock\.css/);
 });
