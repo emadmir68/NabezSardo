@@ -14,7 +14,7 @@
   if(!stage||!slides.length)return;
 
   let active=Math.max(0,slides.findIndex(x=>x.classList.contains('is-active')));
-  let pointerId=null,startX=0,startY=0,dragged=false,autoTimer=null;
+  let pointerId=null,startX=0,startY=0,dragged=false,autoTimer=null,hovered=false;
   const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const wrap=n=>(n%slides.length+slides.length)%slides.length;
 
@@ -27,8 +27,8 @@
   }
 
   function refreshAuto(){
-    if(reduceMotion||slides.length<2)return;
     clearInterval(autoTimer);
+    if(reduceMotion||slides.length<2||document.hidden||hovered||pointerId!==null||root.contains(document.activeElement))return;
     autoTimer=setInterval(()=>setActive(active+1),7000);
   }
 
@@ -94,13 +94,15 @@
     if(ev.button!==undefined&&ev.button!==0)return;
     pointerId=ev.pointerId;startX=ev.clientX;startY=ev.clientY;dragged=false;
     stage.classList.add('is-dragging');
-    try{stage.setPointerCapture(pointerId)}catch{}
     clearInterval(autoTimer);
   });
   stage.addEventListener('pointermove',ev=>{
     if(pointerId===null||ev.pointerId!==pointerId)return;
     const dx=ev.clientX-startX,dy=ev.clientY-startY;
-    if(Math.abs(dx)>9&&Math.abs(dx)>Math.abs(dy))dragged=true;
+    if(Math.abs(dx)>9&&Math.abs(dx)>Math.abs(dy)){
+      dragged=true;
+      try{stage.setPointerCapture(pointerId)}catch{}
+    }
   });
   const finish=ev=>{
     if(pointerId===null||ev.pointerId!==pointerId)return;
@@ -114,10 +116,10 @@
     setTimeout(()=>{dragged=false},0);
   };
   stage.addEventListener('pointerup',finish);
-  stage.addEventListener('pointercancel',finish);
+  stage.addEventListener('pointercancel',()=>{pointerId=null;dragged=false;stage.classList.remove('is-dragging');refreshAuto()});
 
-  root.addEventListener('mouseenter',()=>clearInterval(autoTimer));
-  root.addEventListener('mouseleave',refreshAuto);
+  root.addEventListener('mouseenter',()=>{hovered=true;clearInterval(autoTimer)});
+  root.addEventListener('mouseleave',()=>{hovered=false;refreshAuto()});
   root.addEventListener('focusin',()=>clearInterval(autoTimer));
   root.addEventListener('focusout',ev=>{if(!root.contains(ev.relatedTarget))refreshAuto()});
   document.addEventListener('visibilitychange',()=>document.hidden?clearInterval(autoTimer):refreshAuto());
