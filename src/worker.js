@@ -1316,21 +1316,44 @@ async function exportBackup(request) {
   });
 }
 
-async function serveUpload(name) {
+async function serveUpload(name,request=null) {
   const safe = path.basename(name);
   if (!safe || safe !== name) return new Response("Not found", { status: 404 });
+  const range=String(request?.headers?.get("range")||"");
   const cache = caches.default;
   const cacheKey = new Request("https://media.nabzesardo.invalid/uploads/" + encodeURIComponent(safe));
-  const cached = await cache.match(cacheKey);
-  if (cached) return cached;
+  if(!range){
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+  }
   const media = await getMedia(safe);
   if (!media) return new Response("Not found", { status: 404 });
-  const headers = new Headers({
+  const total=media.data.length;
+  const baseHeaders=new Headers({
     "content-type": media.contentType,
-    "content-length": String(media.data.length),
-    "cache-control": "public, max-age=31536000, immutable"
+    "cache-control": "public, max-age=31536000, immutable",
+    "accept-ranges":"bytes",
+    "x-content-type-options":"nosniff"
   });
-  const response = new Response(media.data, { headers });
+  if(range){
+    const m=range.match(/^bytes=(\d*)-(\d*)$/i);
+    if(!m)return new Response(null,{status:416,headers:{...Object.fromEntries(baseHeaders),"content-range":"bytes */"+total}});
+    let start=m[1]?Number(m[1]):null,end=m[2]?Number(m[2]):null;
+    if(start===null){
+      const suffix=Math.max(1,Math.min(total,end||0));
+      start=Math.max(0,total-suffix);end=total-1;
+    }else{
+      if(!Number.isFinite(start)||start<0||start>=total)return new Response(null,{status:416,headers:{...Object.fromEntries(baseHeaders),"content-range":"bytes */"+total}});
+      end=Number.isFinite(end)?Math.min(end,total-1):total-1;
+      if(end<start)return new Response(null,{status:416,headers:{...Object.fromEntries(baseHeaders),"content-range":"bytes */"+total}});
+    }
+    const chunk=media.data.subarray(start,end+1);
+    baseHeaders.set("content-length",String(chunk.length));
+    baseHeaders.set("content-range","bytes "+start+"-"+end+"/"+total);
+    return new Response(chunk,{status:206,headers:baseHeaders});
+  }
+  baseHeaders.set("content-length",String(total));
+  const response = new Response(media.data, { headers:baseHeaders });
   await cache.put(cacheKey, response.clone());
   return response;
 }
@@ -1936,7 +1959,7 @@ export default {
     }
 
     if (p.startsWith("/uploads/") && request.method === "GET") {
-      return serveUpload(path.basename(p));
+      return serveUpload(path.basename(p),request);
     }
 
     if ((p.startsWith("/assets/") || p === "/hero-mosque.jpg") && request.method === "GET") {
