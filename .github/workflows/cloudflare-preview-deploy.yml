@@ -1,4 +1,4 @@
-name: Deploy Cloudflare Preview
+name: Cloudflare Preflight
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  preflight:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout Cloudflare migration branch
+      - name: Checkout Cloudflare production branch
         uses: actions/checkout@v4
 
       - name: Set up Node
@@ -22,70 +22,22 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Deploy preview Worker
-        run: npx wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Run regression tests
+        run: npm test
 
-      - name: Verify migrated D1 state
-        run: |
-          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT key, value FROM app_state WHERE key IN ('migration_complete','migration_source_sha256') ORDER BY key;"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Validate Worker build
+        run: npx wrangler deploy --dry-run --outdir /tmp/nabez-worker-build
 
-      - name: Inspect Arvan migration state
+      - name: Verify production public routes
+        shell: bash
         run: |
-          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --command="SELECT COUNT(*) AS legacy_pending FROM media_meta WHERE chunk_count > 0; SELECT COUNT(*) AS d1_media_chunks FROM media_chunks;"
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Smoke test preview
-        run: |
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo-cloudflare.emadmir1368.workers.dev/ -o /tmp/home.html
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo-cloudflare.emadmir1368.workers.dev/all-news -o /tmp/all-news.html
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo-cloudflare.emadmir1368.workers.dev/__migration -o /tmp/migration.html
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo-cloudflare.emadmir1368.workers.dev/__sync/status -o /tmp/sync-status.json
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/health -o /tmp/custom-health.json
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/ -o /tmp/custom-home.html
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/robots.txt -o /tmp/robots.txt
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/sitemap.xml -o /tmp/sitemap.xml
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/news-sitemap.xml -o /tmp/news-sitemap.xml
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/feed.xml -o /tmp/feed.xml
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/api/live-stats -o /tmp/live-stats.json
-          curl --fail --silent --show-error --max-time 30 "https://nabzesardo-cloudflare.emadmir1368.workers.dev/news/%D8%B3%D8%A7%D8%B9%D8%AA-%D9%81%D8%B9%D8%A7%D9%84%DB%8C%D8%AA-%D9%85%D8%AF%D8%A7%D8%B1%D8%B3-%DA%A9%D8%B1%D9%85%D8%A7%D9%86-%D8%AF%D8%B1-%D8%AF%D9%88-%D9%87%D9%81%D8%AA%D9%87-%D8%A7%D8%A8%D8%AA%D8%AF%D8%A7%DB%8C%DB%8C-%D9%85%D9%87%D8%B1-%D8%A7%D8%B9%D9%84%D8%A7%D9%85-%D8%B4%D8%AF" -o /tmp/article.html
-          curl --fail --silent --show-error --max-time 30 https://nabzesardo-cloudflare.emadmir1368.workers.dev/uploads/featured-mub33kth-7751091527b8.webp -o /tmp/media.webp
-          grep -q '"ok":true' /tmp/sync-status.json
-          grep -Eq '"name":"(nabzesardo-cloudflare|nabezsardo)"' /tmp/custom-health.json
-          grep -q "نبض ساردو" /tmp/custom-home.html
-          grep -q "Sitemap: https://nabzesardo.ir/sitemap.xml" /tmp/robots.txt
-          grep -q "https://nabzesardo.ir/" /tmp/sitemap.xml
-          grep -q "<rss" /tmp/feed.xml
-          grep -q '"totalPageViews"' /tmp/live-stats.json
-          if grep -q '"primary":true' /tmp/sync-status.json; then
-            grep -q '"adminReady":true' /tmp/sync-status.json
-            grep -q '"telegram":true' /tmp/sync-status.json
-            grep -q '"rubika":true' /tmp/sync-status.json
-            curl --fail --silent --show-error --max-time 30 https://nabzesardo.ir/admin/login -o /tmp/admin-login.html
-            grep -q "ورود" /tmp/admin-login.html
-            curl --silent --show-error --max-time 30 -D /tmp/admin-bad.headers -o /dev/null -X POST -H "content-type: application/x-www-form-urlencoded" --data "username=__migration_test__&password=__migration_test__" https://nabzesardo.ir/admin/login
-            grep -qi "admin/login?error=1" /tmp/admin-bad.headers
-          fi
-          grep -q "نبض ساردو" /tmp/home.html
-          grep -q "migration" /tmp/migration.html || grep -q "انتقال" /tmp/migration.html
-          echo "home_bytes=$(wc -c < /tmp/home.html)"
-          echo "all_news_bytes=$(wc -c < /tmp/all-news.html)"
-          grep -q "ساعت فعالیت مدارس کرمان" /tmp/article.html
-          test "$(wc -c < /tmp/media.webp)" -gt 1000
-          echo "migration_bytes=$(wc -c < /tmp/migration.html)"
-          echo "sync_status=$(cat /tmp/sync-status.json)"
-          echo "custom_health=$(cat /tmp/custom-health.json)"
-          echo "custom_home_bytes=$(wc -c < /tmp/custom-home.html)"
-          echo "robots_bytes=$(wc -c < /tmp/robots.txt)"
-          echo "sitemap_bytes=$(wc -c < /tmp/sitemap.xml)"
-          echo "feed_bytes=$(wc -c < /tmp/feed.xml)"
-          echo "live_stats=$(cat /tmp/live-stats.json)"
-          echo "article_bytes=$(wc -c < /tmp/article.html)"
-          echo "media_bytes=$(wc -c < /tmp/media.webp)"
+          set -euo pipefail
+          SITE="https://nabzesardo.ir"
+          curl -fsS --retry 3 --retry-delay 2 "$SITE/health" -o /tmp/health.json
+          curl -fsS --retry 3 --retry-delay 2 "$SITE/" -o /tmp/home.html
+          curl -fsS --retry 3 --retry-delay 2 "$SITE/all-news" -o /tmp/archive.html
+          curl -fsS --retry 3 --retry-delay 2 "$SITE/robots.txt" -o /tmp/robots.txt
+          grep -q '"ok":true' /tmp/health.json
+          grep -q 'نبض ساردو' /tmp/home.html
+          grep -q 'نبض ساردو' /tmp/archive.html
+          grep -q 'Sitemap: https://nabzesardo.ir/sitemap.xml' /tmp/robots.txt
