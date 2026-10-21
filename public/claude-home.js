@@ -30,24 +30,24 @@
     const scheduleAuto=()=>{
       clearTimeout(autoTimer);
       if(cards.length<2||document.hidden||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-      autoTimer=setTimeout(()=>{go(index+1,false)},6000);
+      autoTimer=setTimeout(()=>{go(index+1)},6000);
     };
-    const go=(n,manual=true)=>{
+    const go=(n)=>{
       index=normalize(n);
       layout();
-      if(manual)scheduleAuto();
+      scheduleAuto();
     };
     cards.forEach((c,k)=>{
       c.addEventListener('click',e=>{if(k!==index){e.preventDefault();go(k)}});
       c.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&k!==index){e.preventDefault();go(k)}});
       c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%')});
     });
-    if($('nx'))$('nx').addEventListener('click',()=>go(index+1,true));
-    if($('pv'))$('pv').addEventListener('click',()=>go(index-1,true));
+    if($('nx'))$('nx').addEventListener('click',()=>go(index+1));
+    if($('pv'))$('pv').addEventListener('click',()=>go(index-1));
     if($('hv'))$('hv').addEventListener('click',()=>{const c=cards[index];if(!c)return;faves[c.dataset.url]=!faves[c.dataset.url];try{localStorage.setItem('nabez-claude-faves',JSON.stringify(faves))}catch{}syncPlayer()});
     st.addEventListener('pointerdown',e=>{startX=e.clientX});
-    st.addEventListener('pointerup',e=>{if(startX===null)return;const d=e.clientX-startX;startX=null;if(Math.abs(d)>45)go(index+(d<0?1:-1),true)});
-    document.addEventListener('keydown',e=>{if(e.target&&['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowLeft')go(index+1,true);if(e.key==='ArrowRight')go(index-1,true)});
+    st.addEventListener('pointerup',e=>{if(startX===null)return;const d=e.clientX-startX;startX=null;if(Math.abs(d)>45)go(index+(d<0?1:-1))});
+    document.addEventListener('keydown',e=>{if(e.target&&['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowLeft')go(index+1);if(e.key==='ArrowRight')go(index-1)});
     addEventListener('resize',layout,{passive:true});
     document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(autoTimer);else scheduleAuto()});
     st.addEventListener('mouseenter',()=>clearTimeout(autoTimer));
