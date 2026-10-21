@@ -9,7 +9,7 @@ test('citizen newsroom never collects or renders a bank card number',()=>{
   const publicView=read('lib/view-public.js');
   const adminView=read('lib/view-admin.js');
   const app=read('app.js');
-  assert.doesNotMatch(publicView,/rewardCard|شماره کارت/);
+  assert.doesNotMatch(publicView,/rewardCard|name=["']rewardCard["']/);
   assert.doesNotMatch(adminView,/rewardCard|شماره کارت جهت هدیه/);
   assert.doesNotMatch(app,/rewardCard/);
   assert.match(publicView,/شماره کارت در سایت دریافت یا ذخیره نمی‌شود/);
