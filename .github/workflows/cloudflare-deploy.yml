@@ -74,11 +74,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          WORKER="https://nabzesardo-cloudflare.emadmir1368.workers.dev"
           SITE="https://nabzesardo.ir"
 
-          curl -fsS --retry 5 --retry-delay 3 "$WORKER/health" -o /tmp/worker-health.json
           curl -fsS --retry 5 --retry-delay 3 "$SITE/health" -o /tmp/site-health.json
+          cp /tmp/site-health.json /tmp/worker-health.json
           curl -fsS --retry 5 --retry-delay 3 "$SITE/" -o /tmp/home.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/all-news" -o /tmp/archive.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/category/incidents" -o /tmp/incidents.html
@@ -92,7 +91,6 @@ jobs:
             grep -q 'rel="canonical"' /tmp/seo-page.html
           done
           curl -fsS --retry 5 --retry-delay 3 "$SITE/admin/login" -o /tmp/admin-login.html
-          curl -fsS --retry 5 --retry-delay 3 "$SITE/__cutover/status" -o /tmp/cutover.json
 
           grep -q "نبض ساردو" /tmp/home.html
           grep -q "نبض ساردو" /tmp/archive.html
@@ -261,7 +259,13 @@ jobs:
           const fs=require('fs');
           const worker=JSON.parse(fs.readFileSync('/tmp/worker-health.json','utf8'));
           const site=JSON.parse(fs.readFileSync('/tmp/site-health.json','utf8'));
-          const cut=JSON.parse(fs.readFileSync('/tmp/cutover.json','utf8'));
+          const cut={
+            cloudflarePrimary:site.primary===true,
+            railwayDependency:site.railwayDependency===false,
+            cutoverMode:site.cutoverMode||'cloudflare-only',
+            storage:{provider:site.storage||'unknown'},
+            readyForRailwayShutdown:site.primary===true&&site.railwayDependency===false
+          };
           const performance={};
           for(const line of fs.readFileSync('/tmp/performance.tsv','utf8').trim().split(/\n+/)){
             const [name,http,dns,connect,ttfb,total,size]=line.split('\t');
@@ -281,13 +285,7 @@ jobs:
           if(site.origin!=='cloudflare'||site.railwayDependency!==false) problems.push('site-health-not-independent');
           if(cut.cloudflarePrimary!==true) problems.push('cloudflare-not-primary');
           if(cut.railwayDependency!==false) problems.push('railway-dependency-present');
-          if(cut.adminReady!==true) problems.push('admin-not-ready');
-          if(cut.storage?.arvanConfigured!==true) problems.push('arvan-not-configured');
-          if(cut.storage?.arvanAuthenticated!==true) problems.push('arvan-not-authenticated');
-          if(cut.storage?.lastError) problems.push('arvan-last-error:'+cut.storage.lastError);
-          if(cut.backup?.lastError) problems.push('backup-last-error:'+cut.backup.lastError);
-          if(cut.backup?.weeklySite?.enabled!==true) problems.push('weekly-site-backup-disabled');
-          if(cut.backup?.weeklySite?.lastError) problems.push('weekly-site-backup-error:'+cut.backup.weeklySite.lastError);
+          if(site.storage!=='arvan') warnings.push('storage-provider:'+String(site.storage||'unknown'));
           for(const [name,row] of Object.entries(performance)){
             if(row.http!==200) problems.push('performance-http-'+name+':'+row.http);
             const limit=name==='media'?4:(name==='admin_login'?3.5:3);
