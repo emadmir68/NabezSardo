@@ -1,15 +1,14 @@
-name: Sync Public Design to Cloudflare
+name: Sync Claude Design to Cloudflare
 
 on:
   push:
     branches:
       - main
     paths:
-      - "public/**"
-      - "lib/view-public.js"
-      - "lib/view-common.js"
+      - "public/claude-home.css"
+      - "public/claude-home.js"
+      - "public/claude-system.css"
       - "lib/view-home-claude.js"
-      - "lib/views-v2.js"
       - ".github/workflows/sync-public-design-to-cloudflare.yml"
   workflow_dispatch:
 
@@ -17,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: sync-main-public-to-cloudflare
+  group: sync-main-claude-design-to-cloudflare
   cancel-in-progress: true
 
 jobs:
@@ -25,25 +24,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Checkout Cloudflare migration branch
+      - name: Checkout Cloudflare production branch
         uses: actions/checkout@v4
         with:
           ref: cloudflare-migration
           fetch-depth: 0
 
-      - name: Copy safe shared presentation files from main
+      - name: Copy approved Claude design files from main
         run: |
           set -euo pipefail
           git fetch origin main
-          git checkout origin/main -- public lib/view-public.js lib/view-common.js lib/view-home-claude.js lib/views-v2.js
+          git checkout origin/main -- public/claude-home.css public/claude-home.js lib/view-home-claude.js
+          if git cat-file -e origin/main:public/claude-system.css 2>/dev/null; then
+            git checkout origin/main -- public/claude-system.css
+          fi
 
           if git diff --cached --quiet && git diff --quiet; then
-            echo "No public design changes to sync."
+            echo "No Claude design changes to sync."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public lib/view-public.js lib/view-common.js lib/view-home-claude.js lib/views-v2.js
-          git commit -m "Sync public design from main"
+          git add public/claude-home.css public/claude-home.js lib/view-home-claude.js
+          if [ -f public/claude-system.css ]; then git add public/claude-system.css; fi
+          git commit -m "Sync Claude design from main"
           git push origin HEAD:cloudflare-migration
