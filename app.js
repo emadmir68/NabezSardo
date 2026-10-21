@@ -43,7 +43,7 @@ async function multipart(req){
   const m=ct.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
   if(!m)throw new Error('missing-boundary');
   const boundary=m[1]||m[2];
-  const raw=await readRaw(req,80*1024*1024);
+  const raw=await readRaw(req,16*1024*1024);
   const text=raw.toString('latin1');
   const parts=text.split('--'+boundary);
   const fields={},files={};
@@ -163,7 +163,7 @@ function saveImage(file){
 }
 function saveCitizenMedia(file){
   if(!file||!file.data||!file.data.length)return {url:'',type:'',name:''};
-  if(file.data.length>50*1024*1024)throw new Error('citizen-media-too-large');
+  if(file.data.length>12*1024*1024)throw new Error('citizen-media-too-large');
   const extByType={
     'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp','image/gif':'.gif',
     'video/mp4':'.mp4','video/webm':'.webm','video/quicktime':'.mov'
@@ -353,13 +353,28 @@ const server=http.createServer(async(req,res)=>{
       }
       return redirect(res,'/admin/login?error=1');
     }
-    if(p==='/contact'){db.contacts.unshift({id:id(),createdAt:now(),name:f.name||'',contact:f.contact||'',subject:f.subject||'',message:f.message||''});save(db);return redirect(res,'/contact?ok=1');}
+    if(p==='/contact'){
+      if(String(f.website||'').trim())return redirect(res,'/contact?ok=1');
+      db.contacts.unshift({
+        id:id(),createdAt:now(),
+        name:String(f.name||'').trim().slice(0,120),
+        contact:String(f.contact||'').trim().slice(0,160),
+        subject:String(f.subject||'').trim().slice(0,180),
+        message:String(f.message||'').trim().slice(0,5000)
+      });
+      save(db);return redirect(res,'/contact?ok=1');
+    }
     if(p==='/send-news'){
       try{
+        if(String(f.website||'').trim())return redirect(res,'/send-news?ok=1');
         const media=saveCitizenMedia(files.mediaFile);
         db.citizens.unshift({
-          id:id(),createdAt:now(),name:f.name||'',phone:f.phone||'',location:f.location||'',
-          headline:f.headline||'',details:f.details||'',rewardCard:(f.rewardCard||'').replace(/\D/g,'').slice(0,16),
+          id:id(),createdAt:now(),
+          name:String(f.name||'').trim().slice(0,120),
+          phone:String(f.phone||'').trim().slice(0,40),
+          location:String(f.location||'').trim().slice(0,160),
+          headline:String(f.headline||'').trim().slice(0,160),
+          details:String(f.details||'').trim().slice(0,8000),
           mediaUrl:media.url,mediaType:media.type,mediaName:media.name
         });
         save(db);
@@ -372,6 +387,18 @@ const server=http.createServer(async(req,res)=>{
     }
 
     if(p.startsWith('/admin')&&!authed(req))return redirect(res,'/admin/login');
+    m=p.match(/^\/admin\/citizens\/([^/]+)\/delete$/);
+    if(m){
+      const item=(db.citizens||[]).find(x=>x.id===m[1]);
+      if(item?.mediaUrl)deleteUpload(item.mediaUrl);
+      db.citizens=(db.citizens||[]).filter(x=>x.id!==m[1]);
+      save(db);return redirect(res,'/admin#citizens');
+    }
+    m=p.match(/^\/admin\/contacts\/([^/]+)\/delete$/);
+    if(m){
+      db.contacts=(db.contacts||[]).filter(x=>x.id!==m[1]);
+      save(db);return redirect(res,'/admin#messages');
+    }
     if(p==='/admin/news-monitor/settings'){
       newsMonitor.saveSettings(f);
       return redirect(res,'/admin?monitorSaved=1#monitor');
