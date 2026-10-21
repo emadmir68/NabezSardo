@@ -8,3 +8,4 @@ final-share-card=2026-09-24T20:23Z
 luxury-no-photo-share-card=2026-09-24T20:45Z
 cron-media-persistence redeploy 2026-10-09
 standalone-instagram-post-live=2026-10-11
+pinterest-3d-news-hero-live=a5bf54082cb15c964eb7e8ad5ff72b0e85c8fa08
