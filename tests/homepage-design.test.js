@@ -23,17 +23,17 @@ test('placeholder advertising stays out of the reading flow, but a configured ad
   assert.match(home(db({adTitle:'تبلیغ کافه دارما'})),/class="wrap home-ad-slot"/);
 });
 
-test('old automatic agriculture cover is replaced by the neutral branded cover in home cards',()=>{
+test('legacy automatic covers use text-free artwork in website cards and articles',()=>{
   const data=db({adEnabled:false});
   data.articles[11].categoryId='incidents';
   data.articles[11].image='/uploads/auto-cover-old.svg';
   data.articles[11].imageAuto=true;
   data.articles[11].autoCoverTheme='agriculture';
   const html=home(data);
-  assert.match(html,/src="\/assets\/news-cover-incidents-(?:crimson|burgundy)\.svg\?v=topics-20260930"/);
+  assert.match(html,/src="\/assets\/news-art-incidents\.svg"/);
   assert.doesNotMatch(html,/src="\/uploads\/auto-cover-old.svg"/);
   const detail=article(data,data.articles[11]);
-  assert.match(detail,/class="cover" src="\/assets\/news-cover-incidents-(?:crimson|burgundy)\.svg\?v=topics-20260930"/);
+  assert.match(detail,/class="cover" src="\/assets\/news-art-incidents\.svg"/);
   assert.doesNotMatch(detail,/class="cover" src="\/uploads\/auto-cover-old.svg"/);
 });
 
@@ -112,4 +112,24 @@ test('fallback covers contain distinct category artwork and preserve the branded
   }
  }
  assert.equal(symbols.size,Object.keys(TOPICS).length);
+});
+
+test('website thumbnails avoid embedded headline art while exports and real media are preserved',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const {siteImage,displayImage,card,shell}=require('../lib/view-common');
+ const story={id:'cover',slug:'cover',categoryId:'culture',title:'خبر <آزمون>',imageAuto:true,image:'/uploads/auto-cover-old.svg'};
+ const data=db();
+ assert.match(displayImage(story),/news-cover-culture-/);
+ assert.equal(siteImage(story),'/assets/news-art-culture.svg');
+ assert.equal(siteImage({image:'/uploads/photo.jpg'}),'/uploads/photo.jpg');
+ const rendered=card(story,data);
+ assert.match(rendered,/src="\/assets\/news-art-culture.svg"/);
+ assert.match(rendered,/data-story-image="\/assets\/news-cover-culture-/);
+ for(const categoryId of [...data.categories.map(c=>c.id),'default','__proto__']){
+  const asset=siteImage({categoryId}).split('/assets/')[1];
+  const svg=fs.readFileSync(path.join(__dirname,'../public',asset),'utf8');
+  assert.doesNotMatch(svg,/<text\b|<script\b|<foreignObject\b/);
+ }
+ assert.match(home(data),/<body class="newsroom-public">/);
+ assert.doesNotMatch(shell('Login','<main class="login"></main>'),/newsroom\.css/);
 });
