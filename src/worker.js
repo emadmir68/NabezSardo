@@ -449,7 +449,7 @@ function securityHeaders(){
     "referrer-policy":"strict-origin-when-cross-origin",
     "strict-transport-security":"max-age=31536000; includeSubDomains",
     "permissions-policy":"camera=(), microphone=(), geolocation=()",
-    "content-security-policy":"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    "content-security-policy":"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
   };
 }
 let publicRateSchemaReady=false;
@@ -1785,7 +1785,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v2");
+  const marker=await getState("live_nonnews_cleanup_v3");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1797,7 +1797,7 @@ async function ensureLiveNonNewsCleanup(){
   if(JSON.stringify(before)!==JSON.stringify(after)){
     await publishing.commitChanges(env.DB,before,after);
   }
-  await putState("live_nonnews_cleanup_v2","1");
+  await putState("live_nonnews_cleanup_v3","1");
   console.log("live-nonnews-cleanup-v2","removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
@@ -1900,7 +1900,7 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const p = decodeURIComponent(url.pathname);
-    const internalRoute=/^\/(?:__migration(?:\/|$)|__sync(?:\/|$)|__cutover(?:\/|$))/.test(p);
+    const internalRoute=(p==="/__migration"||p.startsWith("/__migration/")||p==="/__sync/status"||p==="/__sync/public-pull"||p.startsWith("/__cutover/"));
     if(internalRoute&&!isAuthorizedMigration(request)){
       return new Response("Not found",{status:404,headers:securityHeaders()});
     }
