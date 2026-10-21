@@ -261,7 +261,7 @@ jobs:
           const site=JSON.parse(fs.readFileSync('/tmp/site-health.json','utf8'));
           const cut={
             cloudflarePrimary:site.primary===true,
-            railwayDependency:site.railwayDependency===false,
+            railwayDependency:site.railwayDependency,
             cutoverMode:site.cutoverMode||'cloudflare-only',
             storage:{provider:site.storage||'unknown'},
             readyForRailwayShutdown:site.primary===true&&site.railwayDependency===false
