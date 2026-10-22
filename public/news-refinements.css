@@ -70,3 +70,16 @@ html .focus .topic p{font-size:14px!important;line-height:1.9!important;color:#b
 
 html .latest-grid .magazine-card .more{font-size:13px!important}
 html .short-timeline-bottom time{white-space:normal!important}
+
+/* Bound listing text across categories, related stories, search and archive. */
+html .public-shell .grid.news>.card .pad{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1}
+html .public-shell .grid.news>.card h3{font-size:18px!important;line-height:1.7!important;margin:0!important;min-height:0!important;display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:3!important;line-clamp:3;max-height:5.1em;overflow:hidden}
+html .public-shell .grid.news>.card .listing-excerpt{font-size:13px!important;line-height:1.85!important;margin:0 0 4px!important;display:-webkit-box!important;-webkit-box-orient:vertical;-webkit-line-clamp:2!important;line-clamp:2;max-height:3.7em;overflow:hidden;color:#d7c7b5!important}
+html .public-shell .grid.news>.card .more{margin-top:auto;min-height:36px;display:inline-flex;align-items:center;align-self:flex-start;font-size:13px!important}
+html .public-shell .grid.news>.card .news-date{color:#cdbba7!important;font-size:12px!important;margin:0;line-height:1.8}
+html .public-shell .grid.news>.card[data-image-kind="fallback"]>.card-media{height:112px!important;aspect-ratio:auto!important}
+html .public-shell .grid.news>.card .story-kicker{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;margin:0}
+@media(max-width:620px){
+  html .public-shell .grid.news>.card h3{font-size:16px!important}
+  html .public-shell .grid.news>.card[data-image-kind="fallback"]>.card-media{height:100px!important}
+}
