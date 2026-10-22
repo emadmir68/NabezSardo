@@ -34,7 +34,8 @@ test('Claude homepage links to valid categories, searches and current stories',(
  assert.match(html,/href="\/category\/city-village"/);
  assert.match(html,/href="\/news\/culture"/);
  assert.match(html,/href="\/category\/sports"/);
- assert.match(html,/href="\/search\?q=/);
+ assert.match(html,/href="\/local\/anbarabad"/);
+ assert.match(html,/href="\/local\/kahnuj"/);
  assert.doesNotMatch(html,/خبرها و گزارش‌های منتخب این حوزه/);
 });
 test('congratulations and condolences retain their editorial classification',()=>{

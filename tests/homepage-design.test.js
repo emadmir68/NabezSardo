@@ -21,6 +21,16 @@ test('home keeps the Claude citizen CTA and category navigation',()=>{
   assert.match(html,/href="\/all-news"/);
 });
 
+test('home shares the public navigation and footer with inner pages',()=>{
+  const {header,footer}=require('../lib/view-common');
+  const data=db(),html=home(data);
+  assert.ok(html.includes(header(data)));
+  assert.ok(html.includes(footer()));
+  assert.equal((html.match(/<header\b/g)||[]).length,1);
+  assert.equal((html.match(/<footer\b/g)||[]).length,1);
+  assert.doesNotMatch(html,/class="room-photo"/);
+});
+
 test('Claude homepage stays free of legacy advertising blocks',()=>{
   assert.doesNotMatch(home(db()),/class="wrap home-ad-slot"/);
   assert.doesNotMatch(home(db({adTitle:'تبلیغ کافه دارما'})),/class="wrap home-ad-slot"/);

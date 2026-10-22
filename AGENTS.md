@@ -33,3 +33,12 @@ Run `npm test`; its approved-behavior checks are a deployment gate. Inspect the 
 - Following the owner's feedback that the text Story looked too simple, use a layered navy/gold frame, pulse branding, category strip, stronger title treatment, and explicit continuation/end markers. Preserve complete text and readable pagination.
 - Text Story body rows are justified for tidy edges. Keep paragraph endings and headlines naturally aligned; balance word gaps without stretching letters, breaking Persian shaping or reordering numbers.
 - The owner requests feature-by-feature rollback for any change they dislike. Keep independent commits; see DESIGN_CHANGELOG_2026-09-30.md. The header/hero and locked article reading layout still apply.
+
+
+## Owner-requested high-priority design fixes approved 2026-10-21
+
+- The owner approved the live design audit's urgent and high-priority fixes: contain long carousel headlines, shorten listing excerpts, unify the public shell, compact homepage spacing, and prioritize real story imagery.
+- The homepage now uses the same header, footer and existing regional background photograph as the inner pages. Its introductory wording and three-dimensional, six-second pausable carousel remain; its typography and spacing may be reduced for faster news access.
+- Carousel cards reserve separate image and text areas. Headlines show up to three lines, excerpts up to two, and the read link stays inside the card. Full titles and article contents remain available on the article page.
+- Listings use bounded excerpts without changing stored leads, bodies or sharing metadata. Real primary photography, then an image already attached in the gallery/body, precedes the branded category fallback. Branded fallbacks use smaller listing frames.
+- Preserve the locked article reading order, editor behavior, social sharing, publishing, backups, infrastructure and distribution. Shared shell palette refinements do not authorize changing article actions or publication metadata placement.

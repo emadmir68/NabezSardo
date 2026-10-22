@@ -18,7 +18,7 @@ for(let idx=0;idx<viewports.length;idx++){
   await page.goto(base+'/?visual-audit='+Date.now(),{waitUntil:'networkidle',timeout:60000});
   const metrics=await page.evaluate(()=>{
     const active=document.querySelector('[data-slide].on');
-    const hd=document.querySelector('.hd');
+    const hd=document.querySelector('.site-capsule');
     const rail=document.querySelector('.spatial-rail');
     const hiddenFocus=[...document.querySelectorAll('[aria-hidden="true"] a,[aria-hidden="true"] button,[aria-hidden="true"] [tabindex]')]
       .filter(el=>el.tabIndex>=0).length;
@@ -27,6 +27,9 @@ for(let idx=0;idx<viewports.length;idx++){
       scrollWidth:document.documentElement.scrollWidth,
       header:hd?hd.getBoundingClientRect().toJSON():null,
       active:active?active.getBoundingClientRect().toJSON():null,
+      title:active?.querySelector('h2')?.getBoundingClientRect().toJSON(),
+      readLink:active?.querySelector('.rd')?.getBoundingClientRect().toJSON(),
+      navWidth:document.querySelector('.site-inline-nav')?.getBoundingClientRect().width||0,
       activeIndex:active?.dataset.index||null,
       railDisplay:rail?getComputedStyle(rail).display:'missing',
       hiddenFocus
@@ -36,6 +39,9 @@ for(let idx=0;idx<viewports.length;idx++){
   assert(metrics.header&&metrics.header.height<=90,v.name+': capsule header height');
   assert(metrics.header&&metrics.header.width<=v.width-8,v.name+': header fits viewport');
   assert(metrics.active&&metrics.active.width<=v.width,v.name+': active card fits viewport');
+  assert(metrics.title&&metrics.title.top>=metrics.active.top&&metrics.title.bottom<=metrics.active.bottom,v.name+': headline stays inside card');
+  assert(metrics.readLink&&metrics.readLink.bottom<=metrics.active.bottom,v.name+': read link stays inside card');
+  assert(metrics.navWidth>=100,v.name+': shared navigation remains visible');
   assert(metrics.railDisplay==='none'||metrics.railDisplay==='missing',v.name+': mobile floating rail hidden');
   assert(metrics.hiddenFocus===0,v.name+': aria-hidden slides are not keyboard focusable');
 
@@ -57,15 +63,17 @@ for(let idx=0;idx<viewports.length;idx++){
   await fs.mkdir('/tmp/nabez-visual',{recursive:true});
   await page.screenshot({path:'/tmp/nabez-visual/home-'+v.name+'.png',fullPage:true});
 
-  for(const route of ['/all-news','/about']){
+  for(const route of ['/all-news','/category/incidents','/about']){
     await page.goto(base+route+'?visual-audit='+Date.now(),{waitUntil:'networkidle',timeout:60000});
     const inner=await page.evaluate(()=>({
       viewport:innerWidth,
       scrollWidth:document.documentElement.scrollWidth,
-      headerHeight:document.querySelector('.site-capsule')?.getBoundingClientRect().height||0
+      headerHeight:document.querySelector('.site-capsule')?.getBoundingClientRect().height||0,
+      excerpts:[...document.querySelectorAll('.listing-excerpt')].map(el=>({height:el.getBoundingClientRect().height,lineHeight:parseFloat(getComputedStyle(el).lineHeight)}))
     }));
     assert(inner.scrollWidth<=inner.viewport+2,v.name+' '+route+': no horizontal overflow');
     assert(inner.headerHeight>0&&inner.headerHeight<=90,v.name+' '+route+': unified capsule header');
+    assert(inner.excerpts.every(e=>e.height<=e.lineHeight*2+2),v.name+' '+route+': excerpts use at most two lines');
   }
   await page.close();
 }
