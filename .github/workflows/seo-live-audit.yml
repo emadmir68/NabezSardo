@@ -23,7 +23,9 @@ jobs:
     steps:
       - name: Audit Googlebot-visible SEO surfaces
         run: |
-          set -euo pipefail
+          set -Eeuo pipefail
+          trap 'rc=$?; echo "::error::SEO audit failed at shell line ${LINENO}: ${BASH_COMMAND} (exit ${rc})"; exit "$rc"' ERR
+          echo 'seo_audit_stage=wait_for_deployment'
           base='https://nabzesardo.ir'
           googlebot='Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
           newsbot='Googlebot-News'
@@ -31,7 +33,7 @@ jobs:
           # Wait until the exact pushed revision is live; avoids auditing the previous edge version.
           live=0
           for i in $(seq 1 24); do
-            curl -fsS -A "$googlebot" --max-time 20 "$base/" -o /tmp/revision.html || true
+            curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 20 "$base/" -o /tmp/revision.html || true
             if grep -q "name=\"nabez-build\" content=\"$GITHUB_SHA\"" /tmp/revision.html; then
               live=1
               break
@@ -39,17 +41,19 @@ jobs:
             sleep 5
           done
           test "$live" = 1
+          echo 'seo_audit_stage=fetch_discovery_surfaces'
 
-          curl -fsS -A "$googlebot" --max-time 30 "$base/robots.txt" -o robots.txt
-          curl -fsS -A "$googlebot" --max-time 30 "$base/sitemap.xml" -o sitemap.xml
-          curl -fsS -A "$newsbot" --max-time 30 "$base/news-sitemap.xml" -o news-sitemap.xml
-          curl -fsS -A "$googlebot" --max-time 30 "$base/feed.xml" -o feed.xml
-          curl -fsS -A "$googlebot" --max-time 30 "$base/" -o home.html
-          curl -fsS -A "$googlebot" --max-time 30 "$base/editorial-policy" -o editorial.html
-          curl -fsS -A "$googlebot" --max-time 30 "$base/about" -o about.html
-          curl -fsS -A "$googlebot" --max-time 30 "$base/contact" -o contact.html
-          curl -fsS -A "$googlebot" --max-time 30 "$base/send-news" -o send-news.html
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/robots.txt" -o robots.txt
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/sitemap.xml" -o sitemap.xml
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$newsbot" --max-time 30 "$base/news-sitemap.xml" -o news-sitemap.xml
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/feed.xml" -o feed.xml
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/" -o home.html
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/editorial-policy" -o editorial.html
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/about" -o about.html
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/contact" -o contact.html
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/send-news" -o send-news.html
 
+          echo 'seo_audit_stage=verify_discovery_surfaces'
           grep -q '^Disallow: /admin' robots.txt
           ! grep -q '^Disallow: /search' robots.txt
           grep -q 'Sitemap: https://nabzesardo.ir/sitemap.xml' robots.txt
@@ -70,13 +74,14 @@ jobs:
           grep -q 'راه ارتباط رسمی' contact.html
           grep -q 'name="robots" content="noindex,follow"' send-news.html
 
-          curl -fsS -A "$googlebot" --max-time 30 "$base/search?q=seo-audit" -o search.html
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/search?q=seo-audit" -o search.html
           grep -q 'name="robots" content="noindex,follow"' search.html
-          curl -fsS -A "$googlebot" --max-time 30 "$base/all-news?q=seo-audit" -o archive-search.html
+          curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 30 "$base/all-news?q=seo-audit" -o archive-search.html
           grep -q 'name="robots" content="noindex,follow"' archive-search.html
 
+          echo 'seo_audit_stage=verify_local_pages'
           for p in local/sardouiyeh local/jiroft local/anbarabad local/kahnuj local/south-kerman; do
-            code=$(curl -A "$googlebot" -sS -o /tmp/local.html -w '%{http_code}' --max-time 30 "$base/$p")
+            code=$(curl -A "$googlebot" -sS --retry 3 --retry-delay 2 --retry-max-time 45 -o /tmp/local.html -w '%{http_code}' --max-time 30 "$base/$p")
             echo "$p status=$code bytes=$(wc -c </tmp/local.html)"
             test "$code" = 200
             grep -q 'rel="canonical"' /tmp/local.html
@@ -110,6 +115,7 @@ jobs:
             echo "www_dns=absent (no duplicate host)"
           fi
 
+          echo 'seo_audit_stage=validate_sitemaps'
           python - <<'PY'
           import datetime as dt
           import urllib.parse
@@ -156,14 +162,16 @@ jobs:
             for node in root.findall('s:url',ns):
               f.write(node.find('s:loc',ns).text.strip()+'\n')
           PY
+          echo 'seo_audit_stage=validate_all_sitemap_urls'
           while IFS= read -r u; do
-            code=$(curl -A "$googlebot" -sS -o /tmp/sitemap-page.html -w '%{http_code}' --max-time 30 "$u")
+            code=$(curl -A "$googlebot" -sS --retry 3 --retry-delay 2 --retry-max-time 45 -o /tmp/sitemap-page.html -w '%{http_code}' --max-time 30 "$u")
             echo "sitemap_url=$u status=$code"
             test "$code" = 200
             grep -Fq "rel=\"canonical\" href=\"$u\"" /tmp/sitemap-page.html
             ! grep -q 'name="robots" content="noindex' /tmp/sitemap-page.html
           done < sitemap-urls.txt
 
+          echo 'seo_audit_stage=verify_404_and_news_article'
           notfound=$(curl -A "$googlebot" -sS -o /tmp/notfound.html -w '%{http_code}' --max-time 30 "$base/__seo_audit_missing_page_404")
           echo "missing_page_status=$notfound"
           test "$notfound" = 404
