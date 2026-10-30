@@ -81,3 +81,12 @@ test('Cloudflare homepage retains the protected category routes and compact news
  assert.match(html,/<article\b[^>]*data-story-title-fa="[^"]+"[^>]*data-story-url="\/news\/[A-Za-z0-9_-]+"/);
  assert.doesNotMatch(html,/src="\/assets\/placeholder\.svg"/);
 });
+
+test('production SEO exposes WebSite and NewsMediaOrganization structured data',()=>{
+ const html=home(fixture(7));
+ assert.match(html,/'?@type'?/); // mark JSON-LD output presence
+ assert.ok(html.includes('"@type":"WebSite"'));
+ assert.ok(html.includes('"@type":"NewsMediaOrganization"'));
+ assert.match(html,/\/assets\/logo\.svg/);
+ assert.match(html,/rel="canonical" href="https:\/\/nabzesardo\.ir\/"/);
+});
