@@ -1,0 +1,36 @@
+name: Cloud Dancer Live Visibility Diagnostics
+on:
+  push:
+    branches:
+      - diagnostic/cloud-dancer-live-visibility-20261030
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Compare public live response with expected design
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE='https://nabzesardo.ir'
+          for suffix in '/' '/?cb=cloud-dancer-20261030' '/assets/cloud-dancer-2026.css' '/assets/cloud-dancer-2026.js' '/health'; do
+            key=$(echo "$suffix" | tr '/?=&.' '_')
+            echo "ROUTE $suffix"
+            curl --silent --show-error --location --max-time 25 --retry 2 \
+              -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' \
+              -D "/tmp/headers-$key" -o "/tmp/body-$key" \
+              -w 'HTTP=%{http_code} BYTES=%{size_download} TOTAL=%{time_total}\n' \
+              "$SITE$suffix" || true
+            grep -E -i '^(cf-cache-status|cache-control|age|server|content-type|cf-ray|etag|last-modified):' "/tmp/headers-$key" | head -n 12 || true
+            if [[ "$suffix" == '/' || "$suffix" == '/?cb=cloud-dancer-20261030' ]]; then
+              for pattern in 'ns26-site' 'cloud-dancer-2026.css' 'claude-home.css' 'روایتِ روشنِ' 'صدای خبرهای محلی'; do
+                if grep -Fq "$pattern" "/tmp/body-$key"; then echo "PRESENT: $pattern"; else echo "ABSENT: $pattern"; fi
+              done
+              grep -o 'name="nabez-build" content="[^"]*"' "/tmp/body-$key" | head -1 || true
+            fi
+          done
