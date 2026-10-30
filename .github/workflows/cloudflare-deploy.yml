@@ -99,7 +99,7 @@ jobs:
           grep -q 'cloud-dancer-2026.js' /tmp/home.html
           grep -q 'newsroom-v2.css' /tmp/home.html
           grep -q 'class="ns27-ticker-scroll"' /tmp/home.html
-          grep -q 'تیترهای' /tmp/home.html
+          grep -q 'سرخطِ' /tmp/home.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/cloud-dancer-2026.css" -o /tmp/cloud-dancer.css
           grep -q 'EDITORIAL TYPOGRAPHY' /tmp/cloud-dancer.css
           grep -q "نبض ساردو" /tmp/archive.html
