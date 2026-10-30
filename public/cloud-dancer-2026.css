@@ -163,7 +163,7 @@ body.ns26-page{--ns26-bg:#f0eee9;--ns26-ink:#242b34;--ns26-soft:#6e7682;--ns26-l
  font-synthesis:none;
  text-rendering:optimizeLegibility;
 }
-.ns26-site :is(h1,h2,h3,p,span,a,button){
+.ns26-site :is(h1,h2,h3,p,.ns26-story-title,.ns26-news-title,.ns26-news-summary){
  letter-spacing:normal;
 }
 .ns26-site :is(h1,h2,h3,p){
