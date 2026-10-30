@@ -31,7 +31,7 @@ test('newsroom V2 has real headlines above features, not a decorative marketing 
  assert.match(html,/class="ns26-site ns27-site"/);
  assert.match(html,/ns27-ticker/);
  assert.match(html,/ns27-mast/);
- assert.match(html,/تیترهای <em>امروز<\/em>/);
+ assert.match(html,/سرخطِ <em>خبرها<\/em>/);
  assert.match(html,/newsroom-v2\.css/);
  assert.doesNotMatch(html,/ns26-intro ns26-container/);
  assert.doesNotMatch(html,/ns26-art-orb/);
@@ -62,4 +62,35 @@ test('design is isolated and still has responsive, accessible header controls',(
  assert.match(css,/prefers-reduced-motion/);
  assert.match(css,/:focus-visible/);
  assert.match(css,/min-height:44px/);
+});
+
+
+test('main headline never promotes a 40-day-old photo above a current report',()=>{
+ const d=db();
+ const stale=article('old','گزارش قدیمی با عکس وانت','/uploads/old-truck.jpg','جیرفت');
+ stale.publishedAt=new Date(Date.now()-40*86400000).toISOString();
+ stale.createdAt=stale.publishedAt;
+ const freshest=article('new','خبر فوری و تازه از ساردوئیه','/assets/news-cover.svg','ساردوئیه');
+ freshest.publishedAt=new Date(Date.now()-5*60000).toISOString();
+ freshest.createdAt=freshest.publishedAt;
+ d.articles=[stale,freshest];
+ const html=render(d);
+ const feature=html.match(/<section class="ns26-feature-grid"[^>]*>([\s\S]*?)<div class="ns26-feature-aside">/);
+ assert.ok(feature);
+ assert.match(feature[1],/خبر فوری و تازه از ساردوئیه/);
+ assert.doesNotMatch(feature[1],/گزارش قدیمی با عکس وانت/);
+ assert.doesNotMatch(html,/تیترهای <em>امروز<\/em>/);
+});
+test('photo enhancement is limited to reports in the newest three-hour news cycle',()=>{
+ const d=db();
+ const now=Date.now();
+ const newest=article('new','جدیدترین خبر بدون عکس','/assets/news-cover.svg','تهران');
+ newest.publishedAt=new Date(now-2*60000).toISOString();
+ const oldPhoto=article('old','خبر دیروز با عکس','/uploads/yesterday.jpg','جیرفت');
+ oldPhoto.publishedAt=new Date(now-26*3600000).toISOString();
+ d.articles=[oldPhoto,newest];
+ const html=render(d);
+ const feature=html.match(/<section class="ns26-feature-grid"[^>]*>([\s\S]*?)<div class="ns26-feature-aside">/);
+ assert.match(feature[1],/جدیدترین خبر بدون عکس/);
+ assert.doesNotMatch(feature[1],/خبر دیروز با عکس/);
 });
