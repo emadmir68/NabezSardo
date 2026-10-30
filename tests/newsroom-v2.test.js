@@ -67,10 +67,10 @@ test('design is isolated and still has responsive, accessible header controls',(
 
 test('main headline never promotes a 40-day-old photo above a current report',()=>{
  const d=db();
- const stale=article('old','گزارش قدیمی با عکس وانت','/uploads/old-truck.jpg','جیرفت');
+ const stale=article('20','گزارش قدیمی با عکس وانت','/uploads/old-truck.jpg','جیرفت');
  stale.publishedAt=new Date(Date.now()-40*86400000).toISOString();
  stale.createdAt=stale.publishedAt;
- const freshest=article('new','خبر فوری و تازه از ساردوئیه','/assets/news-cover.svg','ساردوئیه');
+ const freshest=article('21','خبر فوری و تازه از ساردوئیه','/assets/news-cover.svg','ساردوئیه');
  freshest.publishedAt=new Date(Date.now()-5*60000).toISOString();
  freshest.createdAt=freshest.publishedAt;
  d.articles=[stale,freshest];
@@ -84,9 +84,9 @@ test('main headline never promotes a 40-day-old photo above a current report',()
 test('photo enhancement is limited to reports in the newest three-hour news cycle',()=>{
  const d=db();
  const now=Date.now();
- const newest=article('new','جدیدترین خبر بدون عکس','/assets/news-cover.svg','تهران');
+ const newest=article('22','جدیدترین خبر بدون عکس','/assets/news-cover.svg','تهران');
  newest.publishedAt=new Date(now-2*60000).toISOString();
- const oldPhoto=article('old','خبر دیروز با عکس','/uploads/yesterday.jpg','جیرفت');
+ const oldPhoto=article('23','خبر دیروز با عکس','/uploads/yesterday.jpg','جیرفت');
  oldPhoto.publishedAt=new Date(now-26*3600000).toISOString();
  d.articles=[oldPhoto,newest];
  const html=render(d);
