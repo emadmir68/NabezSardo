@@ -90,3 +90,14 @@ test('production SEO exposes WebSite and NewsMediaOrganization structured data',
  assert.match(html,/\/assets\/logo\.svg/);
  assert.match(html,/rel="canonical" href="https:\/\/nabzesardo\.ir\/"/);
 });
+
+test('Cloudflare worker reads the new home from views-v2, not legacy view-public',()=>{
+ const worker=fs.readFileSync(path.join(__dirname,'../src/worker.js'),'utf8');
+ assert.match(worker,/import views from "\.\.\/lib\/views-v2\.js";/);
+ assert.doesNotMatch(worker,/import views from "\.\.\/lib\/view-public\.js";/);
+ const routing=require('../lib/views-v2');
+ assert.equal(routing.home,require('../lib/view-home-2026'));
+ const markup=routing.home(fixture(8));
+ assert.match(markup,/class="ns26-site"/);
+ assert.match(markup,/cloud-dancer-2026\.css/);
+});
