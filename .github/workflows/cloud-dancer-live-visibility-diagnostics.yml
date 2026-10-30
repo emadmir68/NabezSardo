@@ -31,6 +31,10 @@ jobs:
               for pattern in 'ns26-site' 'cloud-dancer-2026.css' 'claude-home.css' 'روایتِ روشنِ' 'صدای خبرهای محلی'; do
                 if grep -Fq "$pattern" "/tmp/body-$key"; then echo "PRESENT: $pattern"; else echo "ABSENT: $pattern"; fi
               done
+          echo 'VERIFYING NEW DESIGN IS PRESENT ON LIVE ROUTE'
+          grep -Fq 'class="ns26-site"' /tmp/body-_
+          grep -Fq 'cloud-dancer-2026.css' /tmp/body-_
+          grep -Fq 'روایتِ روشنِ' /tmp/body-_
               grep -o 'name="nabez-build" content="[^"]*"' "/tmp/body-$key" | head -1 || true
             fi
           done
