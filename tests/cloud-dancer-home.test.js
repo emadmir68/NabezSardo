@@ -41,3 +41,32 @@ test('design assets are present and mobile/reduced-motion rules exist',()=>{
   assert.match(css,/prefers-reduced-motion/);
   assert.match(js,/aria-expanded/);
 });
+
+test('long Persian titles stay complete and use semantic headline hierarchy',()=>{
+  const db=fixture(15);
+  const longTitle='نشست بررسی مسائل روستاهای ساردوئیه و برنامه‌های اجرایی حوزه آموزش، کشاورزی و زیرساخت‌های ارتباطی در جنوب کرمان';
+  db.articles[1].title=longTitle;
+  const html=home(db);
+  assert.ok(html.includes(longTitle),'Full headline must be retained');
+  assert.match(html,/<h2 class="ns26-story-title" dir="auto">/);
+  assert.match(html,/<h3 class="ns26-story-title" dir="auto">/);
+  assert.match(html,/aria-label="مطالعه خبر:/);
+  const css=fs.readFileSync(path.join(__dirname,'../public/cloud-dancer-2026.css'),'utf8');
+  assert.match(css,/overflow-wrap:break-word/);
+  assert.match(css,/-webkit-line-clamp:unset/);
+  assert.match(css,/min-height:44px/);
+  assert.match(css,/:focus-visible/);
+});
+test('full article pages get isolated reading typography and accessible actions',()=>{
+  const {article}=require('../lib/view-public');
+  const db=fixture(6);
+  const html=article(db,db.articles[1]);
+  assert.match(html,/cloud-dancer-article-reading\.css/);
+  assert.match(html,/class="body rich-content article-body"/);
+  assert.match(html,/data-article-share/);
+  const css=fs.readFileSync(path.join(__dirname,'../public/cloud-dancer-article-reading.css'),'utf8');
+  assert.match(css,/\.article-premium \.article-body/);
+  assert.match(css,/\.article-premium \.article-actions/);
+  assert.match(css,/min-height:44px/);
+  assert.match(css,/max-width:650px/);
+});
