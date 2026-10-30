@@ -1,0 +1,33 @@
+name: Cloud Dancer Mobile Card Visual Regression
+on:
+  pull_request:
+    branches: [cloudflare-migration]
+    paths:
+      - "lib/view-home-2026.js"
+      - "public/cloud-dancer-2026.css"
+      - "scripts/cloud-dancer-visual-regression.mjs"
+      - ".github/workflows/cloud-dancer-mobile-card-regression.yml"
+  workflow_dispatch:
+
+jobs:
+  browser-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Check layout, headline and media boundaries
+        run: node scripts/cloud-dancer-visual-regression.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-dancer-card-regression
+          path: /tmp/nabez-cloud-dancer-visual/
+          if-no-files-found: ignore
