@@ -20,6 +20,8 @@ jobs:
       - name: Syntax check
         run: |
           node --check app.js
+          node --check lib/view-home-2026.js
+          node --check public/cloud-dancer-2026.js
           node --check lib/view-public.js
           node --check lib/view-admin.js
           node --check lib/view-common.js
@@ -28,6 +30,7 @@ jobs:
           node --check public/instagram-post.js
           node tests/news-monitor.test.js
           node tests/share-button.test.js
+          node tests/cloud-dancer-home.test.js
 
       - name: Production routing probe
         run: |
