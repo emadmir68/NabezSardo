@@ -18,7 +18,7 @@ function fixture(count=15){
 }
 test('premium homepage renders both with data and without articles',()=>{
   const html=home(fixture(15));
-  assert.match(html,/class="ns26-site ns27-site"/);
+  assert.match(html,/class="ns26-site ns27-site ns28-site"/);
   assert.match(html,/cloud-dancer-2026\.css/);
   assert.match(html,/cloud-dancer-2026\.js/);
   assert.match(html,/href="\/send-news"/);
@@ -98,6 +98,6 @@ test('Cloudflare worker reads the new home from views-v2, not legacy view-public
  const routing=require('../lib/views-v2');
  assert.equal(routing.home,require('../lib/view-home-2026'));
  const markup=routing.home(fixture(8));
- assert.match(markup,/class="ns26-site ns27-site"/);
+ assert.match(markup,/class="ns26-site ns27-site ns28-site"/);
  assert.match(markup,/cloud-dancer-2026\.css/);
 });
