@@ -93,6 +93,13 @@ jobs:
           curl -fsS --retry 5 --retry-delay 3 "$SITE/admin/login" -o /tmp/admin-login.html
 
           grep -q "نبض ساردو" /tmp/home.html
+          # Protect design rollouts against the Worker loading legacy view-public.home.
+          grep -q 'class="ns26-site"' /tmp/home.html
+          grep -q 'cloud-dancer-2026.css' /tmp/home.html
+          grep -q 'cloud-dancer-2026.js' /tmp/home.html
+          grep -q 'روایتِ روشنِ' /tmp/home.html
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/cloud-dancer-2026.css" -o /tmp/cloud-dancer.css
+          grep -q 'EDITORIAL TYPOGRAPHY' /tmp/cloud-dancer.css
           grep -q "نبض ساردو" /tmp/archive.html
           grep -q 'href="/category/incidents"' /tmp/home.html
           grep -q 'href="/category/weather"' /tmp/home.html
