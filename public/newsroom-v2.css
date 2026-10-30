@@ -593,3 +593,149 @@ body.ns26-page.ns27-page .ns27-site .ns26-news-card .ns26-text-link{color:#28789
 @media(prefers-reduced-motion:reduce){
  .ns27-page *{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
+
+
+/* Newsroom V2 mobile editorial polish — verified screenshot follow-up */
+.ns27-page .ns27-ticker-title{
+ display:block;
+ min-width:0;
+ flex:1;
+ overflow:hidden;
+ white-space:nowrap;
+ text-overflow:ellipsis;
+}
+.ns27-page .ns27-ticker-link{
+ min-width:0;
+ overflow:hidden;
+ text-overflow:clip;
+ text-align:right;
+}
+.ns27-page .ns26-feature-main .ns26-story-title{
+ text-wrap:pretty;
+ overflow-wrap:break-word;
+}
+.ns27-page .ns26-feature-main .ns26-feature-intro{
+ max-width:50ch;
+}
+.ns27-page .ns26-header .ns26-header-cta{
+ white-space:nowrap!important;
+}
+@media(max-width:620px){
+ /* Keep the first important story in the first viewport. */
+ .ns27-page .ns26-topline{height:24px!important;}
+ .ns27-page .ns26-topline a{font-size:9px;}
+ .ns27-page .ns26-header-inner{min-height:58px!important;}
+ .ns27-page .ns26-header .ns26-brand .ns26-mark{width:36px;height:36px}
+ .ns27-page .ns26-header .ns26-brand b{font-size:15px;}
+ .ns27-page .ns27-ticker-inner{min-height:43px;gap:9px;}
+ .ns27-page .ns27-ticker-label{
+   font-size:10px;
+   gap:6px;
+   padding-left:9px;
+   max-width:90px;
+ }
+ .ns27-page .ns27-ticker-scroll{
+   overflow-x:auto;
+   scroll-snap-type:x mandatory;
+   gap:9px;
+   padding-inline:0;
+ }
+ .ns27-page .ns27-ticker-link{
+   flex:0 0 100%;
+   width:100%;
+   max-width:100%;
+   font-size:11px;
+   line-height:1.5;
+   scroll-snap-align:start;
+ }
+ .ns27-page .ns27-ticker-index{
+   width:22px;height:22px;border-radius:7px;
+ }
+ .ns27-page .ns27-mast{padding:12px 0 8px;}
+ .ns27-page .ns27-mast-head{display:block;}
+ .ns27-page .ns27-mast-kicker{font-size:9px;}
+ .ns27-page .ns27-mast h1{
+   font-size:27px;
+   line-height:1.4;
+   margin:2px 0;
+   letter-spacing:0;
+ }
+ .ns27-page .ns27-mast p{
+   font-size:11px;
+   line-height:1.7;
+   max-width:100%;
+   white-space:nowrap;
+   overflow:hidden;
+   text-overflow:ellipsis;
+ }
+ .ns27-page .ns27-date{display:none;}
+ .ns27-page .ns27-quick{
+   display:grid;
+   grid-template-columns:repeat(4,minmax(0,1fr));
+   gap:6px;
+   margin:10px 0 5px;
+   overflow:visible;
+   padding:0;
+ }
+ .ns27-page .ns27-quick-label{display:none;}
+ .ns27-page .ns27-quick a,
+ .ns27-page .ns27-quick a.ns27-quick-local{
+   display:flex;
+   min-width:0;
+   min-height:42px;
+   padding:7px 4px;
+   border-radius:10px;
+   text-align:center;
+   font-size:10px;
+   font-weight:750;
+   line-height:1.5;
+   white-space:normal;
+   overflow-wrap:break-word;
+   justify-content:center;
+ }
+ .ns27-page .ns27-quick .ns27-quick-local span{display:none;}
+ .ns27-page .ns26-overline{
+   margin:0 0 8px;
+   padding:7px 0;
+ }
+ .ns27-page .ns26-overline>span:last-child{display:none;}
+ .ns27-page .ns26-feature-grid{gap:9px;}
+ body.ns26-page.ns27-page .ns27-site .ns26-feature-main .ns26-photo{
+   aspect-ratio:2.05/1;
+   max-height:235px;
+ }
+ body.ns26-page.ns27-page .ns27-site .ns26-feature-main .ns26-feature-details{
+   padding:13px 16px 15px;
+   gap:6px;
+ }
+ body.ns26-page.ns27-page .ns27-site .ns26-feature-main .ns26-story-title{
+   font-size:18px!important;
+   line-height:1.7;
+ }
+ body.ns26-page.ns27-page .ns27-site .ns26-feature-main .ns26-kicker{
+   font-size:10px;
+   padding:3px 8px;
+ }
+ body.ns26-page.ns27-page .ns27-site .ns26-feature-main .ns26-feature-intro{
+   font-size:11px;
+   line-height:1.8;
+ }
+ body.ns26-page.ns27-page .ns27-site .ns26-feature-side .ns26-story-title{
+   font-size:12.5px!important;
+   line-height:1.65!important;
+ }
+ body.ns26-page.ns27-page .ns27-site .ns26-feature-side .ns26-photo{
+   min-height:126px;
+ }
+ .ns27-page .ns26-header .ns26-header-cta{
+   padding:8px 9px;
+   font-size:10px;
+   min-height:39px;
+ }
+}
+@media(max-width:360px){
+ .ns27-page .ns26-header .ns26-brand b{font-size:14px;}
+ .ns27-page .ns26-header .ns26-header-cta{font-size:9px;padding:7px 8px;}
+ .ns27-page .ns27-mast h1{font-size:25px;}
+ .ns27-page .ns27-quick a{font-size:9.5px;}
+}
