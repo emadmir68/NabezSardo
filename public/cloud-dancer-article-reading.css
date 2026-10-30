@@ -1,0 +1,153 @@
+/* Nabez Sardo — article reading typography refinement (preview branch only).
+   Loaded only on news article pages; no global overrides for other sections.
+   Editorial: high hierarchy, comfortable line length, non-justified RTL prose.
+*/
+.article-premium{
+ --ns26-reading-font:"Vazirmatn","NabezLocal",Tahoma,sans-serif;
+ --ns26-heading-font:"Noto Kufi Arabic","Vazirmatn","NabezLocal",Tahoma,sans-serif;
+}
+.article-premium .article-head h1{
+ font-family:var(--ns26-heading-font)!important;
+ font-size:clamp(28px,3.6vw,54px)!important;
+ font-weight:800!important;
+ line-height:1.8!important;
+ letter-spacing:normal!important;
+ text-align:start!important;
+ text-wrap:pretty;
+ overflow-wrap:break-word;
+ word-break:normal;
+ hyphens:none;
+}
+.article-premium .article-head .article-deck{
+ font-family:var(--ns26-reading-font);
+ font-size:clamp(15px,1.5vw,19px);
+ line-height:2.15;
+ font-weight:450;
+ letter-spacing:normal;
+ text-align:start;
+ text-wrap:pretty;
+ overflow-wrap:break-word;
+}
+.article-premium .article-reading-zone{
+ min-width:0;
+}
+.article-premium .article-reading-zone .article-reading-label{
+ font-family:var(--ns26-reading-font);
+ font-size:13px;
+ font-weight:800;
+ letter-spacing:normal;
+}
+.article-premium .article-body{
+ font-family:var(--ns26-reading-font)!important;
+ font-size:clamp(16px,1.35vw,19px)!important;
+ font-weight:450;
+ line-height:2.18!important;
+ letter-spacing:normal!important;
+ word-spacing:normal!important;
+ text-align:start!important;
+ overflow-wrap:break-word;
+ word-break:normal;
+ hyphens:none;
+ max-width:780px;
+ color:#e8edf1!important;
+}
+.article-premium .article-body :is(.lang-fa,.lang-en){
+ min-width:0;
+ max-width:100%;
+}
+.article-premium .article-body p{
+ font-family:inherit!important;
+ font-size:inherit!important;
+ line-height:inherit!important;
+ margin:0 0 1.22em!important;
+ text-align:start;
+ white-space:normal;
+}
+.article-premium .article-body :is(h2,h3){
+ font-family:var(--ns26-reading-font)!important;
+ font-weight:800;
+ letter-spacing:normal;
+ text-align:start;
+ overflow-wrap:break-word;
+ color:#f1f5f7!important;
+ line-height:1.85!important;
+ margin:1.6em 0 .65em!important;
+}
+.article-premium .article-body h2{
+ font-size:clamp(21px,1.9vw,26px)!important;
+ border-right:3px solid #b2d7ec;
+ padding-right:13px;
+}
+.article-premium .article-body h3{font-size:clamp(19px,1.6vw,23px)!important;}
+.article-premium .article-body :is(strong,b){font-weight:800;color:#fff;}
+.article-premium .article-body :is(ul,ol){padding-inline-start:1.6em;margin:0 0 1.25em;}
+.article-premium .article-body li{line-height:2.05;margin-bottom:.48em;}
+.article-premium .article-body blockquote{
+ font-family:var(--ns26-reading-font);
+ line-height:2.15;
+ border-right:3px solid #c4ddec;
+ padding:12px 18px;
+ margin:1.4em 0;
+ border-radius:12px;
+ background:rgba(198,221,235,.08);
+}
+.article-premium .article-body a{
+ text-decoration:underline;
+ text-underline-offset:4px;
+ text-decoration-thickness:1px;
+}
+.article-premium .article-body :is(img,video){max-width:100%;height:auto;}
+/* Article action buttons: native button behavior preserved; improves target and label. */
+.article-premium .article-actions{
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap;
+ align-items:stretch;
+}
+.article-premium .article-actions .article-action{
+ min-height:44px;
+ min-width:44px;
+ padding:10px 15px;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ gap:8px;
+ font-family:var(--ns26-reading-font)!important;
+ font-size:12.5px!important;
+ font-weight:750!important;
+ line-height:1.7!important;
+ white-space:normal;
+ overflow-wrap:break-word;
+ text-align:center;
+ background:rgba(191,217,234,.10);
+ border:1px solid rgba(199,224,238,.28);
+ border-radius:14px;
+ color:#e9f0f6;
+ letter-spacing:normal;
+}
+.article-premium .article-actions .article-action-icon{font-family:Arial,sans-serif;font-size:16px;flex-shrink:0;}
+.article-premium .article-actions .article-action:hover{
+ background:rgba(191,217,234,.20);
+ border-color:#b5d8ea;
+ transform:translateY(-2px);
+}
+.article-premium :is(.article-actions .article-action,.article-body a,.article-category-pill):focus-visible{
+ outline:3px solid #b8d9ec!important;
+ outline-offset:3px!important;
+}
+@media(max-width:650px){
+ .article-premium .article-head h1{font-size:clamp(26px,6.6vw,38px)!important;line-height:1.8!important;}
+ .article-premium .article-head .article-deck{font-size:15px;line-height:2.1;}
+ .article-premium .article-body{font-size:16px!important;line-height:2.12!important;}
+ .article-premium .article-body h2{font-size:21px!important;}
+ .article-premium .article-body h3{font-size:19px!important;}
+ .article-premium .article-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+ .article-premium .article-actions .article-action{min-width:0;width:100%;min-height:46px;font-size:11.5px!important;padding:10px 8px;}
+}
+@media(max-width:370px){
+ .article-premium .article-actions .article-action{font-size:11px!important;}
+ .article-premium .article-head h1{font-size:26px!important;}
+}
+@media(prefers-reduced-motion:reduce){
+ .article-premium .article-actions .article-action{transition:none!important;transform:none!important;}
+}
