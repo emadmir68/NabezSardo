@@ -6,7 +6,7 @@ import http from "node:http";
 import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
 import store from "../lib/store.js";
-import views from "../lib/view-public.js";
+import views from "../lib/views-v2.js";
 import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
 import { cleanMonitoredImage, cleanMonitoredVideo } from "./monitored-media-cleaner.js";
 import { Resvg, initWasm } from "@resvg/resvg-wasm";
