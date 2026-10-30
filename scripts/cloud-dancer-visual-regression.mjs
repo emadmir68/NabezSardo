@@ -72,7 +72,7 @@ try{
    verify(x.mainR&&x.mainR.height<=670,v.name+' feature card has compact height, no blank poster region');
    verify(x.featureMedia.height<=v.w*.62,v.name+' feature image follows 16:9 ratio');
    verify(x.cardMedia.width>=v.w*.75,v.name+' latest news image is not a narrow sidebar');
-   verify(x.sideText&&x.sideMedia&&x.sideText.left>=x.sideMedia.right-2,v.name+' secondary card text does not overlap photo');
+   verify(x.sideText&&x.sideMedia&&(x.sideText.right<=x.sideMedia.left+2||x.sideMedia.right<=x.sideText.left+2),v.name+' secondary card text does not overlap photo in RTL');
    verify(x.button&&x.button.height>=44,v.name+' CTA is touch-friendly');
   }
   await page.locator('.ns26-feature-grid').scrollIntoViewIfNeeded();
