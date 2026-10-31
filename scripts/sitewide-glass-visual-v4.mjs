@@ -34,7 +34,9 @@ const urls={
  '/send-news':views.simple(db,'send-news'),
  '/editorial-policy':views.editorialPolicy(db),
  '/follow-up':views.followup(db),
- '/admin/login':adminViews.login(false)
+ '/admin/login':adminViews.login(false),
+ '/admin':adminViews.admin(db),
+ '/admin/articles/new':adminViews.editor(db)
 };
 const server=http.createServer(async(req,res)=>{
  let url;try{url=new URL(req.url,'http://localhost');}catch{res.writeHead(400).end();return;}
@@ -72,7 +74,7 @@ try{
    const id=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
    console.log('METRICS '+size.w+' '+route+' '+JSON.stringify({scroll:metrics.scroll,header:metrics.header&&{w:metrics.header.width,h:metrics.header.height},card:metrics.card&&{w:metrics.card.width,h:metrics.card.height},title:metrics.title&&{w:metrics.title.width,h:metrics.title.height}}));
    report(metrics.scroll<=size.w+3,size.w+' '+route+' no horizontal overflow ('+metrics.scroll+')');
-   if(route!=='/admin/login'){
+   if(!route.startsWith('/admin')){
     report(html.includes('glass-sitewide-v4.css'),size.w+' '+route+' shared stylesheet');
     if(route!=='/')report(!!metrics.header&&metrics.header.height>=50,size.w+' '+route+' glass header displayed');
     if(route!=='/')report(!!metrics.footer&&metrics.footer.height>100,size.w+' '+route+' full footer');
@@ -82,7 +84,7 @@ try{
    }
    for(const input of metrics.inputs)if(input.width>0&&input.height>0)report(input.right<=size.w+3&&input.left>=-3,size.w+' '+route+' input stays on screen');
    if(size.w===390||size.w===1280){
-     if(['/','/all-news','/news/v4story-0','/contact','/category/opinion','/admin/login'].includes(route)){
+     if(['/','/all-news','/news/v4story-0','/contact','/category/opinion','/admin/login','/admin','/admin/articles/new'].includes(route)){
       await page.screenshot({path:outdir+'/'+id+'-'+size.w+'.png',fullPage:true});
      }
    }
