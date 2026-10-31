@@ -69,7 +69,7 @@ body.public-shell:not(.ns26-page){
  font-weight:800
 }
 /* A consistent translucent site navigation — replaces capsule from old theme. */
-body.public-shell>header.site-capsule.ns4-header{
+body.public-shell>header.site-capsule[data-ns4-header]{
  position:sticky!important;
  z-index:95!important;
  top:0!important;
@@ -88,7 +88,7 @@ body.public-shell>header.site-capsule.ns4-header{
  -webkit-backdrop-filter:blur(24px) saturate(165%)!important;
  box-shadow:0 15px 38px rgba(8,27,45,.14),inset 0 1px rgba(255,255,255,.045)!important;
 }
-body.public-shell>header.site-capsule.ns4-header:before{
+body.public-shell>header.site-capsule[data-ns4-header]:before{
  content:"";position:absolute;inset:0;pointer-events:none;
  background:linear-gradient(115deg,rgba(255,255,255,.08),transparent 44%,rgba(201,239,255,.045));
 }
@@ -884,7 +884,7 @@ body.public-shell>footer.ns4-footer{
  .public-shell *, .public-shell *::before,.public-shell *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 @media(prefers-reduced-transparency:reduce){
- body.public-shell>header.site-capsule.ns4-header{background:#0a2236!important}
+ body.public-shell>header.site-capsule[data-ns4-header]{background:#0a2236!important}
  .public-shell .grid.news .card{background:#fff!important}
  .public-shell .ns4-header .ns4-header-nav{background:#0a2236!important}
 }
