@@ -692,7 +692,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  color:#ac3b39!important;border:1px solid #f0c1bf!important
 }
 /* One premium brand close on every inner page */
-body.public-shell>footer.ns4-footer{
+body.public-shell footer.ns4-footer{
  margin:0!important;
  padding:0!important;
  width:100%!important;
