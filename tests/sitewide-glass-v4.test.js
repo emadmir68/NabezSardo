@@ -84,7 +84,7 @@ test('design system protects responsive navigation, image ratio, touch targets a
  assert.match(css,/aspect-ratio:16\/9/);
  assert.match(css,/:focus-visible/);
  assert.match(css,/prefers-reduced-motion/);
- assert.match(css,/body\.public-shell>footer\.ns4-footer/);
+ assert.match(css,/body\.public-shell footer\.ns4-footer/);
  assert.match(admin,/editor-shell/);
  assert.match(js,/aria-expanded/);
  assert.match(js,/Escape/);
