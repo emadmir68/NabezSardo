@@ -962,3 +962,32 @@ body.public-shell footer.ns4-footer{
  }
  .public-shell main.page .ns4-page-hero p.lead{font-size:12px!important;line-height:1.8!important}
 }
+
+
+/* Disable the legacy brown photo scrim behind every modern page.
+   The previous dark blurred mosque background was the primary cause of
+   mismatched page cards during V4 visual review. */
+body.public-shell::before,
+body.public-shell::after{
+ display:none!important;
+ content:none!important;
+ background:none!important;
+}
+body.public-shell:not(.ns26-page){
+ background:#edf3f8!important;
+ background-image:radial-gradient(ellipse 55% 30% at 92% 4%,rgba(152,201,232,.25),transparent 75%),radial-gradient(ellipse 50% 30% at 2% 28%,rgba(214,208,235,.20),transparent 75%),linear-gradient(#f1f6fa,#eaf2f8)!important;
+}
+@media(max-width:660px){
+ .public-shell .article-head .article-actions{
+   display:grid!important;
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   gap:8px!important;
+   align-items:stretch!important;
+ }
+ .public-shell .article-head .article-actions .article-action{
+   width:100%;min-width:0;min-height:45px!important;
+   font-size:10.5px!important;
+   line-height:1.7!important;
+   padding:8px 6px!important;
+ }
+}
