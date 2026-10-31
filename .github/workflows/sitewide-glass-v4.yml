@@ -1,0 +1,39 @@
+name: Sitewide Glass V4 Visual and Functional Check
+on:
+  pull_request:
+    branches:
+      - cloudflare-migration
+    paths:
+      - 'lib/view-common.js'
+      - 'public/glass-sitewide-v4.css'
+      - 'public/glass-sitewide-v4.js'
+      - 'public/glass-admin-v4.css'
+      - 'tests/sitewide-glass-v4.test.js'
+      - 'scripts/sitewide-glass-visual-v4.mjs'
+      - '.github/workflows/sitewide-glass-v4.yml'
+  workflow_dispatch:
+
+jobs:
+  cross-page-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run full page + mobile regression
+        run: node scripts/sitewide-glass-visual-v4.mjs
+      - name: Upload full page screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nabzesardo-v4-sitewide-visual
+          path: /tmp/nabez-v4-visual/
+          if-no-files-found: ignore
