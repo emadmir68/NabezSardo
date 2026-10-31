@@ -83,6 +83,10 @@ try{
      if(metrics.card)report(metrics.card.width>170,size.w+' '+route+' news card usable width');
    }
    for(const input of metrics.inputs)if(input.width>0&&input.height>0)report(input.right<=size.w+3&&input.left>=-3,size.w+' '+route+' input stays on screen');
+   if(size.w===390&&['/all-news','/news/v4story-0'].includes(route)){
+     const snap=await page.screenshot({type:'jpeg',quality:40,fullPage:false});
+     console.log('NS4_JPEG_PREVIEW '+route+' '+snap.toString('base64'));
+   }
    if(size.w===390||size.w===1280){
      if(['/','/all-news','/news/v4story-0','/contact','/category/opinion','/admin/login','/admin','/admin/articles/new'].includes(route)){
       await page.screenshot({path:outdir+'/'+id+'-'+size.w+'.png',fullPage:true});
