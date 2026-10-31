@@ -888,3 +888,77 @@ body.public-shell>footer.ns4-footer{
  .public-shell .grid.news .card{background:#fff!important}
  .public-shell .site-capsule[data-ns4-header] .ns4-header-nav{background:#0a2236!important}
 }
+
+
+/* Shared cinematic mastheads for category, locale, policy, contact and citizen forms */
+.public-shell main.page .ns4-page-hero{
+ position:relative;
+ isolation:isolate;
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ overflow:hidden;
+ padding:clamp(26px,4.5vw,56px);
+ min-height:185px;
+ margin:0 0 28px;
+ border:1px solid rgba(203,237,253,.28);
+ border-radius:28px;
+ background:
+  radial-gradient(ellipse 43% 67% at 5% 94%,rgba(143,135,199,.22),transparent 78%),
+  radial-gradient(ellipse 55% 95% at 95% 14%,rgba(125,192,228,.28),transparent 73%),
+  linear-gradient(130deg,#0d2d46,#0a1f32 60%,#193a53);
+ box-shadow:0 22px 60px rgba(19,57,83,.17),inset 0 1px rgba(255,255,255,.11);
+ color:#eef8ff;
+}
+.public-shell main.page .ns4-page-hero:before{
+ content:"";position:absolute;pointer-events:none;
+ width:270px;height:270px;left:-95px;top:-170px;
+ border:1px solid rgba(221,248,255,.19);border-radius:50%;
+ box-shadow:0 0 0 45px rgba(232,248,255,.025),0 0 0 90px rgba(232,248,255,.018)
+}
+.public-shell main.page .ns4-page-hero:after{
+ content:"";pointer-events:none;position:absolute;
+ inset:0;z-index:-1;
+ background:linear-gradient(120deg,rgba(255,255,255,.055),transparent 45%,rgba(197,231,248,.04));
+}
+.public-shell main.page .ns4-page-hero .eyebrow{
+ display:inline-flex;align-items:center;gap:8px;
+ color:#b9e4f0!important;
+ border:1px solid rgba(225,248,255,.24)!important;
+ border-radius:99px;
+ background:rgba(224,243,253,.11)!important;
+ font:800 10px Arial,sans-serif!important;
+ letter-spacing:1.8px;
+ padding:8px 13px!important;
+ width:max-content;max-width:100%;
+ margin:0 0 10px
+}
+.public-shell main.page .ns4-page-hero h1{
+ color:#f7fcff!important;
+ font-family:"NabezLocal","Vazirmatn",Tahoma,sans-serif!important;
+ font-weight:900!important;
+ font-size:clamp(30px,3.9vw,53px)!important;
+ line-height:1.7!important;
+ letter-spacing:normal;
+ text-shadow:none!important;
+ margin:0 0 7px!important;
+ max-width:100%;
+}
+.public-shell main.page .ns4-page-hero p.lead{
+ color:#bad0dd!important;
+ font-size:clamp(12px,1.2vw,15px)!important;
+ line-height:2!important;
+ max-width:740px;
+ margin:0!important;
+}
+@media(max-width:660px){
+ .public-shell main.page .ns4-page-hero{
+   min-height:145px;
+   border-radius:21px;
+   padding:25px 20px;
+   margin:0 0 19px
+ }
+ .public-shell main.page .ns4-page-hero h1{
+   font-size:clamp(27px,7.1vw,35px)!important;
+   line-height:1.7!important;
+ }
+ .public-shell main.page .ns4-page-hero p.lead{font-size:12px!important;line-height:1.8!important}
+}
