@@ -28,11 +28,13 @@ function db(){
 }
 test('newsroom V2 has real headlines above features, not a decorative marketing hero',()=>{
  const html=render(db());
- assert.match(html,/class="ns26-site ns27-site"/);
+ assert.match(html,/class="ns26-site ns27-site ns28-site"/);
  assert.match(html,/ns27-ticker/);
  assert.match(html,/ns27-mast/);
- assert.match(html,/سرخطِ <em>خبرها<\/em>/);
+ assert.match(html,/نبضِ جنوب، <em>زنده و نزدیک\.<\/em>/);
  assert.match(html,/newsroom-v2\.css/);
+ assert.match(html,/apple-glass-editorial-v3\.css/);
+ assert.match(html,/class="ns28-stage"/);
  assert.doesNotMatch(html,/ns26-intro ns26-container/);
  assert.doesNotMatch(html,/ns26-art-orb/);
  assert.match(html,/href="\/category\/incidents"/);
@@ -58,6 +60,10 @@ test('ticker uses article data and keeps clickthrough URLs',()=>{
 test('design is isolated and still has responsive, accessible header controls',()=>{
  const css=fs.readFileSync(path.join(__dirname,'../public/newsroom-v2.css'),'utf8');
  assert.match(css,/ns27-page/);
+ const glass=fs.readFileSync(path.join(__dirname,'../public/apple-glass-editorial-v3.css'),'utf8');
+ assert.match(glass,/backdrop-filter:blur/);
+ assert.match(glass,/ns28-aurora/);
+ assert.match(glass,/@media\(max-width:620px\)/);
  assert.match(css,/@media\(max-width:620px\)/);
  assert.match(css,/prefers-reduced-motion/);
  assert.match(css,/:focus-visible/);

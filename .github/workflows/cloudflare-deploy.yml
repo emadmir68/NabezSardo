@@ -94,12 +94,14 @@ jobs:
 
           grep -q "نبض ساردو" /tmp/home.html
           # Protect design rollouts against the Worker loading legacy view-public.home.
-          grep -q 'class="ns26-site ns27-site"' /tmp/home.html
+          grep -q 'class="ns26-site ns27-site ns28-site"' /tmp/home.html
           grep -q 'cloud-dancer-2026.css' /tmp/home.html
           grep -q 'cloud-dancer-2026.js' /tmp/home.html
           grep -q 'newsroom-v2.css' /tmp/home.html
+          grep -q 'apple-glass-editorial-v3.css' /tmp/home.html
+          grep -q 'class="ns28-stage"' /tmp/home.html
           grep -q 'class="ns27-ticker-scroll"' /tmp/home.html
-          grep -q 'سرخطِ' /tmp/home.html
+          grep -q 'نبضِ جنوب' /tmp/home.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/cloud-dancer-2026.css" -o /tmp/cloud-dancer.css
           grep -q 'EDITORIAL TYPOGRAPHY' /tmp/cloud-dancer.css
           grep -q "نبض ساردو" /tmp/archive.html

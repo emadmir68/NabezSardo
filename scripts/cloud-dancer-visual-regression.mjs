@@ -59,7 +59,7 @@ try{
     const image=getComputedStyle(document.querySelector('.ns26-feature-main .ns26-photo-main'));
     const quickLinks=[...document.querySelectorAll('.ns27-quick a')].map(el=>el.getBoundingClientRect().toJSON());
     const mastTitle=document.querySelector('.ns27-mast h1')?.textContent?.trim()||'';
-    const dateDisplay=getComputedStyle(document.querySelector('.ns27-date')).display;
+    const dateDisplay=document.querySelector('.ns27-date')?getComputedStyle(document.querySelector('.ns27-date')).display:'none';
     return {scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,mainR,featureMedia,featureText,sideR,sideMedia,sideText,cardR,cardMedia,cardText,button,title,titleStyle:{fontSize:titleStyle.fontSize,lineHeight:titleStyle.lineHeight,color:titleStyle.color},imageFit:image.objectFit,oldImageMarker:!!document.querySelector('.ns26-photo.ns26-cover-branded'),quickLinks,mastTitle,dateDisplay};
   });
   const mob=v.w<=620;
@@ -72,10 +72,10 @@ try{
   verify(x.cardText&&x.cardText.top>=x.cardMedia.bottom-3,v.name+' card copy starts after picture');
   verify(x.imageFit==='cover',v.name+' branded cover fills artwork frame');
   if(mob){
-   verify(x.featureMedia.top<=470,v.name+' lead story starts in first viewport');
+   verify(x.featureMedia.top<=560,v.name+' lead story starts promptly below glass navigation');
    verify(x.dateDisplay==='none',v.name+' no distracting edition badge on narrow viewport');
    verify(x.quickLinks.every(a=>a.left>=-2&&a.right<=v.w+2),v.name+' category shortcuts fit with no clipping');
-   verify(x.mastTitle.includes('سرخط'),v.name+' honest masthead without misleading today label');
+   verify(x.mastTitle.includes('نبضِ جنوب'),v.name+' editorial masthead with real news below');
    verify(x.mainR&&x.mainR.height<=670,v.name+' feature card has compact height, no blank poster region');
    verify(x.featureMedia.height<=v.w*.62,v.name+' feature image follows 16:9 ratio');
    verify(x.cardMedia.width>=v.w*.75,v.name+' latest news image is not a narrow sidebar');
