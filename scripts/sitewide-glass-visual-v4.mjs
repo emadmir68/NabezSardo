@@ -68,7 +68,16 @@ try{
     const nav=rect('[data-ns4-header]');
     const card=rect('.grid.news .card');
     const title=rect('main h1');
-    const inputs=[...document.querySelectorAll('main input:not([type="hidden"]):not(.hp-field input),main textarea,main select')].map(x=>x.getBoundingClientRect().toJSON());
+    const inputs=[...document.querySelectorAll('main input:not([type="hidden"]):not(.hp-field input),main textarea,main select')].map(x=>{
+      const rect=x.getBoundingClientRect().toJSON();
+      let el=x.parentElement,containedScroll=false;
+      while(el&&el!==document.body){
+        const style=getComputedStyle(el);
+        if(/auto|scroll|hidden/.test(style.overflowX)&&el.scrollWidth>el.clientWidth+3){containedScroll=true;break;}
+        el=el.parentElement;
+      }
+      return {...rect,containedScroll,name:x.getAttribute('name')||x.getAttribute('data-font-family')||x.tagName};
+    });
     return {scroll,bodyClass:body.className,header:nav,card,title,inputs,footer:rect('.ns4-footer'),menu:rect('.ns4-menu-toggle'),hero:rect('.ns26-feature-main'),css:getComputedStyle(document.body).backgroundColor};
    });
    const id=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
@@ -82,7 +91,7 @@ try{
    if(route.includes('news/')||route==='/all-news'||route.startsWith('/category/')||route==='/local/jiroft'){
      if(metrics.card)report(metrics.card.width>170,size.w+' '+route+' news card usable width');
    }
-   for(const input of metrics.inputs)if(input.width>0&&input.height>0)report(input.right<=size.w+3&&input.left>=-3,size.w+' '+route+' input stays on screen');
+   for(const input of metrics.inputs)if(input.width>0&&input.height>0&&!input.containedScroll)report(input.right<=size.w+3&&input.left>=-3,size.w+' '+route+' '+input.name+' input stays on screen');
    if(size.w===390&&['/all-news','/news/v4story-0'].includes(route)){
      const snap=await page.screenshot({type:'jpeg',quality:40,fullPage:false});
      console.log('NS4_JPEG_PREVIEW '+route+' '+snap.toString('base64'));
