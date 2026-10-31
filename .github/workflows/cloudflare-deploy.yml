@@ -94,25 +94,32 @@ jobs:
 
           grep -q "نبض ساردو" /tmp/home.html
           # Protect design rollouts against the Worker loading legacy view-public.home.
-          grep -q 'class="ns26-site ns27-site ns28-site"' /tmp/home.html
+          grep -q 'class="ns26-site ns27-site ns28-site ns29-site"' /tmp/home.html
           grep -q 'cloud-dancer-2026.css' /tmp/home.html
           grep -q 'cloud-dancer-2026.js' /tmp/home.html
           grep -q 'newsroom-v2.css' /tmp/home.html
           grep -q 'apple-glass-editorial-v3.css' /tmp/home.html
-          grep -q 'class="ns28-stage"' /tmp/home.html
+          grep -q 'class="ns28-stage ns29-stage"' /tmp/home.html
           # Entire public site must now share V4 glass design, not just homepage.
           grep -q 'glass-sitewide-v4.css' /tmp/home.html
+          grep -q 'mosa-sitewide-v5.css' /tmp/home.html
+          grep -q 'mosa-home-v5.css' /tmp/home.html
+          grep -q 'class="ns29-backdrop"' /tmp/home.html
           grep -q 'glass-sitewide-v4.css' /tmp/archive.html
           grep -q 'data-ns4-header' /tmp/archive.html
           grep -q 'class="ns4-footer"' /tmp/archive.html
           grep -q 'glass-admin-v4.css' /tmp/admin-login.html
           curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/glass-sitewide-v4.css" -o /tmp/ns4-sitewide.css
           grep -q 'SITEWIDE GLASS DESIGN SYSTEM v4' /tmp/ns4-sitewide.css
+          curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/mosa-sitewide-v5.css" -o /tmp/ns5-sitewide.css
+          grep -q 'MOSA-INSPIRED EDITORIAL SYSTEM V5' /tmp/ns5-sitewide.css
+          curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/mosa-home-v5.css" -o /tmp/ns5-home.css
+          grep -q 'MOSA-INSPIRED NEWSROOM V5' /tmp/ns5-home.css
           curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/glass-sitewide-v4.js" -o /tmp/ns4-navigation.js
           grep -q 'data-ns4-menu-toggle' /tmp/ns4-navigation.js
 
           grep -q 'class="ns27-ticker-scroll"' /tmp/home.html
-          grep -q 'نبضِ جنوب' /tmp/home.html
+          grep -q 'خبر زندگی می‌کند' /tmp/home.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/cloud-dancer-2026.css" -o /tmp/cloud-dancer.css
           grep -q 'EDITORIAL TYPOGRAPHY' /tmp/cloud-dancer.css
           grep -q "نبض ساردو" /tmp/archive.html

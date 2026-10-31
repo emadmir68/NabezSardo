@@ -4,6 +4,8 @@ on:
     branches: [cloudflare-migration]
     paths:
       - "lib/view-home-2026.js"
+      - "public/mosa-home-v5.css"
+      - "public/mosa-sitewide-v5.css"
       - "public/cloud-dancer-2026.css"
       - "scripts/cloud-dancer-visual-regression.mjs"
       - ".github/workflows/cloud-dancer-mobile-card-regression.yml"
