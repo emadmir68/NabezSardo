@@ -1,0 +1,49 @@
+name: Check Nabez Sardo external access (non-production)
+on:
+  push:
+    branches:
+      - diagnostic/nabez-external-access-20261031
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Probe apex and www with DNS, TLS, HTTP and design markers
+        shell: bash
+        run: |
+          set +e
+          echo "=== GitHub runner external diagnostics ==="
+          for h in nabzesardo.ir www.nabzesardo.ir; do
+            echo "=== HOST: $h ==="
+            echo "DNS system"
+            getent ahostsv4 "$h" | head -n 3
+            echo "DNS Google A"
+            dig +tries=1 +time=5 @8.8.8.8 +short "$h" A
+            echo "DNS Cloudflare A"
+            dig +tries=1 +time=5 @1.1.1.1 +short "$h" A
+            echo "DNS Google AAAA"
+            dig +tries=1 +time=5 @8.8.8.8 +short "$h" AAAA
+            for ep in "/" "/health" "/assets/apple-glass-editorial-v3.css"; do
+              safe=$(echo "$h$ep" | tr '/.' '__')
+              echo "URL https://$h$ep"
+              curl -L --connect-timeout 12 --max-time 28 --retry 1 --silent --show-error \
+                 -H "Cache-Control: no-cache" \
+                 -w "HTTP=%{http_code} IP=%{remote_ip} VERIFY=%{ssl_verify_result} REDIRS=%{num_redirects} FINAL=%{url_effective} SIZE=%{size_download} TIME=%{time_total}\n" \
+                 -D "/tmp/headers_$safe" -o "/tmp/body_$safe" "https://$h$ep"
+              grep -E -i '^(server|content-type|cf-cache-status|cache-control|location|age):' "/tmp/headers_$safe" | head -n 8
+              if [ "$ep" = "/" ]; then
+                for marker in 'class="ns26-site ns27-site ns28-site"' 'apple-glass-editorial-v3.css' 'نبضِ جنوب'; do
+                  grep -Fq "$marker" "/tmp/body_$safe" && echo "MARKER_PRESENT: $marker" || echo "MARKER_MISSING: $marker"
+                done
+              fi
+            done
+          done
+          echo "=== HTTP vs HTTPS redirects ==="
+          for h in nabzesardo.ir www.nabzesardo.ir; do
+            curl -I -sS -L --connect-timeout 10 --max-time 20 -w "$h HTTP_REDIRECT=%{http_code} FINAL=%{url_effective} TLS=%{ssl_verify_result}\n" "http://$h/" | head -n 15
+          done
+          echo "=== DNS authoritative nameservers ==="
+          dig +tries=1 +time=5 @1.1.1.1 +short nabzesardo.ir NS
