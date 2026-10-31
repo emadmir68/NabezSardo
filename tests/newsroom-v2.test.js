@@ -28,13 +28,13 @@ function db(){
 }
 test('newsroom V2 has real headlines above features, not a decorative marketing hero',()=>{
  const html=render(db());
- assert.match(html,/class="ns26-site ns27-site ns28-site"/);
+ assert.match(html,/class="ns26-site ns27-site ns28-site ns29-site"/);
  assert.match(html,/ns27-ticker/);
  assert.match(html,/ns27-mast/);
- assert.match(html,/نبضِ جنوب، <em>زنده و نزدیک\.<\/em>/);
+ assert.match(html,/اینجا، <em>خبر زندگی می‌کند\.<\/em>/);
  assert.match(html,/newsroom-v2\.css/);
  assert.match(html,/apple-glass-editorial-v3\.css/);
- assert.match(html,/class="ns28-stage"/);
+ assert.match(html,/class="ns28-stage ns29-stage"/);
  assert.doesNotMatch(html,/ns26-intro ns26-container/);
  assert.doesNotMatch(html,/ns26-art-orb/);
  assert.match(html,/href="\/category\/incidents"/);
