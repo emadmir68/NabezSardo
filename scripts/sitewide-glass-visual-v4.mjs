@@ -63,7 +63,7 @@ try{
     const rect=q=>document.querySelector(q)?.getBoundingClientRect()?.toJSON()||null;
     const scroll=document.documentElement.scrollWidth;
     const body=document.body;
-    const nav=rect('.ns4-header');
+    const nav=rect('[data-ns4-header]');
     const card=rect('.grid.news .card');
     const title=rect('main h1');
     const inputs=[...document.querySelectorAll('main input:not([type="hidden"]):not(.hp-field input),main textarea,main select')].map(x=>x.getBoundingClientRect().toJSON());
