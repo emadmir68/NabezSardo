@@ -75,7 +75,7 @@ try{
    verify(x.featureMedia.top<=560,v.name+' lead story starts promptly below glass navigation');
    verify(x.dateDisplay==='none',v.name+' no distracting edition badge on narrow viewport');
    verify(x.quickLinks.every(a=>a.left>=-2&&a.right<=v.w+2),v.name+' category shortcuts fit with no clipping');
-   verify(x.mastTitle.includes('نبضِ جنوب'),v.name+' editorial masthead with real news below');
+   verify(x.mastTitle.includes('اینجا،'),v.name+' editorial masthead with real news below');
    verify(x.mainR&&x.mainR.height<=670,v.name+' feature card has compact height, no blank poster region');
    verify(x.featureMedia.height<=v.w*.62,v.name+' feature image follows 16:9 ratio');
    verify(x.cardMedia.width>=v.w*.75,v.name+' latest news image is not a narrow sidebar');
