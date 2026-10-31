@@ -100,11 +100,11 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  padding-block:10px!important;
  position:relative;
 }
-.public-shell .ns4-header .brand{
+.public-shell .site-capsule[data-ns4-header] .brand{
  display:flex!important;align-items:center;flex:0 0 auto;gap:11px;
  margin:0!important;min-width:0;text-decoration:none!important
 }
-.public-shell .ns4-header .brand .brand-mark{
+.public-shell .site-capsule[data-ns4-header] .brand .brand-mark{
  width:47px!important;height:47px!important;
  display:grid!important;place-items:center;
  background:linear-gradient(135deg,#effbff,#b9ddeb 65%,#dfd9ed)!important;
@@ -113,27 +113,27 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  border:1px solid rgba(255,255,255,.85)!important;
  box-shadow:0 9px 21px rgba(2,13,25,.20),inset 0 1px #fff!important;
 }
-.public-shell .ns4-header .brand-mark svg{width:34px;height:34px}
-.public-shell .ns4-header .brand-mark svg path{stroke:#2b617b!important}
-.public-shell .ns4-header .brand b{
+.public-shell .site-capsule[data-ns4-header] .brand-mark svg{width:34px;height:34px}
+.public-shell .site-capsule[data-ns4-header] .brand-mark svg path{stroke:#2b617b!important}
+.public-shell .site-capsule[data-ns4-header] .brand b{
  display:flex;flex-direction:column;
  color:#f8fbff!important;
  font-size:20px!important;font-weight:900!important;
  line-height:1.45;white-space:nowrap;
  letter-spacing:normal!important;
 }
-.public-shell .ns4-header .brand small{
+.public-shell .site-capsule[data-ns4-header] .brand small{
  color:#9fbacf!important;font:9px Arial,sans-serif;
  letter-spacing:2px;display:block!important
 }
-.public-shell .ns4-header .ns4-header-nav{
+.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{
  display:flex!important;align-items:center;
  flex:1 1 auto;min-width:0;max-width:none;
  justify-content:center;gap:4px;
  overflow-x:auto;scrollbar-width:none
 }
-.public-shell .ns4-header .ns4-header-nav::-webkit-scrollbar{display:none}
-.public-shell .ns4-header .ns4-header-nav a{
+.public-shell .site-capsule[data-ns4-header] .ns4-header-nav::-webkit-scrollbar{display:none}
+.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{
  display:inline-flex!important;align-items:center;justify-content:center;
  flex:0 0 auto;
  padding:10px 12px!important;
@@ -142,13 +142,13 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  font-size:12px!important;font-weight:750!important;
  text-decoration:none
 }
-.public-shell .ns4-header .ns4-header-nav a:hover{
+.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a:hover{
  background:rgba(224,245,255,.12)!important;
  color:#fff!important
 }
-.public-shell .ns4-header .header-spacer{display:none!important}
+.public-shell .site-capsule[data-ns4-header] .header-spacer{display:none!important}
 .public-shell .ns4-header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}
-.public-shell .ns4-header .ns4-search-action{
+.public-shell .site-capsule[data-ns4-header] .ns4-search-action{
  width:45px!important;height:45px!important;flex:0 0 45px!important;
  display:grid!important;place-items:center;
  border-radius:14px!important;
@@ -158,7 +158,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  box-shadow:inset 0 1px rgba(255,255,255,.12),0 8px 20px rgba(0,0,0,.11);
 }
 .public-shell .ns4-search-action svg{width:20px;height:20px}
-.public-shell .ns4-header .ns4-submit-action{
+.public-shell .site-capsule[data-ns4-header] .ns4-submit-action{
  min-height:45px!important;
  display:inline-flex!important;align-items:center;gap:14px!important;
  background:linear-gradient(135deg,#e2f9fc,#b6deeb 70%,#d6deef)!important;
@@ -170,7 +170,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  font-size:12px!important;font-weight:900!important;
  text-shadow:none!important;white-space:nowrap
 }
-.public-shell .ns4-header .ns4-submit-action:hover{filter:brightness(1.05)}
+.public-shell .site-capsule[data-ns4-header] .ns4-submit-action:hover{filter:brightness(1.05)}
 .public-shell .ns4-menu-toggle{
  display:none;flex:none;flex-direction:column;align-items:center;justify-content:center;
  width:45px;height:45px;gap:5px;
@@ -776,13 +776,13 @@ body.public-shell>footer.ns4-footer{
 /* Breakpoints. Never let decorative design block article actions or forms. */
 @media(max-width:1120px){
  .public-shell .ns4-header-inner{gap:10px!important}
- .public-shell .ns4-header .ns4-header-nav a{padding:9px 8px!important;font-size:11px!important}
- .public-shell .ns4-header .brand b{font-size:18px!important}
+ .public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{padding:9px 8px!important;font-size:11px!important}
+ .public-shell .site-capsule[data-ns4-header] .brand b{font-size:18px!important}
  .public-shell .ns4-header-actions{gap:7px}
  .public-shell .archive-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:1000px){
- .public-shell .ns4-header .ns4-header-nav{
+ .public-shell .site-capsule[data-ns4-header] .ns4-header-nav{
   display:none!important;
   position:absolute!important;
   z-index:100;
@@ -800,8 +800,8 @@ body.public-shell>footer.ns4-footer{
   box-shadow:0 20px 55px rgba(4,18,30,.28)!important;
   backdrop-filter:blur(27px);-webkit-backdrop-filter:blur(27px);
  }
- .public-shell .ns4-header .ns4-header-nav.ns4-open{display:flex!important}
- .public-shell .ns4-header .ns4-header-nav a{
+ .public-shell .site-capsule[data-ns4-header] .ns4-header-nav.ns4-open{display:flex!important}
+ .public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{
   justify-content:flex-start;
   width:100%;
   font-size:14px!important;
@@ -822,17 +822,17 @@ body.public-shell>footer.ns4-footer{
  .public-shell .ns4-utility-signature{display:none}
  .public-shell .ns4-utility a{font-size:9px}
  .public-shell .ns4-header-inner{min-height:64px!important;padding-block:8px!important;gap:7px!important}
- .public-shell .ns4-header .brand{gap:7px}
- .public-shell .ns4-header .brand .brand-mark{width:39px!important;height:39px!important;border-radius:12px!important}
- .public-shell .ns4-header .brand-mark svg{width:28px;height:28px}
- .public-shell .ns4-header .brand b{font-size:16px!important;letter-spacing:normal!important}
- .public-shell .ns4-header .brand small{font-size:7px;letter-spacing:.8px}
+ .public-shell .site-capsule[data-ns4-header] .brand{gap:7px}
+ .public-shell .site-capsule[data-ns4-header] .brand .brand-mark{width:39px!important;height:39px!important;border-radius:12px!important}
+ .public-shell .site-capsule[data-ns4-header] .brand-mark svg{width:28px;height:28px}
+ .public-shell .site-capsule[data-ns4-header] .brand b{font-size:16px!important;letter-spacing:normal!important}
+ .public-shell .site-capsule[data-ns4-header] .brand small{font-size:7px;letter-spacing:.8px}
  .public-shell .ns4-header-actions{gap:6px}
- .public-shell .ns4-header .ns4-search-action,.public-shell .ns4-menu-toggle{
+ .public-shell .site-capsule[data-ns4-header] .ns4-search-action,.public-shell .ns4-menu-toggle{
   width:39px!important;height:39px!important;flex:0 0 39px!important;
   border-radius:12px;min-height:39px
  }
- .public-shell .ns4-header .ns4-submit-action{
+ .public-shell .site-capsule[data-ns4-header] .ns4-submit-action{
   min-height:39px!important;padding:7px 10px!important;
   font-size:10px!important;gap:5px!important;border-radius:11px!important
  }
@@ -874,10 +874,10 @@ body.public-shell>footer.ns4-footer{
  .public-shell .ns4-footer-bottom span:last-child{display:none}
 }
 @media(max-width:370px){
- .public-shell .ns4-header .brand b{font-size:14px!important}
- .public-shell .ns4-header .brand small{display:none}
- .public-shell .ns4-header .ns4-submit-action{padding:7px 8px!important;font-size:9px!important}
- .public-shell .ns4-header .ns4-search-action,.public-shell .ns4-menu-toggle{width:35px!important;flex:0 0 35px!important}
+ .public-shell .site-capsule[data-ns4-header] .brand b{font-size:14px!important}
+ .public-shell .site-capsule[data-ns4-header] .brand small{display:none}
+ .public-shell .site-capsule[data-ns4-header] .ns4-submit-action{padding:7px 8px!important;font-size:9px!important}
+ .public-shell .site-capsule[data-ns4-header] .ns4-search-action,.public-shell .ns4-menu-toggle{width:35px!important;flex:0 0 35px!important}
  .public-shell .ns4-footer-grid{gap:12px!important}
 }
 @media(prefers-reduced-motion:reduce){
@@ -886,5 +886,5 @@ body.public-shell>footer.ns4-footer{
 @media(prefers-reduced-transparency:reduce){
  body.public-shell>header.site-capsule[data-ns4-header]{background:#0a2236!important}
  .public-shell .grid.news .card{background:#fff!important}
- .public-shell .ns4-header .ns4-header-nav{background:#0a2236!important}
+ .public-shell .site-capsule[data-ns4-header] .ns4-header-nav{background:#0a2236!important}
 }
