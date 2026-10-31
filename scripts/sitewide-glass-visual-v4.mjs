@@ -10,7 +10,7 @@ const opinion=require('../lib/view-opinion');
 const adminViews=require('../lib/view-admin');
 const root=path.resolve('public');
 const cats=[{id:'social',name:'اجتماعی'},{id:'incidents',name:'حوادث'},{id:'weather',name:'آب‌وهوا'},{id:'opinion',name:'یادداشت و مطالبه'},{id:'short-news',name:'خبر کوتاه'}];
-const db={settings:{},categories:cats,followups:[],articles:Array.from({length:30},(_,i)=>({
+const db={settings:{},categories:cats,followups:[],citizens:[],contacts:[],articles:Array.from({length:30},(_,i)=>({
  id:'v4story-'+i,slug:'v4story-'+i,
  title:'عنوان بلند گزارش خبری درباره مسائل مهم شهری و کیفیت خدمات عمومی جنوب کرمان در جیرفت و ساردوئیه '+i,
  lead:'گزارش تحریریه از وضعیت خدمات شهری و موضوعات مهم زندگی روزمره مردم منطقه.',
