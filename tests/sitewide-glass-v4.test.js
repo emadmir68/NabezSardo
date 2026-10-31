@@ -41,7 +41,7 @@ test('every public page shares the premium header, footer and style without modi
  for(const [name,html] of pages){
   assert.ok(html.includes('glass-sitewide-v4.css'),name+' stylesheet');
   assert.ok(html.includes('glass-sitewide-v4.js'),name+' navigation behavior');
-  assert.match(html,/class="site-capsule ns4-header"/,name+' header');
+  assert.match(html,/class="site-capsule" data-ns4-header/,name+' header');
   assert.match(html,/class="ns4-footer"/,name+' footer');
   assert.match(html,/class="site-inline-nav ns4-header-nav"/,name+' nav');
   assert.match(html,/aria-controls="ns4-main-nav"/,name+' toggle');
