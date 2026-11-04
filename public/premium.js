@@ -150,10 +150,5 @@
     }
   }
 
-  /* ---------- ticker: keep the marquee seamless ---------- */
-  var track = document.querySelector('.pr-ticker__track');
-  if (track && !track.getAttribute('data-cloned')) {
-    track.setAttribute('data-cloned', '1');
-    track.innerHTML = track.innerHTML + track.innerHTML;
-  }
+  /* ---------- ticker is duplicated server-side for a seamless marquee ---------- */
 })();
