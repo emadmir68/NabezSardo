@@ -170,7 +170,7 @@ function serveFile(res,base,pathname,prefix,cache='public,max-age=604800'){
   if(!f.startsWith(root+path.sep)&&f!==root)return false;
   if(!fs.existsSync(f)||!fs.statSync(f).isFile())return false;
   const ext=path.extname(f).toLowerCase();
-  const type={'.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.mp4':'video/mp4','.webm':'video/webm','.mov':'video/quicktime'}[ext]||'application/octet-stream';
+  const type={'.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.svg':'image/svg+xml','.woff2':'font/woff2','.woff':'font/woff','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.mp4':'video/mp4','.webm':'video/webm','.mov':'video/quicktime'}[ext]||'application/octet-stream';
   res.writeHead(200,{...headers(type),'Cache-Control':cache,'Content-Length':fs.statSync(f).size});
   fs.createReadStream(f).pipe(res);return true;
 }

@@ -70,9 +70,9 @@ test('global styling is isolated from dynamic article and admin behavior',()=>{
 });
 test('the homepage and its SEO schema still render despite the shared design layer',()=>{
  const markup=views.home(fixture());
- assert.match(markup,/class="ns26-site ns27-site ns28-site ns29-site"/);
+ assert.match(markup,/class="public-shell pr-body"/);
  assert.match(markup,/glass-sitewide-v4\.css/);
- assert.match(markup,/apple-glass-editorial-v3\.css/);
+ assert.match(markup,/premium\.css/);
  assert.match(markup,/"@type":"NewsMediaOrganization"/);
 });
 test('design system protects responsive navigation, image ratio, touch targets and keyboard access',()=>{

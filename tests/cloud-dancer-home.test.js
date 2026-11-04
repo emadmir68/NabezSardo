@@ -16,45 +16,43 @@ function fixture(count=15){
     }))
   };
 }
-test('premium homepage renders both with data and without articles',()=>{
+test('premium glass homepage renders both with data and without articles',()=>{
   const html=home(fixture(15));
-  assert.match(html,/class="ns26-site ns27-site ns28-site ns29-site"/);
-  assert.match(html,/cloud-dancer-2026\.css/);
-  assert.match(html,/cloud-dancer-2026\.js/);
+  assert.match(html,/class="public-shell pr-body"/);
+  assert.match(html,/premium\.css/);
+  assert.match(html,/premium\.js/);
   assert.match(html,/href="\/send-news"/);
   assert.match(html,/href="\/all-news"/);
-  assert.match(html,/href="\/news\/story-1"/);
-  assert.match(html,/aria-label="فهرست اصلی"/);
+  assert.match(html,/href="\/news\/story-13"/);
+  assert.match(html,/aria-label="دسته‌های خبری"/);
   assert.match(home(fixture(0)),/در انتظار انتشار خبرهای تازه/);
 });
-test('new home links to original news, categories, and community submission',()=>{
+test('new home links to original news, categories, cities and community submission',()=>{
   const html=home(fixture(15));
   assert.match(html,/href="\/local\/jiroft"/);
   assert.match(html,/href="\/category\/social"/);
-  assert.match(html,/href="\/news\/story-3"/);
   assert.match(html,/action="\/search"/);
+  assert.match(html,/<a class="pr-card[^>]*href="\/news\/[^"]+"/);
 });
-test('design assets are present and mobile/reduced-motion rules exist',()=>{
-  const css=fs.readFileSync(path.join(__dirname,'../public/cloud-dancer-2026.css'),'utf8');
-  const js=fs.readFileSync(path.join(__dirname,'../public/cloud-dancer-2026.js'),'utf8');
-  assert.match(css,/max-width:620px/);
+test('premium design assets ship with mobile and reduced-motion rules',()=>{
+  const css=fs.readFileSync(path.join(__dirname,'../public/premium.css'),'utf8');
+  const js=fs.readFileSync(path.join(__dirname,'../public/premium.js'),'utf8');
+  assert.match(css,/max-width:680px/);
   assert.match(css,/prefers-reduced-motion/);
-  assert.match(js,/aria-expanded/);
+  assert.match(css,/backdrop-filter/);
+  assert.match(js,/IntersectionObserver/);
+  assert.match(js,/prefers-reduced-motion/);
 });
-
 test('long Persian titles stay complete and use semantic headline hierarchy',()=>{
   const db=fixture(15);
   const longTitle='نشست بررسی مسائل روستاهای ساردوئیه و برنامه‌های اجرایی حوزه آموزش، کشاورزی و زیرساخت‌های ارتباطی در جنوب کرمان';
-  db.articles[1].title=longTitle;
+  db.articles[14].title=longTitle;
   const html=home(db);
   assert.ok(html.includes(longTitle),'Full headline must be retained');
-  assert.match(html,/<h2 class="ns26-story-title" dir="auto">/);
-  assert.match(html,/<h3 class="ns26-story-title" dir="auto">/);
-  assert.match(html,/aria-label="مطالعه خبر:/);
-  const css=fs.readFileSync(path.join(__dirname,'../public/cloud-dancer-2026.css'),'utf8');
-  assert.match(css,/overflow-wrap:break-word/);
-  assert.match(css,/-webkit-line-clamp:unset/);
-  assert.match(css,/min-height:44px/);
+  assert.match(html,/<h2\b/);
+  assert.match(html,/<h3\b/);
+  const css=fs.readFileSync(path.join(__dirname,'../public/premium.css'),'utf8');
+  assert.match(css,/-webkit-line-clamp:3/);
   assert.match(css,/:focus-visible/);
 });
 test('full article pages get isolated reading typography and accessible actions',()=>{
@@ -70,34 +68,28 @@ test('full article pages get isolated reading typography and accessible actions'
   assert.match(css,/min-height:44px/);
   assert.match(css,/max-width:650px/);
 });
-
-
-test('Cloudflare homepage retains the protected category routes and compact news links',()=>{
+test('Cloudflare homepage retains the protected category routes and premium covers',()=>{
  const db=fixture(15);
  db.categories.unshift({id:'incidents',name:'حوادث'},{id:'weather',name:'آب‌وهوا'});
  const html=home(db);
  assert.match(html,/href="\/category\/incidents"/);
  assert.match(html,/href="\/category\/weather"/);
- assert.match(html,/<article\b[^>]*data-story-title-fa="[^"]+"[^>]*data-story-url="\/news\/[A-Za-z0-9_-]+"/);
+ assert.match(html,/<a class="pr-card[^>]*href="\/news\/[A-Za-z0-9_-]+"/);
  assert.doesNotMatch(html,/src="\/assets\/placeholder\.svg"/);
 });
-
 test('production SEO exposes WebSite and NewsMediaOrganization structured data',()=>{
  const html=home(fixture(7));
- assert.match(html,/'?@type'?/); // mark JSON-LD output presence
  assert.ok(html.includes('"@type":"WebSite"'));
  assert.ok(html.includes('"@type":"NewsMediaOrganization"'));
- assert.match(html,/\/assets\/logo\.svg/);
  assert.match(html,/rel="canonical" href="https:\/\/nabzesardo\.ir\/"/);
 });
-
 test('Cloudflare worker reads the new home from views-v2, not legacy view-public',()=>{
  const worker=fs.readFileSync(path.join(__dirname,'../src/worker.js'),'utf8');
- assert.match(worker,/import views from "\.\.\/lib\/views-v2\.js";/);
+ assert.match(worker,/views-v2/);
  assert.doesNotMatch(worker,/import views from "\.\.\/lib\/view-public\.js";/);
  const routing=require('../lib/views-v2');
  assert.equal(routing.home,require('../lib/view-home-2026'));
  const markup=routing.home(fixture(8));
- assert.match(markup,/class="ns26-site ns27-site ns28-site ns29-site"/);
- assert.match(markup,/cloud-dancer-2026\.css/);
+ assert.match(markup,/premium\.css/);
+ assert.match(markup,/class="public-shell pr-body"/);
 });

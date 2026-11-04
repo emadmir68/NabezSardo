@@ -16,20 +16,18 @@ const db={
   image:i===1?'/uploads/real-local-photo.jpg':'/assets/news-cover.svg',views:i
  }))
 };
-test('Mosa-inspired news-first homepage keeps real content, SEO and brand',()=>{
+test('Premium glass homepage keeps real content, SEO and brand',()=>{
  const html=views.home(db);
- assert.match(html,/class="ns26-site ns27-site ns28-site ns29-site"/);
- assert.match(html,/class="ns28-stage ns29-stage"/);
- assert.match(html,/class="ns29-backdrop"/);
- assert.match(html,/خبر زندگی می‌کند/);
- assert.match(html,/mosa-home-v5\.css/);
- assert.match(html,/mosa-sitewide-v5\.css/);
+ assert.match(html,/class="public-shell pr-body"/);
+ assert.match(html,/premium\.css/);
+ assert.match(html,/premium\.js/);
  assert.match(html,/href="\/news\/story-1"/);
  assert.match(html,/"@type":"NewsMediaOrganization"/);
- assert.match(html,/class="ns27-ticker-scroll"/);
+ assert.match(html,/href="\/category\/incidents"/);
  assert.doesNotMatch(html,/mosa-ai-v1\.21st\.app/);
  assert.doesNotMatch(html,/images\.unsplash\.com/);
 });
+
 test('all public editorial routes receive unified design but admin stays isolated',()=>{
  const pages=[
   ['archive',views.archive(db)],

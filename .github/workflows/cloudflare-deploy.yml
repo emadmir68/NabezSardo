@@ -94,17 +94,17 @@ jobs:
 
           grep -q "نبض ساردو" /tmp/home.html
           # Protect design rollouts against the Worker loading legacy view-public.home.
-          grep -q 'class="ns26-site ns27-site ns28-site ns29-site"' /tmp/home.html
-          grep -q 'cloud-dancer-2026.css' /tmp/home.html
-          grep -q 'cloud-dancer-2026.js' /tmp/home.html
-          grep -q 'newsroom-v2.css' /tmp/home.html
-          grep -q 'apple-glass-editorial-v3.css' /tmp/home.html
-          grep -q 'class="ns28-stage ns29-stage"' /tmp/home.html
+          grep -q 'class="public-shell pr-body"' /tmp/home.html
+          grep -q 'premium.css' /tmp/home.html
+          grep -q 'premium.js' /tmp/home.html
+          grep -q 'aria-label="دسته‌های خبری"' /tmp/home.html
+          grep -q 'class="pr-hero"' /tmp/home.html
+          grep -q 'class="pr-feature' /tmp/home.html
           # Entire public site must now share V4 glass design, not just homepage.
           grep -q 'glass-sitewide-v4.css' /tmp/home.html
           grep -q 'mosa-sitewide-v5.css' /tmp/home.html
-          grep -q 'mosa-home-v5.css' /tmp/home.html
-          grep -q 'class="ns29-backdrop"' /tmp/home.html
+          grep -q 'class="pr-grid"' /tmp/home.html
+          grep -q 'class="pr-ticker"' /tmp/home.html
           grep -q 'glass-sitewide-v4.css' /tmp/archive.html
           grep -q 'data-ns4-header' /tmp/archive.html
           grep -q 'class="ns4-footer"' /tmp/archive.html
@@ -118,8 +118,8 @@ jobs:
           curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/glass-sitewide-v4.js" -o /tmp/ns4-navigation.js
           grep -q 'data-ns4-menu-toggle' /tmp/ns4-navigation.js
 
-          grep -q 'class="ns27-ticker-scroll"' /tmp/home.html
-          grep -q 'خبر زندگی می‌کند' /tmp/home.html
+          grep -q 'class="pr-ticker__track"' /tmp/home.html
+          grep -q 'class="pr-cta' /tmp/home.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/cloud-dancer-2026.css" -o /tmp/cloud-dancer.css
           grep -q 'EDITORIAL TYPOGRAPHY' /tmp/cloud-dancer.css
           grep -q "نبض ساردو" /tmp/archive.html
@@ -134,7 +134,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs');
           const html=fs.readFileSync('/tmp/home.html','utf8');
-          const cards=[...html.matchAll(/<article\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
+          const cards=[...html.matchAll(/<a\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
           if(!cards.length)throw new Error('Compact article URL missing from homepage');
           const seen=new Map();
           for(const [,title,path] of cards){
@@ -149,7 +149,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs');
           const html=fs.readFileSync('/tmp/archive.html','utf8');
-          const cards=[...html.matchAll(/<article\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
+          const cards=[...html.matchAll(/<a\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
           if(!cards.length)throw new Error('No published news cards found in archive');
           const byPath=new Map();
           const byTitle=new Map();
