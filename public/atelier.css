@@ -1,0 +1,223 @@
+/* ============================================================
+   NABEZ SARDO — ATELIER · light glass editorial skin
+   Inspired by airy gradient-glass landing pages: warm paper base,
+   mint/peach/lilac light, frosted white cards, serif display type,
+   pill buttons and soft reveal motion. Scoped to body.public-shell so the
+   admin/editor shells keep their own look.
+   ============================================================ */
+body.public-shell{
+  --paper:#f7f5ef;--ink:#14150f;--ink2:#33342c;--muted:#6f6d63;--faint:#918f84;
+  --line:rgba(20,21,15,.10);--line2:rgba(20,21,15,.06);
+  --green:#1daf61;--green-d:#128a4a;--green-soft:rgba(29,175,97,.12);
+  --coral:#ff7351;--glass:rgba(255,255,255,.62);--glass-2:rgba(255,255,255,.42);
+  --shadow:0 26px 60px -34px rgba(20,21,15,.24),0 1px 0 rgba(255,255,255,.9) inset;
+  --shadow-sm:0 14px 32px -22px rgba(20,21,15,.28),0 1px 0 rgba(255,255,255,.8) inset;
+  --r:26px;--r2:18px;--r3:14px;--ease:cubic-bezier(.22,.61,.36,1);
+  background-color:#f7f5ef!important;
+  background-image:
+    radial-gradient(62% 46% at 84% -8%,#dcf4e6 0%,rgba(220,244,230,0) 62%),
+    radial-gradient(52% 42% at 6% 4%,#fde6da 0%,rgba(253,230,218,0) 64%),
+    radial-gradient(56% 44% at 52% 110%,#e8e6f7 0%,rgba(232,230,247,0) 64%),
+    linear-gradient(180deg,#fbfaf6 0%,#f5f4ef 58%,#f9f8f4 100%)!important;
+  background-attachment:fixed!important;
+  color:var(--ink)!important;
+  font-family:'Vazirmatn',system-ui,-apple-system,'Segoe UI',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+body.public-shell *,body.public-shell *::before,body.public-shell *::after{box-sizing:border-box}
+body.public-shell a{color:inherit;text-decoration:none}
+body.public-shell img{max-width:100%}
+body.public-shell ::selection{background:rgba(29,175,97,.18);color:#0d120c}
+body.public-shell :focus-visible{outline:2px solid var(--green);outline-offset:3px;border-radius:10px}
+
+/* dark decoration from the previous premium layer must go */
+body.public-shell .pr-sky,body.public-shell .pr-grain,body.public-shell .pr-orb,body.public-shell .spatial-rail{display:none!important}
+
+/* ---------- typography: serif display, quiet sans body ---------- */
+body.public-shell h1,body.public-shell h2,body.public-shell h3,body.public-shell h4,body.public-shell .pr-hero h1,body.public-shell .pr-sec__title,
+body.public-shell .pr-feature__body h2,body.public-shell .pr-card__body h3,body.public-shell .pr-cta h2,
+body.public-shell .pr-cover__cat,body.public-shell .pr-stat b,body.public-shell .pr-rank em,
+body.public-shell .page h1,body.public-shell .article-title,body.public-shell .card h3{
+  font-family:'Noto Naskh Arabic',serif!important;font-weight:700;letter-spacing:-.3px;color:var(--ink)!important
+}
+body.public-shell p,body.public-shell li,body.public-shell span,body.public-shell time,body.public-shell small{color:inherit}
+body.public-shell .eyebrow,body.public-shell .card-kicker,body.public-shell .pr-eyebrow,body.public-shell .pr-sec__title small,
+body.public-shell .pr-cover__mono,body.public-shell .pr-frame__label,body.public-shell .pr-feature__badge{
+  font-family:'Vazirmatn',sans-serif!important;letter-spacing:.14em!important;font-weight:600!important
+}
+
+/* ---------- header: floating frosted capsule ---------- */
+body.public-shell .ns4-utility{background:transparent!important;border:0!important;color:var(--muted)!important}
+body.public-shell .ns4-utility-row,body.public-shell .ns4-utility-label,body.public-shell .ns4-utility-signature{color:var(--muted)!important}
+body.public-shell .ns4-utility-label i{background:var(--green)!important}
+body.public-shell .site-capsule,body.public-shell .pr-head__bar,body.public-shell header{
+  background:rgba(255,255,255,.72)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(160%)!important;backdrop-filter:blur(22px) saturate(160%)!important;
+  border:1px solid rgba(255,255,255,.9)!important;
+  box-shadow:var(--shadow-sm)!important;
+  border-radius:22px!important;color:var(--ink)!important
+}
+body.public-shell .site-capsule{position:sticky;top:10px;z-index:60;margin:10px auto;width:min(1180px,calc(100% - 24px))}
+body.public-shell .brand b,body.public-shell .brand .lang-fa,body.public-shell .pr-brand b{
+  background:none!important;-webkit-text-fill-color:var(--ink)!important;color:var(--ink)!important;
+  text-shadow:none!important;font-family:'Noto Naskh Arabic',serif!important;font-weight:700
+}
+body.public-shell .brand small,body.public-shell .pr-brand small{color:var(--faint)!important;letter-spacing:.26em!important}
+body.public-shell .brand-mark,body.public-shell .pr-brand__mark{
+  background:linear-gradient(150deg,#ffffff,#eef7f1)!important;border:1px solid var(--line)!important;
+  box-shadow:0 8px 18px -14px rgba(20,21,15,.45)!important
+}
+body.public-shell .brand-mark path,body.public-shell .pr-brand__mark svg{stroke:var(--green)!important}
+body.public-shell .site-inline-nav a,body.public-shell .pr-nav a{
+  color:var(--ink2)!important;border-radius:999px!important;font-size:13px!important;
+  padding:7px 12px!important;transition:background .25s,color .25s
+}
+body.public-shell .site-inline-nav a:hover,body.public-shell .pr-nav a:hover{background:rgba(20,21,15,.05)!important;color:var(--ink)!important}
+body.public-shell .site-inline-nav a[aria-current="page"],body.public-shell .pr-nav a[aria-current="page"]{color:var(--green-d)!important;background:var(--green-soft)!important}
+body.public-shell .pr-nav a[aria-current="page"]::after{display:none!important}
+body.public-shell .header-search-round,body.public-shell .pr-search{
+  background:rgba(255,255,255,.85)!important;border:1px solid var(--line)!important;color:var(--ink)!important;border-radius:999px!important
+}
+body.public-shell .pr-search input{color:var(--ink)!important}
+body.public-shell .pr-search input::placeholder{color:var(--faint)!important}
+body.public-shell .header-send,body.public-shell .ns4-submit-action,body.public-shell .pr-btn,
+body.public-shell .btn.primary,body.public-shell .btn.primary *{
+  border-radius:999px!important;font-weight:700!important
+}
+body.public-shell .header-send,body.public-shell .ns4-submit-action,body.public-shell .btn.primary{
+  background:var(--ink)!important;color:#fbfaf6!important;border:1px solid var(--ink)!important;
+  box-shadow:0 16px 30px -18px rgba(20,21,15,.55)!important
+}
+body.public-shell .pr-btn--gold{background:var(--ink)!important;color:#fbfaf6!important;border-color:var(--ink)!important;box-shadow:0 16px 30px -18px rgba(20,21,15,.55)!important}
+body.public-shell .pr-btn--ghost{background:rgba(255,255,255,.7)!important;color:var(--ink)!important;border:1px solid var(--line)!important;backdrop-filter:blur(12px)}
+body.public-shell .pr-accents{background:rgba(255,255,255,.7)!important;border-color:var(--line)!important}
+body.public-shell .pr-mobile-nav a{background:rgba(255,255,255,.75)!important;border:1px solid var(--line)!important;color:var(--ink2)!important}
+
+/* ---------- ticker ---------- */
+body.public-shell .pr-ticker{
+  background:rgba(255,255,255,.6)!important;border:1px solid rgba(255,255,255,.9)!important;
+  box-shadow:var(--shadow-sm)!important;border-radius:16px!important
+}
+body.public-shell .pr-ticker::after{background:linear-gradient(270deg,#f7f5ef,rgba(247,245,239,0))!important}
+body.public-shell .pr-ticker__tag{background:var(--green-soft)!important;border-color:rgba(29,175,97,.28)!important;color:var(--green-d)!important}
+body.public-shell .pr-ticker__tag i{background:var(--green)!important;box-shadow:0 0 0 3px rgba(29,175,97,.16)!important}
+body.public-shell .pr-ticker__track a{color:var(--ink2)!important}
+body.public-shell .pr-ticker__track a em{background:rgba(20,21,15,.05)!important;color:var(--muted)!important}
+
+/* ---------- hero ---------- */
+body.public-shell .pr-hero h1{font-size:clamp(30px,3.4vw,48px)!important;line-height:1.42!important;color:var(--ink)!important}
+body.public-shell .pr-hero h1 b{
+  background:linear-gradient(96deg,var(--green-d),var(--green) 55%,#0f7a45)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important
+}
+body.public-shell .pr-hero__lead{color:var(--muted)!important}
+body.public-shell .pr-hero__lead b{color:var(--ink2)!important}
+body.public-shell .pr-eyebrow{background:rgba(255,255,255,.72)!important;border-color:rgba(29,175,97,.25)!important;color:var(--green-d)!important;box-shadow:var(--shadow-sm)}
+body.public-shell .pr-eyebrow i{background:var(--green)!important}
+body.public-shell .pr-hero__note{color:var(--faint)!important}
+body.public-shell .pr-hero__note svg{color:var(--green)!important}
+body.public-shell .pr-stats{border-top-color:var(--line)!important}
+body.public-shell .pr-stat{border-inline-start-color:var(--line)!important}
+body.public-shell .pr-stat b{color:var(--ink)!important;font-size:26px!important}
+body.public-shell .pr-stat span{color:var(--muted)!important}
+
+/* ---------- glass surfaces everywhere ---------- */
+body.public-shell .pr-feature,body.public-shell .pr-card,body.public-shell .pr-glass,body.public-shell .pr-cat,body.public-shell .pr-cta,
+body.public-shell .card,body.public-shell .page,body.public-shell .article-body,body.public-shell .article-hero,body.public-shell .panel{
+  background:var(--glass)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(150%)!important;backdrop-filter:blur(20px) saturate(150%)!important;
+  border:1px solid rgba(255,255,255,.85)!important;
+  box-shadow:var(--shadow)!important;border-radius:var(--r)!important
+}
+body.public-shell .pr-card,body.public-shell .card{border-radius:22px!important;overflow:hidden!important;transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+body.public-shell .pr-card:hover,body.public-shell .card:hover{transform:translateY(-5px)!important;box-shadow:0 34px 70px -34px rgba(20,21,15,.32)!important}
+body.public-shell .pr-card__body h3,body.public-shell .card h3{color:var(--ink)!important;font-size:16.5px!important;line-height:1.75!important}
+body.public-shell .pr-card__body p,body.public-shell .listing-excerpt{color:var(--muted)!important}
+body.public-shell .pr-card__chip,body.public-shell .card-kicker,body.public-shell .pr-list__item span,body.public-shell .view-badge{
+  background:rgba(255,255,255,.8)!important;border:1px solid var(--line)!important;color:var(--green-d)!important;border-radius:999px!important
+}
+body.public-shell .pr-card__chip i{background:var(--green)!important}
+body.public-shell .pr-card__foot,body.public-shell .news-date,body.public-shell .pr-card__foot em{color:var(--faint)!important;border-color:var(--line2)!important}
+body.public-shell .pr-card__foot svg,body.public-shell .article-meta-icon svg{color:var(--green)!important}
+body.public-shell .pr-feature__body h2{color:#fff!important}
+body.public-shell .pr-feature__body p{color:rgba(255,255,255,.82)!important}
+body.public-shell .pr-feature__badge{background:rgba(255,255,255,.92)!important;color:var(--ink)!important}
+
+/* asymmetric matte, light version */
+body.public-shell .pr-frame{background:rgba(255,255,255,.55)!important}
+body.public-shell .pr-frame__matte{
+  background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.4))!important;
+  border-inline-start:1px solid var(--line)!important
+}
+body.public-shell .pr-frame__label{color:var(--green-d)!important}
+
+/* section heads */
+body.public-shell .pr-sec__head,body.public-shell .pr-panel .pr-sec__head{border-bottom-color:var(--line)!important}
+body.public-shell .pr-sec__title{color:var(--ink)!important}
+body.public-shell .pr-sec__title::before{background:var(--green)!important;width:30px!important}
+body.public-shell .pr-sec__title small{color:var(--faint)!important}
+body.public-shell .pr-sec__more,body.public-shell .more{color:var(--green-d)!important;background:rgba(255,255,255,.8)!important;border:1px solid var(--line)!important;border-radius:999px!important}
+body.public-shell .pr-list__item,body.public-shell .pr-rank{border-bottom-color:var(--line2)!important}
+body.public-shell .pr-list__item b,body.public-shell .pr-rank b{color:var(--ink)!important}
+body.public-shell .pr-list__bar{background:var(--green)!important;opacity:.5}
+
+/* footer + cta */
+body.public-shell .pr-cta{
+  background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(240,250,244,.78))!important;
+  text-align:center!important
+}
+body.public-shell .pr-cta::before{border-color:rgba(29,175,97,.22)!important}
+body.public-shell .pr-cta h2{color:var(--ink)!important}
+body.public-shell .pr-cta p{color:var(--muted)!important}
+body.public-shell footer,body.public-shell .pr-foot{
+  background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.15))!important;
+  border-top:1px solid var(--line)!important;color:var(--ink2)!important
+}
+body.public-shell footer h4,body.public-shell .pr-foot h4{color:var(--green-d)!important}
+body.public-shell footer a,body.public-shell .pr-foot a{color:var(--muted)!important}
+body.public-shell footer a:hover,body.public-shell .pr-foot a:hover{color:var(--ink)!important}
+body.public-shell .pr-foot__grid,body.public-shell .pr-foot__bar{border-color:var(--line)!important;color:var(--muted)!important}
+
+/* ---------- archive / category / article pages ---------- */
+body.public-shell .wrap{max-width:1180px;margin-inline:auto;padding-inline:clamp(16px,3vw,26px)}
+body.public-shell .page{padding:clamp(22px,3vw,40px)!important;margin-block:20px!important}
+body.public-shell .page h1{font-size:clamp(26px,3vw,38px)!important;line-height:1.45!important;margin-bottom:10px}
+body.public-shell .eyebrow{color:var(--green-d)!important;font-size:11px!important}
+body.public-shell .card{padding:0!important}
+body.public-shell .card-media img,body.public-shell .card-media{border-radius:16px!important}
+body.public-shell .card .pad{padding:14px 16px 16px!important}
+body.public-shell .card-story-badge,body.public-shell .card-story-dot{color:var(--green-d)!important}
+body.public-shell .btn{background:var(--ink)!important;color:#fbfaf6!important;border:0!important;border-radius:999px!important;padding:11px 22px!important;font-weight:700!important;box-shadow:0 16px 30px -18px rgba(20,21,15,.5)!important}
+body.public-shell .btn.primary{background:var(--ink)!important}
+
+body.public-shell .article-title,body.public-shell .article-body h1{font-size:clamp(28px,3.2vw,42px)!important;line-height:1.5!important;color:var(--ink)!important}
+body.public-shell .article-body,body.public-shell .article-hero{padding:clamp(20px,3vw,38px)!important}
+body.public-shell .article-body p{font-size:16.5px!important;line-height:2.15!important;color:#2b2c25!important}
+body.public-shell .article-body h2,body.public-shell .article-body h3{color:var(--ink)!important;margin-top:1.4em}
+body.public-shell .article-meta-item{color:var(--muted)!important;background:rgba(255,255,255,.7)!important;border:1px solid var(--line)!important;border-radius:999px!important;padding:5px 11px!important}
+body.public-shell .article-action{background:rgba(255,255,255,.8)!important;border:1px solid var(--line)!important;color:var(--ink2)!important;border-radius:999px!important}
+body.public-shell .article-action:hover{background:#fff!important;color:var(--green-d)!important}
+body.public-shell .article-fa-fallback{color:var(--muted)!important}
+
+/* forms stay usable on light */
+body.public-shell input,body.public-shell textarea,body.public-shell select{
+  background:rgba(255,255,255,.85)!important;color:var(--ink)!important;
+  border:1px solid var(--line)!important;border-radius:14px!important
+}
+body.public-shell label{color:var(--ink2)!important}
+
+/* ---------- soft reveal motion ---------- */
+body.public-shell .at-reveal{opacity:0;transform:translateY(14px);transition:opacity .75s var(--ease),transform .75s var(--ease)}
+body.public-shell .at-reveal.at-in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  body.public-shell .at-reveal{opacity:1;transform:none;transition:none}
+  body.public-shell *{animation-duration:.001ms!important}
+}
+@media (max-width:900px){
+  body.public-shell .site-capsule{width:calc(100% - 16px);border-radius:18px!important}
+  body.public-shell .page{padding:18px!important}
+}
+@media print{
+  body.public-shell{background:#fff!important}
+  body.public-shell .site-capsule,body.public-shell .ns4-utility,body.public-shell .pr-head,body.public-shell .pr-ticker{display:none!important}
+}
