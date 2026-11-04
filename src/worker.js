@@ -482,7 +482,9 @@ function fastHtml(body,status=200){
   return new Response(body,{status,headers:{
     ...securityHeaders(),
     "content-type":"text/html; charset=utf-8",
-    "cache-control":"public, max-age=0, must-revalidate",
+    "cache-control":"no-store, no-cache, must-revalidate",
+    "pragma":"no-cache",
+    "expires":"0",
     "x-nabzesardo-runtime":"cloudflare-fast-public-v1"
   }});
 }
@@ -522,7 +524,9 @@ async function handleFastPublic(request,url,pathname,ctx){
     ctx.waitUntil(recordFastVisit(request,pathname,articleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
     if(articleId)ctx.waitUntil(ensureSocialPreviewForPath(pathname).catch(err=>console.error("fast-social-preview",String(err?.message||err))));
   }
-  if(request.method==="HEAD")return new Response(null,{status,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=0, must-revalidate","x-nabzesardo-runtime":"cloudflare-fast-public-v1"}});
+  if(request.method==="HEAD")return new Response(null,{status,headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate",
+    "pragma":"no-cache",
+    "expires":"0","x-nabzesardo-runtime":"cloudflare-fast-public-v1"}});
   return fastHtml(body,status);
 }
 
