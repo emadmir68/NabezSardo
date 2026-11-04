@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0e15"/><stop offset=".5" stop-color="#080910"/><stop offset="1" stop-color="#05060a"/></linearGradient>
+<radialGradient id="glow" cx="64%" cy="24%" r="62%"><stop offset="0" stop-color="#d9b878" stop-opacity=".26"/><stop offset=".5" stop-color="#b4643f" stop-opacity=".10"/><stop offset="1" stop-color="#05060a" stop-opacity="0"/></radialGradient>
+<radialGradient id="sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f5e5c0" stop-opacity=".55"/><stop offset=".72" stop-color="#d9b878" stop-opacity=".14"/><stop offset="1" stop-color="#d9b878" stop-opacity="0"/></radialGradient>
+<pattern id="hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(36)"><line x1="0" y1="0" x2="0" y2="9" stroke="#d9b878" stroke-opacity=".15" stroke-width="1"/></pattern>
+<pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#d9b878" fill-opacity=".08"/></pattern>
+<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".92" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+</defs>
+<rect width="1200" height="900" fill="url(#sky)"/>
+<rect width="1200" height="900" fill="url(#glow)"/>
+<circle cx="600" cy="470" r="260" fill="url(#sun)" opacity="0.3"/><circle cx="600" cy="470" r="161.2" fill="none" stroke="#d9b878" stroke-opacity=".35"/><circle cx="600" cy="470" r="239.20000000000002" fill="none" stroke="#d9b878" stroke-opacity=".14"/><circle cx="600" cy="470" r="122" fill="none" stroke="#d9b878" stroke-opacity="0.265"/><circle cx="600" cy="470" r="174" fill="none" stroke="#d9b878" stroke-opacity="0.22999999999999998"/><circle cx="600" cy="470" r="226" fill="none" stroke="#d9b878" stroke-opacity="0.19499999999999998"/><circle cx="600" cy="470" r="278" fill="none" stroke="#d9b878" stroke-opacity="0.15999999999999998"/><circle cx="600" cy="470" r="330" fill="none" stroke="#d9b878" stroke-opacity="0.12499999999999997"/><circle cx="600" cy="470" r="382" fill="none" stroke="#d9b878" stroke-opacity="0.08999999999999997"/>
+  <path d="M140 470 H380 L430 380 L500 610 L570 300 L640 640 L700 470 H1060" fill="none" stroke="#f5e5c0" stroke-opacity=".72" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="570" cy="300" r="8" fill="#b4643f" fill-opacity=".9"/>
+<rect width="1200" height="900" fill="url(#dots)" opacity=".45"/>
+<g fill="none" stroke="#d9b878" stroke-opacity=".20"><rect x="30" y="30" width="1140" height="840"/><rect x="40" y="40" width="1120" height="820" stroke-opacity=".10"/></g>
+<rect width="1200" height="900" filter="url(#grain)" opacity=".06"/>
+</svg>
