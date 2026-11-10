@@ -149,7 +149,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs');
           const html=fs.readFileSync('/tmp/archive.html','utf8');
-          const cards=[...html.matchAll(/<a\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
+          const cards=[...html.matchAll(/<article\b[^>]*data-story-card[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
           if(!cards.length)throw new Error('No published news cards found in archive');
           const byPath=new Map();
           const byTitle=new Map();
