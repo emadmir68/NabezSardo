@@ -554,3 +554,164 @@ body.pr-body :is(a,button,input):focus-visible{outline:3px solid #f8d69a!importa
   body.pr-body .pr-ticker__viewport{overflow-x:auto;direction:rtl;scrollbar-width:thin}
   body.pr-body .pr-rv{opacity:1!important;transform:none!important}
 }
+
+
+/* Cascade repair: Atelier is loaded after Premium.
+ * Higher specificity and explicit important declarations keep homepage-only
+ * contrast fixes visible without changing article/admin pages or the light
+ * editorial canvas. 2026-11-10. */
+body.public-shell.pr-body header.pr-head{
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+body.public-shell.pr-body .pr-head__bar{
+  background:linear-gradient(135deg,#222725,#142532 78%,#10202b)!important;
+  color:#fffaf0!important;border:1px solid rgba(239,228,206,.34)!important;
+  box-shadow:0 16px 44px -29px rgba(12,24,33,.8)!important;
+}
+body.public-shell.pr-body .pr-brand b{
+  background:none!important;-webkit-text-fill-color:#fff6e8!important;color:#fff6e8!important;
+}
+body.public-shell.pr-body .pr-brand small{color:#e6d6bf!important}
+body.public-shell.pr-body .pr-brand__mark{
+  background:rgba(219,242,227,.12)!important;border-color:rgba(184,224,195,.3)!important;
+}
+body.public-shell.pr-body .pr-nav a{
+  color:#f0e8db!important;font-size:13px!important;font-weight:750!important;
+}
+body.public-shell.pr-body .pr-nav a:hover{
+  color:#fff!important;background:rgba(255,255,255,.15)!important;
+}
+body.public-shell.pr-body .pr-nav a[aria-current="page"]{
+  color:#d6ffe5!important;background:rgba(31,158,92,.27)!important;
+}
+body.public-shell.pr-body .pr-search{
+  background:rgba(255,255,255,.13)!important;
+  color:#fff6e8!important;border-color:rgba(255,255,255,.31)!important;
+}
+body.public-shell.pr-body .pr-search input{color:#fff9f0!important}
+body.public-shell.pr-body .pr-search input::placeholder{color:#e3dcd2!important;opacity:1!important}
+body.public-shell.pr-body .pr-search__submit{background:rgba(255,255,255,.18)!important;color:#fff!important}
+body.public-shell.pr-body .pr-search__submit svg{color:#fff!important}
+body.public-shell.pr-body .pr-ticker{
+  background:linear-gradient(100deg,#1c3038,#14242e)!important;
+  border:1px solid rgba(238,225,199,.28)!important;
+  color:#f7f1e6!important;
+}
+body.public-shell.pr-body .pr-ticker::after{
+  background:linear-gradient(270deg,#14242e,rgba(20,36,46,0))!important;
+}
+body.public-shell.pr-body .pr-ticker__tag{
+  background:rgba(64,174,113,.23)!important;border:1px solid rgba(95,214,145,.48)!important;
+  color:#e1ffeb!important;
+}
+body.public-shell.pr-body .pr-ticker__track a{color:#f5eee3!important;font-size:13px!important}
+body.public-shell.pr-body .pr-ticker__track a:hover{color:#fff!important}
+body.public-shell.pr-body .pr-ticker__track a em{color:#e4d6c0!important;background:rgba(255,255,255,.1)!important}
+body.public-shell.pr-body .pr-hero h1{font-size:clamp(32px,3.4vw,48px)!important;line-height:1.56!important}
+body.public-shell.pr-body .pr-hero__lead{color:#38464c!important;font-size:15px!important;line-height:2!important}
+body.public-shell.pr-body .pr-hero__lead b{color:#15252d!important}
+body.public-shell.pr-body .pr-hero__note{color:#4b6068!important;font-size:12px!important}
+body.public-shell.pr-body .pr-stat b{color:#183842!important;font-size:24px!important}
+body.public-shell.pr-body .pr-stat span{color:#51616a!important;font-size:12px!important}
+body.public-shell.pr-body .pr-feature{
+  background:#14232e!important;border-color:rgba(73,104,116,.45)!important;
+}
+body.public-shell.pr-body .pr-feature__body h2{
+  color:#fffdf7!important;font-size:clamp(21px,1.85vw,26px)!important;line-height:1.7!important;
+}
+body.public-shell.pr-body .pr-feature__body p{color:#f0e5d5!important;font-size:13px!important}
+body.public-shell.pr-body .pr-feature__meta{color:#e8d9c6!important;font-size:12px!important}
+body.public-shell.pr-body .pr-feature__time{color:#fff7e9!important;background:rgba(10,19,26,.82)!important}
+body.public-shell.pr-body .pr-sec__title small{color:#4e6870!important;font-size:11px!important;letter-spacing:.12em!important}
+body.public-shell.pr-body .pr-card__body h3{
+  color:#1c303b!important;font-size:17px!important;line-height:1.8!important;
+}
+body.public-shell.pr-body .pr-card__body p{
+  color:#4e626b!important;font-size:13px!important;line-height:1.9!important;
+}
+body.public-shell.pr-body .pr-card__foot{color:#53646b!important;font-size:11.5px!important}
+body.public-shell.pr-body .pr-list__item span,
+body.public-shell.pr-body .pr-rank span{
+  color:#46696a!important;font-size:11.5px!important;
+}
+body.public-shell.pr-body .pr-cat{
+  min-height:78px!important;
+  background:linear-gradient(140deg,#243531,#172c37)!important;
+  border:1px solid rgba(126,173,163,.42)!important;
+  box-shadow:0 14px 32px -25px rgba(20,40,46,.6)!important;
+}
+body.public-shell.pr-body .pr-cat:hover{
+  background:linear-gradient(140deg,#2b4a3b,#1a3943)!important;
+  border-color:rgba(126,217,159,.75)!important;
+}
+body.public-shell.pr-body .pr-cat::before{background:#64d393!important}
+body.public-shell.pr-body .pr-cat b{
+  color:#fff9ef!important;font-size:16px!important;
+}
+body.public-shell.pr-body .pr-cat small{
+  color:#d5e6dc!important;font-size:11.5px!important;letter-spacing:0!important;
+}
+body.public-shell.pr-body .pr-cat span{color:#b4efc7!important;opacity:1!important}
+body.public-shell.pr-body .pr-cta{
+  background:radial-gradient(80% 110% at 50% -35%,rgba(67,131,107,.38),transparent 70%),linear-gradient(135deg,#18302c,#172b3a 74%,#102330)!important;
+  border:1px solid rgba(159,217,183,.5)!important;
+  box-shadow:0 26px 55px -33px rgba(17,46,51,.8)!important;
+  padding:clamp(32px,4vw,52px)!important;
+}
+body.public-shell.pr-body .pr-cta::before{border-color:rgba(183,232,200,.23)!important}
+body.public-shell.pr-body .pr-cta h2{
+  color:#fffdf3!important;font-size:clamp(25px,2.8vw,34px)!important;
+}
+body.public-shell.pr-body .pr-cta p{
+  color:#e6f0e9!important;font-size:15px!important;line-height:2!important;
+}
+body.public-shell.pr-body .pr-cta .pr-btn--gold{
+  background:#9de1b1!important;border:1px solid #9de1b1!important;
+  color:#10251b!important;font-weight:900!important;
+}
+body.public-shell.pr-body .pr-cta .pr-btn--ghost{
+  background:rgba(255,255,255,.11)!important;border:1px solid rgba(244,255,247,.58)!important;
+  color:#fffdf4!important;
+}
+body.public-shell.pr-body footer.pr-foot{
+  background:linear-gradient(180deg,#172b36,#10212b 90%)!important;
+  border-top:1px solid rgba(172,209,204,.4)!important;
+  color:#f3eee3!important;
+}
+body.public-shell.pr-body .pr-foot__brand b{
+  color:#fffaf0!important;font-size:21px!important;
+}
+body.public-shell.pr-body .pr-foot h4{
+  color:#a7e7c3!important;font-size:13px!important;letter-spacing:0!important;
+}
+body.public-shell.pr-body .pr-foot p,
+body.public-shell.pr-body .pr-foot a{color:#e2e9e4!important;font-size:13px!important}
+body.public-shell.pr-body .pr-foot a:hover{color:#fff!important}
+body.public-shell.pr-body .pr-foot__bar{color:#cdd9d4!important;font-size:11.5px!important}
+body.public-shell.pr-body .pr-foot__grid,
+body.public-shell.pr-body .pr-foot__bar{border-color:rgba(211,242,224,.22)!important}
+body.public-shell.pr-body :where(a,button,input):focus-visible{
+  outline:3px solid #8cdbac!important;outline-offset:3px!important;
+}
+@media(max-width:1100px){
+  body.public-shell.pr-body .pr-mobile-nav a{
+    color:#203e39!important;font-size:13px!important;
+    background:rgba(255,255,255,.86)!important;
+    border:1px solid rgba(29,112,87,.24)!important;
+    min-height:44px!important;
+  }
+  body.public-shell.pr-body .pr-mobile-nav a[aria-current="page"]{
+    color:#0e4129!important;background:#b8e9c7!important;
+  }
+}
+@media(max-width:680px){
+  body.public-shell.pr-body .pr-hero__lead{font-size:14px!important}
+  body.public-shell.pr-body .pr-stat b{font-size:clamp(16px,4.6vw,20px)!important}
+  body.public-shell.pr-body .pr-cat{min-height:72px!important}
+  body.public-shell.pr-body .pr-cta .pr-btn{width:100%;white-space:normal}
+  body.public-shell.pr-body .pr-feature__body h2{font-size:21px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.public-shell.pr-body .pr-rv{opacity:1!important;transform:none!important}
+}
