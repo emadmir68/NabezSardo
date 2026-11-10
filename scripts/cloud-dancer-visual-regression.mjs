@@ -34,62 +34,103 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const port=server.address().port;
 const browser=await chromium.launch({headless:true});
 let failures=0;
-function verify(ok,message){console.log((ok?'PASS ':'FAIL ')+message);if(!ok)failures++;}
-function contained(parent,child){return !!parent&&!!child&&child.left>=parent.left-2&&child.right<=parent.right+2&&child.top>=parent.top-2&&child.bottom<=parent.bottom+2}
+function verify(ok,message){
+  console.log((ok?'PASS ':'FAIL ')+message);
+  if(!ok)failures++;
+}
+function contained(parent,child){
+  return !!parent&&!!child&&child.left>=parent.left-2&&child.right<=parent.right+2&&
+    child.top>=parent.top-2&&child.bottom<=parent.bottom+2;
+}
 try{
- await fs.mkdir('/tmp/nabez-cloud-dancer-visual',{recursive:true});
- for(const v of [{name:'360',w:360,h:800},{name:'390',w:390,h:844},{name:'412',w:412,h:915},{name:'desktop',w:1280,h:850}]){
-  const page=await browser.newPage({viewport:{width:v.w,height:v.h},deviceScaleFactor:1,locale:'fa-IR'});
-  await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'networkidle',timeout:45000});
-  await page.evaluate(()=>document.fonts.ready);
-  const x=await page.evaluate(()=>{
-    const R=sel=>document.querySelector(sel)?.getBoundingClientRect()?.toJSON()||null;
-    const mainR=R('.ns26-feature-main');
-    const featureMedia=R('.ns26-feature-main .ns26-photo');
-    const featureText=R('.ns26-feature-main .ns26-feature-details');
-    const sideR=R('.ns26-feature-side');
-    const sideMedia=R('.ns26-feature-side .ns26-photo');
-    const sideText=R('.ns26-feature-side .ns26-feature-details');
-    const cardR=R('.ns26-news-card');
-    const cardMedia=R('.ns26-news-card .ns26-thumb');
-    const cardText=R('.ns26-news-card .ns26-news-content');
-    const button=R('.ns26-primary');
-    const title=R('.ns26-feature-main .ns26-story-title');
-    const titleStyle=getComputedStyle(document.querySelector('.ns26-feature-main .ns26-story-title'));
-    const image=getComputedStyle(document.querySelector('.ns26-feature-main .ns26-photo-main'));
-    const quickLinks=[...document.querySelectorAll('.ns27-quick a')].map(el=>el.getBoundingClientRect().toJSON());
-    const mastTitle=document.querySelector('.ns27-mast h1')?.textContent?.trim()||'';
-    const dateDisplay=document.querySelector('.ns27-date')?getComputedStyle(document.querySelector('.ns27-date')).display:'none';
-    return {scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,mainR,featureMedia,featureText,sideR,sideMedia,sideText,cardR,cardMedia,cardText,button,title,titleStyle:{fontSize:titleStyle.fontSize,lineHeight:titleStyle.lineHeight,color:titleStyle.color},imageFit:image.objectFit,oldImageMarker:!!document.querySelector('.ns26-photo.ns26-cover-branded'),quickLinks,mastTitle,dateDisplay};
-  });
-  const mob=v.w<=620;
-  console.log('METRICS '+v.name+' '+JSON.stringify(x));
-  verify(x.scrollWidth<=v.w+2,v.name+' horizontal overflow absent');
-  verify(x.featureMedia&&x.featureMedia.height>80&&x.featureMedia.width>100,v.name+' feature media visible');
-  verify(x.featureText&&x.featureText.top>=x.featureMedia.bottom-3,v.name+' feature copy starts after image (not overlay)');
-  verify(x.title&&contained(x.featureText,x.title),v.name+' full story title stays within copy region');
-  verify(x.cardMedia&&x.cardMedia.height>80,v.name+' news thumbnail has usable height');
-  verify(x.cardText&&x.cardText.top>=x.cardMedia.bottom-3,v.name+' card copy starts after picture');
-  verify(x.imageFit==='cover',v.name+' branded cover fills artwork frame');
-  if(mob){
-   verify(x.featureMedia.top<=560,v.name+' lead story starts promptly below glass navigation');
-   verify(x.dateDisplay==='none',v.name+' no distracting edition badge on narrow viewport');
-   verify(x.quickLinks.every(a=>a.left>=-2&&a.right<=v.w+2),v.name+' category shortcuts fit with no clipping');
-   verify(x.mastTitle.includes('اینجا،'),v.name+' editorial masthead with real news below');
-   verify(x.mainR&&x.mainR.height<=670,v.name+' feature card has compact height, no blank poster region');
-   verify(x.featureMedia.height<=v.w*.62,v.name+' feature image follows 16:9 ratio');
-   verify(x.cardMedia.width>=v.w*.75,v.name+' latest news image is not a narrow sidebar');
-   verify(x.sideText&&x.sideMedia&&(x.sideText.right<=x.sideMedia.left+2||x.sideMedia.right<=x.sideText.left+2),v.name+' secondary card text does not overlap photo in RTL');
-   verify(x.button&&x.button.height>=44,v.name+' CTA is touch-friendly');
+  await fs.mkdir('/tmp/nabez-cloud-dancer-visual',{recursive:true});
+  for(const v of [
+    {name:'360',w:360,h:800},
+    {name:'390',w:390,h:844},
+    {name:'412',w:412,h:915},
+    {name:'tablet',w:768,h:1024},
+    {name:'desktop',w:1280,h:850}
+  ]){
+    const mobile=v.w<=860;
+    const page=await browser.newPage({
+      viewport:{width:v.w,height:v.h},deviceScaleFactor:1,
+      locale:'fa-IR',reducedMotion:'reduce'
+    });
+    await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'networkidle',timeout:45000});
+    await page.evaluate(()=>document.fonts.ready);
+    const x=await page.evaluate(()=>{
+      const el=selector=>document.querySelector(selector);
+      const rect=selector=>el(selector)?.getBoundingClientRect()?.toJSON()||null;
+      const style=selector=>el(selector)?getComputedStyle(el(selector)):null;
+      const cards=[...document.querySelectorAll('.pr-card')];
+      const featureTitle=el('.pr-feature__body h2');
+      const mobileSearch=el('.pr-search-link');
+      return {
+        viewport:innerWidth,
+        scrollWidth:document.documentElement.scrollWidth,
+        pageClass:document.body.className,
+        header:rect('.pr-head__bar'),
+        feature:rect('.pr-feature'),
+        featureImage:rect('.pr-feature__media img'),
+        featureBody:rect('.pr-feature__body'),
+        featureTitle:featureTitle?.getBoundingClientRect()?.toJSON()||null,
+        imageFit:style('.pr-feature__media img')?.objectFit||'',
+        featuredHref:el('.pr-feature')?.getAttribute('href')||'',
+        card:rect('.pr-card'),
+        cardMedia:rect('.pr-card__media'),
+        cardText:rect('.pr-card__body'),
+        cardTitle:rect('.pr-card__body h3'),
+        cardCount:cards.length,
+        cardImageLoaded:!!el('.pr-card__media img')?.naturalWidth,
+        navVisible:style('.pr-mobile-nav')?.display!=='none',
+        mobileSearch:rect('.pr-search-link'),
+        mobileSearchVisible:!!mobileSearch&&style('.pr-search-link')?.display!=='none',
+        desktopSearchVisible:style('.pr-search')?.display!=='none',
+        cta:rect('.pr-hero__cta .pr-btn'),
+        stats:[...document.querySelectorAll('.pr-stats [data-count]')]
+          .map(n=>({value:n.getAttribute('data-count'),text:n.textContent.trim()})),
+        tickerReducedMotion:style('.pr-ticker__track')?.animationName==='none',
+        revealVisible:style('.pr-feature')?.opacity==='1',
+        duplicatedTickerInert:el('.pr-ticker__dup')?.hasAttribute('inert')===true
+      };
+    });
+    console.log('METRICS '+v.name+' '+JSON.stringify(x));
+    verify(x.pageClass.includes('pr-body'),v.name+' production premium template is active');
+    verify(x.scrollWidth<=v.w+2,v.name+' page has no horizontal overflow');
+    verify(x.header&&x.header.width<=v.w-8,v.name+' header fits viewport');
+    verify(x.feature&&x.feature.width>100&&x.feature.height>=250,v.name+' lead story is visible');
+    verify(x.featureImage&&x.featureImage.width>100&&x.featureImage.height>120,v.name+' lead image has usable size');
+    verify(x.imageFit==='cover',v.name+' lead image fills artwork frame');
+    verify(contained(x.feature,x.featureTitle),v.name+' headline stays inside lead card');
+    verify(x.featuredHref.startsWith('/news/'),v.name+' lead story links to article');
+    verify(x.cardCount>=3,v.name+' latest-news listing is populated');
+    verify(x.cardMedia&&x.cardMedia.height>=90,v.name+' news photo has usable height');
+    verify(x.cardText&&x.cardText.top>=x.cardMedia.bottom-3,v.name+' card text follows photo');
+    verify(contained(x.cardText,x.cardTitle),v.name+' card headline remains inside card');
+    verify(x.cardImageLoaded,v.name+' news thumbnail loads');
+    verify(x.stats.length===3&&x.stats.every(a=>a.text&&a.text!=='۰'),v.name+' published stats are visible');
+    verify(x.tickerReducedMotion,v.name+' ticker respects reduced motion');
+    verify(x.revealVisible,v.name+' lead content remains visible without animations');
+    verify(x.duplicatedTickerInert,v.name+' duplicate ticker links are inert');
+    if(mobile){
+      verify(x.navVisible,v.name+' touch navigation is available');
+      verify(x.mobileSearchVisible&&x.mobileSearch?.height>=44,v.name+' mobile search is touch-friendly');
+      verify(x.mobileSearch.right<=v.w+2&&x.mobileSearch.left>=-2,v.name+' mobile search is on screen');
+    }else{
+      verify(x.desktopSearchVisible,v.name+' desktop search is available');
+    }
+    if(v.w<=680){
+      verify(x.card&&x.card.width>=v.w*.76,v.name+' news card uses mobile width');
+      verify(x.cta&&x.cta.height>=44,v.name+' CTA is touch-friendly');
+    }
+    await page.locator('.pr-hero').scrollIntoViewIfNeeded();
+    await page.screenshot({path:'/tmp/nabez-cloud-dancer-visual/hero-'+v.name+'.png',fullPage:false});
+    await page.locator('.pr-grid').scrollIntoViewIfNeeded();
+    await page.screenshot({path:'/tmp/nabez-cloud-dancer-visual/latest-'+v.name+'.png',fullPage:false});
+    await page.close();
   }
-  await page.locator('.ns26-feature-grid').scrollIntoViewIfNeeded();
-  await page.screenshot({path:'/tmp/nabez-cloud-dancer-visual/features-'+v.name+'.png',fullPage:false});
-  await page.locator('.ns26-news-grid').scrollIntoViewIfNeeded();
-  await page.screenshot({path:'/tmp/nabez-cloud-dancer-visual/latest-'+v.name+'.png',fullPage:false});
-  await page.close();
- }
 }finally{
- await browser.close();
- await new Promise(r=>server.close(r));
+  await browser.close();
+  await new Promise(r=>server.close(r));
 }
 if(failures)process.exit(1);
