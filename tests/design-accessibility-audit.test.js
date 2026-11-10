@@ -17,12 +17,14 @@ function fixture(){
   };
 }
 
-test('homepage offers visible, accessible mobile search and retains desktop search',()=>{
+test('homepage shares accessible navigation and search with inner pages',()=>{
   const markup=home(fixture());
-  assert.match(markup,/class="pr-search-link" href="\/search" aria-label="جستجو در خبرها"/);
-  assert.match(markup,/class="pr-search" action="\/search"/);
-  const css=fs.readFileSync(path.join(__dirname,'../public/premium.css'),'utf8');
-  assert.match(css,/\.pr-mobile-nav a,[\s\S]*?\.pr-search-link\{min-height:44px/);
+  assert.match(markup,/data-ns4-header/);
+  assert.match(markup,/class="header-search-round ns4-search-action" href="\/search" aria-label="جستجو در اخبار"/);
+  assert.match(markup,/aria-controls="ns4-main-nav" aria-expanded="false"/);
+  assert.match(markup,/<details class="ns4-more"><summary>/);
+  assert.match(markup,/class="ns4-footer"/);
+  assert.doesNotMatch(markup,/class="pr-head"|class="pr-foot"/);
 });
 
 test('duplicate ticker links are inert and invisible to assistive technology',()=>{

@@ -1,0 +1,104 @@
+/* Public design corrections, 2026-11-10.
+   Loaded after all legacy skins: explicit surface/text pairs prevent the light
+   Atelier rules from inheriting the dark Mosa ink token on pale controls. */
+body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{overflow:visible;gap:2px}
+body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav>a,
+body.public-shell .ns4-more summary{min-height:44px;white-space:nowrap}
+body.public-shell .ns4-more{position:relative;flex:none}
+body.public-shell .ns4-more summary{display:flex;align-items:center;gap:7px;cursor:pointer;padding:10px 12px;color:#e5edf2;border-radius:12px;font-size:13px;list-style:none}
+body.public-shell .ns4-more summary::-webkit-details-marker{display:none}
+body.public-shell .ns4-more summary:hover,
+body.public-shell .ns4-more[open] summary{background:#263e4e;color:#fff}
+body.public-shell .ns4-more-links{position:absolute;inset-inline-end:0;top:calc(100% + 8px);z-index:110;display:grid;min-width:220px;max-height:65vh;overflow-y:auto;padding:8px;background:#142433;border:1px solid #526b7b;border-radius:16px;box-shadow:0 16px 40px #0006}
+body.public-shell .site-capsule[data-ns4-header] .ns4-more-links a{justify-content:flex-start;min-height:44px}
+body.public-shell .site-capsule[data-ns4-header] .ns4-submit-action,
+body.public-shell .site-capsule[data-ns4-header] .ns4-submit-action *{color:#122333!important}
+body.public-shell .site-capsule[data-ns4-header] .ns4-search-action,
+body.public-shell .ns4-menu-toggle{min-width:44px!important;min-height:44px!important}
+body.public-shell .ns4-utility-row,
+body.public-shell .ns4-utility-label,
+body.public-shell .ns4-utility-signature{color:#c4d2dc!important}
+body.public-shell .ns4-more summary:focus-visible{outline:3px solid #b9e7f0;outline-offset:3px}
+
+/* Homepage uses the same navy surfaces as the inner pages. */
+body.public-shell.pr-body{--ink:#f1f5f7!important;--ink2:#d9e3e9;--muted:#c2d0da!important;--faint:#b4c4ce;--line:rgba(201,222,235,.25);--line2:rgba(201,222,235,.16)}
+body.public-shell.pr-body .pr-hero__lead,
+body.public-shell.pr-body .pr-hero__note,
+body.public-shell.pr-body .pr-stat span,
+body.public-shell.pr-body .pr-sec__title small{color:#c2d0da!important}
+body.public-shell.pr-body .pr-hero__lead b,
+body.public-shell.pr-body .pr-stat b,
+body.public-shell.pr-body .pr-card__body h3{color:#f1f5f7!important}
+body.public-shell.pr-body .pr-hero h1 b{background:none!important;-webkit-text-fill-color:var(--accent)!important;color:var(--accent)!important}
+body.public-shell.pr-body .pr-btn--gold,
+body.public-shell.pr-body .pr-cta .pr-btn--gold{background:var(--accent)!important;color:#132432!important;border:1px solid var(--accent)!important}
+body.public-shell.pr-body .pr-btn--ghost,
+body.public-shell.pr-body .pr-cta .pr-btn--ghost{background:#243c4c!important;color:#f5f8fa!important;border:1px solid #78909f!important}
+body.public-shell.pr-body .pr-btn span,
+body.public-shell.pr-body .pr-btn svg{color:inherit!important}
+body.public-shell.pr-body .pr-eyebrow,
+body.public-shell.pr-body .pr-feature__badge,
+body.public-shell.pr-body .pr-card__chip,
+body.public-shell.pr-body .pr-sec__more{background:#dcece7!important;color:#153f31!important;border-color:#dcece7!important}
+body.public-shell.pr-body .pr-card,
+body.public-shell.pr-body .pr-glass{background:#142433!important;border-color:#435b6b!important}
+body.public-shell.pr-body .pr-card__body{background:#142433}
+body.public-shell.pr-body .pr-card__body p,
+body.public-shell.pr-body .pr-card__foot,
+body.public-shell.pr-body .pr-card__foot em{color:#c2d0da!important}
+body.public-shell.pr-body .pr-list__item b,
+body.public-shell.pr-body .pr-rank b{color:#f1f5f7!important}
+body.public-shell.pr-body .pr-list__item span{color:#153f31!important;background:#dcece7!important}
+body.public-shell.pr-body .pr-rank span{color:#c2d0da!important}
+body.public-shell.pr-body .pr-feature__body h2{font-size:clamp(21px,1.8vw,25px)!important;line-height:1.65!important;-webkit-line-clamp:3;line-clamp:3}
+body.public-shell.pr-body .pr-feature__badge{letter-spacing:normal!important}
+
+/* A compact introduction keeps current reporting near the first viewport. */
+body.public-shell.pr-body .pr-hero{padding-block:22px 16px}
+body.public-shell.pr-body .pr-hero__grid{gap:28px}
+body.public-shell.pr-body .pr-hero h1{font-size:clamp(28px,2.7vw,38px)!important;line-height:1.45!important;margin-top:12px}
+body.public-shell.pr-body .pr-hero__lead{margin-top:12px;max-width:48ch}
+body.public-shell.pr-body .pr-hero__cta{margin-top:16px}
+body.public-shell.pr-body .pr-hero__note{margin-top:12px}
+body.public-shell.pr-body .pr-stats{margin-top:14px;padding-top:12px}
+body.public-shell.pr-body .pr-hero__stage,
+body.public-shell.pr-body .pr-feature{min-height:390px}
+body.public-shell.pr-body .pr-sec{padding-block:22px}
+body.public-shell.pr-body .pr-appearance{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:#c2d0da}
+body.public-shell.pr-body .pr-accents{display:flex!important;gap:0;padding:0;background:#243c4c!important;border-color:#526b7b!important}
+body.public-shell.pr-body .pr-accents button{width:36px;height:36px;border:9px solid #243c4c;box-shadow:none}
+body.public-shell.pr-body .pr-accents button::after{inset:0}
+body.public-shell.pr-body .pr-accents button[aria-pressed="true"]{outline:2px solid #e8f1f6;outline-offset:-7px}
+/* News remains visible even if a reveal observer or script is delayed. */
+body.public-shell.pr-body .at-reveal,
+body.public-shell.pr-body .pr-rv{opacity:1;transform:none}
+@media(max-width:1000px){
+ body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{overflow-y:auto;overflow-x:hidden}
+ body.public-shell .ns4-more{width:100%}
+ body.public-shell .ns4-more summary{font-size:14px;padding:11px 15px}
+ body.public-shell .ns4-more-links{position:static;min-width:0;max-height:none;box-shadow:none;margin-top:6px}
+}
+@media(max-width:860px){
+ body.public-shell.pr-body .pr-hero__grid{gap:20px}
+ body.public-shell.pr-body .pr-hero__copy{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+ body.public-shell.pr-body .pr-hero__lead{max-width:none}
+ body.public-shell.pr-body .pr-hero__stage,
+ body.public-shell.pr-body .pr-feature{min-height:350px}
+ body.public-shell.pr-body .pr-hero h1 br{display:none}
+ body.public-shell.pr-body .pr-hero h1{max-width:none!important;font-size:28px!important}
+ body.public-shell.pr-body .pr-hero__note{font-size:11px!important}
+}
+@media(max-width:420px){
+ body.public-shell .site-capsule[data-ns4-header] .ns4-submit-action{font-size:11px!important;padding-inline:9px!important;gap:4px!important}
+ body.public-shell.pr-body .pr-hero h1{font-size:26px!important}
+ body.public-shell.pr-body .pr-hero__cta .pr-btn{flex-basis:auto;min-width:0}
+ body.public-shell.pr-body .pr-feature__body h2{font-size:21px!important}
+}
+@media print{
+ body.public-shell .ns4-more{display:none}
+}
+@media(max-width:660px){
+ body.public-shell .site-capsule[data-ns4-header] .brand small{display:none!important}
+ body.public-shell .site-capsule[data-ns4-header] .brand b{font-size:16px!important}
+ body.public-shell.pr-body .pr-eyebrow{justify-self:start}
+}

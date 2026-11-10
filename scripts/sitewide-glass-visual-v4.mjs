@@ -80,6 +80,30 @@ try{
     });
     return {scroll,bodyClass:body.className,header:nav,card,title,inputs,footer:rect('.ns4-footer'),menu:rect('.ns4-menu-toggle'),hero:rect('.ns26-feature-main'),css:getComputedStyle(document.body).backgroundColor};
    });
+   if(route==='/'){
+    const checks=await page.evaluate(()=>{
+     const rgb=s=>(s.match(/[\d.]+/g)||[]).slice(0,3).map(Number);
+     const lum=c=>c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
+     const contrast=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+     const pairs=[['.pr-hero__lead',[21,37,52]],['.pr-hero__note',[21,37,52]],['.pr-stat b',[21,37,52]],['.pr-stat span',[21,37,52]],['.pr-card__body h3',[20,36,51]],['.pr-card__body p',[20,36,51]],['.pr-card__foot em',[20,36,51]]];
+     const ratios=pairs.map(([q,bg])=>({q,ratio:contrast(rgb(getComputedStyle(document.querySelector(q)).color),bg)}));
+     for(const btn of document.querySelectorAll('.pr-btn')){
+      const style=getComputedStyle(btn),label=btn.querySelector('span')||btn;
+      ratios.push({q:btn.textContent,ratio:contrast(rgb(getComputedStyle(label).color),rgb(style.backgroundColor))});
+     }
+     const nav=document.querySelector('.ns4-header-nav');
+     return {ratios,navFits:nav.scrollWidth<=nav.clientWidth+2,gridTop:document.querySelector('.pr-grid').getBoundingClientRect().top,sharedHeader:!!document.querySelector('[data-ns4-header]'),sharedFooter:!!document.querySelector('.ns4-footer')};
+    });
+    for(const c of checks.ratios)report(c.ratio>=4.5,size.w+' homepage contrast '+c.q+' '+c.ratio.toFixed(2));
+    report(checks.sharedHeader&&checks.sharedFooter,size.w+' homepage shares public shell');
+    if(size.w>1000){report(checks.navFits,size.w+' all primary navigation fits');report(checks.gridTop<760,size.w+' latest news starts near first viewport');}
+    if(size.w<=1000)await page.locator('[data-ns4-menu-toggle]').click();
+    await page.locator('.ns4-more summary').click();
+    report(await page.locator('.ns4-more a[href="/contact"]').isVisible(),size.w+' More reveals remaining links');
+    await page.keyboard.press('Escape');
+    report((await page.locator('.ns4-more').getAttribute('open'))===null,size.w+' Escape closes disclosure');
+    if(size.w<=1000)report((await page.locator('[data-ns4-menu-toggle]').getAttribute('aria-expanded'))==='false',size.w+' Escape closes mobile navigation');
+   }
    const id=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
    console.log('METRICS '+size.w+' '+route+' '+JSON.stringify({scroll:metrics.scroll,header:metrics.header&&{w:metrics.header.width,h:metrics.header.height},card:metrics.card&&{w:metrics.card.width,h:metrics.card.height},title:metrics.title&&{w:metrics.title.width,h:metrics.title.height}}));
    report(metrics.scroll<=size.w+3,size.w+' '+route+' no horizontal overflow ('+metrics.scroll+')');

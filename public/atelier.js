@@ -54,6 +54,7 @@
   if (counters.length && !reduce) {
     var run = function (el) {
       var target = Number(el.getAttribute('data-count')) || 0;
+      if (el.textContent.trim() === target.toLocaleString('fa-IR')) return;
       var start = performance.now(), dur = 1300;
       var step = function (now) {
         var p = Math.min(1, (now - start) / dur);
