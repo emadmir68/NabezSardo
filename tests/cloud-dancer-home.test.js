@@ -31,7 +31,7 @@ test('new home links to original news, categories, cities and community submissi
   const html=home(fixture(15));
   assert.match(html,/href="\/local\/jiroft"/);
   assert.match(html,/href="\/category\/social"/);
-  assert.match(html,/action="\/search"/);
+  assert.match(html,/href="\/search"/);
   assert.match(html,/<a class="pr-card[^>]*href="\/news\/[^"]+"/);
 });
 test('premium design assets ship with mobile and reduced-motion rules',()=>{

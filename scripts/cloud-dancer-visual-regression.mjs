@@ -64,12 +64,12 @@ try{
       const style=selector=>el(selector)?getComputedStyle(el(selector)):null;
       const cards=[...document.querySelectorAll('.pr-card')];
       const featureTitle=el('.pr-feature__body h2');
-      const mobileSearch=el('.pr-search-link');
+      const mobileSearch=el('.ns4-search-action');
       return {
         viewport:innerWidth,
         scrollWidth:document.documentElement.scrollWidth,
         pageClass:document.body.className,
-        header:rect('.pr-head__bar'),
+        header:rect('[data-ns4-header]'),
         feature:rect('.pr-feature'),
         featureImage:rect('.pr-feature__media img'),
         featureBody:rect('.pr-feature__body'),
@@ -82,10 +82,10 @@ try{
         cardTitle:rect('.pr-card__body h3'),
         cardCount:cards.length,
         cardImageLoaded:!!el('.pr-card__media img')?.naturalWidth,
-        navVisible:style('.pr-mobile-nav')?.display!=='none',
-        mobileSearch:rect('.pr-search-link'),
-        mobileSearchVisible:!!mobileSearch&&style('.pr-search-link')?.display!=='none',
-        desktopSearchVisible:style('.pr-search')?.display!=='none',
+        navVisible:style('.ns4-menu-toggle')?.display!=='none',
+        mobileSearch:rect('.ns4-search-action'),
+        mobileSearchVisible:!!mobileSearch&&style('.ns4-search-action')?.display!=='none',
+        desktopSearchVisible:style('.ns4-search-action')?.display!=='none',
         cta:rect('.pr-hero__cta .pr-btn'),
         stats:[...document.querySelectorAll('.pr-stats [data-count]')]
           .map(n=>({value:n.getAttribute('data-count'),text:n.textContent.trim()})),
@@ -97,7 +97,7 @@ try{
     console.log('METRICS '+v.name+' '+JSON.stringify(x));
     verify(x.pageClass.includes('pr-body'),v.name+' production premium template is active');
     verify(x.scrollWidth<=v.w+2,v.name+' page has no horizontal overflow');
-    verify(x.header&&x.header.width<=v.w-8,v.name+' header fits viewport');
+    verify(x.header&&x.header.width<=v.w+2,v.name+' header fits viewport');
     verify(x.feature&&x.feature.width>100&&x.feature.height>=250,v.name+' lead story is visible');
     verify(x.featureImage&&x.featureImage.width>100&&x.featureImage.height>120,v.name+' lead image has usable size');
     verify(x.imageFit==='cover',v.name+' lead image fills artwork frame');

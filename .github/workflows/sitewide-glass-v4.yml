@@ -9,6 +9,7 @@ on:
       - 'public/mosa-sitewide-v5.css'
       - 'public/mosa-home-v5.css'
       - 'tests/mosa-design-v5.test.js'
+      - 'public/public-design-fixes.css'
       - 'public/glass-sitewide-v4.css'
       - 'public/glass-sitewide-v4.js'
       - 'public/glass-admin-v4.css'

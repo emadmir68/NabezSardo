@@ -42,3 +42,11 @@ Run `npm test`; its approved-behavior checks are a deployment gate. Inspect the 
 - Carousel cards reserve separate image and text areas. Headlines show up to three lines, excerpts up to two, and the read link stays inside the card. Full titles and article contents remain available on the article page.
 - Listings use bounded excerpts without changing stored leads, bodies or sharing metadata. Real primary photography, then an image already attached in the gallery/body, precedes the branded category fallback. Branded fallbacks use smaller listing frames.
 - Preserve the locked article reading order, editor behavior, social sharing, publishing, backups, infrastructure and distribution. Shared shell palette refinements do not authorize changing article actions or publication metadata placement.
+
+
+## Owner-requested urgent design fixes approved 2026-11-10
+
+- The owner approved the live audit's urgent/high-priority corrections: restore readable text and controls on the existing navy canvas, prevent header overflow, use one public header/footer, and compact the homepage introduction.
+- All public pages use the shared navigation with a keyboard-accessible More disclosure. Keep search and every category reachable, including on mobile. Homepage accent controls remain available beside the introduction.
+- The homepage introduction may use smaller type and spacing; keep its wording, real lead photo and editorial selection. Preserve article order, article actions, publishing, admin, storage and integrations.
+- Validate computed contrast, desktop/mobile geometry and shared navigation with the visual regression workflow before deployment.
