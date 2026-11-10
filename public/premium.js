@@ -68,6 +68,8 @@
   function runCounter(el) {
     var target = Number(el.getAttribute('data-count')) || 0;
     var suffix = el.getAttribute('data-suffix') || '';
+    /* Server renders final values for legibility before JS; never flash zero. */
+    if (el.textContent.trim() === target.toLocaleString('fa-IR') + suffix) return;
     if (reduce) { el.textContent = target.toLocaleString('fa-IR') + suffix; return; }
     var start = performance.now();
     var dur = 1400;
