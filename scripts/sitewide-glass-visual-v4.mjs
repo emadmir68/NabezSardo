@@ -98,6 +98,11 @@ try{
     report(checks.sharedHeader&&checks.sharedFooter,size.w+' homepage shares public shell');
     if(size.w>1000){report(checks.navFits,size.w+' all primary navigation fits');report(checks.gridTop<760,size.w+' latest news starts near first viewport');}
     if(size.w<=1000)await page.locator('[data-ns4-menu-toggle]').click();
+    if(size.w<=1000){
+     const bounds=await page.locator('.ns4-header-nav').boundingBox();
+     const header=await page.locator('[data-ns4-header]').boundingBox();
+     report(bounds.x>=-2&&bounds.x+bounds.width<=size.w+2&&bounds.y>=header.y+header.height-2,size.w+' mobile menu below header and within screen');
+    }
     await page.locator('.ns4-more summary').click();
     report(await page.locator('.ns4-more a[href="/contact"]').isVisible(),size.w+' More reveals remaining links');
     await page.keyboard.press('Escape');
