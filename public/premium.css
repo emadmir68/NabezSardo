@@ -380,7 +380,7 @@ body.pr-body .pr-sky::before{background:
   radial-gradient(58% 42% at 68% -8%,rgba(201,168,106,.17),transparent 62%),
   radial-gradient(70% 50% at 12% 8%,rgba(96,112,140,.10),transparent 66%),
   radial-gradient(120% 80% at 50% 116%,rgba(120,58,44,.15),transparent 62%),
-  linear-gradient(180deg,#04050 8 0%,#07080d 46%,#04050a 100%)}
+  linear-gradient(180deg,#040508 0%,#07080d 46%,#04050a 100%)}
 body.pr-body .pr-orb{opacity:.32;filter:blur(90px)}
 body.pr-body .pr-orb--b{background:radial-gradient(circle,rgba(120,110,96,.22),transparent 66%)}
 
@@ -412,3 +412,56 @@ body.pr-body .pr-orb--b{background:radial-gradient(circle,rgba(120,110,96,.22),t
 .pr-cta{background:
   radial-gradient(80% 120% at 50% -30%,rgba(201,168,106,.18),transparent 62%),
   linear-gradient(160deg,#0c0e15,#06070b)}
+
+/* Production UI audit — 2026-11-10.
+   Keep the approved visual identity, but make controls readable, reachable and stable. */
+body.pr-body .pr-search input::placeholder{color:#b4aea4}
+body.pr-body .pr-hero__lead,
+body.pr-body .pr-hero__note,
+body.pr-body .pr-stat span,
+body.pr-body .pr-card__body p,
+body.pr-body .pr-card__foot,
+body.pr-body .pr-feature__body p,
+body.pr-body .pr-feature__meta,
+body.pr-body .pr-foot p,
+body.pr-body .pr-foot a{color:#bbb4a9}
+body.pr-body .pr-sec__title small{color:#aaa398}
+body.pr-body .pr-ticker__track:focus-within{animation-play-state:paused}
+body.pr-body .pr-ticker__dup{pointer-events:none}
+body.pr-body .pr-mobile-nav a,
+body.pr-body .pr-search-link{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+body.pr-body .pr-search-link{color:var(--gold2);border-color:var(--line)}
+body.pr-body .pr-accents button{position:relative}
+body.pr-body .pr-accents button::after{content:"";position:absolute;inset:-14px}
+body.pr-body .pr-feature__body{padding-inline-end:clamp(48px,5vw,62px)}
+body.pr-body .pr-feature__top{flex-wrap:wrap}
+body.pr-body .pr-hero__copy,body.pr-body .pr-hero__stage,
+body.pr-body .pr-grid>*{min-width:0}
+body.pr-body :where(h1,h2,h3,p){overflow-wrap:break-word}
+@media(max-width:860px){
+  body.pr-body .pr-mobile-nav{scroll-padding-inline:18px;overscroll-behavior-x:contain}
+  body.pr-body .pr-mobile-nav a{white-space:nowrap}
+}
+@media(max-width:680px){
+  body.pr-body .pr-wrap{padding-inline:16px}
+  body.pr-body .pr-hero__cta{gap:10px}
+  body.pr-body .pr-hero__cta .pr-btn{min-height:48px;height:auto;padding-block:10px;white-space:normal;text-align:center}
+  body.pr-body .pr-hero__stage{min-height:350px}
+  body.pr-body .pr-feature__badge{max-width:100%;white-space:normal;line-height:1.7}
+  body.pr-body .pr-feature__top{gap:6px}
+  body.pr-body .pr-feature__body{padding-inline-end:54px}
+  body.pr-body .pr-stat{min-width:0;padding-inline:8px}
+  body.pr-body .pr-stat b{overflow-wrap:anywhere;font-size:clamp(15px,4vw,19px)}
+}
+@media(max-width:370px){
+  body.pr-body .pr-hero__cta .pr-btn{flex-basis:100%}
+  body.pr-body .pr-brand small{letter-spacing:.1em}
+  body.pr-body .pr-stats{gap:0}
+  body.pr-body .pr-stat span{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  body.pr-body{scroll-behavior:auto}
+  body.pr-body .pr-ticker__track{animation:none!important;transform:none!important}
+  body.pr-body .pr-ticker__viewport{overflow-x:auto;scrollbar-width:thin;direction:rtl}
+  body.pr-body .pr-rv{opacity:1!important;transform:none!important}
+}
