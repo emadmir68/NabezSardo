@@ -97,6 +97,10 @@ jobs:
           grep -q 'class="public-shell pr-body"' /tmp/home.html
           grep -q 'premium.css' /tmp/home.html
           grep -q 'premium.js' /tmp/home.html
+          # Confirm the live Worker serves the new homepage CSS, not a cached old asset.
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/premium.css?v=${GITHUB_SHA}" -o /tmp/premium-home.css
+          grep -q 'Cascade repair: Atelier is loaded after Premium' /tmp/premium-home.css
+          grep -q 'body.public-shell.pr-body .pr-cta{' /tmp/premium-home.css
           grep -q 'aria-label="دسته‌های خبری"' /tmp/home.html
           grep -q 'class="pr-hero"' /tmp/home.html
           grep -q 'class="pr-feature' /tmp/home.html
