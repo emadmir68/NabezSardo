@@ -50,3 +50,11 @@ Run `npm test`; its approved-behavior checks are a deployment gate. Inspect the 
 - All public pages use the shared navigation with a keyboard-accessible More disclosure. Keep search and every category reachable, including on mobile. Homepage accent controls remain available beside the introduction.
 - The homepage introduction may use smaller type and spacing; keep its wording, real lead photo and editorial selection. Preserve article order, article actions, publishing, admin, storage and integrations.
 - Validate computed contrast, desktop/mobile geometry and shared navigation with the visual regression workflow before deployment.
+
+## Owner-requested full public-page audit approved 2026-11-11
+
+- The owner requested design corrections across the homepage and all public page types. Compact inner-page headings and remove redundant surrounding panels; retain the existing navy identity, content and editorial selection.
+- Restore small corner Story badges, readable listing metadata and controls, warm-paper article prose, and legible article metadata. Preserve the locked article reading order, all sharing actions and metadata placement.
+- Public contact/submission forms may use aligned fields, larger input text and a centered layout. Keep all field requirements, anti-spam controls and server behavior unchanged.
+- Local-news pages may link between the existing regional archives. Highlight the current navigation section and label the search field accessibly.
+- Check actual text contrast, badge bounds, article reading surfaces, mobile form geometry and representative public templates before deploying. Admin/editor, integrations, publishing and storage remain unchanged.

@@ -5,6 +5,7 @@ on:
       - cloudflare-migration
     paths:
       - 'lib/view-common.js'
+      - 'lib/view-public.js'
       - 'lib/view-home-2026.js'
       - 'public/mosa-sitewide-v5.css'
       - 'public/mosa-home-v5.css'

@@ -111,3 +111,168 @@ body.public-shell.pr-body .pr-rv{opacity:1;transform:none}
   background:#142433!important;box-shadow:0 16px 40px #0006!important;
  }
 }
+
+/* Full public-page audit: keep the navy identity, with explicit readable pairs.
+   These selectors intentionally outrank the conflicting light/dark legacy skins. */
+body.public-shell:not(.ns26-page) main.wrap.page{
+ width:min(1180px,calc(100% - 40px));padding:28px 0 52px!important;
+ background:transparent!important;border:0!important;box-shadow:none!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head){
+ min-height:0;padding:22px 28px!important;margin:0 0 24px!important;
+ border:1px solid #3b5364!important;border-radius:22px!important;
+ background:linear-gradient(125deg,#1c3344,#112331)!important;
+ box-shadow:none!important;
+}
+body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) h1{
+ font-size:clamp(28px,2.8vw,38px)!important;line-height:1.6!important;
+ margin:4px 0 8px!important;color:#f1f5f7!important;letter-spacing:normal!important;
+}
+body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) p{
+ color:#c3d2dd!important;font-size:15px!important;line-height:1.9!important;margin:0!important;
+}
+body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) .eyebrow{
+ background:#243e4e!important;color:#dcebf2!important;border-color:#526b7b!important;
+ padding:6px 12px!important;margin-bottom:6px;font-size:11px!important;
+}
+body.public-shell main.page>.lead{color:#c3d2dd!important;font-size:16px;line-height:2;margin-bottom:24px}
+body.public-shell main .at-reveal,body.public-shell main.at-reveal{opacity:1;transform:none}
+
+/* Compact corner badges must never cover or blur the news photograph. */
+body.public-shell .grid.news .card-story-badge{
+ inset:auto auto 10px 10px!important;width:max-content!important;height:auto!important;
+ max-width:calc(100% - 20px);min-height:30px;padding:5px 10px!important;
+ background:#102334!important;color:#f4f7fa!important;font-size:11px!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;opacity:1;
+}
+body.public-shell .grid.news .card-story-badge span{color:inherit!important}
+body.public-shell .grid.news .card-video-badge{inset:10px 10px auto auto!important}
+body.public-shell .grid.news .card{
+ background:#142433!important;border-color:#3b5364!important;
+ box-shadow:0 10px 26px #0002!important;backdrop-filter:none!important;
+}
+body.public-shell .grid.news .card .pad{padding:18px 20px 20px!important}
+body.public-shell .grid.news .card-kicker{
+ background:transparent!important;border:0!important;border-radius:0!important;
+ padding:0!important;letter-spacing:normal!important;
+}
+body.public-shell .grid.news .card .eyebrow{
+ background:#243e4e!important;color:#dcebf2!important;border:0!important;
+ font-size:12px!important;letter-spacing:normal!important;
+}
+body.public-shell .grid.news .card .eyebrow::before{
+ content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
+ background:var(--cat-accent,#dbc3a0);margin-inline-end:6px;
+}
+body.public-shell .grid.news .card .view-badge{
+ background:transparent!important;color:#c0d0db!important;border:0!important;font-size:12px!important;
+}
+body.public-shell .grid.news .card time{color:#b7c8d4!important;font-size:12px!important;line-height:1.8}
+body.public-shell .grid.news .card h3{font-size:20px!important;line-height:1.8!important;letter-spacing:normal!important}
+body.public-shell .grid.news .card .listing-excerpt{
+ color:#c0d0db!important;font-size:14px!important;line-height:1.9!important;
+ -webkit-line-clamp:2;line-clamp:2;
+}
+body.public-shell main .more,body.public-shell .grid.news .card .more{
+ background:#dcece7!important;color:#153f31!important;border:1px solid #dcece7!important;
+ min-height:44px;padding:8px 14px!important;line-height:1.7;
+}
+body.public-shell main .more span{color:inherit!important}
+body.public-shell .grid.news>.empty,body.public-shell .grid.info>.empty{grid-column:1/-1}
+body.public-shell .grid.info .panel{
+ background:#142433!important;border-color:#3b5364!important;
+ box-shadow:none!important;border-radius:20px!important;
+}
+body.public-shell .grid.info .panel h3{font-size:21px!important;margin:0 0 12px}
+body.public-shell .grid.info .panel p{font-size:15px;line-height:2}
+body.public-shell .grid.info .panel p a{color:#b9e7f0!important;text-decoration:underline;text-underline-offset:4px}
+
+/* Search and submission controls use the same colors and generous touch targets. */
+body.public-shell main .btn.primary{
+ background:#dbc3a0!important;color:#142433!important;border:1px solid #dbc3a0!important;
+ min-height:48px;font-size:14px!important;border-radius:12px!important;box-shadow:none!important;
+}
+body.public-shell main .btn.primary span{color:inherit!important}
+body.public-shell main .btn.ghost{
+ background:#243c4c!important;color:#f1f5f7!important;border:1px solid #78909f!important;
+}
+body.public-shell main :is(.form,.archive-filters,.search-large){
+ background:#142433!important;border-color:#3b5364!important;box-shadow:none!important;
+ border-radius:20px!important;padding:22px!important;backdrop-filter:none!important;
+}
+body.public-shell main :is(.form,.archive-filters,.search-large) label{font-size:14px!important;line-height:1.8!important}
+body.public-shell main :is(.form,.archive-filters,.search-large) :is(input,textarea,select){
+ font-size:16px!important;line-height:1.7!important;min-width:0;
+}
+body.public-shell main :is(input,textarea)::placeholder{color:#526879!important;opacity:1}
+body.public-shell main .form{
+ width:100%;max-width:840px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:18px;
+}
+body.public-shell main .form>label{margin:0!important;display:grid;gap:7px;min-width:0}
+body.public-shell main .form .btn{justify-self:start;min-width:150px}
+body.public-shell main .form :is(small,.privacy-note){color:#c0d0db!important;font-size:13px;line-height:1.9}
+body.public-shell main .form input[type="file"]{max-width:100%;white-space:normal;padding:9px!important;font-size:13px!important}
+body.public-shell main .form input::file-selector-button{
+ font:inherit;padding:8px 12px;border:0;border-radius:8px;background:#243c4c;color:#fff;margin-inline-end:10px;cursor:pointer;
+}
+body.public-shell main.form-page>.lead,body.public-shell main .gift-card-box{
+ max-width:840px;margin-inline:auto!important;
+}
+body.public-shell main .gift-card-box{padding:18px 22px!important;margin-bottom:22px!important}
+body.public-shell main .gift-card-box span{font-size:13px;line-height:1.8}
+body.public-shell main .gift-card-box b{font-size:14px;line-height:1.9;font-weight:500}
+body.public-shell main .search-large{width:100%;max-width:none;gap:12px;align-items:center}
+body.public-shell main .archive-pagination{gap:6px;flex-wrap:wrap}
+body.public-shell main .archive-pagination :is(a,.archive-page-current){min-height:44px;min-width:44px}
+body.public-shell .local-switcher{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;align-items:center}
+body.public-shell .local-switcher a{
+ display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;
+ color:#dcebf2;background:#1b3344;border:1px solid #526b7b;border-radius:999px;font-size:14px;
+}
+body.public-shell .local-switcher a[aria-current="page"]{background:#dbc3a0;color:#142433;border-color:#dbc3a0;font-weight:700}
+body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a[aria-current="page"]{
+ color:#f3dbb7!important;background:#263b49!important;box-shadow:inset 0 -2px #dbc3a0;
+}
+body.public-shell .ns4-more:has(a[aria-current="page"]) summary{color:#f3dbb7;background:#263b49}
+
+/* Reading remains on warm paper; remove the inherited dark glass behind prose.
+   Article order, action controls and publication metadata placement stay intact. */
+body.public-shell .article-premium .article-reading-zone .article-body{
+ background:transparent!important;border:0!important;box-shadow:none!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;border-radius:0!important;
+}
+body.public-shell .article-premium .article-head h1 .article-fa-fallback{color:#f1f5f7!important}
+body.public-shell .article-premium .article-head .article-deck .article-fa-fallback{color:#c9d8e0!important}
+body.public-shell .article-premium .article-body blockquote{background:#e9eef0;color:#253a4b}
+body.public-shell .article-premium .article-meta-item :is(b,time){color:#30536d!important;font-size:13px;line-height:1.8;white-space:normal}
+body.public-shell .article-premium .article-meta-item small{color:#526777!important;font-size:11px}
+body.public-shell .article-premium .article-endnote :is(b,small){color:#30536d!important}
+body.public-shell .related-news .sectionhead h2{color:#f1f5f7!important}
+body.public-shell .related-news .sectionhead .eyebrow{color:#c0d0db!important}
+body.public-shell .short-timeline-shell{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+body.public-shell .short-timeline-item{background:#142433!important;border-color:#3b5364!important}
+body.public-shell .short-timeline-item :is(time,.short-timeline-views){color:#b7c8d4!important;font-size:12px!important}
+body.public-shell .short-timeline-item .short-timeline-cat{color:#edd7b5!important}
+body.public-shell.pr-body .pr-list__item span{display:table;width:auto;margin-top:6px;padding:3px 9px}
+body.public-shell.pr-body .pr-cta p{color:#c3d2dd!important}
+
+@media(min-width:700px){
+ body.public-shell main .form{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.public-shell main .form>*{grid-column:1/-1}
+ body.public-shell main .form>label:has(input[name="name"],input[name="phone"],input[name="contact"]){grid-column:auto}
+}
+@media(max-width:660px){
+ body.public-shell:not(.ns26-page) main.wrap.page{width:calc(100% - 24px);padding:18px 0 36px!important}
+ body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head){padding:18px!important;border-radius:18px!important;margin-bottom:18px!important}
+ body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) h1{font-size:28px!important}
+ body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) p{font-size:14px!important}
+ body.public-shell main :is(.form,.archive-filters,.search-large){padding:16px!important}
+ body.public-shell main .archive-filters{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px}
+ body.public-shell main .archive-filters>div:first-child,body.public-shell main .archive-filters>.btn{grid-column:1/-1}
+ body.public-shell main .form .btn{width:100%}
+ body.public-shell .grid.news .card .pad{padding:16px!important}
+ body.public-shell .grid.news .card h3{font-size:19px!important}
+ body.public-shell main .search-large{display:grid;grid-template-columns:minmax(0,1fr) auto}
+ body.public-shell main .search-large .btn{padding-inline:14px!important}
+}
