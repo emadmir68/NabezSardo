@@ -6,7 +6,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 const require=createRequire(import.meta.url);
 const views=require('../lib/views-v2');
-const opinion=require('../lib/view-opinion');
 const adminViews=require('../lib/view-admin');
 const root=path.resolve('public');
 const cats=[{id:'social',name:'اجتماعی'},{id:'incidents',name:'حوادث'},{id:'weather',name:'آب‌وهوا'},{id:'opinion',name:'یادداشت و مطالبه'},{id:'short-news',name:'خبر کوتاه'}];
@@ -18,17 +17,21 @@ const db={settings:{},categories:cats,followups:[],citizens:[],contacts:[],artic
  bodyHtml:'<p>این نمونه متنی برای سنجش تجربه مطالعه روی گوشی‌های کوچک و حفظ چیدمان درست راست‌به‌چپ است.</p><h2>ادامه گزارش</h2><p>جزئیات تکمیلی گزارش در این بخش قرار می‌گیرد.</p>',
  status:'published',categoryId:cats[i%cats.length].id,
  createdAt:new Date(Date.UTC(2026,9,30,10,i)).toISOString(),
- location:'جیرفت',views:i,image:'/assets/news-cover.svg'
+ location:'جیرفت',views:i,image:i%3===0?'/assets/header-mosque-final.jpg':'/assets/news-cover.svg'
 }))};
 const urls={
  '/':views.home(db),
  '/all-news':views.archive(db),
+ '/all-news?page=2':views.archive(db,{page:2}),
+ '/all-news?q=unmatched':views.archive(db,{q:'unmatched'}),
  '/news/v4story-0':views.article(db,db.articles[0]),
  '/category/social':views.category(db,cats[0]),
  '/category/short-news':views.category(db,cats[4]),
- '/category/opinion':opinion(db,cats[3]),
- '/search':views.search(db,'جیرفت'),
+ '/category/opinion':views.category(db,cats[3]),
+ '/search':views.search(db),
+ '/search?q=unmatched':views.search(db,'unmatched'),
  '/local/jiroft':views.localHub(db,'jiroft'),
+ '/local/anbarabad':views.localHub(db,'anbarabad'),
  '/about':views.simple(db,'about'),
  '/contact':views.simple(db,'contact'),
  '/send-news':views.simple(db,'send-news'),
@@ -40,7 +43,8 @@ const urls={
 };
 const server=http.createServer(async(req,res)=>{
  let url;try{url=new URL(req.url,'http://localhost');}catch{res.writeHead(400).end();return;}
- if(url.pathname in urls){res.writeHead(200,{'content-type':'text/html;charset=utf-8'}).end(urls[url.pathname]);return;}
+ const route=url.pathname+url.search;
+ if(route in urls){res.writeHead(200,{'content-type':'text/html;charset=utf-8'}).end(urls[route]);return;}
  if(!url.pathname.startsWith('/assets/')){res.writeHead(404).end('Not found');return;}
  let rel=url.pathname.slice(8),full=path.resolve(root,rel);
  if(!full.startsWith(root+path.sep)){res.writeHead(403).end();return;}
@@ -50,7 +54,7 @@ const server=http.createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true});
 const host='http://127.0.0.1:'+server.address().port;
-const sizes=[{w:360,h:800},{w:390,h:844},{w:412,h:915},{w:1280,h:900}];
+const sizes=[{w:360,h:800},{w:390,h:844},{w:412,h:915},{w:768,h:1024},{w:1280,h:900}];
 let failed=0;
 const report=(good,info)=>{console.log((good?'PASS':'FAIL')+' '+info);if(!good)failed++};
 const outdir='/tmp/nabez-v4-visual';
@@ -116,6 +120,45 @@ try{
     report(html.includes('glass-sitewide-v4.css'),size.w+' '+route+' shared stylesheet');
     if(route!=='/')report(!!metrics.header&&metrics.header.height>=50,size.w+' '+route+' glass header displayed');
     if(route!=='/')report(!!metrics.footer&&metrics.footer.height>100,size.w+' '+route+' full footer');
+    const readability=await page.evaluate(()=>{
+     const rgba=s=>(s.match(/[\d.]+/g)||[]).map(Number);
+     const lum=c=>c.slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
+     const contrast=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+     const background=el=>{
+      const layers=[];
+      while(el){const c=rgba(getComputedStyle(el).backgroundColor);layers.push(c);if(c.length===3||c[3]===1)break;el=el.parentElement;}
+      return layers.reverse().reduce((base,c)=>base.map((v,i)=>c[i]*(c[3]??1)+v*(1-(c[3]??1))),[20,36,51]);
+     };
+     const selectors=['main .btn','main .more','main .card .eyebrow','main .card .view-badge','main .card time','main .card h3 a','main .card .listing-excerpt','main.page>.lead','main .form>label','main .article-body p','main .article-meta-item time','main .related-news .sectionhead h2','main .short-timeline-item time'];
+     const ratios=[];
+     for(const q of selectors){
+      for(const el of [...document.querySelectorAll(q)].slice(0,3)){
+       if(!el.getBoundingClientRect().height)continue;
+       const label=[...el.querySelectorAll('span')].find(x=>x.getBoundingClientRect().height>0)||el;
+       ratios.push({q,ratio:contrast(rgba(getComputedStyle(label).color),background(label))});
+      }
+     }
+     const badges=[...document.querySelectorAll('.grid.news .card-story-badge')].map(el=>{
+      const b=el.getBoundingClientRect(),m=el.closest('.card-media').getBoundingClientRect();
+      return b.width<=120&&b.height<=44&&b.left>=m.left&&b.right<=m.right&&b.top>=m.top&&b.bottom<=m.bottom&&b.width*b.height<m.width*m.height*.2;
+     });
+     const grid=document.querySelector('.grid.news,.grid.info');
+     const empty=grid?.querySelector(':scope>.empty');
+     const hero=document.querySelector('main.page>.pagehead,main.page>.ns4-page-hero,main.page>.short-timeline-page-head');
+     const inputs=[...document.querySelectorAll('main .form input:not([type="file"]),main .form textarea,main .search-large input,main .archive-filters input')].filter(el=>el.getBoundingClientRect().height>0);
+     const active=[...document.querySelectorAll('.ns4-header-nav a[aria-current="page"]')].map(a=>new URL(a.href).pathname);
+     return {ratios,badges,heroHeight:hero?.getBoundingClientRect().height||0,emptyFills:!empty||empty.getBoundingClientRect().width>=grid.getBoundingClientRect().width*.95,inputsReadable:inputs.every(el=>parseFloat(getComputedStyle(el).fontSize)>=16),active,path:location.pathname};
+    });
+    for(const c of readability.ratios)report(c.ratio>=4.5,size.w+' '+route+' readable '+c.q+' '+c.ratio.toFixed(2));
+    report(readability.badges.every(Boolean),size.w+' '+route+' Story badges stay in a small image corner');
+    report(readability.emptyFills,size.w+' '+route+' empty state uses full grid width');
+    report(readability.inputsReadable,size.w+' '+route+' readable form inputs without mobile zoom');
+    if(readability.heroHeight)report(readability.heroHeight<=(size.w<=412?340:260),size.w+' '+route+' compact page heading ('+readability.heroHeight.toFixed(0)+')');
+    if(['/','/all-news','/category/social','/category/short-news','/category/opinion'].includes(readability.path))report(readability.active.includes(readability.path),size.w+' '+route+' current navigation section marked');
+    if(route.startsWith('/local/')){
+     report(await page.locator('.local-switcher a').count()===5,size.w+' regional navigation offers every existing region');
+     report(await page.locator('.local-switcher [aria-current="page"]').getAttribute('href')===route,size.w+' regional navigation marks selected region');
+    }
    }
    if(route.includes('news/')||route==='/all-news'||route.startsWith('/category/')||route==='/local/jiroft'){
      if(metrics.card)report(metrics.card.width>170,size.w+' '+route+' news card usable width');

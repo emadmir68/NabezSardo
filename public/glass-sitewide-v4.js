@@ -5,6 +5,13 @@
    const button=document.querySelector('[data-ns4-menu-toggle]');
    const nav=document.getElementById('ns4-main-nav');
    if(!button||!nav)return;
+   // Keep the current section recognizable on every public page, including More.
+   const currentPath=location.pathname.replace(/\/+$/,'')||'/';
+   document.querySelectorAll('.ns4-header-nav a,.ns4-header-actions a').forEach(link=>{
+     const path=new URL(link.href,location.href).pathname.replace(/\/+$/,'')||'/';
+     if(path===currentPath)link.setAttribute('aria-current','page');
+     else link.removeAttribute('aria-current');
+   });
    const more=nav.querySelector('.ns4-more');
    const close=()=>{if(more)more.open=false;button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','باز کردن منوی سایت');nav.classList.remove('ns4-open');};
    button.addEventListener('click',()=>{
