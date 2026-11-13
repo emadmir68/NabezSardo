@@ -78,7 +78,7 @@
   -webkit-backdrop-filter:blur(18px);
   box-shadow:0 16px 36px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.08);
 }
-.ns-coverflow__pulse svg{width:29px;height:20px;color:var(--accent,#d7ae62)}
+.ns-coverflow__pulse svg{width:29px;height:20px;color:var(--accent,#c9ced6)}
 .ns-coverflow__identity-copy{display:flex;flex-direction:column;min-width:0}
 .ns-coverflow__identity-copy b{
   font-size:clamp(16px,1.7vw,22px);
@@ -245,7 +245,7 @@
   width:6px;
   height:6px;
   border-radius:50%;
-  background:var(--accent,#d7ae62);
+  background:var(--accent,#c9ced6);
 }
 .ns-coverflow__date{
   color:rgba(255,255,255,.58);
@@ -335,7 +335,7 @@
 }
 .ns-coverflow__dot.is-active{
   width:24px;
-  background:var(--accent,#d7ae62);
+  background:var(--accent,#c9ced6);
 }
 .ns-coverflow__hint{
   position:absolute;
