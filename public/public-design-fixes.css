@@ -83,7 +83,7 @@ body.public-shell main.page>.lead{color:#c4cad2!important;font-size:16px;line-he
 body.public-shell main .at-reveal,body.public-shell main.at-reveal{opacity:1;transform:none}
 
 /* Compact corner badges must never cover or blur the news photograph. */
-body.public-shell .grid.news .card-story-badge{
+body.public-shell.paper-era-never .grid.news .card-story-badge{
  inset:auto auto 10px 10px!important;width:max-content!important;height:auto!important;
  max-width:calc(100% - 20px);min-height:30px;padding:5px 10px!important;
  background:#111318!important;color:#eef1f5!important;font-size:11px!important;

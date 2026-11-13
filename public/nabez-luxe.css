@@ -558,3 +558,28 @@ body.public-shell .article-premium .article-body p{
 body.public-shell .article-premium .article-body :is(h2,h3){color:#1c1710!important;font-family:"Noto Naskh Arabic","Vazirmatn",Tahoma,serif!important}
 body.public-shell .article-premium .article-body :is(strong,b){color:#1c1710!important}
 body.public-shell .article-premium .article-body blockquote{color:#46403a!important;background:#f2ecdf!important;border-right-color:#8a1f2b!important}
+
+/* Broadsheet card furniture: story badge + timestamps readable on paper,
+   positioned as a small chip in the image corner (CI badge rule <=120x44). */
+body.public-shell:not(.ns26-page) .grid.news .card-story-badge{
+  position:absolute;top:10px;inset-inline-end:10px;z-index:5;
+  max-width:110px;height:30px;padding:4px 10px;
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;
+  color:#1c1710!important;background:#f6f1e6!important;
+  border:1px solid #d8cfba!important;border-radius:0!important;
+  box-shadow:0 2px 8px -4px rgba(28,23,16,.35)!important;
+}
+body.public-shell:not(.ns26-page) .grid.news .card-story-badge .card-story-dot{background:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .grid.news .card .view-badge{color:#5f584d!important;background:transparent!important;border:none!important}
+body.public-shell:not(.ns26-page) .grid.news .card time{color:#5f584d!important}
+body.public-shell:not(.ns26-page) main.page>.lead,
+body.public-shell:not(.ns26-page) main.page .pagehead p{color:#46403a!important}
+body.public-shell:not(.ns26-page) main .form>label{color:#1c1710!important}
+body.public-shell:not(.ns26-page) .related-news .sectionhead h2,
+body.public-shell:not(.ns26-page) .article-related h2{color:#1c1710!important}
+/* hero ghost button: ink text on paper chip */
+body.pr-body .pr-btn--ghost{
+  background:var(--paper)!important;color:var(--ink)!important;border:1.5px solid var(--ink)!important;
+}
+body.pr-body .pr-btn--ghost:hover{background:var(--ink)!important;color:var(--paper)!important}

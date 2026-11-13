@@ -89,8 +89,19 @@ try{
      const rgb=s=>(s.match(/[\d.]+/g)||[]).slice(0,3).map(Number);
      const lum=c=>c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
      const contrast=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
-     const pairs=[['.pr-hero__lead',[21,37,52]],['.pr-hero__note',[21,37,52]],['.pr-stat b',[21,37,52]],['.pr-stat span',[21,37,52]],['.pr-card__body h3',[20,36,51]],['.pr-card__body p',[20,36,51]],['.pr-card__foot em',[20,36,51]]];
-     const ratios=pairs.map(([q,bg])=>({q,ratio:contrast(rgb(getComputedStyle(document.querySelector(q)).color),bg)}));
+     /* Measure the actual painted page background instead of assuming a theme canvas,
+        so the check stays valid across design eras (dark navy or paper broadsheet). */
+     const pageBg=(()=>{
+       let el=document.body;
+       while(el){
+         const c=rgb(getComputedStyle(el).backgroundColor);
+         if(c.length&&getComputedStyle(el).backgroundColor!=='rgba(0, 0, 0, 0)')return c;
+         el=el.parentElement;
+       }
+       return [255,255,255];
+     })();
+     const pairs=['.pr-hero__lead','.pr-hero__note','.pr-stat b','.pr-stat span','.pr-card__body h3','.pr-card__body p','.pr-card__foot em'];
+     const ratios=pairs.map(q=>({q,ratio:contrast(rgb(getComputedStyle(document.querySelector(q)).color),pageBg)}));
      for(const btn of document.querySelectorAll('.pr-btn')){
       const style=getComputedStyle(btn),label=btn.querySelector('span')||btn;
       ratios.push({q:btn.textContent,ratio:contrast(rgb(getComputedStyle(label).color),rgb(style.backgroundColor))});
@@ -127,7 +138,7 @@ try{
      const background=el=>{
       const layers=[];
       while(el){const c=rgba(getComputedStyle(el).backgroundColor);layers.push(c);if(c.length===3||c[3]===1)break;el=el.parentElement;}
-      return layers.reverse().reduce((base,c)=>base.map((v,i)=>c[i]*(c[3]??1)+v*(1-(c[3]??1))),[20,36,51]);
+      return layers.reverse().reduce((base,c)=>base.map((v,i)=>c[i]*(c[3]??1)+v*(1-(c[3]??1))),[246,241,230]);
      };
      const selectors=['main .btn','main .more','main .card .eyebrow','main .card .view-badge','main .card time','main .card h3 a','main .card .listing-excerpt','main.page>.lead','main .form>label','main .article-body p','main .article-meta-item time','main .related-news .sectionhead h2','main .short-timeline-item time'];
      const ratios=[];
