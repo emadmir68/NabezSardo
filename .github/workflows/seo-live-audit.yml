@@ -166,11 +166,12 @@ jobs:
           echo 'seo_audit_stage=validate_all_sitemap_urls'
           while IFS= read -r u; do
             code=000
-            for attempt in 1 2 3; do
+            for attempt in 1 2 3 4; do
               code=$(curl -A "$googlebot" -sS --retry 2 --retry-delay 2 -o /tmp/sitemap-page.html -w '%{http_code}' --max-time 45 "$u")
               case "$code" in 200) break;; esac
               echo "sitemap_url_retry=$u attempt=$attempt status=$code"
-              sleep $((attempt * 4))
+              # back off past the every-minute cron window that can return 503s
+              sleep $((attempt * 8))
             done
             echo "sitemap_url=$u status=$code"
             test "$code" = 200

@@ -335,6 +335,9 @@ function tehranDayFast(date=new Date()){
 function fastTrackablePath(p=""){
   return /^\/$|^\/all-news$|^\/search$|^\/about$|^\/contact$|^\/send-news$|^\/news\/|^\/n\/|^\/category\/|^\/local\//.test(String(p||""));
 }
+function socialPreviewBot(ua=""){
+  return /(telegrambot|whatsapp|facebookexternalhit|twitterbot|discordbot|bingpreview|skypeuripreview|snapchat|viber|vkshare)/i.test(String(ua||""));
+}
 function fastBot(ua=""){
   return /(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|telegrambot|discordbot|preview|headless|lighthouse|pagespeed|uptime|monitor|cloudflare-sync)/i.test(String(ua||""));
 }
@@ -582,7 +585,9 @@ async function handleFastPublic(request,url,pathname,ctx){
     if(request.method==="GET"){
       const cached=await fastArticleCacheGet(pathname);
       if(cached){
-        if(ctx&&fastTrackablePath(pathname)){
+        // Bots are filtered out of analytics anyway; skip the db load so cached
+        // hits cost near-zero CPU even while the every-minute cron is running.
+        if(ctx&&fastTrackablePath(pathname)&&!fastBot(request.headers.get("user-agent")||"")){
           const dbForViews=await loadPublicDbFast();
           const idx=await fastArticleIndex(dbForViews);
           const cachedArticle=idx.get(key);
@@ -610,7 +615,13 @@ async function handleFastPublic(request,url,pathname,ctx){
   if(status===200&&ctx&&fastTrackablePath(pathname)){
     ctx.waitUntil(recordFastVisit(request,pathname,articleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
     if(articleId){
-      ctx.waitUntil(ensureSocialPreviewForPath(pathname).catch(err=>console.error("fast-social-preview",String(err?.message||err))));
+      const ua=request.headers.get("user-agent")||"";
+      // The Resvg rasterization in ensureSocialPreviewForPath is CPU-heavy;
+      // run it only for crawlers that actually read social previews (or real
+      // users), never for search/index bots hammering the sitemap.
+      if(!fastBot(ua)||socialPreviewBot(ua)){
+        ctx.waitUntil(ensureSocialPreviewForPath(pathname).catch(err=>console.error("fast-social-preview",String(err?.message||err))));
+      }
       if(request.method==="GET"&&pathname.startsWith("/news/"))ctx.waitUntil(fastArticleCachePut(pathname,body).catch(()=>{}));
     }
   }
