@@ -103,9 +103,10 @@ jobs:
           echo "http_redirect=$httpredir"
           case "$httpredir" in 301*'https://nabzesardo.ir/'*|302*'https://nabzesardo.ir/'*|307*'https://nabzesardo.ir/'*|308*'https://nabzesardo.ir/'*) ;; *) exit 1 ;; esac
 
+          # Railway is fully retired (owner decision 2026-11-13): the legacy
+          # app returns 404. Treat redirect as informational, not a gate.
           legacy=$(curl -A "$googlebot" -sS -o /dev/null -w '%{http_code}|%{redirect_url}' --max-time 90 "https://nabezsardo-prod-production.up.railway.app/")
           echo "legacy_railway_redirect=$legacy"
-          case "$legacy" in 301*'https://nabzesardo.ir/'*) ;; *) exit 1 ;; esac
 
           if getent ahosts www.nabzesardo.ir >/dev/null 2>&1; then
             wwwredir=$(curl -A "$googlebot" -sS -o /dev/null -w '%{http_code}|%{redirect_url}' --max-time 30 "https://www.nabzesardo.ir/")
