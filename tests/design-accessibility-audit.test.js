@@ -43,8 +43,9 @@ test('server sends nonzero statistics without relying on animation',()=>{
 
 test('premium styles retain responsive and reduced-motion treatment',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../public/premium.css'),'utf8');
-  assert.match(css,/#040508 0%/);
-  assert.doesNotMatch(css,/#04050 8 0%/);
+  // broadsheet era: flat paper canvas on the hero grid (dark gradient removed)
+  assert.match(css,/\.pr-hero__grid\{background:#f6f1e6\}/);
+  assert.doesNotMatch(css,/#040508/);
   assert.match(css,/@media\(max-width:370px\)/);
   assert.match(css,/\.pr-ticker__viewport\{overflow-x:auto/);
   assert.match(css,/body\.pr-body \.pr-feature__body\{padding-inline-end:/);

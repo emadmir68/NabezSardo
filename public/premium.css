@@ -61,8 +61,7 @@ body.public-shell.pr-body::before{
 }
 
 /* base canvas anchors the paint while fonts and sections load */
-body.public-shell.pr-body .pr-hero__grid{background:#f6f1e6 0%}
-body.public-shell.pr-body .pr-hero__grid{background:linear-gradient(180deg,#040508 0%,#f6f1e6 100%)}
+body.public-shell.pr-body .pr-hero__grid{background:#f6f1e6}
 
 /* ---------- 1. layout ---------- */
 .pr-wrap{width:100%;max-width:var(--wrap);margin-inline:auto;padding-inline:clamp(16px,3.4vw,34px);position:relative;z-index:2}
