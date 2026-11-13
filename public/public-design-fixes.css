@@ -1,55 +1,55 @@
-/* Public design corrections, 2026-11-10.
+/* Public design corrections, 2026-11-10. Palette retuned 2026-11-13 to the luxe obsidian+platinum identity.
    Loaded after all legacy skins: explicit surface/text pairs prevent the light
    Atelier rules from inheriting the dark Mosa ink token on pale controls. */
 body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{overflow:visible;gap:2px}
 body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav>a,
 body.public-shell .ns4-more summary{min-height:44px;white-space:nowrap}
 body.public-shell .ns4-more{position:relative;flex:none}
-body.public-shell .ns4-more summary{display:flex;align-items:center;gap:7px;cursor:pointer;padding:10px 12px;color:#e5edf2;border-radius:12px;font-size:13px;list-style:none}
+body.public-shell .ns4-more summary{display:flex;align-items:center;gap:7px;cursor:pointer;padding:10px 12px;color:#d5dade;border-radius:12px;font-size:13px;list-style:none}
 body.public-shell .ns4-more summary::-webkit-details-marker{display:none}
 body.public-shell .ns4-more summary:hover,
-body.public-shell .ns4-more[open] summary{background:#263e4e;color:#fff}
-body.public-shell .ns4-more-links{position:absolute;inset-inline-end:0;top:calc(100% + 8px);z-index:110;display:grid;min-width:220px;max-height:65vh;overflow-y:auto;padding:8px;background:#142433;border:1px solid #526b7b;border-radius:16px;box-shadow:0 16px 40px #0006}
+body.public-shell .ns4-more[open] summary{background:#1f2228;color:#fff}
+body.public-shell .ns4-more-links{position:absolute;inset-inline-end:0;top:calc(100% + 8px);z-index:110;display:grid;min-width:220px;max-height:65vh;overflow-y:auto;padding:8px;background:#15171c;border:1px solid #3d434e;border-radius:16px;box-shadow:0 16px 40px #0006}
 body.public-shell .site-capsule[data-ns4-header] .ns4-more-links a{justify-content:flex-start;min-height:44px}
 body.public-shell .site-capsule[data-ns4-header] .ns4-submit-action,
-body.public-shell .site-capsule[data-ns4-header] .ns4-submit-action *{color:#122333!important}
+body.public-shell .site-capsule[data-ns4-header] .ns4-submit-action *{color:#191a14!important}
 body.public-shell .site-capsule[data-ns4-header] .ns4-search-action,
 body.public-shell .ns4-menu-toggle{min-width:44px!important;min-height:44px!important}
 body.public-shell .ns4-utility-row,
 body.public-shell .ns4-utility-label,
-body.public-shell .ns4-utility-signature{color:#c4d2dc!important}
-body.public-shell .ns4-more summary:focus-visible{outline:3px solid #b9e7f0;outline-offset:3px}
+body.public-shell .ns4-utility-signature{color:#c4cad2!important}
+body.public-shell .ns4-more summary:focus-visible{outline:3px solid #e6d3a3;outline-offset:3px}
 
 /* Homepage uses the same navy surfaces as the inner pages. */
-body.public-shell.pr-body{--ink:#f1f5f7!important;--ink2:#d9e3e9;--muted:#c2d0da!important;--faint:#b4c4ce;--line:rgba(201,222,235,.25);--line2:rgba(201,222,235,.16)}
+body.public-shell.pr-body{--ink:#eef1f5!important;--ink2:#cdd2da;--muted:#c4cad2!important;--faint:#b9bfc8;--line:rgba(201,222,235,.25);--line2:rgba(201,222,235,.16)}
 body.public-shell.pr-body .pr-hero__lead,
 body.public-shell.pr-body .pr-hero__note,
 body.public-shell.pr-body .pr-stat span,
-body.public-shell.pr-body .pr-sec__title small{color:#c2d0da!important}
+body.public-shell.pr-body .pr-sec__title small{color:#c4cad2!important}
 body.public-shell.pr-body .pr-hero__lead b,
 body.public-shell.pr-body .pr-stat b,
-body.public-shell.pr-body .pr-card__body h3{color:#f1f5f7!important}
+body.public-shell.pr-body .pr-card__body h3{color:#eef1f5!important}
 body.public-shell.pr-body .pr-hero h1 b{background:none!important;-webkit-text-fill-color:var(--accent)!important;color:var(--accent)!important}
 body.public-shell.pr-body .pr-btn--gold,
-body.public-shell.pr-body .pr-cta .pr-btn--gold{background:var(--accent)!important;color:#132432!important;border:1px solid var(--accent)!important}
+body.public-shell.pr-body .pr-cta .pr-btn--gold{background:var(--accent)!important;color:#14161b!important;border:1px solid var(--accent)!important}
 body.public-shell.pr-body .pr-btn--ghost,
-body.public-shell.pr-body .pr-cta .pr-btn--ghost{background:#243c4c!important;color:#f5f8fa!important;border:1px solid #78909f!important}
+body.public-shell.pr-body .pr-cta .pr-btn--ghost{background:#1d2026!important;color:#eef1f5!important;border:1px solid #8b919b!important}
 body.public-shell.pr-body .pr-btn span,
 body.public-shell.pr-body .pr-btn svg{color:inherit!important}
 body.public-shell.pr-body .pr-eyebrow,
 body.public-shell.pr-body .pr-feature__badge,
 body.public-shell.pr-body .pr-card__chip,
-body.public-shell.pr-body .pr-sec__more{background:#dcece7!important;color:#153f31!important;border-color:#dcece7!important}
+body.public-shell.pr-body .pr-sec__more{background:#cdd2da!important;color:#153f31!important;border-color:#cdd2da!important}
 body.public-shell.pr-body .pr-card,
-body.public-shell.pr-body .pr-glass{background:#142433!important;border-color:#435b6b!important}
-body.public-shell.pr-body .pr-card__body{background:#142433}
+body.public-shell.pr-body .pr-glass{background:#15171c!important;border-color:#343943!important}
+body.public-shell.pr-body .pr-card__body{background:#15171c}
 body.public-shell.pr-body .pr-card__body p,
 body.public-shell.pr-body .pr-card__foot,
-body.public-shell.pr-body .pr-card__foot em{color:#c2d0da!important}
+body.public-shell.pr-body .pr-card__foot em{color:#c4cad2!important}
 body.public-shell.pr-body .pr-list__item b,
-body.public-shell.pr-body .pr-rank b{color:#f1f5f7!important}
-body.public-shell.pr-body .pr-list__item span{color:#153f31!important;background:#dcece7!important}
-body.public-shell.pr-body .pr-rank span{color:#c2d0da!important}
+body.public-shell.pr-body .pr-rank b{color:#eef1f5!important}
+body.public-shell.pr-body .pr-list__item span{color:#153f31!important;background:#cdd2da!important}
+body.public-shell.pr-body .pr-rank span{color:#c4cad2!important}
 body.public-shell.pr-body .pr-feature__body h2{font-size:clamp(21px,1.8vw,25px)!important;line-height:1.65!important;-webkit-line-clamp:3;line-clamp:3}
 body.public-shell.pr-body .pr-feature__badge{letter-spacing:normal!important}
 
@@ -64,11 +64,11 @@ body.public-shell.pr-body .pr-stats{margin-top:14px;padding-top:12px}
 body.public-shell.pr-body .pr-hero__stage,
 body.public-shell.pr-body .pr-feature{min-height:390px}
 body.public-shell.pr-body .pr-sec{padding-block:22px}
-body.public-shell.pr-body .pr-appearance{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:#c2d0da}
-body.public-shell.pr-body .pr-accents{display:flex!important;gap:0;padding:0;background:#243c4c!important;border-color:#526b7b!important}
-body.public-shell.pr-body .pr-accents button{width:36px;height:36px;border:9px solid #243c4c;box-shadow:none}
+body.public-shell.pr-body .pr-appearance{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:#c4cad2}
+body.public-shell.pr-body .pr-accents{display:flex!important;gap:0;padding:0;background:#1d2026!important;border-color:#3d434e!important}
+body.public-shell.pr-body .pr-accents button{width:36px;height:36px;border:9px solid #1d2026;box-shadow:none}
 body.public-shell.pr-body .pr-accents button::after{inset:0}
-body.public-shell.pr-body .pr-accents button[aria-pressed="true"]{outline:2px solid #e8f1f6;outline-offset:-7px}
+body.public-shell.pr-body .pr-accents button[aria-pressed="true"]{outline:2px solid #d5dade;outline-offset:-7px}
 /* News remains visible even if a reveal observer or script is delayed. */
 body.public-shell.pr-body .at-reveal,
 body.public-shell.pr-body .pr-rv{opacity:1;transform:none}
@@ -107,8 +107,8 @@ body.public-shell.pr-body .pr-rv{opacity:1;transform:none}
  body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{
   inset:calc(100% + 8px) 0 auto 0!important;width:100%!important;
   max-height:min(75vh,550px)!important;overflow-y:auto!important;overflow-x:hidden!important;
-  padding:12px!important;border:1px solid #526b7b!important;border-radius:16px!important;
-  background:#142433!important;box-shadow:0 16px 40px #0006!important;
+  padding:12px!important;border:1px solid #3d434e!important;border-radius:16px!important;
+  background:#15171c!important;box-shadow:0 16px 40px #0006!important;
  }
 }
 
@@ -121,35 +121,35 @@ body.public-shell:not(.ns26-page) main.wrap.page{
 }
 body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head){
  min-height:0;padding:22px 28px!important;margin:0 0 24px!important;
- border:1px solid #3b5364!important;border-radius:22px!important;
- background:linear-gradient(125deg,#1c3344,#112331)!important;
+ border:1px solid #2e323b!important;border-radius:22px!important;
+ background:linear-gradient(125deg,#181b21,#121419)!important;
  box-shadow:none!important;
 }
 body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) h1{
  font-size:clamp(28px,2.8vw,38px)!important;line-height:1.6!important;
- margin:4px 0 8px!important;color:#f1f5f7!important;letter-spacing:normal!important;
+ margin:4px 0 8px!important;color:#eef1f5!important;letter-spacing:normal!important;
 }
 body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) p{
- color:#c3d2dd!important;font-size:15px!important;line-height:1.9!important;margin:0!important;
+ color:#c4cad2!important;font-size:15px!important;line-height:1.9!important;margin:0!important;
 }
 body.public-shell main.page>:is(.pagehead,.ns4-page-hero,.short-timeline-page-head) .eyebrow{
- background:#243e4e!important;color:#dcebf2!important;border-color:#526b7b!important;
+ background:#1d2026!important;color:#c9ced6!important;border-color:#3d434e!important;
  padding:6px 12px!important;margin-bottom:6px;font-size:11px!important;
 }
-body.public-shell main.page>.lead{color:#c3d2dd!important;font-size:16px;line-height:2;margin-bottom:24px}
+body.public-shell main.page>.lead{color:#c4cad2!important;font-size:16px;line-height:2;margin-bottom:24px}
 body.public-shell main .at-reveal,body.public-shell main.at-reveal{opacity:1;transform:none}
 
 /* Compact corner badges must never cover or blur the news photograph. */
 body.public-shell .grid.news .card-story-badge{
  inset:auto auto 10px 10px!important;width:max-content!important;height:auto!important;
  max-width:calc(100% - 20px);min-height:30px;padding:5px 10px!important;
- background:#102334!important;color:#f4f7fa!important;font-size:11px!important;
+ background:#111318!important;color:#eef1f5!important;font-size:11px!important;
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;opacity:1;
 }
 body.public-shell .grid.news .card-story-badge span{color:inherit!important}
 body.public-shell .grid.news .card-video-badge{inset:10px 10px auto auto!important}
 body.public-shell .grid.news .card{
- background:#142433!important;border-color:#3b5364!important;
+ background:#15171c!important;border-color:#2e323b!important;
  box-shadow:0 10px 26px #0002!important;backdrop-filter:none!important;
 }
 body.public-shell .grid.news .card .pad{padding:18px 20px 20px!important}
@@ -158,7 +158,7 @@ body.public-shell .grid.news .card-kicker{
  padding:0!important;letter-spacing:normal!important;
 }
 body.public-shell .grid.news .card .eyebrow{
- background:#243e4e!important;color:#dcebf2!important;border:0!important;
+ background:#1d2026!important;color:#c9ced6!important;border:0!important;
  font-size:12px!important;letter-spacing:normal!important;
 }
 body.public-shell .grid.news .card .eyebrow::before{
@@ -166,55 +166,55 @@ body.public-shell .grid.news .card .eyebrow::before{
  background:var(--cat-accent,#dbc3a0);margin-inline-end:6px;
 }
 body.public-shell .grid.news .card .view-badge{
- background:transparent!important;color:#c0d0db!important;border:0!important;font-size:12px!important;
+ background:transparent!important;color:#c2c8d0!important;border:0!important;font-size:12px!important;
 }
-body.public-shell .grid.news .card time{color:#b7c8d4!important;font-size:12px!important;line-height:1.8}
+body.public-shell .grid.news .card time{color:#b9bfc8!important;font-size:12px!important;line-height:1.8}
 body.public-shell .grid.news .card h3{font-size:20px!important;line-height:1.8!important;letter-spacing:normal!important}
 body.public-shell .grid.news .card .listing-excerpt{
- color:#c0d0db!important;font-size:14px!important;line-height:1.9!important;
+ color:#c2c8d0!important;font-size:14px!important;line-height:1.9!important;
  -webkit-line-clamp:2;line-clamp:2;
 }
 body.public-shell main .more,body.public-shell .grid.news .card .more{
- background:#dcece7!important;color:#153f31!important;border:1px solid #dcece7!important;
+ background:#cdd2da!important;color:#153f31!important;border:1px solid #cdd2da!important;
  min-height:44px;padding:8px 14px!important;line-height:1.7;
 }
 body.public-shell main .more span{color:inherit!important}
 body.public-shell .grid.news>.empty,body.public-shell .grid.info>.empty{grid-column:1/-1}
 body.public-shell .grid.info .panel{
- background:#142433!important;border-color:#3b5364!important;
+ background:#15171c!important;border-color:#2e323b!important;
  box-shadow:none!important;border-radius:20px!important;
 }
 body.public-shell .grid.info .panel h3{font-size:21px!important;margin:0 0 12px}
 body.public-shell .grid.info .panel p{font-size:15px;line-height:2}
-body.public-shell .grid.info .panel p a{color:#b9e7f0!important;text-decoration:underline;text-underline-offset:4px}
+body.public-shell .grid.info .panel p a{color:#e6d3a3!important;text-decoration:underline;text-underline-offset:4px}
 
 /* Search and submission controls use the same colors and generous touch targets. */
 body.public-shell main .btn.primary{
- background:#dbc3a0!important;color:#142433!important;border:1px solid #dbc3a0!important;
+ background:#dbc3a0!important;color:#15171c!important;border:1px solid #dbc3a0!important;
  min-height:48px;font-size:14px!important;border-radius:12px!important;box-shadow:none!important;
 }
 body.public-shell main .btn.primary span{color:inherit!important}
 body.public-shell main .btn.ghost{
- background:#243c4c!important;color:#f1f5f7!important;border:1px solid #78909f!important;
+ background:#1d2026!important;color:#eef1f5!important;border:1px solid #8b919b!important;
 }
 body.public-shell main :is(.form,.archive-filters,.search-large){
- background:#142433!important;border-color:#3b5364!important;box-shadow:none!important;
+ background:#15171c!important;border-color:#2e323b!important;box-shadow:none!important;
  border-radius:20px!important;padding:22px!important;backdrop-filter:none!important;
 }
 body.public-shell main :is(.form,.archive-filters,.search-large) label{font-size:14px!important;line-height:1.8!important}
 body.public-shell main :is(.form,.archive-filters,.search-large) :is(input,textarea,select){
  font-size:16px!important;line-height:1.7!important;min-width:0;
 }
-body.public-shell main :is(input,textarea)::placeholder{color:#526879!important;opacity:1}
+body.public-shell main :is(input,textarea)::placeholder{color:#3d434e!important;opacity:1}
 body.public-shell main .form{
  width:100%;max-width:840px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:18px;
 }
 body.public-shell main .form>label{margin:0!important;display:grid;gap:7px;min-width:0}
 body.public-shell main .form .btn{justify-self:start;min-width:150px}
-body.public-shell main .form :is(small,.privacy-note){color:#c0d0db!important;font-size:13px;line-height:1.9}
+body.public-shell main .form :is(small,.privacy-note){color:#c2c8d0!important;font-size:13px;line-height:1.9}
 body.public-shell main .form input[type="file"]{max-width:100%;white-space:normal;padding:9px!important;font-size:13px!important}
 body.public-shell main .form input::file-selector-button{
- font:inherit;padding:8px 12px;border:0;border-radius:8px;background:#243c4c;color:#fff;margin-inline-end:10px;cursor:pointer;
+ font:inherit;padding:8px 12px;border:0;border-radius:8px;background:#1d2026;color:#fff;margin-inline-end:10px;cursor:pointer;
 }
 body.public-shell main.form-page>.lead,body.public-shell main .gift-card-box{
  max-width:840px;margin-inline:auto!important;
@@ -228,13 +228,13 @@ body.public-shell main .archive-pagination :is(a,.archive-page-current){min-heig
 body.public-shell .local-switcher{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 24px;align-items:center}
 body.public-shell .local-switcher a{
  display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;
- color:#dcebf2;background:#1b3344;border:1px solid #526b7b;border-radius:999px;font-size:14px;
+ color:#c9ced6;background:#181b21;border:1px solid #3d434e;border-radius:999px;font-size:14px;
 }
-body.public-shell .local-switcher a[aria-current="page"]{background:#dbc3a0;color:#142433;border-color:#dbc3a0;font-weight:700}
+body.public-shell .local-switcher a[aria-current="page"]{background:#dbc3a0;color:#15171c;border-color:#dbc3a0;font-weight:700}
 body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a[aria-current="page"]{
- color:#f3dbb7!important;background:#263b49!important;box-shadow:inset 0 -2px #dbc3a0;
+ color:#f3dbb7!important;background:#1e2127!important;box-shadow:inset 0 -2px #dbc3a0;
 }
-body.public-shell .ns4-more:has(a[aria-current="page"]) summary{color:#f3dbb7;background:#263b49}
+body.public-shell .ns4-more:has(a[aria-current="page"]) summary{color:#f3dbb7;background:#1e2127}
 
 /* Reading remains on warm paper; remove the inherited dark glass behind prose.
    Article order, action controls and publication metadata placement stay intact. */
@@ -242,20 +242,20 @@ body.public-shell .article-premium .article-reading-zone .article-body{
  background:transparent!important;border:0!important;box-shadow:none!important;
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;border-radius:0!important;
 }
-body.public-shell .article-premium .article-head h1 .article-fa-fallback{color:#f1f5f7!important}
-body.public-shell .article-premium .article-head .article-deck .article-fa-fallback{color:#c9d8e0!important}
-body.public-shell .article-premium .article-body blockquote{background:#e9eef0;color:#253a4b}
-body.public-shell .article-premium .article-meta-item :is(b,time){color:#30536d!important;font-size:13px;line-height:1.8;white-space:normal}
-body.public-shell .article-premium .article-meta-item small{color:#526777!important;font-size:11px}
-body.public-shell .article-premium .article-endnote :is(b,small){color:#30536d!important}
-body.public-shell .related-news .sectionhead h2{color:#f1f5f7!important}
-body.public-shell .related-news .sectionhead .eyebrow{color:#c0d0db!important}
+body.public-shell .article-premium .article-head h1 .article-fa-fallback{color:#eef1f5!important}
+body.public-shell .article-premium .article-head .article-deck .article-fa-fallback{color:#c9ced6!important}
+body.public-shell .article-premium .article-body blockquote{background:#d5dade;color:#1e2127}
+body.public-shell .article-premium .article-meta-item :is(b,time){color:#2a2e36!important;font-size:13px;line-height:1.8;white-space:normal}
+body.public-shell .article-premium .article-meta-item small{color:#3d434e!important;font-size:11px}
+body.public-shell .article-premium .article-endnote :is(b,small){color:#2a2e36!important}
+body.public-shell .related-news .sectionhead h2{color:#eef1f5!important}
+body.public-shell .related-news .sectionhead .eyebrow{color:#c2c8d0!important}
 body.public-shell .short-timeline-shell{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
-body.public-shell .short-timeline-item{background:#142433!important;border-color:#3b5364!important}
-body.public-shell .short-timeline-item :is(time,.short-timeline-views){color:#b7c8d4!important;font-size:12px!important}
+body.public-shell .short-timeline-item{background:#15171c!important;border-color:#2e323b!important}
+body.public-shell .short-timeline-item :is(time,.short-timeline-views){color:#b9bfc8!important;font-size:12px!important}
 body.public-shell .short-timeline-item .short-timeline-cat{color:#edd7b5!important}
 body.public-shell.pr-body .pr-list__item span{display:table;width:auto;margin-top:6px;padding:3px 9px}
-body.public-shell.pr-body .pr-cta p{color:#c3d2dd!important}
+body.public-shell.pr-body .pr-cta p{color:#c4cad2!important}
 
 @media(min-width:700px){
  body.public-shell main .form{grid-template-columns:repeat(2,minmax(0,1fr))}

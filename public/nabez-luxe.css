@@ -1,0 +1,346 @@
+/* ============================================================
+   NABEZ SARDO — LUXE OVERLAY · OBSIDIAN & PLATINUM EDITION
+   Final design layer, loaded after every other public stylesheet.
+   Retunes the shared shell (header, footer, cards, forms, article
+   surfaces, archive, admin login) to one cohesive luxe language:
+   deep obsidian canvas, platinum hairlines, champagne-platinum
+   accents, glass capsules. Scoped to .public-shell / .editor-shell.
+   Preserves all approved markup hooks and geometric audit rules:
+   header height <= 90px, excerpts <= 2 lines, no horizontal overflow.
+   ============================================================ */
+
+:root{color-scheme:dark}
+
+/* ---------- shell canvas: obsidian with platinum nebula ---------- */
+body.public-shell,body.editor-shell{
+  --lx-ink:#f5f7fa;          /* primary text */
+  --lx-ink2:#c9ced6;         /* secondary text */
+  --lx-muted:#8b919b;        /* quiet text */
+  --lx-pt:#cfd4dc;           /* platinum */
+  --lx-pt2:#eef1f5;          /* bright platinum */
+  --lx-champ:#e6d3a3;        /* champagne accent */
+  --lx-champ2:#f7ecd2;       /* bright champagne */
+  --lx-bronze:#8a6a33;       /* deep bronze for contrast anchors */
+  --lx-line:rgba(207,212,220,.16);
+  --lx-line2:rgba(207,212,220,.08);
+  --lx-glass:rgba(22,24,29,.72);
+  --lx-glass2:rgba(16,18,22,.55);
+  --lx-shadow:0 26px 60px -30px rgba(0,0,0,.85),0 1px 0 rgba(255,255,255,.05) inset;
+  --lx-r:22px;--lx-r2:16px;--lx-r3:12px;
+  background:#07080b!important;
+  color:var(--lx-ink)!important;
+  font-family:'Vazirmatn','NabezLocal',Tahoma,system-ui,sans-serif!important;
+}
+body.public-shell:not(.ns26-page):not(.pr-body){
+  background:
+    radial-gradient(1100px 480px at 50% -160px,rgba(207,212,220,.075),transparent 62%),
+    radial-gradient(760px 520px at 8% 106vh,rgba(207,212,220,.04),transparent 60%),
+    radial-gradient(680px 460px at 92% 88vh,rgba(230,211,163,.035),transparent 56%),
+    linear-gradient(180deg,#08090c 0%,#0a0c10 46%,#07080b 100%)!important;
+  background-attachment:fixed!important;
+}
+body.public-shell ::selection{background:rgba(230,211,163,.30);color:#fff}
+body.public-shell :is(a,button,input,textarea,select):focus-visible{
+  outline:2px solid var(--lx-champ)!important;outline-offset:3px!important;
+  border-radius:8px;
+}
+
+/* ---------- premium homepage stays on its own dark canvas ---------- */
+/* (pr-body keeps premium.css; only shared chrome is retuned by this file) */
+
+/* ---------- utility strip ---------- */
+.public-shell .ns4-utility{
+  background:#050608!important;
+  border-bottom:1px solid var(--lx-line2)!important;
+  color:var(--lx-muted)!important;
+}
+.public-shell .ns4-utility-label{color:var(--lx-muted)!important}
+.public-shell .ns4-utility-label i{
+  background:var(--lx-champ)!important;
+  box-shadow:0 0 10px rgba(230,211,163,.5)!important;
+}
+.public-shell .ns4-utility-signature{color:rgba(207,212,220,.4)!important}
+.public-shell .ns4-utility a{color:var(--lx-pt)!important}
+
+/* ---------- floating capsule header ---------- */
+body.public-shell>header.site-capsule[data-ns4-header]{
+  background:rgba(10,11,15,.82)!important;
+  border-bottom:1px solid var(--lx-line)!important;
+  backdrop-filter:blur(26px) saturate(140%)!important;
+  -webkit-backdrop-filter:blur(26px) saturate(140%)!important;
+  box-shadow:0 18px 44px -22px rgba(0,0,0,.8),inset 0 1px rgba(255,255,255,.045)!important;
+}
+body.public-shell>header.site-capsule[data-ns4-header]:before{
+  background:linear-gradient(115deg,rgba(255,255,255,.05),transparent 46%,rgba(230,211,163,.05))!important;
+}
+.public-shell .ns4-header-inner{min-height:76px!important}
+/* site.css wraps every ".main" flex row under 900px; the capsule header
+   must stay on one line or the CI geometry audit (header <= 90px) fails. */
+@media(max-width:900px){
+  .public-shell .ns4-header-inner{flex-wrap:nowrap!important;flex-direction:row!important;align-items:center!important}
+  .public-shell .site-capsule[data-ns4-header] .brand{flex:0 1 auto;min-width:0}
+  /* legacy site.css rules: header .brand{width:100%} and .main{flex-direction:column}
+     under 620-760px blow the capsule to stacked rows and break the <=90px audit. */
+  .public-shell .site-capsule[data-ns4-header] .brand{width:auto!important}
+  .public-shell .site-capsule[data-ns4-header] .ns4-header-actions{flex:0 0 auto}
+}
+.public-shell .site-capsule[data-ns4-header] .brand .brand-mark{
+  background:linear-gradient(135deg,#22252c,#15171c 60%,#1d2027)!important;
+  border:1px solid rgba(207,212,220,.28)!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.14)!important;
+  border-radius:14px!important;
+}
+.public-shell .site-capsule[data-ns4-header] .brand-mark svg path{stroke:var(--lx-champ)!important}
+.public-shell .site-capsule[data-ns4-header] .brand b{color:var(--lx-pt2)!important}
+.public-shell .site-capsule[data-ns4-header] .brand small{color:var(--lx-muted)!important}
+.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{
+  color:var(--lx-ink2)!important;
+  font-weight:650!important;
+  letter-spacing:normal!important;
+}
+.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a:hover{
+  background:rgba(207,212,220,.10)!important;color:#fff!important;
+}
+.public-shell .site-capsule[data-ns4-header] .ns4-more summary{color:var(--lx-ink2)!important}
+.public-shell .site-capsule[data-ns4-header] .ns4-more-links{
+  background:var(--lx-glass)!important;
+  border:1px solid var(--lx-line)!important;
+  border-radius:var(--lx-r2)!important;
+  box-shadow:var(--lx-shadow)!important;
+  backdrop-filter:blur(24px)!important;
+}
+.public-shell .site-capsule[data-ns4-header] .ns4-more-links a{color:var(--lx-ink2)!important}
+.public-shell .site-capsule[data-ns4-header] .ns4-more-links a:hover{color:#fff!important}
+.public-shell .site-capsule[data-ns4-header] .ns4-search-action{
+  color:var(--lx-pt)!important;
+  border:1px solid var(--lx-line)!important;
+  background:linear-gradient(135deg,rgba(207,212,220,.10),rgba(207,212,220,.03))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.10),0 8px 20px rgba(0,0,0,.35)!important;
+}
+.public-shell .site-capsule[data-ns4-header] .ns4-submit-action{
+  background:linear-gradient(135deg,#f2e9d4,#cbbd9c 58%,#e8dcc0)!important;
+  color:#191a14!important;
+  border:1px solid rgba(255,255,255,.55)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.85),0 9px 26px rgba(0,0,0,.45)!important;
+  font-weight:900!important;
+}
+.public-shell .ns4-menu-toggle{
+  color:var(--lx-pt)!important;
+  border:1px solid var(--lx-line)!important;
+  background:linear-gradient(135deg,rgba(207,212,220,.10),rgba(207,212,220,.03))!important;
+}
+.public-shell .ns4-menu-toggle span{background:var(--lx-pt)!important}
+@media(max-width:660px){
+  body.public-shell>header.site-capsule[data-ns4-header]{background:#0a0b0f!important}
+}
+
+/* ---------- inner page headings & hero panels ---------- */
+.public-shell main.page>h1,
+.public-shell main.page>.pagehead h1{
+  color:var(--lx-pt2)!important;
+}
+.public-shell main.page>.eyebrow,
+.public-shell main.page>.pagehead .eyebrow,
+.public-shell main.page>.short-timeline-page-head .eyebrow{
+  color:var(--lx-champ)!important;
+  background:rgba(230,211,163,.07)!important;
+  border:1px solid rgba(230,211,163,.28)!important;
+}
+.public-shell main.page>.eyebrow:before,
+.public-shell main.page .pagehead>.eyebrow:before{background:var(--lx-champ)!important}
+.public-shell main.page>.lead,
+.public-shell main.page .pagehead p{color:var(--lx-muted)!important}
+.public-shell main.page>.pagehead,
+.public-shell main.page>.ns4-page-hero,
+.public-shell main.page>.short-timeline-page-head,
+.public-shell .short-timeline-page-head{
+  background:linear-gradient(150deg,rgba(24,26,32,.92),rgba(15,16,20,.88))!important;
+  border:1px solid var(--lx-line)!important;
+  box-shadow:var(--lx-shadow)!important;
+  border-radius:var(--lx-r)!important;
+}
+.public-shell main.wrap.page:before{background:radial-gradient(ellipse,rgba(207,212,220,.10),transparent 70%)!important}
+
+/* ---------- news cards on inner pages (archive, category, search) ---------- */
+.public-shell .grid.news .card{
+  background:linear-gradient(160deg,rgba(24,26,31,.94),rgba(15,17,21,.90))!important;
+  color:var(--lx-ink2)!important;
+  border:1px solid var(--lx-line)!important;
+  border-radius:var(--lx-r)!important;
+  box-shadow:0 16px 40px -24px rgba(0,0,0,.8),inset 0 1px rgba(255,255,255,.04)!important;
+}
+.public-shell .grid.news .card:hover{
+  border-color:rgba(207,212,220,.34)!important;
+  box-shadow:0 26px 56px -26px rgba(0,0,0,.9),inset 0 1px rgba(255,255,255,.06)!important;
+}
+.public-shell .grid.news .card h3 a,.public-shell .grid.news .card h3{color:var(--lx-pt2)!important}
+.public-shell .grid.news .card-media{background:linear-gradient(145deg,#1a1d23,#101216)!important}
+.public-shell .grid.news .card .eyebrow,
+.public-shell .grid.news .card .view-badge{
+  background:rgba(207,212,220,.09)!important;
+  color:var(--lx-champ)!important;
+  border:1px solid rgba(230,211,163,.16)!important;
+}
+.public-shell .grid.news .card-story-badge{
+  background:rgba(10,11,15,.68)!important;
+  border:1px solid rgba(207,212,220,.30)!important;
+}
+
+/* ---------- forms: contact, send-news, search, login ---------- */
+.public-shell .form,
+.public-shell .search,
+.editor-shell .loginbox,
+.editor-shell .loginbox .brand{
+  background:linear-gradient(160deg,rgba(24,26,31,.94),rgba(15,17,21,.90))!important;
+  border:1px solid var(--lx-line)!important;
+  color:var(--lx-ink)!important;
+  border-radius:var(--lx-r)!important;
+  box-shadow:var(--lx-shadow)!important;
+}
+.public-shell .form label,
+.public-shell .loginbox label{color:var(--lx-ink2)!important}
+.public-shell .form input,.public-shell .form textarea,.public-shell .form select,
+.public-shell .search input,.editor-shell .loginbox input,
+.public-shell .archive-filters input,.public-shell .archive-filters select{
+  background:#0c0e12!important;
+  color:var(--lx-ink)!important;
+  border:1px solid var(--lx-line)!important;
+  border-radius:var(--lx-r3)!important;
+}
+.public-shell .form input:focus-visible,
+.public-shell .form textarea:focus-visible,
+.public-shell .archive-filters input:focus-visible{
+  border-color:rgba(230,211,163,.5)!important;
+}
+.public-shell .archive-filters input,.public-shell .archive-filters select{
+  background:#0d0f13!important;color:var(--lx-ink)!important;border-color:#2a2d35!important;
+}
+.public-shell .archive-pagination a{
+  background:#12141a!important;color:var(--lx-ink2)!important;border:1px solid #2a2d35!important;
+}
+.public-shell .archive-page-current{
+  background:linear-gradient(135deg,#e8dcc0,#c2b48f)!important;color:#15161a!important;border:0!important;
+}
+.public-shell .btn.primary,
+.public-shell .form .btn.primary{
+  background:linear-gradient(135deg,#f2e9d4,#cbbd9c 58%,#e8dcc0)!important;
+  color:#191a14!important;
+  border:1px solid rgba(255,255,255,.5)!important;
+  box-shadow:0 12px 30px -12px rgba(0,0,0,.6),inset 0 1px rgba(255,255,255,.8)!important;
+}
+.public-shell .btn.ghost,.public-shell .form .btn.ghost{
+  background:rgba(207,212,220,.07)!important;
+  color:var(--lx-ink2)!important;
+  border:1px solid var(--lx-line)!important;
+}
+.public-shell .success{background:rgba(46,110,84,.14)!important;color:#a8e3c8!important;border:1px solid rgba(46,110,84,.4)!important}
+.public-shell .error{background:rgba(140,52,66,.14)!important;color:#f2b3c0!important;border:1px solid rgba(140,52,66,.4)!important}
+
+/* ---------- article reading surface ---------- */
+/* glass-sitewide-v4 forces a white paper shell with !important; the luxe
+   identity carries the article on obsidian with platinum hairlines. */
+.public-shell main.wrap.article.article-premium{color:#c9ced6!important}
+.public-shell .article-shell{
+  border:1px solid var(--lx-line)!important;
+  background:linear-gradient(165deg,#121419,#0c0e12 72%)!important;
+  box-shadow:0 30px 70px -34px rgba(0,0,0,.85),inset 0 1px rgba(255,255,255,.05)!important;
+  color:#c9ced6!important;
+}
+.public-shell .article-breadcrumbs{color:#8b919b!important}
+.public-shell .article-breadcrumbs a{color:#c9ced6!important}
+.public-shell .article-shell .article-head{
+  background:
+    radial-gradient(ellipse at 100% 0%,rgba(230,211,163,.10),transparent 70%),
+    linear-gradient(150deg,#14161c,#0e1015)!important;
+  color:#eef1f5!important;
+  border-bottom:1px solid var(--lx-line)!important;
+}
+.public-shell .article-head .article-newsroom-mark{color:#8b919b!important}
+.public-shell .article-head .article-category-pill{
+  border:1px solid rgba(230,211,163,.30)!important;
+  background:rgba(230,211,163,.08)!important;
+  color:#e6d3a3!important;
+}
+.public-shell .article-head .article-category-dot{background:#e6d3a3!important}
+.public-shell .article-head h1{color:#f5f7fa!important}
+.public-shell .article-head .article-deck{color:#a7adb7!important}
+.public-shell .article-actions .article-action{
+  background:rgba(207,212,220,.08)!important;
+  color:#eef1f5!important;
+  border:1px solid rgba(207,212,220,.24)!important;
+  box-shadow:none!important;
+}
+.public-shell .article-actions .article-action:hover{
+  background:rgba(207,212,220,.16)!important;
+  border-color:rgba(207,212,220,.42)!important;
+}
+.public-shell .article-actions .article-action-icon{color:#e6d3a3!important}
+.public-shell .article-cover-wrap,.public-shell .article-video-wrap{
+  background:#0d0f13!important;
+  border-bottom:1px solid var(--lx-line2)!important;
+}
+.public-shell .article-cover-wrap .cover-frame{
+  background:linear-gradient(145deg,#1a1d23,#101216)!important;
+  border:1px solid var(--lx-line)!important;
+}
+.public-shell .article-premium .article-body{
+  color:#dfe3e8!important;
+}
+.public-shell .article-premium .article-body :is(h2,h3){color:#eef1f5!important}
+.public-shell .article-premium .article-body h2{border-right-color:var(--lx-champ)!important}
+.public-shell .article-premium .article-body blockquote{
+  border-right-color:rgba(230,211,163,.45)!important;
+  background:rgba(230,211,163,.06)!important;
+}
+.public-shell .article-premium .article-actions .article-action{
+  background:rgba(207,212,220,.08)!important;
+  border:1px solid rgba(207,212,220,.22)!important;
+  color:#eef1f5!important;
+}
+.public-shell .article-premium .article-actions .article-action:hover{
+  background:rgba(207,212,220,.15)!important;
+  border-color:rgba(207,212,220,.4)!important;
+}
+.public-shell .article-premium :is(.article-actions .article-action,.article-body a,.article-category-pill):focus-visible{
+  outline:2px solid var(--lx-champ)!important;
+}
+
+/* ---------- footer ---------- */
+.public-shell footer.ns4-footer{
+  background:linear-gradient(180deg,rgba(8,9,12,.60),#050608)!important;
+  border-top:1px solid var(--lx-line)!important;
+  color:var(--lx-ink2)!important;
+}
+.public-shell .ns4-footer-intro h2{color:var(--lx-pt2)!important}
+.public-shell .ns4-footer-identity>div>span{color:rgba(207,212,220,.45)!important}
+.public-shell .ns4-footer-pulse{color:var(--lx-champ)!important}
+.public-shell .ns4-footer-cta{
+  color:var(--lx-champ)!important;
+  border:1px solid rgba(230,211,163,.3)!important;
+  background:rgba(230,211,163,.05)!important;
+}
+.public-shell .ns4-footer h3,.public-shell .ns4-footer h4{color:var(--lx-pt)!important}
+.public-shell .ns4-footer a{color:var(--lx-ink2)!important}
+.public-shell .ns4-footer a:hover{color:var(--lx-champ)!important}
+.public-shell .ns4-footer p{color:var(--lx-muted)!important}
+.public-shell .ns4-footer-bottom{
+  border-top:1px solid var(--lx-line2)!important;color:var(--lx-muted)!important;
+}
+
+/* ---------- admin login shell ---------- */
+.editor-shell{background:#08090c!important;color:var(--lx-ink)!important}
+.editor-shell .login{background:#08090c!important}
+.editor-shell .loginbox .btn,
+.editor-shell .loginbox button[type=submit]{
+  background:linear-gradient(135deg,#f2e9d4,#cbbd9c 58%,#e8dcc0)!important;
+  color:#191a14!important;
+}
+
+/* ---------- reduced motion & transparency ---------- */
+@media (prefers-reduced-motion: reduce){
+  body.public-shell *,body.editor-shell *{animation-duration:.001s!important;transition-duration:.001s!important}
+}
+@media (prefers-reduced-transparency: reduce){
+  body.public-shell>header.site-capsule[data-ns4-header]{background:#0a0b0f!important;backdrop-filter:none!important}
+  .public-shell .ns4-more-links{backdrop-filter:none!important;background:#101115!important}
+}
