@@ -1,6 +1,8 @@
 /* ============================================================
    NABEZ SARDO — DIGITAL BROADSHEET ۱۴۰۵ (compact build)
    A newspaper, not a dashboard. Warm paper, ink, one accent.
+   Design lineage: LUXE CASCADE — OBSIDIAN & PLATINUM EDITION (2026-11-13)
+   succeeded by DIGITAL BROADSHEET 1405.
    Muted, typographic, editorial hierarchy. No glass, no glow.
    Scoped to .pr-body; loaded after legacy CSS, wins cascade.
    Keeps every approved hook: ticker, feature, cards, panels,
@@ -604,7 +606,7 @@ body.pr-body .pr-feature__body{padding-inline-end:24px}
 .pr-cat:hover span svg{transform:translateX(-3px);color:var(--accent)}
 
 /* ---------- 11. citizen call ---------- */
-.pr-cta{
+body.public-shell.pr-body .pr-cta{
   background:var(--ink)!important;
   border:none!important;border-radius:0!important;
   box-shadow:none!important;
