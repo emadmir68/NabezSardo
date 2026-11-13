@@ -107,7 +107,7 @@ async function ensureSocialPreviewForPath(pathname){
     const beforeArticle=structuredClone(article);
     if(await ensureRasterSocialImage(article)){
       await publishing.commitChanges(env.DB,{articles:[beforeArticle]},{articles:[article]});
-      publicDbCache.at=0;
+      try{await invalidateFastArticleCache();}catch{} publicDbCache.at=0;
     }
   }catch(err){
     console.error("social-preview-raster",article.id,String(err?.message||err));
@@ -488,6 +488,64 @@ function fastHtml(body,status=200){
     "x-nabzesardo-runtime":"cloudflare-fast-public-v1"
   }});
 }
+
+/* Article HTML edge cache. The article render is the most CPU-heavy path
+   on the Worker, and a fast sequential crawler (SEO audit, search bots)
+   can burn the CPU limit (error 1102 / 503s). Views are recorded through
+   waitUntil so cached bodies do not affect analytics. Short TTL keeps
+   publishes visible quickly. */
+const FAST_ARTICLE_CACHE_TTL_MS=120000;
+async function fastArticleCacheGet(pathname){
+  try{
+    const hit=await caches.default.match(new Request("https://nabzesardo.ir"+pathname,{method:"GET"}));
+    if(hit){
+      const age=Number(hit.headers.get("x-nabzesardo-article-cache-age")||0);
+      if(Number.isFinite(age)&&Date.now()-age<FAST_ARTICLE_CACHE_TTL_MS)return hit;
+    }
+  }catch{}
+  return null;
+}
+async function fastArticleCachePut(pathname,body){
+  try{
+    await caches.default.put(new Request("https://nabzesardo.ir"+pathname,{method:"GET"}),new Response(body,{headers:{
+      "content-type":"text/html; charset=utf-8",
+      "cache-control":"public, max-age=0, must-revalidate",
+      "x-nabzesardo-article-cache":"1",
+      "x-nabzesardo-article-cache-age":String(Date.now())
+    }}));
+  }catch{}
+}
+
+async function invalidateFastArticleCache(){
+  try{await caches.default.delete(new Request("https://nabzesardo.ir/news/",{method:"GET"}));}catch{}
+  // Cache API cannot bulk-delete by prefix; short TTL plus per-path delete on
+  // mutation is enough. Mark the index stale too so codes rebuild.
+  fastArticleIndexCache={at:0,promise:null};
+}
+
+/* Lookup index for article keys (slug/id/short codes) — avoids the O(n*4)
+   string-code computation on every request; codes only change when the
+   article id changes, so they are computed once per db snapshot. */
+let fastArticleIndexCache={at:0,promise:null};
+function buildFastArticleIndex(db){
+  const index=new Map();
+  for(const a of db.articles||[]){
+    if(!store.publiclyVisibleArticle(a))continue;
+    const id=String(a.id);
+    index.set(id,a);
+    if(a.slug)index.set(String(a.slug),a);
+    index.set(shortArticleCodeWorker(id),a);
+    index.set(previousShortArticleCodeWorker(id),a);
+    index.set(legacyShortArticleCodeWorker(id),a);
+  }
+  return index;
+}
+async function fastArticleIndex(db){
+  if(fastArticleIndexCache.promise&&Date.now()-fastArticleIndexCache.at<1500)return fastArticleIndexCache.promise;
+  const promise=Promise.resolve().then(()=>buildFastArticleIndex(db));
+  fastArticleIndexCache={at:Date.now(),promise};
+  return promise;
+}
 async function handleFastPublic(request,url,pathname,ctx){
   if(request.method!=="GET"&&request.method!=="HEAD")return null;
   if(pathname==="/nabez60")return Response.redirect(new URL("/all-news",request.url).toString(),301);
@@ -516,13 +574,40 @@ async function handleFastPublic(request,url,pathname,ctx){
   }else{
     const prefix=pathname.startsWith("/news/")?"/news/":"/n/";
     const key=pathname.slice(prefix.length);
-    const article=(db.articles||[]).find(x=>store.publiclyVisibleArticle(x)&&(String(x.slug)===key||String(x.id)===key||shortArticleCodeWorker(x.id)===key||previousShortArticleCodeWorker(x.id)===key||legacyShortArticleCodeWorker(x.id)===key));
+    if(request.method==="GET"){
+      const cached=await fastArticleCacheGet(pathname);
+      if(cached){
+        if(ctx&&fastTrackablePath(pathname)){
+          const dbForViews=await loadPublicDbFast();
+          const idx=await fastArticleIndex(dbForViews);
+          const cachedArticle=idx.get(key);
+          const cachedArticleId=cachedArticle?String(cachedArticle.id):"";
+          if(cachedArticleId){
+            ctx.waitUntil(recordFastVisit(request,pathname,cachedArticleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
+          }
+        }
+        return new Response(cached.body,{status:200,headers:{
+          ...securityHeaders(),
+          "content-type":"text/html; charset=utf-8",
+          "cache-control":"no-store, no-cache, must-revalidate",
+          "pragma":"no-cache",
+          "expires":"0",
+          "x-nabzesardo-runtime":"cloudflare-fast-public-v1",
+          "x-nabzesardo-article-cache":"hit"
+        }});
+      }
+    }
+    const idx=await fastArticleIndex(db);
+    const article=idx.get(key);
     if(article){body=views.article(db,article);articleId=String(article.id);}
     else{body="خبر یافت نشد";status=404;}
   }
   if(status===200&&ctx&&fastTrackablePath(pathname)){
     ctx.waitUntil(recordFastVisit(request,pathname,articleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
-    if(articleId)ctx.waitUntil(ensureSocialPreviewForPath(pathname).catch(err=>console.error("fast-social-preview",String(err?.message||err))));
+    if(articleId){
+      ctx.waitUntil(ensureSocialPreviewForPath(pathname).catch(err=>console.error("fast-social-preview",String(err?.message||err))));
+      if(request.method==="GET"&&pathname.startsWith("/news/"))ctx.waitUntil(fastArticleCachePut(pathname,body).catch(()=>{}));
+    }
   }
   if(request.method==="HEAD")return new Response(null,{status,headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate",
     "pragma":"no-cache",
@@ -1724,7 +1809,7 @@ async function suppressPendingAutomaticPublications(){
   }
   if(afterArticles.length){
     await publishing.commitChanges(env.DB,{articles:beforeArticles},{articles:afterArticles});
-    publicDbCache.at=0;
+    try{invalidateFastArticleCache();}catch{} publicDbCache.at=0;
   }
   return afterArticles.length>0;
 }
@@ -1762,7 +1847,7 @@ async function refreshOpinionSocialWording(){
   }
   if(afterArticles.length){
     await publishing.commitChanges(env.DB,{articles:beforeArticles},{articles:afterArticles});
-    publicDbCache.at=0;
+    try{invalidateFastArticleCache();}catch{} publicDbCache.at=0;
   }
   return afterArticles.length>0;
 }
@@ -1827,7 +1912,7 @@ async function ensurePrivacyCleanup(){
   if(JSON.stringify(before)!==JSON.stringify(after)){
     await publishing.commitChanges(env.DB,before,after);
     for(const name of removedMedia){try{await deleteMedia(name);}catch{}}
-    publicDbCache={at:0,db:null};
+    try{invalidateFastArticleCache();}catch{} publicDbCache={at:0,db:null};
   }
   await putState("privacy_cleanup_v1","1");
   privacyCleanupEnsured=true;
