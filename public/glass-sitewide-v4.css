@@ -29,13 +29,10 @@ body.public-shell{
  color-scheme:light;
 }
 body.public-shell:not(.ns26-page){
- background:
- radial-gradient(ellipse 55% 25% at 93% 4%,rgba(147,193,225,.30),transparent 78%),
- radial-gradient(ellipse 40% 20% at 4% 20%,rgba(207,202,230,.35),transparent 77%),
- linear-gradient(180deg,#edf2f7,#f8fafb 68%,#eaf0f5)!important;
+ background:#f6f1e6!important;
  min-height:100vh;
 }
-.public-shell .spatial-rail{display:none!important}
+body.public-shell.paper-era-never .spatial-rail{display:none!important}
 .public-shell .wrap{width:min(1240px,calc(100% - 68px));max-width:1240px;min-width:0;margin-inline:auto}
 .public-shell :is(h1,h2,h3,h4,p){letter-spacing:normal;overflow-wrap:break-word;word-break:normal;text-align:start}
 .public-shell :is(h1,h2,h3){text-wrap:pretty}
@@ -43,7 +40,7 @@ body.public-shell:not(.ns26-page){
 .public-shell :is(a,button,input,select,textarea):focus-visible{
  outline:3px solid #509bc5!important;outline-offset:3px!important
 }
-.public-shell .ns4-utility{
+body.public-shell.paper-era-never .ns4-utility{
  position:relative;z-index:94;
  min-height:29px;
  color:rgba(225,243,252,.71);
@@ -51,25 +48,25 @@ body.public-shell:not(.ns26-page){
  border-bottom:1px solid rgba(236,250,255,.08);
  font-size:10px;
 }
-.public-shell .ns4-utility-row{min-height:29px;display:flex;align-items:center;gap:24px}
-.public-shell .ns4-utility-label{display:inline-flex;align-items:center;gap:9px;font-weight:700}
-.public-shell .ns4-utility-label i{
+body.public-shell.paper-era-never .ns4-utility-row{min-height:29px;display:flex;align-items:center;gap:24px}
+body.public-shell.paper-era-never .ns4-utility-label{display:inline-flex;align-items:center;gap:9px;font-weight:700}
+body.public-shell.paper-era-never .ns4-utility-label i{
  display:inline-block;width:7px;height:7px;border-radius:50%;
  background:#addddf;box-shadow:0 0 0 4px rgba(173,221,223,.14)
 }
-.public-shell .ns4-utility-signature{
+body.public-shell.paper-era-never .ns4-utility-signature{
  color:rgba(220,238,252,.45);
  font:9px Arial,sans-serif;
  letter-spacing:2px
 }
-.public-shell .ns4-utility a{
+body.public-shell.paper-era-never .ns4-utility a{
  margin-right:auto;
  color:#cde6f0!important;
  display:inline-flex;align-items:center;gap:7px;
  font-weight:800
 }
 /* A consistent translucent site navigation — replaces capsule from old theme. */
-body.public-shell>header.site-capsule[data-ns4-header]{
+body.public-shell.paper-era-never header.site-capsule[data-ns4-header]{
  position:sticky!important;
  z-index:95!important;
  top:0!important;
@@ -88,7 +85,7 @@ body.public-shell>header.site-capsule[data-ns4-header]{
  -webkit-backdrop-filter:blur(24px) saturate(165%)!important;
  box-shadow:0 15px 38px rgba(8,27,45,.14),inset 0 1px rgba(255,255,255,.045)!important;
 }
-body.public-shell>header.site-capsule[data-ns4-header]:before{
+body.public-shell.paper-era-never header.site-capsule[data-ns4-header]:before{
  content:"";position:absolute;inset:0;pointer-events:none;
  background:linear-gradient(115deg,rgba(255,255,255,.08),transparent 44%,rgba(201,239,255,.045));
 }
@@ -100,11 +97,11 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  padding-block:10px!important;
  position:relative;
 }
-.public-shell .site-capsule[data-ns4-header] .brand{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand{
  display:flex!important;align-items:center;flex:0 0 auto;gap:11px;
  margin:0!important;min-width:0;text-decoration:none!important
 }
-.public-shell .site-capsule[data-ns4-header] .brand .brand-mark{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand .brand-mark{
  width:47px!important;height:47px!important;
  display:grid!important;place-items:center;
  background:linear-gradient(135deg,#effbff,#b9ddeb 65%,#dfd9ed)!important;
@@ -113,27 +110,27 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  border:1px solid rgba(255,255,255,.85)!important;
  box-shadow:0 9px 21px rgba(2,13,25,.20),inset 0 1px #fff!important;
 }
-.public-shell .site-capsule[data-ns4-header] .brand-mark svg{width:34px;height:34px}
-.public-shell .site-capsule[data-ns4-header] .brand-mark svg path{stroke:#2b617b!important}
-.public-shell .site-capsule[data-ns4-header] .brand b{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand-mark svg{width:34px;height:34px}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand-mark svg path{stroke:#2b617b!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand b{
  display:flex;flex-direction:column;
  color:#f8fbff!important;
  font-size:20px!important;font-weight:900!important;
  line-height:1.45;white-space:nowrap;
  letter-spacing:normal!important;
 }
-.public-shell .site-capsule[data-ns4-header] .brand small{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand small{
  color:#9fbacf!important;font:9px Arial,sans-serif;
  letter-spacing:2px;display:block!important
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav{
  display:flex!important;align-items:center;
  flex:1 1 auto;min-width:0;max-width:none;
  justify-content:center;gap:4px;
  overflow-x:auto;scrollbar-width:none
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-header-nav::-webkit-scrollbar{display:none}
-.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav::-webkit-scrollbar{display:none}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav a{
  display:inline-flex!important;align-items:center;justify-content:center;
  flex:0 0 auto;
  padding:10px 12px!important;
@@ -142,13 +139,13 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  font-size:12px!important;font-weight:750!important;
  text-decoration:none
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a:hover{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav a:hover{
  background:rgba(224,245,255,.12)!important;
  color:#fff!important
 }
-.public-shell .site-capsule[data-ns4-header] .header-spacer{display:none!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .header-spacer{display:none!important}
 .public-shell .ns4-header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}
-.public-shell .site-capsule[data-ns4-header] .ns4-search-action{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-search-action{
  width:45px!important;height:45px!important;flex:0 0 45px!important;
  display:grid!important;place-items:center;
  border-radius:14px!important;
@@ -158,7 +155,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  box-shadow:inset 0 1px rgba(255,255,255,.12),0 8px 20px rgba(0,0,0,.11);
 }
 .public-shell .ns4-search-action svg{width:20px;height:20px}
-.public-shell .site-capsule[data-ns4-header] .ns4-submit-action{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-submit-action{
  min-height:45px!important;
  display:inline-flex!important;align-items:center;gap:14px!important;
  background:linear-gradient(135deg,#e2f9fc,#b6deeb 70%,#d6deef)!important;
@@ -170,7 +167,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  font-size:12px!important;font-weight:900!important;
  text-shadow:none!important;white-space:nowrap
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-submit-action:hover{filter:brightness(1.05)}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-submit-action:hover{filter:brightness(1.05)}
 .public-shell .ns4-menu-toggle{
  display:none;flex:none;flex-direction:column;align-items:center;justify-content:center;
  width:45px;height:45px;gap:5px;
@@ -188,7 +185,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
 .public-shell .ns4-menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0}
 .public-shell .ns4-menu-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 /* All inner pages have the same strong editorial entry and consistent spacing */
-.public-shell:not(.ns26-page) main.wrap.page{
+body.public-shell.paper-era-never main.wrap.page{
  position:relative;
  padding:46px 0 68px!important;
  margin-top:0!important;
@@ -196,14 +193,14 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  min-height:55vh;
  color:var(--ns4-text);
 }
-.public-shell:not(.ns26-page) main.wrap.page:before{
+body.public-shell.paper-era-never main.wrap.page:before{
  content:"";pointer-events:none;position:absolute;
  left:-180px;top:40px;width:400px;height:300px;z-index:-1;
  background:radial-gradient(ellipse,rgba(129,187,228,.18),transparent 70%);
  filter:blur(15px)
 }
-.public-shell main.page>h1,
-.public-shell main.page>.pagehead h1{
+body.public-shell.paper-era-never main.page>h1,
+body.public-shell.paper-era-never main.page>.pagehead h1{
  color:#152f45!important;
  font-size:clamp(31px,3.9vw,54px)!important;
  font-weight:900!important;
@@ -213,8 +210,8 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  letter-spacing:normal;
  max-width:100%
 }
-.public-shell main.page>.eyebrow,
-.public-shell main.page>.pagehead .eyebrow,
+body.public-shell.paper-era-never main.page>.eyebrow,
+body.public-shell.paper-era-never main.page>.pagehead .eyebrow,
 .public-shell main.page>.short-timeline-page-head .eyebrow{
  display:inline-flex;align-items:center;gap:10px;
  color:#3b7b9d!important;
@@ -228,12 +225,12 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  width:max-content;
  max-width:100%;
 }
-.public-shell main.page>.eyebrow:before,
-.public-shell main.page .pagehead>.eyebrow:before{
+body.public-shell.paper-era-never main.page>.eyebrow:before,
+body.public-shell.paper-era-never main.page .pagehead>.eyebrow:before{
  content:"";width:7px;height:7px;background:#6ba5bc;border-radius:50%;
 }
-.public-shell main.page>.lead,
-.public-shell main.page .pagehead p{
+body.public-shell.paper-era-never main.page>.lead,
+body.public-shell.paper-era-never main.page .pagehead p{
  max-width:850px;
  color:#687e90!important;
  font-size:clamp(13px,1.35vw,17px);
@@ -241,7 +238,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  text-shadow:none!important;
  margin-block:3px 29px;
 }
-.public-shell main.page .pagehead{
+body.public-shell.paper-era-never main.page .pagehead{
  display:flex;flex-direction:column;align-items:flex-start;
  padding:30px clamp(22px,4vw,55px) 33px!important;
  margin:0 0 26px!important;
@@ -257,7 +254,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  gap:20px!important;
  align-items:stretch;
 }
-.public-shell .grid.news .card{
+body.public-shell.paper-era-never .grid.news .card{
  display:flex!important;flex-direction:column;
  min-width:0;
  height:100%;
@@ -270,12 +267,12 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  overflow:hidden;
  transform:none;
 }
-.public-shell .grid.news .card:hover{
+body.public-shell.paper-era-never .grid.news .card:hover{
  transform:translateY(-4px)!important;
  border-color:#aed6e9!important;
  box-shadow:0 24px 52px rgba(19,60,86,.13)!important;
 }
-.public-shell .grid.news .card-media{
+body.public-shell.paper-era-never .grid.news .card-media{
  position:relative!important;
  display:block!important;flex:0 0 auto;
  overflow:hidden;
@@ -284,8 +281,8 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  border-radius:0!important;
  background:linear-gradient(145deg,#315570,#a0cadc)!important;
 }
-.public-shell .grid.news .card-media img,
-.public-shell .grid.news .card-media video{
+body.public-shell.paper-era-never .grid.news .card-media img,
+body.public-shell.paper-era-never .grid.news .card-media video{
  display:block!important;
  width:100%!important;height:100%!important;
  position:absolute!important;inset:0!important;
@@ -294,27 +291,27 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  border-radius:0!important;
  background:transparent!important
 }
-.public-shell .grid.news .card[data-image-kind="fallback"] .card-media img{object-fit:cover!important}
-.public-shell .grid.news .card-media:after{
+body.public-shell.paper-era-never .grid.news .card[data-image-kind="fallback"] .card-media img{object-fit:cover!important}
+body.public-shell.paper-era-never .grid.news .card-media:after{
  content:"";position:absolute;inset:0;
  background:linear-gradient(0deg,rgba(12,33,49,.25),transparent 50%);
  pointer-events:none
 }
-.public-shell .grid.news .card-story-badge{
+body.public-shell.paper-era-never .grid.news .card-story-badge{
  position:absolute;z-index:2;top:12px;right:12px;
  background:rgba(10,30,48,.62)!important;color:#fff!important;
  border:1px solid rgba(255,255,255,.35)!important;
  border-radius:100px!important;
  backdrop-filter:blur(12px)
 }
-.public-shell .grid.news .card .pad{
+body.public-shell.paper-era-never .grid.news .card .pad{
  padding:19px 21px 23px!important;
  display:flex;flex:1;flex-direction:column;align-items:flex-start;
  min-width:0
 }
-.public-shell .grid.news .card-kicker{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.public-shell .grid.news .card .eyebrow,
-.public-shell .grid.news .card .view-badge{
+body.public-shell.paper-era-never .grid.news .card-kicker{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+body.public-shell.paper-era-never .grid.news .card .eyebrow,
+body.public-shell.paper-era-never .grid.news .card .view-badge{
  border:0!important;
  background:#edf5f9!important;
  color:#477c98!important;
@@ -324,13 +321,13 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  padding:5px 11px!important;
  max-width:100%
 }
-.public-shell .grid.news .card time{
+body.public-shell.paper-era-never .grid.news .card time{
  display:block;
  margin:10px 0 3px;
  font-size:10.5px;
  color:#8196a4!important;
 }
-.public-shell .grid.news .card h3{
+body.public-shell.paper-era-never .grid.news .card h3{
  font-family:"NabezLocal","Vazirmatn",Tahoma,sans-serif;
  font-weight:850!important;
  color:#1d3a50!important;
@@ -344,9 +341,9 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  -webkit-line-clamp:unset!important;
  overflow:visible!important;
 }
-.public-shell .grid.news .card h3 a{color:#1c374b!important;text-decoration:none}
-.public-shell .grid.news .card h3 a:hover{color:#257ba4!important}
-.public-shell .grid.news .card .listing-excerpt{
+body.public-shell.paper-era-never .grid.news .card h3 a{color:#1c374b!important;text-decoration:none}
+body.public-shell.paper-era-never .grid.news .card h3 a:hover{color:#257ba4!important}
+body.public-shell.paper-era-never .grid.news .card .listing-excerpt{
  display:-webkit-box!important;
  -webkit-box-orient:vertical;
  -webkit-line-clamp:3;
@@ -357,7 +354,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  margin:0 0 13px!important;
  width:100%;
 }
-.public-shell .grid.news .card .more{
+body.public-shell.paper-era-never .grid.news .card .more{
  display:inline-flex;align-items:center;
  min-height:39px;gap:10px;
  margin-top:auto;
@@ -365,7 +362,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  font-size:12px!important;
  font-weight:850!important;
 }
-.public-shell .grid.news .card .more:hover{color:#145271!important}
+body.public-shell.paper-era-never .grid.news .card .more:hover{color:#145271!important}
 /* archive / search / category / regional landing cards */
 .public-shell :is(.archive-filters,.search-large,.form){
  border-radius:24px!important;
@@ -376,8 +373,8 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  -webkit-backdrop-filter:blur(18px)!important;
  padding:clamp(18px,2.6vw,30px)!important;
 }
-.public-shell .archive-filters{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(140px,1fr) minmax(140px,1fr) auto;gap:15px;align-items:end}
-.public-shell .archive-filters>div{min-width:0}
+body.public-shell.paper-era-never .archive-filters{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(140px,1fr) minmax(140px,1fr) auto;gap:15px;align-items:end}
+body.public-shell.paper-era-never .archive-filters>div{min-width:0}
 .public-shell :is(.form,.archive-filters,.search-large) label{
  font-size:12px!important;
  font-weight:800!important;
@@ -385,7 +382,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  display:block;margin-bottom:9px;
 }
 .public-shell :is(.form,.archive-filters,.search-large) :is(input,textarea,select),
-.public-shell .search-large>input{
+body.public-shell.paper-era-never .search-large>input{
  min-height:49px;
  width:100%;
  background:#f4f8fb!important;
@@ -618,7 +615,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
 .public-shell .related-news{margin-top:55px!important}
 .public-shell .related-news .sectionhead h2{color:#17364c!important}
 /* Opinion / short feed / local hubs / corrections / submission */
-.public-shell .short-timeline-page-head{
+body.public-shell.paper-era-never .short-timeline-page-head{
  padding:25px 35px;
  border:1px solid #dce8f0;
  border-radius:24px;
@@ -626,8 +623,8 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  box-shadow:0 10px 40px rgba(23,61,87,.06);
  margin-bottom:24px!important
 }
-.public-shell .short-timeline-page-head h1{color:#14334b!important;font-weight:900;font-size:clamp(30px,4vw,49px)}
-.public-shell .short-timeline-page-head p{color:#657e91!important}
+body.public-shell.paper-era-never .short-timeline-page-head h1{color:#14334b!important;font-weight:900;font-size:clamp(30px,4vw,49px)}
+body.public-shell.paper-era-never .short-timeline-page-head p{color:#657e91!important}
 .public-shell .short-timeline-shell{
  background:rgba(255,255,255,.65)!important;
  border:1px solid #dce8f0!important;
@@ -672,8 +669,8 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
 .public-shell .opinion-page :is(.opinion-feature-copy,.opinion-card-copy) p{color:#647d8d!important}
 .public-shell .opinion-page .opinion-read{color:#236b8a!important}
 .public-shell .opinion-page .opinion-section-head h2{color:#16374d!important}
-.public-shell .form{width:min(100%,780px)}
-.public-shell .form .hp-field{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important}
+body.public-shell.paper-era-never .form{width:min(100%,780px)}
+body.public-shell.paper-era-never .form .hp-field{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important}
 .public-shell .gift-card-box{
  border:1px solid #c5dfec!important;
  border-radius:21px!important;
@@ -692,7 +689,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
  color:#ac3b39!important;border:1px solid #f0c1bf!important
 }
 /* One premium brand close on every inner page */
-body.public-shell footer.ns4-footer{
+bodybody.public-shell.paper-era-never footer.ns4-footer,body.public-shell footer.ns4-footer{background:#efe8d9!important;border-top:2.5px solid #1c1710!important;color:#46403a!important}
  margin:0!important;
  padding:0!important;
  width:100%!important;
@@ -706,13 +703,13 @@ body.public-shell footer.ns4-footer{
  backdrop-filter:none!important;
  border-radius:0!important;
 }
-.public-shell .ns4-footer-intro{
+body.public-shell.paper-era-never .ns4-footer-intro{
  display:flex;align-items:center;justify-content:space-between;gap:30px;
  padding:63px 0 46px;
  border-bottom:1px solid rgba(210,239,252,.12);
 }
-.public-shell .ns4-footer-identity{display:flex;align-items:center;gap:21px}
-.public-shell .ns4-footer-pulse{
+body.public-shell.paper-era-never .ns4-footer-identity{display:flex;align-items:center;gap:21px}
+body.public-shell.paper-era-never .ns4-footer-pulse{
  display:grid;place-items:center;
  width:78px;height:78px;
  background:linear-gradient(130deg,rgba(220,248,255,.22),rgba(207,235,255,.05));
@@ -722,13 +719,13 @@ body.public-shell footer.ns4-footer{
  font-size:61px;
  box-shadow:inset 0 1px rgba(255,255,255,.20),0 15px 40px rgba(0,0,0,.13)
 }
-.public-shell .ns4-footer-identity span{
+body.public-shell.paper-era-never .ns4-footer-identity span{
  color:#a1c6d9;
  font:10px Arial,sans-serif;
  letter-spacing:2.8px;
  direction:ltr;display:block;
 }
-.public-shell .ns4-footer-identity h2{
+body.public-shell.paper-era-never .ns4-footer-identity h2{
  color:#f6fbff!important;
  font-weight:900;
  font-size:clamp(27px,3.2vw,44px);
@@ -736,7 +733,7 @@ body.public-shell footer.ns4-footer{
  margin:8px 0 0;
  letter-spacing:normal;
 }
-.public-shell .ns4-footer-cta{
+body.public-shell.paper-era-never .ns4-footer-cta{
  display:inline-flex;align-items:center;gap:25px;
  padding:13px 20px;min-height:52px;
  border-radius:16px;
@@ -746,43 +743,43 @@ body.public-shell footer.ns4-footer{
  font-size:12px;font-weight:850;
  box-shadow:0 13px 36px rgba(0,0,0,.17)
 }
-.public-shell .ns4-footer-grid{
+body.public-shell.paper-era-never .ns4-footer-grid{
  display:grid!important;
  grid-template-columns:2fr repeat(3,minmax(0,1fr));
  gap:40px!important;
  padding:48px 0!important;
 }
-.public-shell .ns4-footer-grid>div{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0}
-.public-shell .ns4-footer-grid :is(h3,h4){
+body.public-shell.paper-era-never .ns4-footer-grid>div{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0}
+body.public-shell.paper-era-never .ns4-footer-grid :is(h3,h4){
  color:#f7fcff!important;
  margin:0 0 8px;
  font-weight:850!important;
 }
-.public-shell .ns4-footer-grid h3{font-size:25px}
-.public-shell .ns4-footer-grid h4{font-size:13px}
-.public-shell .ns4-footer-grid :is(a,p){
+body.public-shell.paper-era-never .ns4-footer-grid h3{font-size:25px}
+body.public-shell.paper-era-never .ns4-footer-grid h4{font-size:13px}
+body.public-shell.paper-era-never .ns4-footer-grid :is(a,p){
  color:#9bb8ca!important;font-size:12px;line-height:1.9;
  margin:0;max-width:295px;text-align:start
 }
-.public-shell .ns4-footer-grid a:hover{color:#eafaff!important}
-.public-shell .ns4-footer-bottom{
+body.public-shell.paper-era-never .ns4-footer-grid a:hover{color:#eafaff!important}
+body.public-shell.paper-era-never .ns4-footer-bottom{
  display:flex!important;justify-content:space-between;gap:20px;
  border-top:1px solid rgba(211,240,252,.12)!important;
  padding:20px 0 25px!important;
  color:#8eabbf!important;font-size:11px!important;
  background:transparent!important
 }
-.public-shell .ns4-footer-bottom span:last-child{font:10px Arial,sans-serif;letter-spacing:2px}
+body.public-shell.paper-era-never .ns4-footer-bottom span:last-child{font:10px Arial,sans-serif;letter-spacing:2px}
 /* Breakpoints. Never let decorative design block article actions or forms. */
 @media(max-width:1120px){
  .public-shell .ns4-header-inner{gap:10px!important}
- .public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{padding:9px 8px!important;font-size:11px!important}
- .public-shell .site-capsule[data-ns4-header] .brand b{font-size:18px!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav a{padding:9px 8px!important;font-size:11px!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand b{font-size:18px!important}
  .public-shell .ns4-header-actions{gap:7px}
- .public-shell .archive-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.public-shell.paper-era-never .archive-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:1000px){
- .public-shell .site-capsule[data-ns4-header] .ns4-header-nav{
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav{
   display:none!important;
   position:absolute!important;
   z-index:100;
@@ -800,8 +797,8 @@ body.public-shell footer.ns4-footer{
   box-shadow:0 20px 55px rgba(4,18,30,.28)!important;
   backdrop-filter:blur(27px);-webkit-backdrop-filter:blur(27px);
  }
- .public-shell .site-capsule[data-ns4-header] .ns4-header-nav.ns4-open{display:flex!important}
- .public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav.ns4-open{display:flex!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav a{
   justify-content:flex-start;
   width:100%;
   font-size:14px!important;
@@ -812,45 +809,45 @@ body.public-shell footer.ns4-footer{
  .public-shell .ns4-header-inner{justify-content:space-between}
  .public-shell .grid.news{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  .public-shell .grid.info{grid-template-columns:repeat(2,minmax(0,1fr))}
- .public-shell .ns4-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.public-shell.paper-era-never .ns4-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:660px){
  .public-shell .wrap{width:calc(100% - 30px)!important;min-width:0}
- .public-shell .ns4-utility{min-height:25px}
- .public-shell .ns4-utility-row{min-height:25px;justify-content:space-between}
- .public-shell .ns4-utility-label{font-size:9px}
- .public-shell .ns4-utility-signature{display:none}
- .public-shell .ns4-utility a{font-size:9px}
+ body.public-shell.paper-era-never .ns4-utility{min-height:25px}
+ body.public-shell.paper-era-never .ns4-utility-row{min-height:25px;justify-content:space-between}
+ body.public-shell.paper-era-never .ns4-utility-label{font-size:9px}
+ body.public-shell.paper-era-never .ns4-utility-signature{display:none}
+ body.public-shell.paper-era-never .ns4-utility a{font-size:9px}
  .public-shell .ns4-header-inner{min-height:64px!important;padding-block:8px!important;gap:7px!important}
- .public-shell .site-capsule[data-ns4-header] .brand{gap:7px}
- .public-shell .site-capsule[data-ns4-header] .brand .brand-mark{width:39px!important;height:39px!important;border-radius:12px!important}
- .public-shell .site-capsule[data-ns4-header] .brand-mark svg{width:28px;height:28px}
- .public-shell .site-capsule[data-ns4-header] .brand b{font-size:16px!important;letter-spacing:normal!important}
- .public-shell .site-capsule[data-ns4-header] .brand small{font-size:7px;letter-spacing:.8px}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand{gap:7px}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand .brand-mark{width:39px!important;height:39px!important;border-radius:12px!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand-mark svg{width:28px;height:28px}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand b{font-size:16px!important;letter-spacing:normal!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand small{font-size:7px;letter-spacing:.8px}
  .public-shell .ns4-header-actions{gap:6px}
- .public-shell .site-capsule[data-ns4-header] .ns4-search-action,.public-shell .ns4-menu-toggle{
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-search-action,.public-shell .ns4-menu-toggle{
   width:39px!important;height:39px!important;flex:0 0 39px!important;
   border-radius:12px;min-height:39px
  }
- .public-shell .site-capsule[data-ns4-header] .ns4-submit-action{
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-submit-action{
   min-height:39px!important;padding:7px 10px!important;
   font-size:10px!important;gap:5px!important;border-radius:11px!important
  }
- .public-shell:not(.ns26-page) main.wrap.page{padding:25px 0 49px!important}
- .public-shell main.page>.pagehead{padding:22px!important;border-radius:22px!important;margin-bottom:18px!important}
- .public-shell main.page>h1,.public-shell main.page>.pagehead h1{font-size:clamp(29px,7.2vw,37px)!important;line-height:1.65!important}
- .public-shell main.page>.lead,.public-shell main.page>.pagehead p{font-size:13px}
+ body.public-shell.paper-era-never main.wrap.page{padding:25px 0 49px!important}
+ body.public-shell.paper-era-never main.page>.pagehead{padding:22px!important;border-radius:22px!important;margin-bottom:18px!important}
+ body.public-shell.paper-era-never main.page>h1,body.public-shell.paper-era-never main.page>.pagehead h1{font-size:clamp(29px,7.2vw,37px)!important;line-height:1.65!important}
+ body.public-shell.paper-era-never main.page>.lead,body.public-shell.paper-era-never main.page>.pagehead p{font-size:13px}
  .public-shell .grid.news{grid-template-columns:minmax(0,1fr)!important;gap:14px!important}
- .public-shell .grid.news .card{border-radius:19px!important}
- .public-shell .grid.news .card .pad{padding:16px 18px 18px!important}
- .public-shell .grid.news .card h3{font-size:16px!important;line-height:1.8!important}
- .public-shell .grid.news .card .listing-excerpt{font-size:12px!important}
+ body.public-shell.paper-era-never .grid.news .card{border-radius:19px!important}
+ body.public-shell.paper-era-never .grid.news .card .pad{padding:16px 18px 18px!important}
+ body.public-shell.paper-era-never .grid.news .card h3{font-size:16px!important;line-height:1.8!important}
+ body.public-shell.paper-era-never .grid.news .card .listing-excerpt{font-size:12px!important}
  .public-shell .grid.info{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
- .public-shell .archive-filters{grid-template-columns:1fr!important;gap:8px!important;padding:19px!important}
- .public-shell .archive-filters .btn{width:100%}
+ body.public-shell.paper-era-never .archive-filters{grid-template-columns:1fr!important;gap:8px!important;padding:19px!important}
+ body.public-shell.paper-era-never .archive-filters .btn{width:100%}
  .public-shell .archive-pagination{border-radius:15px!important;display:flex;flex-wrap:wrap;justify-content:center}
- .public-shell .search-large{display:grid!important;grid-template-columns:minmax(0,1fr);gap:11px}
- .public-shell .form{padding:19px!important}
+ body.public-shell.paper-era-never .search-large{display:grid!important;grid-template-columns:minmax(0,1fr);gap:11px}
+ body.public-shell.paper-era-never .form{padding:19px!important}
  .public-shell .article-premium{padding:17px 0 40px!important}
  .public-shell .article-shell{border-radius:19px!important}
  .public-shell .article-shell .article-head{padding:24px 19px!important}
@@ -864,29 +861,29 @@ body.public-shell footer.ns4-footer{
  .public-shell .article-premium .article-body,.public-shell .article-premium .article-body .lang-fa,.public-shell .article-premium .article-body p{font-size:16px!important;line-height:2.05!important}
  .public-shell .article-premium .article-meta-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:15px 17px 25px!important}
  .public-shell .short-timeline-shell{padding:13px!important}
- .public-shell .ns4-footer-intro{padding:39px 0 30px;align-items:flex-start;flex-direction:column;gap:18px}
- .public-shell .ns4-footer-pulse{width:52px;height:52px;font-size:41px;border-radius:15px}
- .public-shell .ns4-footer-identity{gap:12px}
- .public-shell .ns4-footer-identity h2{font-size:29px}
- .public-shell .ns4-footer-cta{min-height:46px}
- .public-shell .ns4-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px!important;padding:33px 0!important}
- .public-shell .ns4-footer-grid h3{font-size:22px}
- .public-shell .ns4-footer-bottom span:last-child{display:none}
+ body.public-shell.paper-era-never .ns4-footer-intro{padding:39px 0 30px;align-items:flex-start;flex-direction:column;gap:18px}
+ body.public-shell.paper-era-never .ns4-footer-pulse{width:52px;height:52px;font-size:41px;border-radius:15px}
+ body.public-shell.paper-era-never .ns4-footer-identity{gap:12px}
+ body.public-shell.paper-era-never .ns4-footer-identity h2{font-size:29px}
+ body.public-shell.paper-era-never .ns4-footer-cta{min-height:46px}
+ body.public-shell.paper-era-never .ns4-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px!important;padding:33px 0!important}
+ body.public-shell.paper-era-never .ns4-footer-grid h3{font-size:22px}
+ body.public-shell.paper-era-never .ns4-footer-bottom span:last-child{display:none}
 }
 @media(max-width:370px){
- .public-shell .site-capsule[data-ns4-header] .brand b{font-size:14px!important}
- .public-shell .site-capsule[data-ns4-header] .brand small{display:none}
- .public-shell .site-capsule[data-ns4-header] .ns4-submit-action{padding:7px 8px!important;font-size:9px!important}
- .public-shell .site-capsule[data-ns4-header] .ns4-search-action,.public-shell .ns4-menu-toggle{width:35px!important;flex:0 0 35px!important}
- .public-shell .ns4-footer-grid{gap:12px!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand b{font-size:14px!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand small{display:none}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-submit-action{padding:7px 8px!important;font-size:9px!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-search-action,.public-shell .ns4-menu-toggle{width:35px!important;flex:0 0 35px!important}
+ body.public-shell.paper-era-never .ns4-footer-grid{gap:12px!important}
 }
 @media(prefers-reduced-motion:reduce){
  .public-shell *, .public-shell *::before,.public-shell *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 @media(prefers-reduced-transparency:reduce){
- body.public-shell>header.site-capsule[data-ns4-header]{background:#0a2236!important}
- .public-shell .grid.news .card{background:#fff!important}
- .public-shell .site-capsule[data-ns4-header] .ns4-header-nav{background:#0a2236!important}
+ body.public-shell.paper-era-never header.site-capsule[data-ns4-header]{background:#0a2236!important}
+ body.public-shell.paper-era-never .grid.news .card{background:#fff!important}
+ body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav{background:#0a2236!important}
 }
 
 
@@ -974,8 +971,7 @@ body.public-shell::after{
  background:none!important;
 }
 body.public-shell:not(.ns26-page){
- background:#edf3f8!important;
- background-image:radial-gradient(ellipse 55% 30% at 92% 4%,rgba(152,201,232,.25),transparent 75%),radial-gradient(ellipse 50% 30% at 2% 28%,rgba(214,208,235,.20),transparent 75%),linear-gradient(#f1f6fa,#eaf2f8)!important;
+ background:#f6f1e6!important;
 }
 @media(max-width:660px){
  .public-shell .article-head .article-actions{

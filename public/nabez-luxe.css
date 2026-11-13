@@ -31,13 +31,12 @@ body.public-shell,body.editor-shell{
   color:var(--lx-ink)!important;
   font-family:'Vazirmatn','NabezLocal',Tahoma,system-ui,sans-serif!important;
 }
-body.public-shell:not(.ns26-page):not(.pr-body){
-  background:
-    radial-gradient(1100px 480px at 50% -160px,rgba(207,212,220,.075),transparent 62%),
-    radial-gradient(760px 520px at 8% 106vh,rgba(207,212,220,.04),transparent 60%),
-    radial-gradient(680px 460px at 92% 88vh,rgba(230,211,163,.035),transparent 56%),
-    linear-gradient(180deg,#08090c 0%,#0a0c10 46%,#07080b 100%)!important;
+/* Digital Broadsheet 1405: public pages share the paper canvas; the dark
+   nebula is retired. Keep the obsidian canvas for the editorial admin only. */
+body.public-shell:not(.ns26-page){
+  background:#f6f1e6!important;
   background-attachment:fixed!important;
+  color:#1c1710!important;
 }
 body.public-shell ::selection{background:rgba(230,211,163,.30);color:#fff}
 body.public-shell :is(a,button,input,textarea,select):focus-visible{
@@ -49,28 +48,28 @@ body.public-shell :is(a,button,input,textarea,select):focus-visible{
 /* (pr-body keeps premium.css; only shared chrome is retuned by this file) */
 
 /* ---------- utility strip ---------- */
-.public-shell .ns4-utility{
+body.public-shell.paper-era-never .ns4-utility{
   background:#050608!important;
   border-bottom:1px solid var(--lx-line2)!important;
   color:var(--lx-muted)!important;
 }
-.public-shell .ns4-utility-label{color:var(--lx-muted)!important}
-.public-shell .ns4-utility-label i{
+body.public-shell.paper-era-never .ns4-utility-label{color:var(--lx-muted)!important}
+body.public-shell.paper-era-never .ns4-utility-label i{
   background:var(--lx-champ)!important;
   box-shadow:0 0 10px rgba(230,211,163,.5)!important;
 }
-.public-shell .ns4-utility-signature{color:rgba(207,212,220,.4)!important}
-.public-shell .ns4-utility a{color:var(--lx-pt)!important}
+body.public-shell.paper-era-never .ns4-utility-signature{color:rgba(207,212,220,.4)!important}
+body.public-shell.paper-era-never .ns4-utility a{color:var(--lx-pt)!important}
 
 /* ---------- floating capsule header ---------- */
-body.public-shell>header.site-capsule[data-ns4-header]{
+body.public-shell.paper-era-never header.site-capsule[data-ns4-header]{
   background:rgba(10,11,15,.82)!important;
   border-bottom:1px solid var(--lx-line)!important;
   backdrop-filter:blur(26px) saturate(140%)!important;
   -webkit-backdrop-filter:blur(26px) saturate(140%)!important;
   box-shadow:0 18px 44px -22px rgba(0,0,0,.8),inset 0 1px rgba(255,255,255,.045)!important;
 }
-body.public-shell>header.site-capsule[data-ns4-header]:before{
+body.public-shell.paper-era-never header.site-capsule[data-ns4-header]:before{
   background:linear-gradient(115deg,rgba(255,255,255,.05),transparent 46%,rgba(230,211,163,.05))!important;
 }
 .public-shell .ns4-header-inner{min-height:76px!important}
@@ -78,46 +77,46 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
    must stay on one line or the CI geometry audit (header <= 90px) fails. */
 @media(max-width:900px){
   .public-shell .ns4-header-inner{flex-wrap:nowrap!important;flex-direction:row!important;align-items:center!important}
-  .public-shell .site-capsule[data-ns4-header] .brand{flex:0 1 auto;min-width:0}
+  body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand{flex:0 1 auto;min-width:0}
   /* legacy site.css rules: header .brand{width:100%} and .main{flex-direction:column}
      under 620-760px blow the capsule to stacked rows and break the <=90px audit. */
-  .public-shell .site-capsule[data-ns4-header] .brand{width:auto!important}
-  .public-shell .site-capsule[data-ns4-header] .ns4-header-actions{flex:0 0 auto}
+  body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand{width:auto!important}
+  body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-actions{flex:0 0 auto}
 }
-.public-shell .site-capsule[data-ns4-header] .brand .brand-mark{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand .brand-mark{
   background:linear-gradient(135deg,#22252c,#15171c 60%,#1d2027)!important;
   border:1px solid rgba(207,212,220,.28)!important;
   box-shadow:0 10px 24px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.14)!important;
   border-radius:14px!important;
 }
-.public-shell .site-capsule[data-ns4-header] .brand-mark svg path{stroke:var(--lx-champ)!important}
-.public-shell .site-capsule[data-ns4-header] .brand b{color:var(--lx-pt2)!important}
-.public-shell .site-capsule[data-ns4-header] .brand small{color:var(--lx-muted)!important}
-.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand-mark svg path{stroke:var(--lx-champ)!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand b{color:var(--lx-pt2)!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .brand small{color:var(--lx-muted)!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav a{
   color:var(--lx-ink2)!important;
   font-weight:650!important;
   letter-spacing:normal!important;
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-header-nav a:hover{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-header-nav a:hover{
   background:rgba(207,212,220,.10)!important;color:#fff!important;
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-more summary{color:var(--lx-ink2)!important}
-.public-shell .site-capsule[data-ns4-header] .ns4-more-links{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-more summary{color:var(--lx-ink2)!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-more-links{
   background:var(--lx-glass)!important;
   border:1px solid var(--lx-line)!important;
   border-radius:var(--lx-r2)!important;
   box-shadow:var(--lx-shadow)!important;
   backdrop-filter:blur(24px)!important;
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-more-links a{color:var(--lx-ink2)!important}
-.public-shell .site-capsule[data-ns4-header] .ns4-more-links a:hover{color:#fff!important}
-.public-shell .site-capsule[data-ns4-header] .ns4-search-action{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-more-links a{color:var(--lx-ink2)!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-more-links a:hover{color:#fff!important}
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-search-action{
   color:var(--lx-pt)!important;
   border:1px solid var(--lx-line)!important;
   background:linear-gradient(135deg,rgba(207,212,220,.10),rgba(207,212,220,.03))!important;
   box-shadow:inset 0 1px rgba(255,255,255,.10),0 8px 20px rgba(0,0,0,.35)!important;
 }
-.public-shell .site-capsule[data-ns4-header] .ns4-submit-action{
+body.public-shell.paper-era-never .site-capsule[data-ns4-header] .ns4-submit-action{
   background:linear-gradient(135deg,#f2e9d4,#cbbd9c 58%,#e8dcc0)!important;
   color:#191a14!important;
   border:1px solid rgba(255,255,255,.55)!important;
@@ -131,29 +130,29 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
 }
 .public-shell .ns4-menu-toggle span{background:var(--lx-pt)!important}
 @media(max-width:660px){
-  body.public-shell>header.site-capsule[data-ns4-header]{background:#0a0b0f!important}
+  body.public-shell.paper-era-never header.site-capsule[data-ns4-header]{background:#0a0b0f!important}
 }
 
 /* ---------- inner page headings & hero panels ---------- */
-.public-shell main.page>h1,
-.public-shell main.page>.pagehead h1{
+body.public-shell.paper-era-never main.page>h1,
+body.public-shell.paper-era-never main.page>.pagehead h1{
   color:var(--lx-pt2)!important;
 }
-.public-shell main.page>.eyebrow,
-.public-shell main.page>.pagehead .eyebrow,
+body.public-shell.paper-era-never main.page>.eyebrow,
+body.public-shell.paper-era-never main.page>.pagehead .eyebrow,
 .public-shell main.page>.short-timeline-page-head .eyebrow{
   color:var(--lx-champ)!important;
   background:rgba(230,211,163,.07)!important;
   border:1px solid rgba(230,211,163,.28)!important;
 }
-.public-shell main.page>.eyebrow:before,
-.public-shell main.page .pagehead>.eyebrow:before{background:var(--lx-champ)!important}
-.public-shell main.page>.lead,
-.public-shell main.page .pagehead p{color:var(--lx-muted)!important}
-.public-shell main.page>.pagehead,
-.public-shell main.page>.ns4-page-hero,
+body.public-shell.paper-era-never main.page>.eyebrow:before,
+body.public-shell.paper-era-never main.page .pagehead>.eyebrow:before{background:var(--lx-champ)!important}
+body.public-shell.paper-era-never main.page>.lead,
+body.public-shell.paper-era-never main.page .pagehead p{color:var(--lx-muted)!important}
+body.public-shell.paper-era-never main.page>.pagehead,
+body.public-shell.paper-era-never main.page>.ns4-page-hero,
 .public-shell main.page>.short-timeline-page-head,
-.public-shell .short-timeline-page-head{
+body.public-shell.paper-era-never .short-timeline-page-head{
   background:linear-gradient(150deg,rgba(24,26,32,.92),rgba(15,16,20,.88))!important;
   border:1px solid var(--lx-line)!important;
   box-shadow:var(--lx-shadow)!important;
@@ -162,32 +161,32 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
 .public-shell main.wrap.page:before{background:radial-gradient(ellipse,rgba(207,212,220,.10),transparent 70%)!important}
 
 /* ---------- news cards on inner pages (archive, category, search) ---------- */
-.public-shell .grid.news .card{
+body.public-shell.paper-era-never .grid.news .card{
   background:linear-gradient(160deg,rgba(24,26,31,.94),rgba(15,17,21,.90))!important;
   color:var(--lx-ink2)!important;
   border:1px solid var(--lx-line)!important;
   border-radius:var(--lx-r)!important;
   box-shadow:0 16px 40px -24px rgba(0,0,0,.8),inset 0 1px rgba(255,255,255,.04)!important;
 }
-.public-shell .grid.news .card:hover{
+body.public-shell.paper-era-never .grid.news .card:hover{
   border-color:rgba(207,212,220,.34)!important;
   box-shadow:0 26px 56px -26px rgba(0,0,0,.9),inset 0 1px rgba(255,255,255,.06)!important;
 }
-.public-shell .grid.news .card h3 a,.public-shell .grid.news .card h3{color:var(--lx-pt2)!important}
-.public-shell .grid.news .card-media{background:linear-gradient(145deg,#1a1d23,#101216)!important}
-.public-shell .grid.news .card .eyebrow,
-.public-shell .grid.news .card .view-badge{
+body.public-shell.paper-era-never .grid.news .card h3 a,body.public-shell.paper-era-never .grid.news .card h3{color:var(--lx-pt2)!important}
+body.public-shell.paper-era-never .grid.news .card-media{background:linear-gradient(145deg,#1a1d23,#101216)!important}
+body.public-shell.paper-era-never .grid.news .card .eyebrow,
+body.public-shell.paper-era-never .grid.news .card .view-badge{
   background:rgba(207,212,220,.09)!important;
   color:var(--lx-champ)!important;
   border:1px solid rgba(230,211,163,.16)!important;
 }
-.public-shell .grid.news .card-story-badge{
+body.public-shell.paper-era-never .grid.news .card-story-badge{
   background:rgba(10,11,15,.68)!important;
   border:1px solid rgba(207,212,220,.30)!important;
 }
 
 /* ---------- forms: contact, send-news, search, login ---------- */
-.public-shell .form,
+body.public-shell.paper-era-never .form,
 .public-shell .search,
 .editor-shell .loginbox,
 .editor-shell .loginbox .brand{
@@ -197,22 +196,22 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
   border-radius:var(--lx-r)!important;
   box-shadow:var(--lx-shadow)!important;
 }
-.public-shell .form label,
+body.public-shell.paper-era-never .form label,
 .public-shell .loginbox label{color:var(--lx-ink2)!important}
-.public-shell .form input,.public-shell .form textarea,.public-shell .form select,
+body.public-shell.paper-era-never .form input,body.public-shell.paper-era-never .form textarea,body.public-shell.paper-era-never .form select,
 .public-shell .search input,.editor-shell .loginbox input,
-.public-shell .archive-filters input,.public-shell .archive-filters select{
+body.public-shell.paper-era-never .archive-filters input,body.public-shell.paper-era-never .archive-filters select{
   background:#0c0e12!important;
   color:var(--lx-ink)!important;
   border:1px solid var(--lx-line)!important;
   border-radius:var(--lx-r3)!important;
 }
-.public-shell .form input:focus-visible,
-.public-shell .form textarea:focus-visible,
-.public-shell .archive-filters input:focus-visible{
+body.public-shell.paper-era-never .form input:focus-visible,
+body.public-shell.paper-era-never .form textarea:focus-visible,
+body.public-shell.paper-era-never .archive-filters input:focus-visible{
   border-color:rgba(230,211,163,.5)!important;
 }
-.public-shell .archive-filters input,.public-shell .archive-filters select{
+body.public-shell.paper-era-never .archive-filters input,body.public-shell.paper-era-never .archive-filters select{
   background:#0d0f13!important;color:var(--lx-ink)!important;border-color:#2a2d35!important;
 }
 .public-shell .archive-pagination a{
@@ -222,13 +221,13 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
   background:linear-gradient(135deg,#e8dcc0,#c2b48f)!important;color:#15161a!important;border:0!important;
 }
 .public-shell .btn.primary,
-.public-shell .form .btn.primary{
+body.public-shell.paper-era-never .form .btn.primary{
   background:linear-gradient(135deg,#f2e9d4,#cbbd9c 58%,#e8dcc0)!important;
   color:#191a14!important;
   border:1px solid rgba(255,255,255,.5)!important;
   box-shadow:0 12px 30px -12px rgba(0,0,0,.6),inset 0 1px rgba(255,255,255,.8)!important;
 }
-.public-shell .btn.ghost,.public-shell .form .btn.ghost{
+.public-shell .btn.ghost,body.public-shell.paper-era-never .form .btn.ghost{
   background:rgba(207,212,220,.07)!important;
   color:var(--lx-ink2)!important;
   border:1px solid var(--lx-line)!important;
@@ -239,7 +238,7 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
 /* ---------- article reading surface ---------- */
 /* glass-sitewide-v4 forces a white paper shell with !important; the luxe
    identity carries the article on obsidian with platinum hairlines. */
-.public-shell main.wrap.article.article-premium{color:#c9ced6!important}
+.public-shell main.wrap.article.article-premium{color:#2b241b!important}
 .public-shell .article-shell{
   border:1px solid var(--lx-line)!important;
   background:linear-gradient(165deg,#121419,#0c0e12 72%)!important;
@@ -284,13 +283,13 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
   border:1px solid var(--lx-line)!important;
 }
 .public-shell .article-premium .article-body{
-  color:#dfe3e8!important;
+  color:#2b241b!important;
 }
-.public-shell .article-premium .article-body :is(h2,h3){color:#eef1f5!important}
-.public-shell .article-premium .article-body h2{border-right-color:var(--lx-champ)!important}
+.public-shell .article-premium .article-body :is(h2,h3){color:#1c1710!important}
+.public-shell .article-premium .article-body h2{border-right-color:#8a1f2b!important}
 .public-shell .article-premium .article-body blockquote{
-  border-right-color:rgba(230,211,163,.45)!important;
-  background:rgba(230,211,163,.06)!important;
+  border-right-color:rgba(138,31,43,.45)!important;
+  background:#f2ecdf!important;
 }
 .public-shell .article-premium .article-actions .article-action{
   background:rgba(207,212,220,.08)!important;
@@ -306,24 +305,24 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
 }
 
 /* ---------- footer ---------- */
-.public-shell footer.ns4-footer{
+body.public-shell.paper-era-never footer.ns4-footer{
   background:linear-gradient(180deg,rgba(8,9,12,.60),#050608)!important;
   border-top:1px solid var(--lx-line)!important;
   color:var(--lx-ink2)!important;
 }
-.public-shell .ns4-footer-intro h2{color:var(--lx-pt2)!important}
-.public-shell .ns4-footer-identity>div>span{color:rgba(207,212,220,.45)!important}
-.public-shell .ns4-footer-pulse{color:var(--lx-champ)!important}
-.public-shell .ns4-footer-cta{
+body.public-shell.paper-era-never .ns4-footer-intro h2{color:var(--lx-pt2)!important}
+body.public-shell.paper-era-never .ns4-footer-identity>div>span{color:rgba(207,212,220,.45)!important}
+body.public-shell.paper-era-never .ns4-footer-pulse{color:var(--lx-champ)!important}
+body.public-shell.paper-era-never .ns4-footer-cta{
   color:var(--lx-champ)!important;
   border:1px solid rgba(230,211,163,.3)!important;
   background:rgba(230,211,163,.05)!important;
 }
-.public-shell .ns4-footer h3,.public-shell .ns4-footer h4{color:var(--lx-pt)!important}
-.public-shell .ns4-footer a{color:var(--lx-ink2)!important}
-.public-shell .ns4-footer a:hover{color:var(--lx-champ)!important}
-.public-shell .ns4-footer p{color:var(--lx-muted)!important}
-.public-shell .ns4-footer-bottom{
+body.public-shell.paper-era-never .ns4-footer h3,body.public-shell.paper-era-never .ns4-footer h4{color:var(--lx-pt)!important}
+body.public-shell.paper-era-never .ns4-footer a{color:var(--lx-ink2)!important}
+body.public-shell.paper-era-never .ns4-footer a:hover{color:var(--lx-champ)!important}
+body.public-shell.paper-era-never .ns4-footer p{color:var(--lx-muted)!important}
+body.public-shell.paper-era-never .ns4-footer-bottom{
   border-top:1px solid var(--lx-line2)!important;color:var(--lx-muted)!important;
 }
 
@@ -341,6 +340,221 @@ body.public-shell>header.site-capsule[data-ns4-header]:before{
   body.public-shell *,body.editor-shell *{animation-duration:.001s!important;transition-duration:.001s!important}
 }
 @media (prefers-reduced-transparency: reduce){
-  body.public-shell>header.site-capsule[data-ns4-header]{background:#0a0b0f!important;backdrop-filter:none!important}
-  .public-shell .ns4-more-links{backdrop-filter:none!important;background:#101115!important}
+  body.public-shell.paper-era-never header.site-capsule[data-ns4-header]{background:#0a0b0f!important;backdrop-filter:none!important}
+  body.public-shell.paper-era-never .ns4-more-links{backdrop-filter:none!important;background:#101115!important}
 }
+
+/* ============================================================
+   DIGITAL BROADSHEET ۱۴۰۵ — shared paper chrome for all public pages
+   (home is styled by premium.css; this styles inner pages + footer
+   everywhere with the same print heritage: paper, ink, red accent.)
+   ============================================================ */
+body.public-shell:not(.ns26-page){
+  --bf-paper:#f6f1e6;
+  --bf-paper2:#efe8d9;
+  --bf-paper3:#f2ecdf;
+  --bf-ink:#1c1710;
+  --bf-ink2:#46403a;
+  --bf-muted:#7b7264;
+  --bf-accent:#8a1f2b;
+  --bf-line:#d8cfba;
+  --bf-line2:#e4dcc9;
+}
+/* header */
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header]{
+  background:#f6f1e6!important;
+  border-bottom:2px solid #1c1710!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .brand{color:#1c1710!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .brand b{color:#1c1710!important;font-family:"Noto Naskh Arabic","Vazirmatn",Tahoma,serif!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .brand-mark{border:1.5px solid #1c1710!important;background:#f6f1e6!important;border-radius:0!important;box-shadow:none!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .brand-mark svg path{stroke:#1c1710!important;opacity:.85}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-header-nav a{
+  color:#46403a!important;font-weight:600!important;
+  border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent!important;
+}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-header-nav a:hover,
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-header-nav a[aria-current="page"]{
+  color:#8a1f2b!important;border-bottom-color:#8a1f2b!important;background:transparent!important;
+}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-submit-action{
+  background:#1c1710!important;color:#f6f1e6!important;border:1.5px solid #1c1710!important;
+  border-radius:0!important;box-shadow:none!important;text-shadow:none!important;
+}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-submit-action,
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-submit-action *{color:#f6f1e6!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-submit-action:hover{background:#8a1f2b!important;border-color:#8a1f2b!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-search-action{color:#46403a!important;border-radius:0!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-menu-toggle{border-radius:0!important;border-color:#d8cfba!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-menu-toggle span{background:#1c1710!important}
+body.public-shell:not(.ns26-page) .ns4-more summary{color:#46403a!important;border-radius:0!important}
+body.public-shell:not(.ns26-page) .ns4-more summary:hover,
+body.public-shell:not(.ns26-page) .ns4-more[open] summary{background:#f2ecdf!important;color:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .ns4-more-links{background:#f6f1e6!important;border:1px solid #d8cfba!important;border-radius:0!important;box-shadow:0 18px 40px -18px rgba(28,23,16,.28)!important}
+body.public-shell:not(.ns26-page) .ns4-more-links a{color:#46403a!important}
+body.public-shell:not(.ns26-page) header.site-capsule[data-ns4-header] .ns4-header-nav.ns4-open{background:#f6f1e6!important}
+body.public-shell:not(.ns26-page) :is(a,button,input,textarea,select):focus-visible{outline:3px solid #8a1f2b!important;outline-offset:3px!important}
+body.public-shell:not(.ns26-page) ::selection{background:rgba(138,31,43,.22);color:#1c1710}
+
+/* utility strip: thin red bar, like a print folio */
+body.public-shell:not(.ns26-page) .ns4-utility{background:#8a1f2b!important;border-bottom:none!important;color:#f6f1e6!important}
+body.public-shell:not(.ns26-page) .ns4-utility-label{color:#f6f1e6!important}
+body.public-shell:not(.ns26-page) .ns4-utility-label i{background:#f6f1e6!important;box-shadow:none!important}
+body.public-shell:not(.ns26-page) .ns4-utility-signature{color:rgba(246,241,230,.75)!important}
+body.public-shell:not(.ns26-page) .ns4-utility a{color:#f6f1e6!important}
+
+/* page heroes + cards */
+body.public-shell:not(.ns26-page) main.wrap.page{color:#1c1710!important;padding-top:34px!important}
+body.public-shell:not(.ns26-page) main.page>.pagehead,
+body.public-shell:not(.ns26-page) main.page>.ns4-page-hero,
+body.public-shell:not(.ns26-page) .short-timeline-page-head{
+  background:transparent!important;border:none!important;border-radius:0!important;box-shadow:none!important;
+  backdrop-filter:none!important;color:#1c1710!important;padding:6px 0 18px!important;
+}
+body.public-shell:not(.ns26-page) main.page>.pagehead h1,
+body.public-shell:not(.ns26-page) main.page>.ns4-page-hero h1{
+  color:#1c1710!important;font-family:"Noto Naskh Arabic","Vazirmatn",Tahoma,serif!important;
+  font-size:clamp(26px,3.4vw,40px)!important;line-height:1.55!important;text-shadow:none!important;font-weight:700!important;
+}
+body.public-shell:not(.ns26-page) main.page>.pagehead p,
+body.public-shell:not(.ns26-page) main.page>.ns4-page-hero p{color:#46403a!important}
+body.public-shell:not(.ns26-page) main.page .eyebrow{color:#8a1f2b!important;letter-spacing:.1em!important;font-weight:800!important}
+body.public-shell:not(.ns26-page) .grid.news .card{
+  background:#f6f1e6!important;color:#1c1710!important;
+  border:1px solid #d8cfba!important;border-radius:0!important;box-shadow:none!important;
+}
+body.public-shell:not(.ns26-page) .grid.news .card:hover{background:#f2ecdf!important}
+body.public-shell:not(.ns26-page) .grid.news .card h3,
+body.public-shell:not(.ns26-page) .grid.news .card h3 a{color:#1c1710!important}
+body.public-shell:not(.ns26-page) .grid.news .card:hover h3 a{color:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .grid.news .card .eyebrow{color:#8a1f2b!important;background:transparent!important;border:none!important}
+body.public-shell:not(.ns26-page) .grid.news .card .listing-excerpt{color:#5f584d!important}
+body.public-shell:not(.ns26-page) .grid.news .card .more{color:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .grid.news .card-media{background:#efe8d9!important}
+body.public-shell:not(.ns26-page) .grid.news .card .view-badge{color:#7b7264!important;background:transparent!important;border:none!important}
+body.public-shell:not(.ns26-page) .grid.news .card time{color:#7b7264!important}
+body.public-shell:not(.ns26-page) :is(.archive-filters,.search-large,.form){
+  background:#f6f1e6!important;border:1.5px solid #d8cfba!important;border-radius:0!important;color:#1c1710!important;
+}
+body.public-shell:not(.ns26-page) .archive-filters input,
+body.public-shell:not(.ns26-page) .archive-filters select,
+body.public-shell:not(.ns26-page) .search input[type="search"]{
+  background:#f6f1e6!important;color:#1c1710!important;border:1.5px solid #d8cfba!important;border-radius:0!important;
+}
+body.public-shell:not(.ns26-page) .btn.primary{
+  background:#1c1710!important;color:#f6f1e6!important;border:1.5px solid #1c1710!important;border-radius:0!important;box-shadow:none!important;
+}
+body.public-shell:not(.ns26-page) .btn.primary:hover{background:#8a1f2b!important;border-color:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .empty{color:#7b7264!important;border:1px dashed #d8cfba!important;border-radius:0!important}
+
+/* footer */
+body.public-shell:not(.ns26-page) footer.ns4-footer{
+  background:#efe8d9!important;border-top:2.5px solid #1c1710!important;box-shadow:none!important;backdrop-filter:none!important;color:#46403a!important;
+}
+body.public-shell:not(.ns26-page) .ns4-footer-intro{border-bottom:1px solid #d8cfba!important}
+body.public-shell:not(.ns26-page) .ns4-footer-identity span{color:#7b7264!important}
+body.public-shell:not(.ns26-page) .ns4-footer-identity h2{color:#1c1710!important;font-family:"Noto Naskh Arabic","Vazirmatn",Tahoma,serif!important}
+body.public-shell:not(.ns26-page) .ns4-footer-pulse{color:#8a1f2b!important;background:transparent!important}
+body.public-shell:not(.ns26-page) .ns4-footer-cta{color:#8a1f2b!important;border:1.5px solid #8a1f2b!important;border-radius:0!important;background:transparent!important}
+body.public-shell:not(.ns26-page) .ns4-footer-cta:hover{background:#8a1f2b!important;color:#f6f1e6!important}
+body.public-shell:not(.ns26-page) .ns4-footer-grid h3{color:#1c1710!important;font-family:"Noto Naskh Arabic","Vazirmatn",Tahoma,serif!important}
+body.public-shell:not(.ns26-page) .ns4-footer-grid h4{color:#7b7264!important;border-bottom:1px solid #d8cfba!important;font-family:"Vazirmatn",Tahoma,sans-serif!important;font-size:12px!important;letter-spacing:.08em!important}
+body.public-shell:not(.ns26-page) .ns4-footer-grid a{color:#46403a!important}
+body.public-shell:not(.ns26-page) .ns4-footer-grid a:hover{color:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .ns4-footer-bottom{border-top:1px solid #d8cfba!important;color:#7b7264!important}
+
+/* article page chrome (view reading typography is in cloud-dancer-article-reading.css) */
+body.public-shell:not(.ns26-page) .article-premium .article-category-pill{
+  background:#8a1f2b!important;color:#f6f1e6!important;border-radius:0!important;
+}
+body.public-shell:not(.ns26-page) .article-progress i{background:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .breadcrumbs{color:#7b7264!important}
+body.public-shell:not(.ns26-page) .breadcrumbs a{color:#8a1f2b!important}
+body.public-shell:not(.ns26-page) .article-premium .cover,
+body.public-shell:not(.ns26-page) .article-hero{border-radius:0!important;box-shadow:none!important;border:1px solid #d8cfba!important}
+
+/* Broadsheet: keep the header a single ≤90px bar on every public page.
+   The legacy 620px column-stack rule inflates the capsule to ~103px. */
+@media(max-width:900px){
+  body.public-shell .ns4-header-inner{flex-wrap:nowrap!important;flex-direction:row!important;align-items:center!important;min-height:64px!important}
+  body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{inset:calc(100% + 8px) 0 auto 0!important}
+}
+@media(max-width:620px){
+  body.public-shell .main{flex-direction:row!important;align-items:center!important;flex-wrap:nowrap!important}
+  body.public-shell .ns4-header-inner{gap:10px!important}
+}
+
+/* Broadsheet mobile header: one line, ink rule, ≤90px at every width.
+   These load after glass-sitewide-v4 and atelier, so they win the cascade. */
+@media(max-width:900px){
+  body.public-shell .ns4-header-inner{
+    min-height:60px!important;height:auto!important;
+    gap:12px!important;padding-block:8px!important;
+    flex-wrap:nowrap!important;flex-direction:row!important;align-items:center!important;
+  }
+  body.public-shell .site-capsule[data-ns4-header] .ns4-menu-toggle{display:flex!important}
+  body.public-shell .site-capsule[data-ns4-header] .ns4-header-nav{
+    inset:calc(100% + 8px) 0 auto 0!important;width:100%!important;
+    max-height:min(75vh,540px)!important;
+  }
+}
+@media(max-width:660px){
+  body.public-shell .ns4-header-inner{min-height:58px!important;gap:8px!important;padding-block:6px!important}
+  body.public-shell .site-capsule[data-ns4-header] .brand b{font-size:15px!important}
+  body.public-shell .site-capsule[data-ns4-header] .brand-mark{width:36px!important;height:36px!important}
+}
+
+/* Broadsheet article shell: paper, no dark card. The story sits directly
+   on the sheet like a print page — hairline frame, ink headline. */
+body.public-shell .article-shell{
+  background:transparent!important;
+  border:none!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  padding-inline:0!important;
+}
+body.public-shell .article-shell .article-head{
+  background:transparent!important;
+  padding-block:6px 14px!important;
+}
+body.public-shell .article-cover-wrap,
+body.public-shell .article-video-wrap{
+  background:transparent!important;border:none!important;padding:0!important;
+}
+body.public-shell .article-cover-wrap .cover-frame{
+  background:#efe8d9!important;border:1px solid #d8cfba!important;padding:0!important;
+}
+body.public-shell .article-cover-wrap .cover-frame img.cover{border-radius:0!important}
+body.public-shell .article-cover-wrap figcaption{color:#7b7264!important;background:transparent!important}
+body.public-shell .article-meta-grid{background:transparent!important;border-block:1px solid #d8cfba!important}
+body.public-shell .article-endnote{background:#f2ecdf!important;border:1px solid #d8cfba!important;color:#46403a!important}
+body.public-shell .article-breadcrumbs{color:#7b7264!important}
+body.public-shell .article-related .card{background:#f6f1e6!important;border:1px solid #d8cfba!important}
+
+/* Broadsheet article chrome final pass: ink headline, warm standfirst,
+   meta strip hairlines. These ride last in the cascade. */
+body.public-shell .article-premium .article-head h1{color:#1c1710!important}
+body.public-shell .article-premium .article-head .article-deck{color:#5a5245!important}
+body.public-shell .article-premium .article-topline,
+body.public-shell .article-premium .article-meta,
+body.public-shell .article-premium .article-actions{color:#46403a!important}
+body.public-shell .article-premium .article-newsroom-mark{color:#7b7264!important}
+body.public-shell .article-meta-grid{background:transparent!important;border-block:1px solid #d8cfba!important;color:#46403a!important}
+body.public-shell .article-meta-grid :is(dt,b,strong){color:#1c1710!important}
+body.public-shell .article-related h2{color:#1c1710!important}
+body.public-shell .article-endnote{color:#46403a!important}
+body.public-shell .breadcrumbs a{color:#8a1f2b!important}
+body.public-shell .breadcrumbs{color:#7b7264!important}
+
+/* Article prose: warm ink + Naskh reading voice (locks kept, hue broadsheet) */
+body.public-shell .article-premium .article-body,
+body.public-shell .article-premium .article-body .lang-fa,
+body.public-shell .article-premium .article-body p{
+  color:#2b241b!important;
+  font-family:"Noto Naskh Arabic","Vazirmatn","NabezLocal",Tahoma,serif!important;
+}
+body.public-shell .article-premium .article-body :is(h2,h3){color:#1c1710!important;font-family:"Noto Naskh Arabic","Vazirmatn",Tahoma,serif!important}
+body.public-shell .article-premium .article-body :is(strong,b){color:#1c1710!important}
+body.public-shell .article-premium .article-body blockquote{color:#46403a!important;background:#f2ecdf!important;border-right-color:#8a1f2b!important}

@@ -58,3 +58,10 @@ Run `npm test`; its approved-behavior checks are a deployment gate. Inspect the 
 - Public contact/submission forms may use aligned fields, larger input text and a centered layout. Keep all field requirements, anti-spam controls and server behavior unchanged.
 - Local-news pages may link between the existing regional archives. Highlight the current navigation section and label the search field accessibly.
 - Check actual text contrast, badge bounds, article reading surfaces, mobile form geometry and representative public templates before deploying. Admin/editor, integrations, publishing and storage remain unchanged.
+
+## Owner-requested full redesign approved 2026-11-13
+
+- The public site now uses the "Digital Broadsheet 1405" paper design: warm paper canvas, ink text, single newspaper-red accent, Naskh headlines, hairline rules, square corners. premium.css (homepage), cloud-dancer-article-reading.css + the paper layer in nabez-luxe.css (article/inner pages/footer) own the look.
+- Legacy dark/glass re-skins (atelier, mosa, glass-v4, luxe chrome, public-design-fixes dark blocks) are scoped to `body.public-shell.paper-era-never` so they no longer paint public pages; keep the files as rollback sources.
+- article-lock.css keeps its reading contract but the body color is now warm ink (#2b241b). All markup hooks, SEO routes, sharing flows and cover behavior are unchanged; npm test (107) is the gate.
+- The homepage masthead shows the Tehran date line; the header stays a single <=90px row at every width.
