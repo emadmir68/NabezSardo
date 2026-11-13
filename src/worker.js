@@ -495,9 +495,14 @@ function fastHtml(body,status=200){
    waitUntil so cached bodies do not affect analytics. Short TTL keeps
    publishes visible quickly. */
 const FAST_ARTICLE_CACHE_TTL_MS=120000;
+function fastArticleCacheKey(pathname){
+  // pathname arrives decoded (Persian slugs); normalize to an encoded URL so
+  // the Cache API key is stable across requests.
+  return new Request("https://nabzesardo.ir"+encodeURI(pathname),{method:"GET"});
+}
 async function fastArticleCacheGet(pathname){
   try{
-    const hit=await caches.default.match(new Request("https://nabzesardo.ir"+pathname,{method:"GET"}));
+    const hit=await caches.default.match(fastArticleCacheKey(pathname));
     if(hit){
       const age=Number(hit.headers.get("x-nabzesardo-article-cache-age")||0);
       if(Number.isFinite(age)&&Date.now()-age<FAST_ARTICLE_CACHE_TTL_MS)return hit;
@@ -507,7 +512,7 @@ async function fastArticleCacheGet(pathname){
 }
 async function fastArticleCachePut(pathname,body){
   try{
-    await caches.default.put(new Request("https://nabzesardo.ir"+pathname,{method:"GET"}),new Response(body,{headers:{
+    await caches.default.put(fastArticleCacheKey(pathname),new Response(body,{headers:{
       "content-type":"text/html; charset=utf-8",
       "cache-control":"public, max-age=0, must-revalidate",
       "x-nabzesardo-article-cache":"1",
