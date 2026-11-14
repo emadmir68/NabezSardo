@@ -74,11 +74,11 @@
   const articleRoot=$('[data-article-root]');
   if(articleRoot){
     const articleTitle=articleRoot.dataset.articleTitle||document.title;
-    const articleLead=String(articleRoot.dataset.articleLead||'').replace(/\\s+/g,' ').trim();
+    const articleLead=String(articleRoot.dataset.articleLead||'').replace(/\s+/g,' ').trim();
     const articleUrl=new URL(articleRoot.dataset.articleUrl||location.href,location.origin).href;
     const articleImage=articleRoot.dataset.articleImage?new URL(articleRoot.dataset.articleImage,location.origin).href:'';
     const articleVideo=articleRoot.dataset.articleVideo?new URL(articleRoot.dataset.articleVideo,location.origin).href:'';
-    const shareMessage=[articleTitle,articleLead,articleUrl].filter(Boolean).join('\\n\\n');
+    const shareMessage=[articleTitle,articleLead,articleUrl].filter(Boolean).join('\n\n');
     if(location.pathname.startsWith('/news/')&&history.replaceState){
       try{const shortPath=new URL(articleUrl,location.origin);history.replaceState(history.state,'',shortPath.pathname+shortPath.search+location.hash);}catch{}
     }
