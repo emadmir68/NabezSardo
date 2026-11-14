@@ -84,6 +84,13 @@ assert.match(admin,/پیگیری آب‌رسانی/);
 assert.match(admin,/href="\/admin\/articles\/one\/share-kit"/);
 assert.match(admin,/تلگرام: ارسال شد/);
 assert.match(admin,/روبیکا: خطا/);
+const shareKit=views.shareKit(sample,sample.articles[0]);
+fresh(shareKit,'share kit');
+assert.match(shareKit,/data-share-kit-story/);
+assert.match(shareKit,/data-share-kit-story-download/);
+assert.match(shareKit,/data-share-copy/);
+assert.match(shareKit,/تلاش دوباره برای ارسال‌های ناموفق/);
+
 assert.match(admin,/آگهی، محتوای تبلیغاتی و اطلاعیه‌های فوت/);
 assert.doesNotMatch(admin,/\/assets\/site\.css/);
 
