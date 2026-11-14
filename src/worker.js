@@ -2040,15 +2040,19 @@ export default {
     if(isReadOnlyPreview()&&p==="/robots.txt"&&(request.method==="GET"||request.method==="HEAD")){
       return new Response(request.method==="HEAD"?null:"User-agent: *\nDisallow: /\n",{status:200,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-robots-tag":"noindex, nofollow, noarchive"}});
     }
-    if(isReadOnlyPreview()&&request.method==="GET"&&(p==="/__preview/admin"||p==="/__preview/admin/editor")){
+    if(isReadOnlyPreview()&&request.method==="GET"&&(p==="/__preview/admin"||p==="/__preview/admin/editor"||p==="/__preview/admin/share-kit")){
       const db=await loadDbObject();
       const traffic={today:{pageViews:0},totalPageViews:0};
       const monitor={settings:{enabled:false,autoPublish:false,socialDistribution:false},counts:{sources:0,sourcesOn:0,pending:0,duplicate:0,published:0},sources:[],queue:[]};
       const editor=p==="/__preview/admin/editor";
+      const shareKit=p==="/__preview/admin/share-kit";
+      const article=(db.articles||[]).find(x=>x.status==="published"&&store.publiclyVisibleArticle(x));
       let body=editor
         ?views.editor(db,{},"/__preview/no-write","پیش‌نمایش ویرایشگر خبر")
-        :views.admin(db,[],url.searchParams,{},traffic,monitor);
-      body=body.replace('<body class="rb-admin-body">','<body class="rb-admin-body"><div class="rb-preview-ribbon">پیش‌نمایش Cloudflare — فقط مشاهده؛ هیچ تغییری ذخیره نمی‌شود · <a href="/__preview/admin/editor">ویرایشگر خبر</a> · <a href="/">مشاهده سایت</a></div>');
+        :shareKit
+          ?article?views.shareKit(db,article,url.searchParams):views.admin(db,[],url.searchParams,{},traffic,monitor)
+          :views.admin(db,[],url.searchParams,{},traffic,monitor);
+      body=body.replace('<body class="rb-admin-body">','<body class="rb-admin-body"><div class="rb-preview-ribbon">پیش‌نمایش Cloudflare — فقط مشاهده؛ هیچ تغییری ذخیره نمی‌شود · <a href="/__preview/admin">داشبورد</a> · <a href="/__preview/admin/editor">ویرایشگر خبر</a> · <a href="/__preview/admin/share-kit">پکیج انتشار</a> · <a href="/">مشاهده سایت</a></div>');
       return html(body);
     }
     const internalRoute=(p==="/__migration"||p.startsWith("/__migration/")||p==="/__sync/status"||p==="/__sync/public-pull"||p.startsWith("/__cutover/"));
