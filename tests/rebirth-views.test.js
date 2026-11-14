@@ -8,7 +8,7 @@ const sample={
   settings:{siteName:'نبض ساردو',breakingText:'گزارش‌های تازه جنوب کرمان',liveDeskEnabled:true,adEnabled:false},
   categories:[{id:'agriculture',name:'کشاورزی'},{id:'social',name:'اجتماعی'},{id:'short-news',name:'خبر کوتاه'}],
   articles:[
-    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',imageCaption:'نمایی از زمین‌های کشاورزی جنوب کرمان',updatedAt:new Date(Date.now()+120000).toISOString(),featured:true},
+    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<h2>جزئیات گزارش</h2><blockquote>نقل‌قول مهم</blockquote><ul><li>نکته نخست</li></ul><figure><img src="/uploads/inline.webp" alt="تصویر گزارش"><figcaption>کپشن داخل متن</figcaption></figure><p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',imageCaption:'نمایی از زمین‌های کشاورزی جنوب کرمان',updatedAt:new Date(Date.now()+120000).toISOString(),featured:true},
     {id:'two',slug:'water-resources',title:'مدیریت منابع آب در جنوب کرمان',lead:'ضرورت مدیریت پایدار منابع آب',body:'گزارش آب',categoryId:'social',status:'published',publishedAt:now,createdAt:now,location:'جیرفت',views:10,image:'/uploads/water.webp'}
   ],
   contacts:[{id:'c1',name:'مخاطب',subject:'پیگیری خبر',message:'لطفاً این موضوع را بررسی کنید',contact:'09120000000',createdAt:now}],
@@ -29,6 +29,9 @@ const article=views.article(sample,sample.articles[0]);
 fresh(article,'article');
 assert.match(article,/NewsArticle/);
 assert.match(article,/rb-article-body/);
+assert.match(article,/<h2>جزئیات گزارش<\/h2>/);
+assert.match(article,/<blockquote>نقل‌قول مهم<\/blockquote>/);
+assert.match(article,/کپشن داخل متن/);
 assert.match(article,/rb-article-cover-caption/);
 assert.match(article,/نمایی از زمین‌های کشاورزی جنوب کرمان/);
 assert.match(article,/آخرین به‌روزرسانی/);
