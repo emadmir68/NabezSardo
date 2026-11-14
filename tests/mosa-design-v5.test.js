@@ -62,7 +62,7 @@ test('all public editorial routes use the new design system while admin remains 
 test('new design supports constrained media, RTL and reduced motion',()=>{
  const site=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
  const client=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.js'),'utf8');
- assert.match(site,/@media\(max-width:760px\)/);
+ assert.match(site,/@media\(max-width:820px\)/);
  assert.match(site,/prefers-reduced-motion/);
  assert.match(site,/min-height:44px/);
  assert.match(site,/object-fit:cover/);
