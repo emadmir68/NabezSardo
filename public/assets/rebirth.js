@@ -98,6 +98,13 @@
         sync();
       });
     });
+    $('[data-dir]',form).forEach(button=>{
+      button.addEventListener('click',()=>{
+        if(!area)return;
+        area.focus();area.dir=button.dataset.dir==='ltr'?'ltr':'rtl';
+        area.style.textAlign=area.dir==='ltr'?'left':'right';
+      });
+    });
     const inlineButton=$('[data-inline-image]',form),inlineInput=$('[data-inline-file]',form);
     if(inlineButton&&inlineInput){
       inlineButton.addEventListener('click',()=>inlineInput.click());
