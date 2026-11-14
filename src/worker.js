@@ -1506,7 +1506,7 @@ async function serveAsset(request, pathname) {
     }
   }
   const u = new URL(request.url);
-  if (pathname.startsWith("/assets/")) u.pathname = pathname.slice("/assets".length);
+  // ASSETS is bound to ./public, so preserve /assets/... to resolve public/assets/...
   if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
   const assetResponse = await env.ASSETS.fetch(new Request(u, request));
   if (request.method !== "GET" || !assetResponse.ok) return assetResponse;
