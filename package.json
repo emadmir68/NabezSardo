@@ -9,7 +9,7 @@
     "cf:dev": "wrangler dev",
     "cf:deploy": "wrangler deploy",
     "cf:d1:init": "wrangler d1 execute DB --remote --file=./cloudflare/schema.sql",
-    "test": "node --check app.js && node --check src/worker.js && node --check lib/views-rebirth.js && node --check lib/rebirth-shared.js && node --check lib/rebirth-public.js && node --check lib/rebirth-admin.js && node --check public/assets/rebirth.js && node --test tests/*.test.js",
+    "test": "node --check app.js && node --check src/worker.js && node --check lib/views-rebirth.js && node --check lib/rebirth-shared.js && node --check lib/rebirth-public.js && node --check lib/rebirth-admin.js && node --check public/assets/rebirth.js && node --check scripts/rebirth-visual-audit.mjs && node --test tests/*.test.js",
     "cf:preview": "node scripts/prepare-cloudflare-preview-config.js wrangler.staging.jsonc wrangler.staging.generated.jsonc && wrangler deploy --config wrangler.staging.generated.jsonc --message \"Experimental Editorial — isolated Cloudflare staging\""
   },
   "engines": {
