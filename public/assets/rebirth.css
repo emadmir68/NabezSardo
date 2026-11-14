@@ -502,3 +502,24 @@ img,video{max-width:100%}
 .rb-lang-en .rb-article-body blockquote{border-right:0;border-left:4px solid var(--rb-red)}
 .rb-lang-en .rb-policy-lock{border-right:0;border-left:3px solid var(--rb-red)}
 @media(max-width:760px){.rb-language-switch{padding:2px}.rb-language-switch button{padding:5px;font-size:8px}.rb-topline-inner>span:nth-child(2){display:none}.rb-live-counter{display:none}}
+
+
+/* Secondary public desks and the read-only newsroom preview */
+.rb-policy-grid,.rb-followup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:34px}
+.rb-policy-card,.rb-followup-card{min-width:0;padding:26px;border:1px solid var(--rb-line);background:var(--rb-panel);border-radius:var(--rb-radius,18px)}
+.rb-policy-card h2,.rb-followup-card h2{margin:14px 0 10px;font-size:clamp(20px,2.3vw,30px);line-height:1.45}
+.rb-policy-card p,.rb-followup-card p{color:var(--rb-muted);line-height:2}
+.rb-policy-contact{margin-top:32px;padding:32px;border-radius:20px;background:var(--rb-ink);color:#fff}
+.rb-policy-contact h2{font-size:clamp(22px,3vw,36px);margin:12px 0}
+.rb-policy-contact p{color:rgba(255,255,255,.72);line-height:2}
+.rb-followup-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rb-followup-status{font-size:12px;padding:6px 10px;border:1px solid var(--rb-line);border-radius:999px}
+.rb-followup-meta{font-size:12px;color:var(--rb-muted);line-height:2;margin:14px 0}
+.rb-followup-note{padding:14px;border-right:2px solid var(--rb-accent);background:var(--rb-soft);margin:14px 0}
+.rb-followup-note p{margin:6px 0 0}
+.rb-share-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.rb-share-state{padding:18px;border:1px solid var(--rb-line);border-radius:14px;display:flex;flex-direction:column;gap:8px;background:var(--rb-panel)}
+.rb-share-state span{font-size:13px;color:var(--rb-muted)}
+.rb-share-state small{font-size:11px;color:var(--rb-muted)}
+.rb-preview-ribbon{position:sticky;top:0;z-index:1000;padding:10px 16px;background:#e8c76b;color:#161616;text-align:center;font:700 12px/1.6 sans-serif}
+@media(max-width:720px){.rb-policy-grid,.rb-followup-grid{grid-template-columns:1fr}.rb-share-grid{grid-template-columns:1fr}}
