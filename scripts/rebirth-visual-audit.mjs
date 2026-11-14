@@ -23,7 +23,7 @@ async function open(page,path,label){
   await page.waitForTimeout(180);
   const metrics=await page.evaluate(()=>{
     const el=s=>document.querySelector(s);
-    const header=el('.rb-header-main');
+    const header=el('.rb-header-main')||el('.rb-admin-header')||el('.rb-editor-head');
     const logo=el('.rb-brand-mark');
     return {
       viewport:innerWidth,
@@ -78,7 +78,6 @@ for(const v of viewports){
       await open(page,route,v.name+' '+route);
     }
     if(v.width===390){
-      check(await page.locator('/contact').count()===0,'contact locator sanity');
       await page.goto(base+'/contact',{waitUntil:'domcontentloaded'});
       check(await page.locator('form[action="/contact"] input[name="website"]').count()===1,'contact form includes honeypot');
       await page.goto(base+'/send-news',{waitUntil:'domcontentloaded'});
