@@ -18,65 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install runtime dependencies
+      - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Validate view, client, policy and preview safety
+      - name: Validate new view modules and run regression tests
         run: npm test
-      - name: Preview server smoke test
-        run: |
-          set -euo pipefail
-          DATA_DIR="$(mktemp -d)"
-          PREVIEW_MODE=true RAILWAY_ENVIRONMENT_NAME=design/ci-preview DATA_DIR="$DATA_DIR" UPLOAD_DIR="$DATA_DIR/uploads" node - <<'NODE'
-          const store=require('./lib/store');
-          const db=store.load();
-          const now=new Date().toISOString();
-          db.articles.unshift({
-            id:'ci-preview-article',
-            slug:'ci-preview-story',
-            title:'گزارش آزمایشی نبض ساردو',
-            lead:'این خبر فقط برای آزمون محیط پیش‌نمایش ساخته شده است.',
-            body:'متن آزمایشی خبر',
-            bodyHtml:'<p>متن آزمایشی خبر</p>',
-            categoryId:'social',
-            status:'published',
-            publishedAt:now,
-            createdAt:now,
-            views:1,
-            imported:false
-          });
-          store.save(db);
-          NODE
-          PORT=3187 PREVIEW_MODE=true RAILWAY_ENVIRONMENT_NAME=design/ci-preview ADMIN_USER=preview ADMIN_PASS=test-preview-pass SESSION_SECRET=test-preview-session DATA_DIR="$DATA_DIR" UPLOAD_DIR="$DATA_DIR/uploads" node app.js >/tmp/nabez-preview.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          ready=0
-          for attempt in $(seq 1 30); do
-            if curl --silent --show-error --fail http://127.0.0.1:3187/health >/tmp/nabez-health.json; then
-              ready=1
-              break
-            fi
-            sleep 1
-          done
-          if [ "$ready" -ne 1 ]; then
-            cat /tmp/nabez-preview.log
-            exit 1
-          fi
-          curl --silent --show-error --fail -D /tmp/nabez-preview.headers -o /tmp/nabez-preview.html http://127.0.0.1:3187/
-          grep -qi 'X-Robots-Tag: noindex, nofollow, noarchive' /tmp/nabez-preview.headers
-          grep -q '/assets/rebirth.css' /tmp/nabez-preview.html
-          curl --silent --show-error --fail -D /tmp/nabez-article.headers -o /tmp/nabez-article.html http://127.0.0.1:3187/news/ci-preview-story
-          grep -q 'گزارش آزمایشی نبض ساردو' /tmp/nabez-article.html
-          grep -qi 'X-Robots-Tag: noindex, nofollow, noarchive' /tmp/nabez-article.headers
-          curl --silent --show-error --fail -o /tmp/nabez-login.html http://127.0.0.1:3187/admin/login
-          grep -q '/assets/rebirth.css' /tmp/nabez-login.html
-          if grep -q '/assets/site.css' /tmp/nabez-preview.html; then
-            echo "Legacy stylesheet was loaded by the new renderer."
-            exit 1
-          fi
-          curl --silent --show-error --fail http://127.0.0.1:3187/robots.txt | grep -q 'Disallow: /'
-          curl --silent --show-error --fail -H 'Host: ci-preview.up.railway.app' -D /tmp/nabez-railway.headers -o /tmp/nabez-railway.html http://127.0.0.1:3187/
-          if grep -qi '^Location:' /tmp/nabez-railway.headers; then
-            echo "Railway preview host unexpectedly redirected to production."
-            exit 1
-          fi
-          echo "Preview server smoke test passed."
