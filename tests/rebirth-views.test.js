@@ -1,5 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {storyCard}=require('../lib/rebirth-shared');
 const views=require('../lib/views-rebirth');
 const {shortArticleCode}=require('../lib/rebirth-shared');
 
@@ -8,7 +10,7 @@ const sample={
   settings:{siteName:'نبض ساردو',breakingText:'گزارش‌های تازه جنوب کرمان',liveDeskEnabled:true,adEnabled:false},
   categories:[{id:'agriculture',name:'کشاورزی'},{id:'social',name:'اجتماعی'},{id:'short-news',name:'خبر کوتاه'}],
   articles:[
-    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<h2>جزئیات گزارش</h2><blockquote>نقل‌قول مهم</blockquote><ul><li>نکته نخست</li></ul><figure><img src="/uploads/inline.webp" alt="تصویر گزارش"><figcaption>کپشن داخل متن</figcaption></figure><p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',imageCaption:'نمایی از زمین‌های کشاورزی جنوب کرمان',updatedAt:new Date(Date.now()+120000).toISOString(),featured:true},
+    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<h2>جزئیات گزارش</h2><blockquote>نقل‌قول مهم</blockquote><ul><li>نکته نخست</li></ul><figure><img src="/uploads/inline.webp" alt="تصویر گزارش"><figcaption>کپشن داخل متن</figcaption></figure><p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',imageCaption:'نمایی از زمین‌های کشاورزی جنوب کرمان',correction:'در نسخه قبلی، نام استان اشتباه درج شده بود و اصلاح شد.',correctionUpdatedAt:now,updatedAt:new Date(Date.now()+120000).toISOString(),featured:true},
     {id:'two',slug:'water-resources',title:'مدیریت منابع آب در جنوب کرمان',lead:'ضرورت مدیریت پایدار منابع آب',body:'گزارش آب',categoryId:'social',status:'published',publishedAt:now,createdAt:now,location:'جیرفت',views:10,image:'/uploads/water.webp'}
   ],
   contacts:[{id:'c1',name:'مخاطب',subject:'پیگیری خبر',message:'لطفاً این موضوع را بررسی کنید',contact:'09120000000',createdAt:now}],
@@ -25,6 +27,18 @@ assert.match(home,/rb-hero-story/);
 assert.match(home,/آینده کشاورزی جنوب کرمان/);
 assert.match(home,/نبض فوری/);
 
+const correctedCard=storyCard(sample.articles[0],sample,'standard',0);
+assert.match(correctedCard,/data-rb-tilt/);
+assert.match(correctedCard,/class="rb-story-correction"/);
+assert.match(correctedCard,/اصلاحیه/);
+assert.match(correctedCard,/نام استان اشتباه/);
+const normalCard=storyCard(sample.articles[1],sample,'standard',1);
+assert.doesNotMatch(normalCard,/rb-story-correction/);
+const cardCss=fs.readFileSync(require.resolve('../public/assets/rebirth.css'),'utf8');
+assert.match(cardCss,/backdrop-filter:blur\(16px\) saturate\(150%\)/);
+assert.match(cardCss,/\.rb-story-correction/);
+assert.match(cardCss,/\.rb-article-correction/);
+
 const article=views.article(sample,sample.articles[0]);
 fresh(article,'article');
 assert.match(article,/NewsArticle/);
@@ -36,6 +50,9 @@ assert.match(article,/rb-article-cover-caption/);
 assert.match(article,/نمایی از زمین‌های کشاورزی جنوب کرمان/);
 assert.match(article,/آخرین به‌روزرسانی/);
 assert.match(article,/rb-article-author-card/);
+assert.match(article,/class="rb-article-correction"/);
+assert.match(article,/اصلاحیه خبر/);
+assert.match(article,/نام استان اشتباه/);
 assert.match(article,/data-article-correction/);
 assert.match(article,/rb-related-section/);
 assert.match(article,/rb-related-grid/);
@@ -104,6 +121,7 @@ assert.match(editor,/data-value="h2"/);
 assert.match(editor,/data-value="h3"/);
 assert.match(editor,/data-value="blockquote"/);
 assert.match(editor,/name="imageCaption"/);
+assert.match(editor,/name="correction"/);
 
 const previousEnv={primary:process.env.CLOUDFLARE_PRIMARY,readonly:process.env.PREVIEW_READONLY,assetVersion:process.env.CLOUDFLARE_ASSET_VERSION};
 try{

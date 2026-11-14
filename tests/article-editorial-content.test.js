@@ -22,6 +22,20 @@ test('featured-image caption is retained when an existing image is edited',async
   assert.equal(payload.imageCaption,'نمایی از محل برگزاری جشنواره');
 });
 
+test('editorial corrections are saved, timestamped, retained and removable',async()=>{
+  const db={categories:[{id:'culture',name:'فرهنگی'}],articles:[]};
+  const current={id:'article-2',correction:'نسخه قبلی اصلاحیه',correctionUpdatedAt:'2026-11-14T12:00:00.000Z'};
+  const form={title:'گزارش فرهنگی',categoryId:'culture',bodyHtml:'<p>متن خبر</p>',status:'draft',autoCover:'0',galleryJson:'[]',correction:'اصلاحیه: نام شهرستان در نسخه قبلی اشتباه درج شده بود.'};
+  const payload=await articlePayload(db,form,{},current,(_db,slug)=>slug);
+  assert.equal(payload.correction,form.correction);
+  assert.ok(payload.correctionUpdatedAt);
+  const unchanged=await articlePayload(db,{...form}, {}, {...current,...payload},(_db,slug)=>slug);
+  assert.equal(unchanged.correctionUpdatedAt,payload.correctionUpdatedAt);
+  const cleared=await articlePayload(db,{...form,correction:''}, {}, {...current,...payload},(_db,slug)=>slug);
+  assert.equal(cleared.correction,'');
+  assert.equal(cleared.correctionUpdatedAt,null);
+});
+
 test('newsroom editor applies selected heading levels and inserts captioned figures',()=>{
   const source=fs.readFileSync(require.resolve('../public/assets/rebirth.js'),'utf8');
   assert.match(source,/if\(command==='formatBlock'\)document\.execCommand\(command,false,button\.dataset\.value\|\|'h2'\)/);
