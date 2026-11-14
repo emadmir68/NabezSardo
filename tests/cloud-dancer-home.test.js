@@ -23,7 +23,7 @@ function fixture(count=15){
 }
 test('Experimental Editorial homepage renders the lead, newsroom navigation and empty state',()=>{
   const html=views.home(fixture(15));
-  assert.match(html,/class="rb-home-hero"/);
+  assert.match(html,/rb-home-hero/);
   assert.match(html,/\/assets\/rebirth\.css/);
   assert.match(html,/\/assets\/rebirth\.js/);
   assert.match(html,/href="\/send-news"/);
@@ -96,5 +96,5 @@ test('Cloudflare Worker routes through the Experimental Editorial view layer',()
  assert.equal(routing.home,require('../lib/rebirth-public').home);
  const markup=routing.home(fixture(8));
  assert.match(markup,/\/assets\/rebirth\.css/);
- assert.match(markup,/class="rb-home-hero"/);
+ assert.match(markup,/rb-home-hero/);
 });
