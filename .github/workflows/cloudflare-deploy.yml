@@ -137,6 +137,14 @@ jobs:
           grep -q "<rss" /tmp/feed.xml
           grep -q "admin" /tmp/admin-login.html || grep -q "ورود" /tmp/admin-login.html
 
+          # Previously published funeral notices and advertorials must disappear from every public feed.
+          for content_file in /tmp/home.html /tmp/archive.html /tmp/incidents.html /tmp/weather.html /tmp/feed.xml /tmp/news-sitemap.xml; do
+            if grep -Eqi 'مراسم تشییع و تدفین مرحوم|مراسم تشییع پیکر شهید علی اکبر فیروزی|آگهی ترحیم|رپورتاژ آگهی|محتوای تبلیغاتی' "$content_file"; then
+              echo "Forbidden funeral/advertising content is still public in $content_file"
+              exit 1
+            fi
+          done
+
           node <<'NODE'
           const fs=require('fs');
           const html=fs.readFileSync('/tmp/home.html','utf8');
