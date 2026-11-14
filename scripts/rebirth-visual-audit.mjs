@@ -79,7 +79,7 @@ for(const v of viewports){
   check(await page.locator('[data-share-kit-story]').count()===1,v.name+' share kit story generator is rendered');
   check(await page.locator('[data-share-copy]').count()===3,v.name+' share kit exposes channel copy controls');
   await page.locator('[data-share-kit-story-download]').waitFor({state:'visible',timeout:10000});
-  await page.waitForFunction(()=>{const button=document.querySelector('[data-share-kit-story-download]');return Boolean(button&&!button.disabled);},{timeout:15000}).catch(()=>{});
+  await page.waitForFunction(()=>{const button=document.querySelector('[data-share-kit-story-download]');return Boolean(button&&!button.disabled);},null,{timeout:15000}).catch(()=>{});
   check(await page.locator('[data-share-kit-story-download]').isEnabled(),v.name+' share kit story PNG becomes downloadable');
   if(v.width===390||v.width===1440){
     for(const route of ['/all-news','/about','/contact','/send-news','/editorial-policy','/follow-up']){
