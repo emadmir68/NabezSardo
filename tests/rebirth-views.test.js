@@ -8,8 +8,8 @@ const sample={
   settings:{siteName:'نبض ساردو',breakingText:'گزارش‌های تازه جنوب کرمان',liveDeskEnabled:true,adEnabled:false},
   categories:[{id:'agriculture',name:'کشاورزی'},{id:'social',name:'اجتماعی'},{id:'short-news',name:'خبر کوتاه'}],
   articles:[
-    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',featured:true},
-    {id:'two',slug:'water-resources',title:'مدیریت منابع آب در جنوب کرمان',lead:'ضرورت مدیریت پایدار منابع آب',body:'گزارش آب',categoryId:'social',status:'published',publishedAt:now,createdAt:now,location:'جنوب کرمان',views:10,image:'/uploads/water.webp'}
+    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',imageCaption:'نمایی از زمین‌های کشاورزی جنوب کرمان',updatedAt:new Date(Date.now()+120000).toISOString(),featured:true},
+    {id:'two',slug:'water-resources',title:'مدیریت منابع آب در جنوب کرمان',lead:'ضرورت مدیریت پایدار منابع آب',body:'گزارش آب',categoryId:'social',status:'published',publishedAt:now,createdAt:now,location:'جیرفت',views:10,image:'/uploads/water.webp'}
   ],
   contacts:[{id:'c1',name:'مخاطب',subject:'پیگیری خبر',message:'لطفاً این موضوع را بررسی کنید',contact:'09120000000',createdAt:now}],
   citizens:[{id:'u1',name:'شهروند',headline:'گزارش مردمی',details:'شرح رویداد',phone:'09120000000',location:'جیرفت',createdAt:now}]
@@ -29,6 +29,14 @@ const article=views.article(sample,sample.articles[0]);
 fresh(article,'article');
 assert.match(article,/NewsArticle/);
 assert.match(article,/rb-article-body/);
+assert.match(article,/rb-article-cover-caption/);
+assert.match(article,/نمایی از زمین‌های کشاورزی جنوب کرمان/);
+assert.match(article,/آخرین به‌روزرسانی/);
+assert.match(article,/rb-article-author-card/);
+assert.match(article,/data-article-correction/);
+assert.match(article,/rb-related-section/);
+assert.match(article,/rb-related-grid/);
+assert.match(article,/گزارش \/ کشاورزی/);
 assert.match(article,/آینده کشاورزی جنوب کرمان/);
 const shortArticlePath='/news/'+shortArticleCode(sample.articles[0].id);
 assert.ok(article.includes('rel="canonical" href="https://nabzesardo.ir/news/agriculture-future"'));
@@ -64,6 +72,10 @@ const contact=views.simple(sample,'contact',false);
 fresh(contact,'contact');
 assert.match(contact,/action="\/contact"/);
 
+const correctionForm=views.simple(sample,'contact',false,'',new URLSearchParams({subject:'درخواست اصلاح خبر: آینده کشاورزی جنوب کرمان',article:'/news/agriculture-future'}));
+assert.match(correctionForm,/value="درخواست اصلاح خبر/);
+assert.match(correctionForm,/https:\/\/nabzesardo\.ir\/news\/agriculture-future/);
+
 const citizen=views.simple(sample,'send-news',false);
 fresh(citizen,'citizen news');
 assert.match(citizen,/name="mediaFile"/);
@@ -85,6 +97,10 @@ assert.match(editor,/name="bodyHtml"/);
 assert.match(editor,/name="imageFile"/);
 assert.match(editor,/name="videoFile"/);
 assert.match(editor,/name="galleryJson"/);
+assert.match(editor,/data-value="h2"/);
+assert.match(editor,/data-value="h3"/);
+assert.match(editor,/data-value="blockquote"/);
+assert.match(editor,/name="imageCaption"/);
 
 const previousEnv={primary:process.env.CLOUDFLARE_PRIMARY,readonly:process.env.PREVIEW_READONLY,assetVersion:process.env.CLOUDFLARE_ASSET_VERSION};
 try{
