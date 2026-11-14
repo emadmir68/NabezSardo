@@ -554,3 +554,6 @@ img,video{max-width:100%}
 .rb-share-short span{font-size:10px;color:#aaa}
 .rb-share-short code{direction:ltr;overflow-wrap:anywhere;color:#f2ede6;flex:1;min-width:0}
 @media(max-width:760px){.rb-share-grid{grid-template-columns:1fr}.rb-share-layout{grid-template-columns:1fr}.rb-share-story-preview{width:min(100%,270px)}}
+
+/* Keep the RTL newsroom tab strip scrollable without expanding the page's left edge. */
+@media(max-width:760px){.rb-admin-sidebar nav{direction:ltr}.rb-admin-sidebar nav a{direction:rtl;text-align:right}}
