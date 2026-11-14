@@ -47,6 +47,7 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({title:'ممنوعیت 
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سالگرد درگذشت یکی از معتمدان جیرفت',body:'مراسم یادبود برای مرحوم برگزار شد'}),'obituary');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'فرصت طلایی آموزش زبان در جیرفت',body:'برای ثبت‌نام و دریافت اطلاعات بیشتر با شماره 09123456789 تماس بگیرید'}),'advertisement');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'گزارش تازه از وضعیت بازار جنوب کرمان',body:'رپورتاژ آگهی: برای سفارش با ما تماس بگیرید'}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'گزارش تازه از وضعیت بازار جنوب کرمان',body:'این یک گزارش تبلیغاتی برای معرفی خدمات است'}),'advertisement');
 
 const relSettings={settings:{keywords:'ساردوئیه,جیرفت,جنوب کرمان,عنبرآباد,کهنوج,فاریاب,رودبار جنوب,منوجان,قلعه گنج,جازموریان,کرمان'}};
 assert.strictEqual(monitor.relevant(relSettings,{scope:'kerman'},{title:'ویزیت پنج‌دقیقه‌ای، در این زمان واقعاً چقدر می‌توان بیمار را شناخت؟',lead:'گزارش سلامت',body:'گزارش عمومی پزشکی'}),false);
@@ -59,9 +60,10 @@ const publicRows=store.published({articles:[
   {id:'bad2',status:'published',imported:true,title:'سلام این وضعیت پاسداران ۳ در مرکز شهر هست لطفاً بررسی کنید',body:'پیام خام شهروندی',publishedAt:'2026-10-13T06:01:00Z'},
   {id:'bad3',status:'published',imported:true,title:'اطلاعیه مراسم تشییع پیکر مرحوم',body:'مراسم فردا برگزار می‌شود',publishedAt:'2026-10-13T06:01:30Z'},
   {id:'bad4',status:'published',imported:true,title:'فروش ویژه انواع لوازم با تخفیف',body:'برای خرید با شماره 09123456789 تماس بگیرید',publishedAt:'2026-10-13T06:01:45Z'},
+  {id:'good2',status:'published',imported:true,title:'درگذشت راننده در سانحه جاده‌ای',body:'پلیس علت حادثه را اعلام کرد',publishedAt:'2026-10-13T06:02:30Z'},
   {id:'good1',status:'published',imported:true,title:'سلام فرمانده در جیرفت اجرا شد',body:'برنامه فرهنگی برگزار شد',publishedAt:'2026-10-13T06:02:00Z'},
   {id:'manual1',status:'published',imported:false,title:'بسم الله الرحمن الرحیم',body:'انتشار دستی تحریریه',publishedAt:'2026-10-13T06:03:00Z'}
 ]});
-assert.deepStrictEqual(publicRows.map(x=>x.id),['manual1','good1']);
+assert.deepStrictEqual(publicRows.map(x=>x.id),['manual1','good2','good1']);
 
 console.log('news-monitor tests: ok');
