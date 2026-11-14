@@ -31,5 +31,6 @@
       "binding": "AI"
     }
   },
-  "preview_urls": true
+  "preview_urls": true,
+  "workers_dev": true
 }
