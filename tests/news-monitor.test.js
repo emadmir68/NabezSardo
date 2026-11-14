@@ -44,6 +44,9 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({title:'رپورتاژ 
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'فروش انواع لوازم خانگی با قیمت ویژه',body:'برای خرید با شماره 09123456789 تماس بگیرید'}),'advertisement');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'آغاز ثبت‌نام آزمون استخدامی دستگاه‌های اجرایی',body:'جزئیات ثبت‌نام در اطلاعیه رسمی منتشر شد'}),'');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'ممنوعیت تبلیغات غیرمجاز در معابر جیرفت',body:'شهرداری از اجرای طرح ساماندهی خبر داد'}),'');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سالگرد درگذشت یکی از معتمدان جیرفت',body:'مراسم یادبود برای مرحوم برگزار شد'}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'فرصت طلایی آموزش زبان در جیرفت',body:'برای ثبت‌نام و دریافت اطلاعات بیشتر با شماره 09123456789 تماس بگیرید'}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'گزارش تازه از وضعیت بازار جنوب کرمان',body:'رپورتاژ آگهی: برای سفارش با ما تماس بگیرید'}),'advertisement');
 
 const relSettings={settings:{keywords:'ساردوئیه,جیرفت,جنوب کرمان,عنبرآباد,کهنوج,فاریاب,رودبار جنوب,منوجان,قلعه گنج,جازموریان,کرمان'}};
 assert.strictEqual(monitor.relevant(relSettings,{scope:'kerman'},{title:'ویزیت پنج‌دقیقه‌ای، در این زمان واقعاً چقدر می‌توان بیمار را شناخت؟',lead:'گزارش سلامت',body:'گزارش عمومی پزشکی'}),false);
