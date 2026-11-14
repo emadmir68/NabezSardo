@@ -12,9 +12,9 @@ Cloudflare Workers is the sole Production runtime for `nabzesardo.ir`. Railway i
 
 ## Editorial rebuild preview
 
-The Experimental Editorial redesign is being ported directly onto the Cloudflare Worker runtime.
+The Experimental Editorial redesign is deployed to an isolated Cloudflare Staging Worker for review; it does not change the Production Worker or custom domain.
 
-- `wrangler.preview.jsonc` defines Worker Preview settings.
+- `wrangler.staging.jsonc` defines the isolated Cloudflare Staging Worker settings.
 - Preview uses the separate D1 database `nabzesardo-editorial-preview`.
 - The preview snapshot contains published articles only; drafts, contact messages, citizen submissions, credentials, and analytics are excluded.
 - `PREVIEW_READONLY=1` and `CLOUDFLARE_PRIMARY=0` prevent production writes.
