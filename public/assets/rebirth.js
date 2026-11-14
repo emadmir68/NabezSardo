@@ -192,7 +192,74 @@
     });
     sync();
   });
-  $$('[data-search-toggle]').forEach(button=>{
+  $('[data-share-copy]').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      const area=button.closest('.rb-share-copy')?.querySelector('[data-share-copy-text]');
+      if(!area)return;
+      try{await navigator.clipboard.writeText(area.value);button.textContent='کپی شد ✓';}
+      catch{area.focus();area.select();button.textContent='متن انتخاب شد؛ کپی کنید';}
+    });
+  });
+  $('[data-copy-value]').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(button.dataset.copyValue||'');button.textContent='کپی شد ✓';}
+      catch{button.textContent='کپی در دسترس نیست';}
+    });
+  });
+  $('[data-share-kit-story]').forEach(root=>{
+    const preview=$('[data-share-kit-story-preview]',root);
+    const shareButton=$('[data-share-kit-story-share]',root);
+    const downloadButton=$('[data-share-kit-story-download]',root);
+    if(!preview||!shareButton||!downloadButton)return;
+    const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+    const ctx=canvas.getContext('2d');if(!ctx)return;
+    const title=root.dataset.storyTitle||'نبض ساردو';
+    const lead=root.dataset.storyLead||'';
+    const category=root.dataset.storyCategory||'خبر';
+    const locationName=root.dataset.storyLocation||'جنوب کرمان';
+    const storyUrl=root.dataset.storyUrl||location.href;
+    const wrap=(value,font,maxWidth,maxLines)=>{
+      ctx.font=font;const words=String(value||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+      for(const word of words){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>maxWidth){lines.push(line);line=word;if(lines.length>=maxLines)break;}else line=next;}
+      if(line&&lines.length<maxLines)lines.push(line);
+      if(words.length&&lines.length===maxLines&&ctx.measureText(lines[lines.length-1]+'…').width>maxWidth){while(lines[lines.length-1].length>2&&ctx.measureText(lines[lines.length-1]+'…').width>maxWidth)lines[lines.length-1]=lines[lines.length-1].slice(0,-1);lines[lines.length-1]+='…';}
+      return lines;
+    };
+    const rounded=(x,y,w,h,r)=>{ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
+    const draw=async()=>{
+      await document.fonts.ready;
+      const bg=ctx.createLinearGradient(0,0,1080,1920);bg.addColorStop(0,'#0b0d14');bg.addColorStop(.62,'#171a23');bg.addColorStop(1,'#08090e');ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1920);
+      ctx.fillStyle='#e11b22';ctx.fillRect(72,72,92,92);ctx.fillStyle='#fff';ctx.font='900 64px Vazirmatn, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N',118,118);
+      ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillStyle='#fff';ctx.font='900 43px Estedad, Vazirmatn, sans-serif';ctx.fillText('نبض ساردو',1005,128);
+      ctx.fillStyle='#aaa59e';ctx.font='18px Georgia, serif';ctx.textAlign='left';ctx.fillText('NABZ SARDO / SOUTH KERMAN',170,120);
+      ctx.fillStyle='#e11b22';ctx.fillRect(72,205,936,3);
+      ctx.fillStyle='#ff5b60';ctx.textAlign='right';ctx.font='700 26px Estedad, Vazirmatn, sans-serif';ctx.fillText(category+'  /  '+locationName,1008,280);
+      const imageSrc=root.dataset.storyImage||'';
+      if(imageSrc){
+        const image=await new Promise(resolve=>{const im=new Image();if(/^https?:\/\//i.test(imageSrc)&&!imageSrc.startsWith(location.origin))im.crossOrigin='anonymous';im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src=imageSrc;});
+        ctx.fillStyle='#252a33';rounded(72,330,936,600,28);ctx.fill();
+        if(image){ctx.save();rounded(72,330,936,600,28);ctx.clip();const scale=Math.max(936/image.naturalWidth,600/image.naturalHeight);const w=image.naturalWidth*scale,h=image.naturalHeight*scale;ctx.drawImage(image,72+(936-w)/2,330+(600-h)/2,w,h);ctx.restore();}
+      }else{
+        const art=ctx.createLinearGradient(72,330,1008,930);art.addColorStop(0,'#262b35');art.addColorStop(1,'#10131a');ctx.fillStyle=art;rounded(72,330,936,600,28);ctx.fill();ctx.fillStyle='#e11b22';ctx.fillRect(120,430,12,400);ctx.fillStyle='#f2ede6';ctx.font='900 130px Georgia, serif';ctx.textAlign='left';ctx.fillText('NS',180,720);
+      }
+      ctx.fillStyle='#e11b22';ctx.fillRect(72,990,86,5);
+      ctx.textAlign='right';ctx.fillStyle='#f7f3ed';const titleLines=wrap(title,'900 58px Estedad, Vazirmatn, sans-serif',920,4);ctx.font='900 58px Estedad, Vazirmatn, sans-serif';let y=1090;for(const line of titleLines){ctx.fillText(line,1008,y);y+=92;}
+      const leadLines=wrap(lead,'400 32px Vazirmatn, sans-serif',900,4);ctx.font='400 32px Vazirmatn, sans-serif';ctx.fillStyle='#c6c0b8';y+=18;for(const line of leadLines){ctx.fillText(line,1008,y);y+=58;}
+      ctx.fillStyle='#e11b22';ctx.fillRect(72,1630,936,2);
+      ctx.textAlign='right';ctx.fillStyle='#f2ede6';ctx.font='700 24px Vazirmatn, sans-serif';ctx.fillText('خبر را دقیق بخوان؛ روایت را دنبال کن.',1008,1700);
+      ctx.textAlign='left';ctx.fillStyle='#aaa59e';ctx.font='20px Arial, sans-serif';ctx.fillText(storyUrl.slice(0,70),72,1790);
+      ctx.fillStyle='#e11b22';ctx.fillRect(72,1840,936,8);
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+      if(!blob)throw new Error('ساخت تصویر PNG ممکن نشد');
+      const objectUrl=URL.createObjectURL(blob);
+      preview.innerHTML='';const imagePreview=document.createElement('img');imagePreview.src=objectUrl;imagePreview.alt='پیش‌نمایش استوری نبض ساردو';preview.appendChild(imagePreview);
+      downloadButton.disabled=false;shareButton.disabled=false;
+      downloadButton.onclick=()=>{const a=document.createElement('a');a.href=objectUrl;a.download='nabz-sardo-story.png';a.click();};
+      shareButton.onclick=async()=>{const file=new File([blob],'nabz-sardo-story.png',{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:title});return;}catch{}}downloadButton.click();};
+    };
+    draw().catch(error=>{preview.textContent='ساخت استوری ناموفق بود: '+error.message;});
+  });
+  $('[data-search-toggle]').forEach(button=>{
     button.addEventListener('click',()=>{
       const form=button.closest('.rb-search'),input=form&&form.querySelector('input[name="q"]');
       if(!form||!input)return;
