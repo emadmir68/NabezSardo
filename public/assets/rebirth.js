@@ -86,13 +86,13 @@
       try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return true;}}catch{}
       try{const area=document.createElement('textarea');area.value=value;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();const ok=document.execCommand('copy');area.remove();return ok;}catch{return false;}
     };
-    $('[data-article-copy-message]',articleRoot).forEach(button=>{
+    $$('[data-article-copy-message]',articleRoot).forEach(button=>{
       button.addEventListener('click',async()=>{
         const ok=await copyText(shareMessage);
         button.textContent=ok?'متن آماده کپی شد ✓':'کپی متن در دسترس نیست';
       });
     });
-    $('[data-article-share-image]',articleRoot).forEach(button=>{
+    $$('[data-article-share-image]',articleRoot).forEach(button=>{
       button.addEventListener('click',async()=>{
         let shared=false;
         if(articleImage&&navigator.share&&navigator.canShare){
@@ -111,7 +111,7 @@
         }
       });
     });
-    $('[data-article-share-video]',articleRoot).forEach(button=>{
+    $$('[data-article-share-video]',articleRoot).forEach(button=>{
       button.addEventListener('click',async()=>{
         if(navigator.share){try{await navigator.share({title:articleTitle,text:shareMessage,url:articleVideo||articleUrl});return;}catch{}}
         const ok=await copyText(articleVideo||shareMessage);
@@ -130,7 +130,7 @@
     }
   }
 
-  $('[data-admin-filter]').forEach(input=>{
+  $$('[data-admin-filter]').forEach(input=>{
     input.addEventListener('input',()=>{
       const q=input.value.trim().toLocaleLowerCase();
       $$('[data-admin-list] .rb-admin-list-row').forEach(row=>{
