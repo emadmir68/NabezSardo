@@ -488,3 +488,17 @@ img,video{max-width:100%}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 @media(max-width:760px){.rb-search.is-open{width:min(260px,58vw);border:1px solid #454954}.rb-search.is-open input{display:block;min-width:0;flex:1;padding:0 9px;font-size:10px}.rb-search.is-open button{flex:none}}
+
+.rb-en{display:none}
+.rb-lang-en .rb-fa{display:none!important}
+.rb-lang-en .rb-en{display:inline!important}
+.rb-language-switch{display:flex;align-items:center;gap:3px;border:1px solid #383c46;padding:3px}
+.rb-language-switch button{background:transparent;border:0;color:#999;font-size:9px;padding:5px 7px}
+.rb-language-switch button.active{background:var(--rb-red);color:#fff}
+.rb-live-counter{display:inline-flex;align-items:center;gap:6px;color:#aaa;font-size:9px;white-space:nowrap}
+.rb-live-counter b{font-family:var(--rb-serif);font-size:12px;color:#fff}
+.rb-live-counter em{font-style:normal;color:#ef545a;font-size:8px;letter-spacing:1px}
+.rb-lang-en .rb-article-lead{border-right:0;border-left:4px solid var(--rb-red);padding-right:0;padding-left:18px}
+.rb-lang-en .rb-article-body blockquote{border-right:0;border-left:4px solid var(--rb-red)}
+.rb-lang-en .rb-policy-lock{border-right:0;border-left:3px solid var(--rb-red)}
+@media(max-width:760px){.rb-language-switch{padding:2px}.rb-language-switch button{padding:5px;font-size:8px}.rb-topline-inner>span:nth-child(2){display:none}.rb-live-counter{display:none}}
