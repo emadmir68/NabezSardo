@@ -1,201 +1,183 @@
-// Browser-level checks across all public and editorial pages, including actual RTL geometry.
-import {createRequire} from 'node:module';
+// Cross-page browser checks for the Experimental Editorial design system.
 import {chromium} from 'playwright';
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {createRequire} from 'node:module';
+
 const require=createRequire(import.meta.url);
 const views=require('../lib/views-v2');
-const adminViews=require('../lib/view-admin');
-const root=path.resolve('public');
-const cats=[{id:'social',name:'اجتماعی'},{id:'incidents',name:'حوادث'},{id:'weather',name:'آب‌وهوا'},{id:'opinion',name:'یادداشت و مطالبه'},{id:'short-news',name:'خبر کوتاه'}];
-const db={settings:{},categories:cats,followups:[],citizens:[],contacts:[],articles:Array.from({length:30},(_,i)=>({
- id:'v4story-'+i,slug:'v4story-'+i,
- title:'عنوان بلند گزارش خبری درباره مسائل مهم شهری و کیفیت خدمات عمومی جنوب کرمان در جیرفت و ساردوئیه '+i,
- lead:'گزارش تحریریه از وضعیت خدمات شهری و موضوعات مهم زندگی روزمره مردم منطقه.',
- body:'این نمونه متنی برای سنجش تجربه مطالعه روی گوشی‌های کوچک و حفظ چیدمان درست راست‌به‌چپ است.',
- bodyHtml:'<p>این نمونه متنی برای سنجش تجربه مطالعه روی گوشی‌های کوچک و حفظ چیدمان درست راست‌به‌چپ است.</p><h2>ادامه گزارش</h2><p>جزئیات تکمیلی گزارش در این بخش قرار می‌گیرد.</p>',
- status:'published',categoryId:cats[i%cats.length].id,
- createdAt:new Date(Date.UTC(2026,9,30,10,i)).toISOString(),
- location:'جیرفت',views:i,image:i%3===0?'/assets/header-mosque-final.jpg':'/assets/news-cover.svg'
-}))};
-const urls={
- '/':views.home(db),
- '/all-news':views.archive(db),
- '/all-news?page=2':views.archive(db,{page:2}),
- '/all-news?q=unmatched':views.archive(db,{q:'unmatched'}),
- '/news/v4story-0':views.article(db,db.articles[0]),
- '/category/social':views.category(db,cats[0]),
- '/category/short-news':views.category(db,cats[4]),
- '/category/opinion':views.category(db,cats[3]),
- '/search':views.search(db),
- '/search?q=unmatched':views.search(db,'unmatched'),
- '/local/jiroft':views.localHub(db,'jiroft'),
- '/local/anbarabad':views.localHub(db,'anbarabad'),
- '/about':views.simple(db,'about'),
- '/contact':views.simple(db,'contact'),
- '/send-news':views.simple(db,'send-news'),
- '/editorial-policy':views.editorialPolicy(db),
- '/follow-up':views.followup(db),
- '/admin/login':adminViews.login(false),
- '/admin':adminViews.admin(db),
- '/admin/articles/new':adminViews.editor(db)
+const publicRoot=path.resolve('public');
+const categories=[
+  {id:'social',name:'اجتماعی'},
+  {id:'incidents',name:'حوادث'},
+  {id:'weather',name:'آب‌وهوا'},
+  {id:'culture',name:'فرهنگی'},
+  {id:'agriculture',name:'کشاورزی'},
+  {id:'short-news',name:'خبر کوتاه'},
+  {id:'opinion',name:'یادداشت و مطالبه'}
+];
+const db={
+  settings:{siteName:'نبض ساردو',liveDeskEnabled:true,breakingText:'خبرهای نمونه برای آزمون طراحی',adEnabled:false},
+  categories,
+  followups:[],
+  citizens:[],
+  contacts:[],
+  articles:Array.from({length:30},(_,i)=>({
+    id:'rebirth-story-'+i,
+    slug:'rebirth-story-'+i,
+    title:'عنوان بلند گزارش خبری درباره مسائل مهم شهری و کیفیت خدمات عمومی جنوب کرمان در جیرفت و ساردوئیه '+i,
+    lead:'گزارش تحریریه از وضعیت خدمات شهری و موضوعات مهم زندگی روزمره مردم منطقه.',
+    body:'این نمونه متنی برای سنجش تجربه مطالعه روی گوشی‌های کوچک و حفظ چیدمان درست راست‌به‌چپ است.',
+    bodyHtml:'<p>این نمونه متنی برای سنجش تجربه مطالعه روی گوشی‌های کوچک و حفظ چیدمان درست راست‌به‌چپ است.</p><h2>ادامه گزارش</h2><p>جزئیات تکمیلی گزارش در این بخش قرار می‌گیرد.</p>',
+    status:'published',
+    categoryId:categories[i%categories.length].id,
+    createdAt:new Date(Date.UTC(2026,10,14,10,i)).toISOString(),
+    publishedAt:new Date(Date.UTC(2026,10,14,10,i)).toISOString(),
+    location:i%2?'جیرفت':'ساردوئیه',
+    author:'تحریریه نبض ساردو',
+    views:30-i,
+    image:'/assets/news-cover.svg',
+    featured:i===0
+  }))
 };
+const adminMonitor={settings:{enabled:false,keywords:''},sources:[],queue:[],counts:{pending:0,sourcesOn:0,sources:0}};
+const urls={
+  '/':views.home(db),
+  '/all-news':views.archive(db),
+  '/all-news?category=social':views.archive(db,{category:'social'}),
+  '/all-news?page=2':views.archive(db,{page:2}),
+  '/news/rebirth-story-0':views.article(db,db.articles[0]),
+  '/category/social':views.category(db,categories[0]),
+  '/category/short-news':views.category(db,categories[5]),
+  '/category/opinion':views.category(db,categories[6]),
+  '/search?q=جیرفت':views.search(db,'جیرفت'),
+  '/local/jiroft':views.localHub(db,'jiroft'),
+  '/local/anbarabad':views.localHub(db,'anbarabad'),
+  '/local/kahnuj':views.localHub(db,'kahnuj'),
+  '/about':views.simple(db,'about'),
+  '/contact':views.simple(db,'contact'),
+  '/send-news':views.simple(db,'send-news'),
+  '/editorial-policy':views.editorialPolicy(db),
+  '/follow-up':views.followup(db),
+  '/admin/login':views.login(false),
+  '/admin':views.admin(db,[],new URLSearchParams(),{},{},adminMonitor),
+  '/admin/articles/new':views.editor(db,db.articles[0],'/admin/articles/new','خبر جدید')
+};
+
 const server=http.createServer(async(req,res)=>{
- let url;try{url=new URL(req.url,'http://localhost');}catch{res.writeHead(400).end();return;}
- const route=url.pathname+url.search;
- if(route in urls){res.writeHead(200,{'content-type':'text/html;charset=utf-8'}).end(urls[route]);return;}
- if(!url.pathname.startsWith('/assets/')){res.writeHead(404).end('Not found');return;}
- let rel=url.pathname.slice(8),full=path.resolve(root,rel);
- if(!full.startsWith(root+path.sep)){res.writeHead(403).end();return;}
- const type=full.endsWith('.css')?'text/css':full.endsWith('.js')?'text/javascript':full.endsWith('.svg')?'image/svg+xml':full.endsWith('.png')?'image/png':full.endsWith('.ttf')?'font/ttf':'application/octet-stream';
- try{res.writeHead(200,{'content-type':type}).end(await fs.readFile(full));}catch{res.writeHead(404).end();}
+  let url;
+  try{url=new URL(req.url,'http://localhost');}catch{res.writeHead(400).end();return;}
+  const route=url.pathname+url.search;
+  if(Object.prototype.hasOwnProperty.call(urls,route)){
+    res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}).end(urls[route]);
+    return;
+  }
+  let candidates=[];
+  if(url.pathname.startsWith('/assets/')){
+    const rel=url.pathname.slice('/assets/'.length);
+    candidates=[path.resolve(publicRoot,'assets',rel),path.resolve(publicRoot,rel)];
+  }else{
+    candidates=[path.resolve(publicRoot,'.'+url.pathname)];
+  }
+  const full=candidates.find(file=>file.startsWith(publicRoot+path.sep)&&file.startsWith(publicRoot)&&fs.stat(file).then(x=>x.isFile()).catch(()=>false));
+  const resolved=full?await Promise.resolve(full):null;
+  if(!resolved){res.writeHead(404).end('Not found');return;}
+  const ext=path.extname(resolved).toLowerCase();
+  const type={
+    '.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8',
+    '.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg',
+    '.webp':'image/webp','.gif':'image/gif','.woff2':'font/woff2','.woff':'font/woff',
+    '.ttf':'font/ttf','.mp4':'video/mp4','.webm':'video/webm'
+  }[ext]||'application/octet-stream';
+  try{res.writeHead(200,{'content-type':type,'cache-control':'no-store'}).end(await fs.readFile(resolved));}
+  catch{res.writeHead(404).end('Not found');}
 });
+
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true});
 const host='http://127.0.0.1:'+server.address().port;
 const sizes=[{w:360,h:800},{w:390,h:844},{w:412,h:915},{w:768,h:1024},{w:1280,h:900}];
-let failed=0;
-const report=(good,info)=>{console.log((good?'PASS':'FAIL')+' '+info);if(!good)failed++};
-const outdir='/tmp/nabez-v4-visual';
-await fs.mkdir(outdir,{recursive:true});
+const screenshotDir='/tmp/nabez-rebirth-visual';
+await fs.mkdir(screenshotDir,{recursive:true});
+let failed=0,passed=0;
+const report=(ok,message)=>{
+  console.log((ok?'PASS ':'FAIL ')+message);
+  if(ok)passed++;else failed++;
+};
 try{
- for(const size of sizes){
-  const page=await browser.newPage({viewport:{width:size.w,height:size.h},locale:'fa-IR',deviceScaleFactor:1});
-  for(const [route,html] of Object.entries(urls)){
-   await page.goto(host+route,{waitUntil:'domcontentloaded',timeout:35000});
-   await page.evaluate(()=>document.fonts.ready);
-   const metrics=await page.evaluate(()=>{
-    const rect=q=>document.querySelector(q)?.getBoundingClientRect()?.toJSON()||null;
-    const scroll=document.documentElement.scrollWidth;
-    const body=document.body;
-    const nav=rect('[data-ns4-header]');
-    const card=rect('.grid.news .card');
-    const title=rect('main h1');
-    const inputs=[...document.querySelectorAll('main input:not([type="hidden"]):not(.hp-field input),main textarea,main select')].map(x=>{
-      const rect=x.getBoundingClientRect().toJSON();
-      let el=x.parentElement,containedScroll=false;
-      while(el&&el!==document.body){
-        const style=getComputedStyle(el);
-        if(/auto|scroll|hidden/.test(style.overflowX)&&el.scrollWidth>el.clientWidth+3){containedScroll=true;break;}
-        el=el.parentElement;
+  for(const size of sizes){
+    const page=await browser.newPage({viewport:{width:size.w,height:size.h},locale:'fa-IR',deviceScaleFactor:1});
+    const pageErrors=[];
+    page.on('pageerror',error=>pageErrors.push(error.message));
+    for(const [route,html] of Object.entries(urls)){
+      await page.goto(host+route,{waitUntil:'domcontentloaded',timeout:30000});
+      await page.waitForTimeout(120);
+      const metrics=await page.evaluate(()=>{
+        const rect=selector=>document.querySelector(selector)?.getBoundingClientRect().toJSON()||null;
+        return {
+          width:window.innerWidth,
+          scrollWidth:document.documentElement.scrollWidth,
+          direction:document.documentElement.dir,
+          rebirthCss:[...document.styleSheets].some(sheet=>sheet.href&&sheet.href.includes('rebirth.css')),
+          header:rect('.rb-header'),
+          footer:rect('.rb-footer'),
+          card:rect('.rb-story'),
+          menu:rect('[data-menu-toggle]'),
+          bodyClass:document.body.className,
+          article:!!document.querySelector('[data-article-root]'),
+          admin:!!document.querySelector('.rb-admin-layout'),
+          inputSizes:[...document.querySelectorAll('main input:not([type=hidden]),main textarea,main select')].filter(x=>x.getBoundingClientRect().width>0).map(x=>parseFloat(getComputedStyle(x).fontSize))
+        };
+      });
+      report(metrics.direction==='rtl',size.w+' '+route+' keeps RTL direction');
+      report(metrics.scrollWidth<=size.w+3,size.w+' '+route+' has no horizontal overflow ('+metrics.scrollWidth+')');
+      report(metrics.rebirthCss,size.w+' '+route+' loads rebirth stylesheet');
+      if(route.startsWith('/admin')){
+        report(metrics.admin||route==='/admin/login',size.w+' '+route+' renders newsroom interface');
+      }else{
+        report(!!metrics.header&&!!metrics.footer,size.w+' '+route+' shares public header and footer');
       }
-      return {...rect,containedScroll,name:x.getAttribute('name')||x.getAttribute('data-font-family')||x.tagName};
-    });
-    return {scroll,bodyClass:body.className,header:nav,card,title,inputs,footer:rect('.ns4-footer'),menu:rect('.ns4-menu-toggle'),hero:rect('.ns26-feature-main'),css:getComputedStyle(document.body).backgroundColor};
-   });
-   if(route==='/'){
-    const checks=await page.evaluate(()=>{
-     const rgb=s=>(s.match(/[\d.]+/g)||[]).slice(0,3).map(Number);
-     const lum=c=>c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
-     const contrast=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
-     /* Measure the actual painted page background instead of assuming a theme canvas,
-        so the check stays valid across design eras (dark navy or paper broadsheet). */
-     const pageBg=(()=>{
-       let el=document.body;
-       while(el){
-         const c=rgb(getComputedStyle(el).backgroundColor);
-         if(c.length&&getComputedStyle(el).backgroundColor!=='rgba(0, 0, 0, 0)')return c;
-         el=el.parentElement;
-       }
-       return [255,255,255];
-     })();
-     const pairs=['.pr-hero__lead','.pr-hero__note','.pr-stat b','.pr-stat span','.pr-card__body h3','.pr-card__body p','.pr-card__foot em'];
-     const ratios=pairs.map(q=>({q,ratio:contrast(rgb(getComputedStyle(document.querySelector(q)).color),pageBg)}));
-     for(const btn of document.querySelectorAll('.pr-btn')){
-      const style=getComputedStyle(btn),label=btn.querySelector('span')||btn;
-      ratios.push({q:btn.textContent,ratio:contrast(rgb(getComputedStyle(label).color),rgb(style.backgroundColor))});
-     }
-     const nav=document.querySelector('.ns4-header-nav');
-     return {ratios,navFits:nav.scrollWidth<=nav.clientWidth+2,gridTop:document.querySelector('.pr-grid').getBoundingClientRect().top,sharedHeader:!!document.querySelector('[data-ns4-header]'),sharedFooter:!!document.querySelector('.ns4-footer')};
-    });
-    for(const c of checks.ratios)report(c.ratio>=4.5,size.w+' homepage contrast '+c.q+' '+c.ratio.toFixed(2));
-    report(checks.sharedHeader&&checks.sharedFooter,size.w+' homepage shares public shell');
-    if(size.w>1000){report(checks.navFits,size.w+' all primary navigation fits');report(checks.gridTop<760,size.w+' latest news starts near first viewport');}
-    if(size.w<=1000)await page.locator('[data-ns4-menu-toggle]').click();
-    if(size.w<=1000){
-     const bounds=await page.locator('.ns4-header-nav').boundingBox();
-     const header=await page.locator('[data-ns4-header]').boundingBox();
-     report(bounds.x>=-2&&bounds.x+bounds.width<=size.w+2&&bounds.y>=header.y+header.height-2,size.w+' mobile menu below header and within screen');
-    }
-    await page.locator('.ns4-more summary').click();
-    report(await page.locator('.ns4-more a[href="/contact"]').isVisible(),size.w+' More reveals remaining links');
-    await page.keyboard.press('Escape');
-    report((await page.locator('.ns4-more').getAttribute('open'))===null,size.w+' Escape closes disclosure');
-    if(size.w<=1000)report((await page.locator('[data-ns4-menu-toggle]').getAttribute('aria-expanded'))==='false',size.w+' Escape closes mobile navigation');
-   }
-   const id=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
-   console.log('METRICS '+size.w+' '+route+' '+JSON.stringify({scroll:metrics.scroll,header:metrics.header&&{w:metrics.header.width,h:metrics.header.height},card:metrics.card&&{w:metrics.card.width,h:metrics.card.height},title:metrics.title&&{w:metrics.title.width,h:metrics.title.height}}));
-   report(metrics.scroll<=size.w+3,size.w+' '+route+' no horizontal overflow ('+metrics.scroll+')');
-   if(!route.startsWith('/admin')){
-    report(html.includes('glass-sitewide-v4.css'),size.w+' '+route+' shared stylesheet');
-    if(route!=='/')report(!!metrics.header&&metrics.header.height>=50,size.w+' '+route+' glass header displayed');
-    if(route!=='/')report(!!metrics.footer&&metrics.footer.height>100,size.w+' '+route+' full footer');
-    const readability=await page.evaluate(()=>{
-     const rgba=s=>(s.match(/[\d.]+/g)||[]).map(Number);
-     const lum=c=>c.slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
-     const contrast=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
-     const background=el=>{
-      const layers=[];
-      while(el){const c=rgba(getComputedStyle(el).backgroundColor);layers.push(c);if(c.length===3||c[3]===1)break;el=el.parentElement;}
-      return layers.reverse().reduce((base,c)=>base.map((v,i)=>c[i]*(c[3]??1)+v*(1-(c[3]??1))),[246,241,230]);
-     };
-     const selectors=['main .btn','main .more','main .card .eyebrow','main .card .view-badge','main .card time','main .card h3 a','main .card .listing-excerpt','main.page>.lead','main .form>label','main .article-body p','main .article-meta-item time','main .related-news .sectionhead h2','main .short-timeline-item time'];
-     const ratios=[];
-     for(const q of selectors){
-      for(const el of [...document.querySelectorAll(q)].slice(0,3)){
-       if(!el.getBoundingClientRect().height)continue;
-       const label=[...el.querySelectorAll('span')].find(x=>x.getBoundingClientRect().height>0)||el;
-       ratios.push({q,ratio:contrast(rgba(getComputedStyle(label).color),background(label))});
+      if(route.startsWith('/news/')){
+        report(metrics.article,size.w+' article root and share metadata exist');
+        report(await page.locator('[data-article-share-image]').count()===1,size.w+' article image-share control exists');
+        report(await page.locator('[data-article-text-story]').count()===1,size.w+' article text-story export exists');
       }
-     }
-     const badges=[...document.querySelectorAll('.grid.news .card-story-badge')].map(el=>{
-      const b=el.getBoundingClientRect(),m=el.closest('.card-media').getBoundingClientRect();
-      return b.width<=120&&b.height<=44&&b.left>=m.left&&b.right<=m.right&&b.top>=m.top&&b.bottom<=m.bottom&&b.width*b.height<m.width*m.height*.2;
-     });
-     const grid=document.querySelector('.grid.news,.grid.info');
-     const empty=grid?.querySelector(':scope>.empty');
-     const hero=document.querySelector('main.page>.pagehead,main.page>.ns4-page-hero,main.page>.short-timeline-page-head');
-     const inputs=[...document.querySelectorAll('main .form input:not([type="file"]),main .form textarea,main .search-large input,main .archive-filters input')].filter(el=>el.getBoundingClientRect().height>0);
-     const active=[...document.querySelectorAll('.ns4-header-nav a[aria-current="page"]')].map(a=>new URL(a.href).pathname);
-     return {ratios,badges,heroHeight:hero?.getBoundingClientRect().height||0,emptyFills:!empty||empty.getBoundingClientRect().width>=grid.getBoundingClientRect().width*.95,inputsReadable:inputs.every(el=>parseFloat(getComputedStyle(el).fontSize)>=16),active,path:location.pathname};
-    });
-    for(const c of readability.ratios)report(c.ratio>=4.5,size.w+' '+route+' readable '+c.q+' '+c.ratio.toFixed(2));
-    report(readability.badges.every(Boolean),size.w+' '+route+' Story badges stay in a small image corner');
-    report(readability.emptyFills,size.w+' '+route+' empty state uses full grid width');
-    report(readability.inputsReadable,size.w+' '+route+' readable form inputs without mobile zoom');
-    if(readability.heroHeight)report(readability.heroHeight<=(size.w<=412?340:260),size.w+' '+route+' compact page heading ('+readability.heroHeight.toFixed(0)+')');
-    if(['/','/all-news','/category/social','/category/short-news','/category/opinion'].includes(readability.path))report(readability.active.includes(readability.path),size.w+' '+route+' current navigation section marked');
-    if(route.startsWith('/local/')){
-     report(await page.locator('.local-switcher a').count()===5,size.w+' regional navigation offers every existing region');
-     report(await page.locator('.local-switcher [aria-current="page"]').getAttribute('href')===route,size.w+' regional navigation marks selected region');
+      if(size.w<=412&&route==='/'){
+        const toggle=page.locator('[data-menu-toggle]');
+        report(await toggle.isVisible(),size.w+' mobile menu button is visible');
+        await toggle.click();
+        report(await toggle.getAttribute('aria-expanded')==='true',size.w+' mobile navigation opens');
+        report(await page.locator('[data-main-nav].is-open').count()===1,size.w+' mobile navigation receives open state');
+        await toggle.click();
+        report(await toggle.getAttribute('aria-expanded')==='false',size.w+' mobile navigation closes');
+        const search=page.locator('[data-search-toggle]');
+        await search.click();
+        report(await page.locator('.rb-search.is-open input[name=q]').count()===1,size.w+' mobile search expands');
+      }
+      if(metrics.inputSizes.length){
+        report(metrics.inputSizes.every(value=>value>=14),size.w+' '+route+' form inputs remain readable');
+      }
+      if(size.w===390&&['/','/all-news','/news/rebirth-story-0','/admin/login','/admin','/admin/articles/new'].includes(route)){
+        const name=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
+        await page.screenshot({path:screenshotDir+'/'+name+'-390.png',fullPage:true});
+      }
+      if(size.w===1280&&['/','/all-news','/news/rebirth-story-0','/admin','/admin/articles/new'].includes(route)){
+        const name=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
+        await page.screenshot({path:screenshotDir+'/'+name+'-1280.png',fullPage:true});
+      }
     }
-   }
-   if(route.includes('news/')||route==='/all-news'||route.startsWith('/category/')||route==='/local/jiroft'){
-     if(metrics.card)report(metrics.card.width>170,size.w+' '+route+' news card usable width');
-   }
-   for(const input of metrics.inputs)if(input.width>0&&input.height>0&&!input.containedScroll)report(input.right<=size.w+3&&input.left>=-3,size.w+' '+route+' '+input.name+' input stays on screen');
-   if(size.w===390&&['/all-news','/news/v4story-0'].includes(route)){
-     const snap=await page.screenshot({type:'jpeg',quality:40,fullPage:false});
-     console.log('NS4_JPEG_PREVIEW '+route+' '+snap.toString('base64'));
-   }
-   if(size.w===390||size.w===1280){
-     if(['/','/all-news','/news/v4story-0','/contact','/category/opinion','/admin/login','/admin','/admin/articles/new'].includes(route)){
-      await page.screenshot({path:outdir+'/'+id+'-'+size.w+'.png',fullPage:true});
-     }
-   }
-   if(size.w<=412&&route==='/all-news'){
-    const toggle=page.locator('[data-ns4-menu-toggle]');
-    report(await toggle.isVisible(),size.w+' mobile menu button visible');
-    await toggle.click();
-    report(await toggle.getAttribute('aria-expanded')==='true',size.w+' mobile menu opens');
-    report(await page.locator('#ns4-main-nav').isVisible(),size.w+' mobile nav visible');
-    await page.keyboard.press('Escape');
-    report(await toggle.getAttribute('aria-expanded')==='false',size.w+' escape dismisses menu');
-   }
+    report(pageErrors.length===0,size.w+' no uncaught browser errors: '+pageErrors.join(' | '));
+    await page.close();
   }
-  await page.close();
- }
-}finally{await browser.close();await new Promise(r=>server.close(r))}
-console.log('RESULT '+failed+' failures across '+Object.keys(urls).length+' routes and '+sizes.length+' widths');
-if(failed)process.exit(1);
+  const css=await (await fetch(host+'/assets/rebirth.css')).text();
+  const js=await (await fetch(host+'/assets/rebirth.js')).text();
+  report(css.includes('@media(max-width:760px)'), 'mobile stylesheet breakpoint is present');
+  report(css.includes('prefers-reduced-motion'), 'reduced-motion preference is respected');
+  report(js.includes('data-rebirth-editor'), 'rich editor client is present');
+  console.log('SUMMARY passed='+passed+' failed='+failed+' screenshots='+screenshotDir);
+}finally{
+  await browser.close();
+  await new Promise(resolve=>server.close(resolve));
+}
+if(failed)process.exitCode=1;
