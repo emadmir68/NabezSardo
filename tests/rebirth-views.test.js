@@ -15,7 +15,8 @@ const sample={
   citizens:[{id:'u1',name:'شهروند',headline:'گزارش مردمی',details:'شرح رویداد',phone:'09120000000',location:'جیرفت',createdAt:now}]
 };
 function fresh(html,label){
-  assert.match(html,/\/assets\/rebirth\.css\?v=1\.0\.0/,label+' loads new design system');
+  assert.match(html,/\/assets\/rebirth\.css\?v=[^" ]+/,label+' loads versioned new design system');
+  assert.match(html,/\/assets\/rebirth\.js\?v=[^" ]+/,label+' loads versioned client');
   assert.doesNotMatch(html,/\/assets\/site\.css|\/assets\/header-fix\.css|spatial-rail/,label+' does not reuse legacy visual shell');
 }
 const home=views.home(sample);
