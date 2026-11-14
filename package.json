@@ -5,7 +5,8 @@
   "description": "Independent production newsroom for Nabez Sardo",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "node tests/news-monitor.test.js"
   },
   "engines": {
     "node": ">=20"
