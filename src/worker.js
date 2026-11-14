@@ -2062,6 +2062,8 @@ export default {
     }
 
     if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1" && p === "/__preview/admin" && request.method === "GET") {
+      process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
+      if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
       const db = await loadDbObject();
       const dashboard = views.admin(
         db,
