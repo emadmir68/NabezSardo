@@ -583,3 +583,65 @@ img,video{max-width:100%}
   .rb-hero-grid{grid-template-columns:minmax(0,1fr)!important}
   .rb-hero-story{grid-template-columns:minmax(0,1fr)!important}
 }
+
+
+/* Editorial article completion: captions, update metadata, author accountability and related stories. */
+.rb-article-kicker{display:flex;align-items:center;gap:8px}
+.rb-meta-item{display:flex;flex-direction:column;gap:2px;min-width:max-content}
+.rb-meta-item small{font-size:9px;color:#8a8178}
+.rb-meta-item time,.rb-meta-item b{font-size:10px;font-weight:700;color:#34302b}
+.rb-article-cover{max-width:1050px;margin:10px auto 34px}
+.rb-article-cover-caption{display:block;padding:9px 14px 11px;color:#756d65;font-size:11px;line-height:1.9;border-top:1px solid #d4ccc1;background:#eee7de}
+.rb-article-layout{display:block;max-width:850px;margin:0 auto}
+.rb-article-body ul,.rb-article-body ol{margin:18px 0 28px;padding-inline-start:28px;padding-inline-end:18px}
+.rb-article-body li{padding-inline-start:5px;margin:8px 0}
+.rb-article-body figure{margin:28px 0;max-width:100%}
+.rb-article-body figure img{display:block;width:100%;height:auto;max-height:620px;object-fit:contain;background:#e7dfd5}
+.rb-article-body figcaption{padding:8px 12px;color:#766e66;font-size:11px;line-height:1.9;background:#e9e2d8}
+.rb-article-author-card{max-width:850px;margin:42px auto 0;padding:22px;display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:15px;align-items:center;background:#e9e2d8;border:1px solid #d5ccc1;border-right:4px solid var(--rb-red)}
+.rb-author-card-mark{width:46px;height:46px;display:grid;place-items:center;background:#171a22;color:#fff;font-size:20px;font-weight:900}
+.rb-author-card-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.rb-author-card-copy .rb-kicker{color:#b71922;font-size:9px}
+.rb-author-card-copy strong{font-size:15px;color:#171719}
+.rb-author-card-copy small{font-size:10px;color:#777067}
+.rb-author-card-copy p{margin:5px 0 0;color:#5f5952;font-size:11px;line-height:1.9}
+.rb-correction-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 13px;background:#171a22;color:#fff;font-size:11px;white-space:nowrap}
+.rb-correction-link:hover{background:var(--rb-red)}
+.rb-related-section{max-width:1240px;margin:58px auto 0;padding-top:28px;border-top:1px solid #d5ccc1}
+.rb-related-heading{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.rb-related-heading .rb-kicker{color:#b71922;font-size:9px}
+.rb-related-heading h2{margin:5px 0 0;color:#171719;font-size:28px;line-height:1.5}
+.rb-related-heading>a{display:inline-flex;gap:8px;align-items:center;color:#6a6259;font-size:11px}
+.rb-related-heading>a:hover{color:var(--rb-red)}
+.rb-related-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.rb-related-grid .rb-story{min-width:0}
+.rb-related-grid .rb-story-copy h3{font-size:14px}
+.rb-related-grid .rb-story-copy p{font-size:10px}
+@media(max-width:1100px){
+  .rb-related-section{margin-top:46px}
+  .rb-related-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:820px){
+  .rb-article-cover{margin:8px 0 22px}
+  .rb-article-author-card{grid-template-columns:42px minmax(0,1fr);margin-top:30px;padding:16px;gap:12px}
+  .rb-author-card-mark{width:40px;height:40px}
+  .rb-correction-link{grid-column:1/-1;width:100%}
+  .rb-related-section{margin-top:38px;padding-top:22px}
+  .rb-related-heading h2{font-size:23px}
+  .rb-related-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+}
+@media(max-width:520px){
+  .rb-article-meta{align-items:flex-start}
+  .rb-meta-item{min-width:calc(50% - 8px)}
+  .rb-article-author-card{grid-template-columns:36px minmax(0,1fr);padding:13px}
+  .rb-author-card-mark{width:36px;height:36px}
+  .rb-author-card-copy strong{font-size:13px}
+  .rb-related-grid{grid-template-columns:minmax(0,1fr)}
+  .rb-related-grid .rb-story{display:grid;grid-template-columns:112px minmax(0,1fr);align-items:stretch}
+  .rb-related-grid .rb-story-image{height:100%;min-height:115px;aspect-ratio:auto}
+  .rb-related-grid .rb-story-copy{padding:10px}
+  .rb-related-grid .rb-story-copy h3{font-size:12px;line-height:1.7}
+  .rb-related-grid .rb-story-copy p{display:none}
+  .rb-related-grid .rb-read-link{font-size:9px}
+  .rb-related-heading{align-items:flex-start}
+}
