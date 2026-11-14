@@ -106,6 +106,15 @@ jobs:
           curl -fsS "$SITE/__preview/admin" -o /tmp/preview-admin.html
           curl -fsS "$SITE/__preview/admin/editor" -o /tmp/preview-editor.html
           curl -fsS "$SITE/robots.txt" -o /tmp/preview-robots.txt
+          curl -fsS "$SITE/assets/rebirth.css?v=smoke" -o /tmp/preview-rebirth.css
+          curl -fsS "$SITE/assets/rebirth.js?v=smoke" -o /tmp/preview-rebirth.js
+          curl -fsS "$SITE/assets/text-story.css?v=smoke" -o /tmp/preview-text-story.css
+          curl -fsS "$SITE/assets/text-story.js?v=smoke" -o /tmp/preview-text-story.js
+
+          grep -q '\.rb-topline' /tmp/preview-rebirth.css
+          grep -q 'data-menu-toggle' /tmp/preview-rebirth.js
+          grep -q 'text-story-dialog' /tmp/preview-text-story.css
+          grep -q 'data-article-text-story' /tmp/preview-text-story.js
 
           grep -qi 'x-robots-tag: noindex, nofollow, noarchive' /tmp/preview-home.headers
           grep -q '/assets/rebirth.css' /tmp/preview-home.html
