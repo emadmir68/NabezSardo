@@ -33,6 +33,9 @@ let appReady = false;
 function isPrimary() {
   return String(env.CLOUDFLARE_PRIMARY || "") === "1";
 }
+function isReadOnlyPreview() {
+  return !isPrimary() && String(env.PREVIEW_READONLY || "") === "1";
+}
 
 function automaticDistributionEnabled() {
   return String(env.AUTO_DISTRIBUTION_ENABLED || "") === "1";
@@ -301,7 +304,8 @@ function html(body, status = 200) {
       "content-type": "text/html; charset=utf-8",
       "cache-control": "no-store",
       "x-content-type-options": "nosniff",
-      "x-frame-options": "SAMEORIGIN"
+      "x-frame-options": "SAMEORIGIN",
+      ...(isReadOnlyPreview() ? {"x-robots-tag":"noindex, nofollow, noarchive"} : {})
     }
   });
 }
@@ -2005,6 +2009,20 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const p = decodeURIComponent(url.pathname);
+    if(isReadOnlyPreview()&&p==="/robots.txt"&&(request.method==="GET"||request.method==="HEAD")){
+      return new Response(request.method==="HEAD"?null:"User-agent: *\\nDisallow: /\\n",{status:200,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-robots-tag":"noindex, nofollow, noarchive"}});
+    }
+    if(isReadOnlyPreview()&&request.method==="GET"&&(p==="/__preview/admin"||p==="/__preview/admin/editor")){
+      const db=await loadDbObject();
+      const traffic={today:{pageViews:0},totalPageViews:0};
+      const monitor={settings:{enabled:false,autoPublish:false,socialDistribution:false},counts:{sources:0,sourcesOn:0,pending:0,duplicate:0,published:0},sources:[],queue:[]};
+      const editor=p==="/__preview/admin/editor";
+      let body=editor
+        ?views.editor(db,{},"/__preview/no-write","پیش‌نمایش ویرایشگر خبر")
+        :views.admin(db,[],url.searchParams,{},traffic,monitor);
+      body=body.replace('<body class="rb-admin-body">','<body class="rb-admin-body"><div class="rb-preview-ribbon">پیش‌نمایش Cloudflare — فقط مشاهده؛ هیچ تغییری ذخیره نمی‌شود · <a href="/__preview/admin/editor">ویرایشگر خبر</a> · <a href="/">مشاهده سایت</a></div>');
+      return html(body);
+    }
     const internalRoute=(p==="/__migration"||p.startsWith("/__migration/")||p==="/__sync/status"||p==="/__sync/public-pull"||p.startsWith("/__cutover/"));
     if(internalRoute&&!isAuthorizedMigration(request)){
       return new Response("Not found",{status:404,headers:securityHeaders()});
