@@ -192,8 +192,10 @@ async function decryptRuntimeSecrets() {
 }
 
 async function applyRuntimeEnv() {
+  if (env.CLOUDFLARE_PRIMARY !== undefined) process.env.CLOUDFLARE_PRIMARY = String(env.CLOUDFLARE_PRIMARY);
   if (env.PREVIEW_READONLY !== undefined) process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
   if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
+  if (env.CLOUDFLARE_ASSET_VERSION !== undefined) process.env.CLOUDFLARE_ASSET_VERSION = String(env.CLOUDFLARE_ASSET_VERSION);
   const auth = await runtimeAuth();
   if (!auth) return false;
   process.env.ADMIN_USER = String(auth.user);
@@ -2017,9 +2019,11 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const p = decodeURIComponent(url.pathname);
-    if (!isPrimary()) {
+    if (typeof process !== "undefined" && process.env) {
+      if (env.CLOUDFLARE_PRIMARY !== undefined) process.env.CLOUDFLARE_PRIMARY = String(env.CLOUDFLARE_PRIMARY);
       if (env.PREVIEW_READONLY !== undefined) process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
       if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
+      if (env.CLOUDFLARE_ASSET_VERSION !== undefined) process.env.CLOUDFLARE_ASSET_VERSION = String(env.CLOUDFLARE_ASSET_VERSION);
     }
     const internalRoute=(p==="/__migration"||p.startsWith("/__migration/")||p==="/__sync/status"||p==="/__sync/public-pull"||p.startsWith("/__cutover/"));
     if(internalRoute&&!isAuthorizedMigration(request)){
