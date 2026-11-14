@@ -192,7 +192,7 @@
     });
     sync();
   });
-  $('[data-share-copy]').forEach(button=>{
+  $$('[data-share-copy]').forEach(button=>{
     button.addEventListener('click',async()=>{
       const area=button.closest('.rb-share-copy')?.querySelector('[data-share-copy-text]');
       if(!area)return;
@@ -200,13 +200,13 @@
       catch{area.focus();area.select();button.textContent='متن انتخاب شد؛ کپی کنید';}
     });
   });
-  $('[data-copy-value]').forEach(button=>{
+  $$('[data-copy-value]').forEach(button=>{
     button.addEventListener('click',async()=>{
       try{await navigator.clipboard.writeText(button.dataset.copyValue||'');button.textContent='کپی شد ✓';}
       catch{button.textContent='کپی در دسترس نیست';}
     });
   });
-  $('[data-share-kit-story]').forEach(root=>{
+  $$('[data-share-kit-story]').forEach(root=>{
     const preview=$('[data-share-kit-story-preview]',root);
     const shareButton=$('[data-share-kit-story-share]',root);
     const downloadButton=$('[data-share-kit-story-download]',root);
@@ -259,7 +259,7 @@
     };
     draw().catch(error=>{preview.textContent='ساخت استوری ناموفق بود: '+error.message;});
   });
-  $('[data-search-toggle]').forEach(button=>{
+  $$('[data-search-toggle]').forEach(button=>{
     button.addEventListener('click',()=>{
       const form=button.closest('.rb-search'),input=form&&form.querySelector('input[name="q"]');
       if(!form||!input)return;
