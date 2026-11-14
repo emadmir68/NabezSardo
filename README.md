@@ -1,38 +1,42 @@
-# Nabez Sardo — نبض ساردو
+# نبض ساردو — Nabez Sardo
 
-نسخه مستقل Production، بدون وابستگی به Webflow.
+نسخه اصلی سایت و تحریریه روی **Cloudflare Workers** اجرا می‌شود.
 
-## اجرا
+## معماری فعال
+
+- **Cloudflare Workers:** اجرای سایت، مسیرهای عمومی و پنل تحریریه
+- **Cloudflare D1:** داده‌های سایت و آمار
+- **Arvan Object Storage:** تصاویر و فایل‌های رسانه‌ای
+- **Workers Static Assets:** فایل‌های CSS، JavaScript و رسانه‌های ثابت
+- **GitHub Actions:** آزمون و انتشار Worker از شاخه `cloudflare-migration`
+
+هیچ سرویس Railway در مسیر اجرای Production استفاده نمی‌شود.
+
+## توسعه محلی
+
 ```bash
 npm install
-npm start
+npm test
+npm run cf:dev
 ```
 
-سایت: `http://localhost:3000`
-پنل مدیریت: `http://localhost:3000/admin`
+## پیش‌نمایش بازطراحی
 
-## متغیرهای محیطی
-- `PORT=3000`
-- `ADMIN_USER`
-- `ADMIN_PASS`
-- `SESSION_SECRET`
-- `DATA_DIR=/data`
-- `UPLOAD_DIR=/data/uploads`
-- `NODE_ENV=production`
+بازطراحی Experimental Editorial از طریق Cloudflare Worker Previews بررسی می‌شود. پیکربندی Preview در `wrangler.preview.jsonc` قرار دارد و به D1 جداگانه `nabzesardo-editorial-preview` متصل می‌شود.
 
-## Railway
-یک Volume روی `/data` وصل کنید و `DATA_DIR=/data` و `UPLOAD_DIR=/data/uploads` را تنظیم کنید.
+- آدرس اصلی و routeهای Production تغییر نمی‌کنند.
+- داده پیش‌نمایش از خبرهای منتشرشده ساخته می‌شود؛ پیش‌نویس‌ها، پیام‌های تماس و گزارش‌های خصوصی شهروندان کپی نمی‌شوند.
+- پنل نمایشی از مسیر `/__preview/admin` و ویرایشگر از `/__preview/admin/editor` قابل مشاهده‌اند.
+- تمام درخواست‌های تغییردهنده در Preview مسدود هستند.
+- انتشار خودکار، صف و زمان‌بندی در Preview فعال نیست.
+- فایل‌های رسانه‌ای فقط از دامنه Production خوانده می‌شوند؛ Preview اجازه نوشتن در فضای رسانه‌ای اصلی را ندارد.
 
-## امکانات
-- طراحی RTL سه‌بعدی و ریسپانسیو
-- پنل مدیریت خبر
-- پیش‌نویس/انتشار
-- دسته‌بندی و جستجو
-- آپلود تصویر یا URL تصویر
-- فرم تماس
-- فرم خبر مردمی با آپلود تصویر
-- ذخیره مستقل JSON با write اتمیک
-- Health endpoint: `/health`
+## مسیر انتشار Production
+
+فقط تغییرات ادغام‌شده در شاخه `cloudflare-migration` به‌وسیله workflow انتشار Cloudflare به Production می‌روند. شاخه‌های طراحی و Preview به دامنه اصلی متصل نیستند.
 
 ## امنیت
-در Production حتماً `ADMIN_USER`, `ADMIN_PASS`, `SESSION_SECRET` را مقداردهی کنید.
+
+- متغیرهای حساس در تنظیمات Cloudflare نگهداری می‌شوند و در مخزن قرار نمی‌گیرند.
+- مسیرهای مهاجرت و همگام‌سازی با توکن داخلی محافظت می‌شوند.
+- فیلتر محتوای تبلیغاتی، اطلاعیه‌های تدفین و محتوای غیرخبری در رصد و نمایش عمومی فعال است.
