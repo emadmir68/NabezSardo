@@ -1429,6 +1429,12 @@ async function serveUpload(name,request=null) {
   const safe = path.basename(name);
   if (!safe || safe !== name) return new Response("Not found", { status: 404 });
   const range=String(request?.headers?.get("range")||"");
+  if(isReadOnlyPreview()&&!arvanConfig()){
+    const headers=new Headers();
+    if(range)headers.set("range",range);
+    const upstream=await fetch(new Request("https://nabzesardo.ir/uploads/"+encodeURIComponent(safe),{method:request?.method||"GET",headers}));
+    return new Response(upstream.body,{status:upstream.status,statusText:upstream.statusText,headers:upstream.headers});
+  }
   const cache = caches.default;
   const cacheKey = new Request("https://media.nabzesardo.invalid/uploads/" + encodeURIComponent(safe));
   if(!range){
