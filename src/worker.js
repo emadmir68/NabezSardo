@@ -651,7 +651,7 @@ async function handlePublicPreview(request, url, pathname) {
   let m = pathname.match(/^\/news\/(.+)$/);
   if (m) {
     const slug = m[1];
-    const a = (db.articles || []).find(x => store.publiclyVisibleArticle(x) && x.slug === slug);
+    const a = (db.articles || []).find(x => store.publiclyVisibleArticle(x) && (x.slug === slug || (typeof views.shortArticleCode === "function" && views.shortArticleCode(x.id) === slug)));
     if (!a) return html("خبر یافت نشد", 404);
     // Render article pages with the current build so interactive controls and
     // versioned assets never get stuck on a stale HTML snapshot after deploys.
