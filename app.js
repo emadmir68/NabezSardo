@@ -32,7 +32,8 @@ function headers(type='text/html; charset=utf-8'){
     'Content-Security-Policy':"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
   };
 }
-function send(res,status,body,type,extra={}){const h={...headers(type),...extra};if(String(process.env.PREVIEW_READONLY||'')==='1')h['X-Robots-Tag']='noindex, nofollow, noarchive';const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
+function isPreviewReadonly(){return String(process.env.PREVIEW_READONLY||'')==='1'&&String(process.env.CLOUDFLARE_PRIMARY||'')!=='1';}
+function send(res,status,body,type,extra={}){const h={...headers(type),...extra};if(isPreviewReadonly())h['X-Robots-Tag']='noindex, nofollow, noarchive';const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
 function redirect(res,to,cookie){const h={...headers(),Location:to,'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'};if(cookie)h['Set-Cookie']=cookie;res.writeHead(302,h);res.end();}
 function sendArticleHead(res,a){
   const canonical=PUBLIC_BASE+'/news/'+encodeURIComponent(a.slug||'');
@@ -40,7 +41,7 @@ function sendArticleHead(res,a){
     ...headers(),
     'Cache-Control':'public,max-age=300,stale-while-revalidate=900',
     'Link':'<'+canonical+'>; rel="canonical"',
-    'X-Robots-Tag':'index, follow, max-image-preview:large'
+    'X-Robots-Tag':isPreviewReadonly()?'noindex, nofollow, noarchive':'index, follow, max-image-preview:large'
   });
   res.end();
 }
