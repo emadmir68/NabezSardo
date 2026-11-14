@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دموی Three.js + Rapier + Postprocessing + Librosa</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #05060a;
+    font-family: "Segoe UI", Tahoma, "Noto Sans Arabic", sans-serif; }
+  #app { position: fixed; inset: 0; }
+  canvas { display: block; }
+  .panel {
+    position: fixed; top: 16px; inset-inline: 16px; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    color: #dfe7ff; font-size: 13px;
+  }
+  .card {
+    background: rgba(10, 14, 26, .72); border: 1px solid rgba(126, 156, 255, .28);
+    border-radius: 12px; padding: 10px 14px; backdrop-filter: blur(8px);
+    box-shadow: 0 6px 24px rgba(0,0,0,.35);
+  }
+  .stack { display: flex; flex-direction: column; gap: 4px; }
+  .title { font-size: 15px; font-weight: 700; color: #fff; }
+  .sub { color: #9fb3e8; font-size: 11.5px; line-height: 1.7; }
+  .btn {
+    cursor: pointer; border: 1px solid rgba(140,170,255,.45); color: #eaf1ff;
+    background: linear-gradient(180deg, rgba(70,100,220,.35), rgba(40,60,160,.35));
+    padding: 9px 22px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    transition: transform .15s, filter .15s;
+  }
+  .btn:hover { transform: translateY(-1px); filter: brightness(1.15); }
+  .btn:active { transform: translateY(1px); }
+  .kbd { font-size: 10.5px; color: #8ea2d6; margin-top: 3px; }
+  .hud {
+    position: fixed; bottom: 14px; inset-inline-start: 16px; z-index: 10;
+    color: #cfe0ff; font-size: 12px; line-height: 1.9;
+  }
+  .hud b { color: #7ee0ff; font-weight: 600; }
+  #err {
+    position: fixed; bottom: 14px; inset-inline-end: 16px; z-index: 20;
+    max-width: 46%; color: #ffb3c0; font-size: 11px; line-height: 1.6;
+    background: rgba(40,10,20,.6); padding: 8px 12px; border-radius: 8px;
+    white-space: pre-wrap; display: none;
+  }
+  .dot { display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:#39ff88; margin-inline-end:5px; vertical-align:1px;
+    box-shadow:0 0 8px #39ff88; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="panel">
+  <div class="card stack">
+    <div class="title">دمو: فیزیک + افکت + سینک موزیک</div>
+    <div class="sub">
+      Three.js r187 · Rapier (WASM) · postprocessing (Bloom/Vignette/CA)
+      <br>ضربه‌ها از قبل با <b>librosa 0.10.2</b> از track واقعی استخراج شده: <span id="tempoLbl">117 BPM</span> · <span id="nbeatsLbl">26</span> ضربه
+    </div>
+  </div>
+  <div class="card stack" style="text-align:center">
+    <button id="playBtn" class="btn">▶ شروع</button>
+    <div class="kbd">کلید Space هم کار می‌کند</div>
+  </div>
+</div>
+
+<div class="hud">
+  <span class="dot" id="liveDot"></span>WebGL: <b id="fpsLbl">—</b> FPS · مکعب‌ها: <b id="bodiesLbl">—</b> · ضربه‌ی فعلی: <b id="beatLbl">0</b> · شدت: <b id="strLbl">—</b><br>
+  OrbitControls: درگ = چرخش · اسکرول = زوم · درگ‌راست = پن
+</div>
+<div id="err"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "/demo/vendor/three.module.js",
+    "three/addons/": "/demo/vendor/jsm/",
+    "rapier": "/demo/vendor/rapier3d-compat.esm.js",
+    "postprocessing": "/demo/vendor/postprocessing.esm.js"
+  }
+}
+</script>
+
+<script type="module">
+// ---------- خطاگیر و ابزار کوچک ----------
+const errBox = document.getElementById('err');
+const showErr = (tag, e) => {
+  errBox.style.display = 'block';
+  errBox.textContent = `${errBox.textContent}\n[${tag}] ${e && (e.message || e)}`;
+  console.error(tag, e);
+};
+window.addEventListener('error', (e) => showErr('window', e.error || e.message));
+window.addEventListener('unhandledrejection', (e) => showErr('promise', e.reason));
+
+// ---------- داده‌ی ضربه‌ها (خروجی librosa از analyze_beats.py) ----------
+const BEATS = {
+  tempo: 117.19, n: 26, duration: 13.0,
+  times:     [0.000,0.512,1.024,1.536,2.016,2.528,3.040,3.520,4.032,4.512,5.024,5.504,5.984,6.432,6.912,7.424,7.936,8.416,8.928,9.408,9.920,10.432,10.912,11.424,11.936,12.448],
+  strengths: [0.000,0.626,0.693,0.977,0.518,1.000,0.606,0.871,0.766,0.472,0.353,0.400,0.352,0.254,0.329,0.368,0.195,0.436,0.298,0.272,0.417,0.240,0.357,0.364,0.166,0.000],
+};
+
+const loadErr = (m) => new Error(m);
+
+async function main() {
+  // ---------- بارگذاری ماژول‌ها از CDN ----------
+  const THREE = await import('three');
+  const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+  const { EffectComposer, RenderPass, EffectPass, BloomEffect, VignetteEffect, ChromaticAberrationEffect } = await import('postprocessing');
+  const RAPIER = await import('rapier');
+
+  // ---------- صحنه / رندرر / دوربین ----------
+  const app = document.getElementById('app');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  app.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x05060a);
+  scene.fog = new THREE.FogExp2(0x05060a, 0.028);
+
+  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+  camera.position.set(9, 7.5, 12);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.maxPolarAngle = Math.PI * 0.495;
+  controls.target.set(0, 1.2, 0);
+
+  // ---------- نور: دوتایی رنگی + سایه ----------
+  const keyLight = new THREE.DirectionalLight(0x9db8ff, 2.6);
+  keyLight.position.set(8, 14, 6);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(2048, 2048);
+  keyLight.shadow.camera.left = -20; keyLight.shadow.camera.right = 20;
+  keyLight.shadow.camera.top = 20;  keyLight.shadow.camera.bottom = -20;
+  scene.add(keyLight);
+
+  const rim = new THREE.PointLight(0xff2e88, 26, 40, 2);   // پُرکِننده‌ی پشت صحنه
+  rim.position.set(-8, 5, -8);
+  scene.add(rim);
+
+  const fill = new THREE.HemisphereLight(0x334, 0x080a12, 0.9);
+  scene.add(fill);
+
+  // زمین بازتابنده
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: 0x0c1222, roughness: 0.12, metalness: 0.85,
+  });
+  const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(60, 1, 60), floorMat);
+  floorMesh.position.y = -0.5;
+  floorMesh.receiveShadow = true;
+  scene.add(floorMesh);
+
+  // حلقه‌های پس‌زمینه برای عمق و Bloom
+  const rings = [];
+  for (let i = 0; i < 5; i++) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(6 + i * 2.2, 0.045, 8, 128),
+      new THREE.MeshBasicMaterial({ color: [0x37c8ff, 0xff2e88, 0x9b6bff, 0x37ffc8, 0xffc837][i] }),
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.02 + i * 0.9;
+    scene.add(ring);
+    rings.push(ring);
+  }
+
+  // ---------- فیزیک Rapier ----------
+  await RAPIER.init();
+  const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  world.timestep = 1 / 120;
+
+  const floorBody = world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.05, 0));
+  world.createCollider(RAPIER.ColliderDesc.cuboid(30, 0.45, 30).setRestitution(0.35), floorBody);
+
+  // آپدامپ (کنترل‌کننده‌ی دامنه‌ی جهش مکعب‌ها)
+  const amplitudeBody = world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(0, 0.25, 0));
+  const amplitudeCollider = world.createCollider(RAPIER.ColliderDesc.cuboid(0.45, 0.25, 0.45), amplitudeBody);
+  void amplitudeCollider;
+
+  // ---------- مکعب‌های کور (نمایش‌دهنده‌ی شدت ضربه‌ها) ----------
+  const CUBE_N = 26;
+  const cubes = [];
+  const palette = [0x37c8ff, 0xff2e88, 0x9b6bff, 0x37ffc8, 0xffc837];
+  const cubeGeo = new THREE.BoxGeometry(0.9, 0.9, 0.9);
+  const cubeMat = (color) => new THREE.MeshStandardMaterial({
+    color, roughness: 0.22, metalness: 0.75,
+    emissive: color, emissiveIntensity: 0.55,
+  });
+  for (let i = 0; i < CUBE_N; i++) {
+    const mesh = new THREE.Mesh(cubeGeo, cubeMat(palette[i % palette.length]));
+    mesh.castShadow = true;
+    scene.add(mesh);
+    const ang = (i / CUBE_N) * Math.PI * 2;
+    const rb = world.createRigidBody(
+      RAPIER.RigidBodyDesc.dynamic()
+        .setTranslation(Math.cos(ang) * 5.2, 0.45 + (i % 5) * 1.1, Math.sin(ang) * 5.2)
+        .setLinearDamping(0.25),
+    );
+    world.createCollider(RAPIER.ColliderDesc.cuboid(0.45, 0.45, 0.45).setRestitution(0.55), rb);
+    cubes.push({ mesh, rb, hue: (i / CUBE_N) });
+  }
+
+  // اسفیر مرکزی «هسته‌ی بیت» — با هر ضربه ایمپالس می‌گیرد
+  const coreMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff, roughness: 0.08, metalness: 0.4,
+    emissive: 0x37c8ff, emissiveIntensity: 1.6,
+  });
+  const coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15, 3), coreMat);
+  coreMesh.castShadow = true;
+  scene.add(coreMesh);
+  const coreBody = world.createRigidBody(
+    RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 3.2, 0).setLinearDamping(0.9),
+  );
+  world.createCollider(RAPIER.ColliderDesc.ball(1.15).setRestitution(0.6), coreBody);
+
+  // سیم‌های اتصال (visual jitter بدون فیزیک)
+  const wireMat = new THREE.LineBasicMaterial({ color: 0x5a7fd6, transparent: true, opacity: 0.28 });
+  const wireGeo = new THREE.BufferGeometry();
+  const wirePositions = new Float32Array(CUBE_N * 2 * 3);
+  wireGeo.setAttribute('position', new THREE.BufferAttribute(wirePositions, 3));
+  const wires = new THREE.LineSegments(wireGeo, wireMat);
+  scene.add(wires);
+
+  // ---------- پُست‌پروسسینگ ----------
+  const composer = new EffectComposer(renderer, { frameBufferType: THREE.HalfFloatType });
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new BloomEffect({ intensity: 1.15, luminanceThreshold: 0.18, luminanceSmoothing: 0.4, mipmapBlur: true });
+  const vignette = new VignetteEffect({ darkness: 0.55, offset: 0.32 });
+  const chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(0.0006, 0.0006), radialModulation: true, modulationOffset: 0.4 });
+  const fxPass = new EffectPass(camera, bloom, vignette, chroma);
+  composer.addPass(fxPass);
+
+  // ---------- پخش موزیک + سینک ----------
+  // ترکِ سنتِتیک ما روی دیسک است (download/beat_demo_track.wav)؛ در صفحه‌ی خودکفا
+  // یک نسخه‌ی WebAudio از همان BPM/الگوی کیک-اسنر بازسازی می‌کنیم تا سینک
+  // واقعی «صوت ↔ ضربه» را بدون فایل خارجی ببینیم.
+  let musicPlaying = false;
+  const audio = { ctx: null, t0: 0, tSuspend: 0, next16th: 0, step: 0 };
+
+  function makeKick(t) {
+    const ctx = audio.ctx, o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.exponentialRampToValueAtTime(44, t + 0.11);
+    g.gain.setValueAtTime(0.9, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+    o.connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + 0.18);
+  }
+  function makeSnare(t) {
+    const ctx = audio.ctx;
+    const b = ctx.createBuffer(1, ctx.sampleRate * 0.16, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.045));
+    const s = ctx.createBufferSource(); s.buffer = b;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
+    const g = ctx.createGain(); g.gain.value = 0.32;
+    s.connect(hp).connect(g).connect(ctx.destination);
+    s.start(t);
+  }
+  function makeHat(t) {
+    const ctx = audio.ctx;
+    const b = ctx.createBuffer(1, ctx.sampleRate * 0.045, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.012));
+    const s = ctx.createBufferSource(); s.buffer = b;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000;
+    const g = ctx.createGain(); g.gain.value = 0.15;
+    s.connect(hp).connect(g).connect(ctx.destination);
+    s.start(t);
+  }
+  function makeBass(t, freq) {
+    const ctx = audio.ctx, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = freq;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 340;
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(0.24, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.44);
+    o.connect(lp).connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + 0.46);
+  }
+  function scheduleAudio() {
+    const ctx = audio.ctx;
+    const SPB = 60 / BEATS.tempo;              // مدت ضربه از تمپوی librosa
+    const ahead = ctx.currentTime + 0.12;
+    while (audio.next16th < ahead) {
+      const t = audio.next16th, sixteenth = audio.step % 4;
+      if (sixteenth === 0) { makeKick(t); makeBass(t, [55, 55, 65.41, 82.41][(audio.step / 4) % 4]); }
+      if (sixteenth === 2) makeSnare(t);
+      if (audio.step % 2 === 1) makeHat(t);
+      audio.step += 1;
+      audio.next16th += SPB / 4;
+    }
+  }
+
+  const playBtn = document.getElementById('playBtn');
+  const togglePlay = () => {
+    if (!audio.ctx) audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.ctx.state === 'suspended') audio.ctx.resume();
+    if (musicPlaying) {                    // توقف: ساعت صوتی هم تعلیق می‌شود
+      musicPlaying = false;
+      audio.tSuspend = audio.ctx.currentTime;   // برای شیفت زمان در ادامه
+      audio.ctx.suspend();
+      playBtn.textContent = '▶ ادامه';
+      return;
+    }
+    if (audio.step === 0) {               // نخستین شروع: مرجع زمان را ست کن
+      audio.t0 = audio.ctx.currentTime + 0.05;
+      audio.next16th = audio.t0;
+    } else {                               // ادامه بعد از توقف: آفست حفظ می‌شود
+      const delta = audio.ctx.currentTime - audio.tSuspend;
+      audio.t0 += delta;
+      audio.next16th += delta;
+    }
+    musicPlaying = true;
+    playBtn.textContent = '⏸ توقف';
+  };
+  playBtn.addEventListener('click', togglePlay);
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  });
+
+  // ---------- حلقه‌ی رندر + سینک فیزیک با ضربه‌ها ----------
+  const clock = new THREE.Clock();
+  // زمان شبیه‌سازی: مرجع یکسان برای هر دو حالت.
+  // با موزیک: ساعت صوتی AudioContext (دقت بالا، تعلیق‌ناپذیر)؛
+  // بدون موزیک: ساعت صحنه (performance) پیش می‌رود.
+  let simTime = 0;            // زمان منطقی مشترک (ثانیه)
+  let clockTime = 0;          // جمع dtها (حالت بدون موزیک)
+  const beatPulse = [0, 0, 0, 0];   // پالس لحظه‌ای ضربه برای حلقه‌ها
+  let beatIdx = -1, fps = 0, fpsFrames = 0, fpsTime = 0;
+  const bodiesLbl = document.getElementById('bodiesLbl');
+  const beatLbl = document.getElementById('beatLbl');
+  const strLbl = document.getElementById('strLbl');
+  const fpsLbl = document.getElementById('fpsLbl');
+  const liveDot = document.getElementById('liveDot');
+  bodiesLbl.textContent = String(CUBE_N + 1);
+
+  function fireBeat(i) {
+    const s = BEATS.strengths[i] || 0;
+    // پالس حلقه‌ها در لحظه‌ی ضربه
+    beatPulse[0] = s; beatPulse[1] = s * 0.7; beatPulse[2] = s * 0.5; beatPulse[3] = s;
+    // ایمپالس رو به بالای هسته + مکعب‌ها با شدت ضربه
+    coreBody.applyImpulse({ x: 0, y: 2.6 * (0.35 + s), z: 0 }, true);
+    for (const { rb } of cubes) {
+      const ang = Math.random() * Math.PI * 2;
+      rb.applyImpulse(
+        { x: Math.cos(ang) * 0.55 * (0.3 + s), y: (0.55 + Math.random() * 0.55) * (0.35 + s), z: Math.sin(ang) * 0.55 * (0.3 + s) },
+        true,
+      );
+    }
+    // پالس‌های نوری و افکت
+    coreMat.emissiveIntensity = 1.4 + 3.2 * s;
+    bloom.intensity = 1.0 + 1.9 * s;
+    chroma.offset.set(0.0006 + 0.0011 * s, 0.0006 + 0.0011 * s);
+    rim.intensity = 18 + 30 * s;
+    beatLbl.textContent = String(i + 1);
+    strLbl.textContent = s.toFixed(2);
+  }
+
+  function render() {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    controls.update();
+
+    if (musicPlaying) scheduleAudio();
+    if (musicPlaying && audio.ctx && audio.ctx.state === 'running') {
+      simTime = audio.ctx.currentTime - audio.t0;   // t0 = لحظه‌ی شروع/ادامه
+    } else {
+      clockTime += dt;
+      simTime = clockTime;
+    }
+
+    // فیزیک: substepهای کوچک تا به زمانِ منطقی برسیم
+    let guard = 0;
+    while (guard++ < 8 && worldTime + world.timestep <= simTime + 1e-9) {
+      world.step();
+      worldTime += world.timestep;
+    }
+
+    // شلیک ضربه‌ها بر اساس زمانِ منطقی (مرجع واحد)
+    const next = beatIdx + 1;
+    if (next < BEATS.n && simTime >= BEATS.times[next]) {
+      beatIdx = next;
+      fireBeat(next);
+    }
+
+    // همگام‌سازی مش‌ها با اجسام فیزیکی
+    for (const { mesh, rb } of cubes) {
+      const t = rb.translation();
+      mesh.position.set(t.x, t.y, t.z);
+      const r = rb.rotation();
+      mesh.quaternion.set(r.x, r.y, r.z, r.w);
+    }
+    const ct = coreBody.translation();
+    coreMesh.position.set(ct.x, ct.y, ct.z);
+    const cr = coreBody.rotation();
+    coreMesh.quaternion.set(cr.x, cr.y, cr.z, cr.w);
+    coreMesh.rotation.y += dt * 0.4;
+
+    // سیم‌ها از مکعب‌ها به هسته
+    const cp = coreMesh.position;
+    for (let i = 0; i < CUBE_N; i++) {
+      wirePositions[i * 6 + 0] = cubes[i].mesh.position.x;
+      wirePositions[i * 6 + 1] = cubes[i].mesh.position.y;
+      wirePositions[i * 6 + 2] = cubes[i].mesh.position.z;
+      wirePositions[i * 6 + 3] = cp.x; wirePositions[i * 6 + 4] = cp.y; wirePositions[i * 6 + 5] = cp.z;
+    }
+    wireGeo.attributes.position.needsUpdate = true;
+
+    // حلقه‌ها آرام می‌چرخند و در ضربه شتاب می‌گیرند
+    for (let i = 0; i < rings.length; i++) {
+      const r = rings[i];
+      r.userData.v = (r.userData.v || 0.12 + i * 0.04) * (1 - dt * 0.6) + (beatPulse[i % 3] || 0) * dt * 8;
+      r.rotation.z += (r.userData.v || 0.12) * dt * 3;
+    }
+    if (beatPulse[3] > 0) beatPulse[3] *= (1 - dt * 3);
+    coreMat.emissiveIntensity += (1.6 - coreMat.emissiveIntensity) * dt * 3;
+    bloom.intensity += (1.15 - bloom.intensity) * dt * 2.2;
+    rim.intensity += (26 - rim.intensity) * dt * 4;
+
+    // FPS
+    fpsFrames++; fpsTime += dt;
+    if (fpsTime >= 0.5) {
+      fps = Math.round(fpsFrames / fpsTime);
+      fpsLbl.textContent = String(fps);
+      fpsFrames = 0; fpsTime = 0;
+    }
+
+    composer.render();
+    requestAnimationFrame(render);
+  }
+
+  // شروع حلقه‌ی رندر
+  let worldTime = 0;                 // زمانِ پیموده‌شده‌ی فیزیک (substepها)
+  addEventListener('pointerdown', () => { if (!audio.ctx) liveDot.style.background = '#39ff88'; }, { once: true });
+  render();
+  window.__demo = { THREE, RAPIER, world, cubes, BEATS, composer, bloom };
+}
+main().catch((e) => showErr('boot', e));
+</script>
+</body>
+</html>

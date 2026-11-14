@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نبض ساردو | دموی سه‌بعدی همگام با ضرب‌آهنگ</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="/assets/fonts.css" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f6f1e6;      /* پس‌زمینه‌ی کرم سایت */
+    --maroon: #8a1f2b;     /* زرشکی برند */
+    --gold: #8a6a33;       /* قهوه‌ای طلایی */
+    --green: #1e5b46;      /* سبز تیره */
+    --blue: #1d4573;       /* آبی */
+    --ink: #1c1710;        /* مشکی قهوه‌ای متن */
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: var(--cream);
+    font-family: "Vazirmatn", Tahoma, system-ui, sans-serif; }
+  #app { position: fixed; inset: 0; }
+  canvas { display: block; }
+
+  .panel {
+    position: fixed; top: 14px; inset-inline: 16px; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch;
+  }
+  .card {
+    background: rgba(246, 241, 230, .82); border: 1px solid rgba(138, 31, 43, .25);
+    border-radius: 14px; padding: 10px 16px; backdrop-filter: blur(10px);
+    box-shadow: 0 6px 22px rgba(28, 23, 16, .12);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .mark {
+    width: 42px; height: 42px; border-radius: 12px; flex: none;
+    background: var(--maroon); color: var(--cream);
+    display: grid; place-items: center; font-weight: 800; font-size: 20px;
+    box-shadow: inset 0 0 0 2px rgba(246,241,230,.25), 0 4px 14px rgba(138,31,43,.35);
+    position: relative; overflow: hidden;
+  }
+  .mark::after {            /* خط نبض (ECG) روی لوگو */
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 20%, rgba(246,241,230,.0) 30%, rgba(246,241,230,.85) 42%, rgba(246,241,230,.0) 50%, transparent 70%);
+    animation: sweep 2.4s linear infinite;
+  }
+  @keyframes sweep { from { transform: translateX(120%); } to { transform: translateX(-120%); } }
+  .brand .txt .fa { font-size: 17px; font-weight: 800; color: var(--ink); line-height: 1.3; }
+  .brand .txt .en { font-size: 10px; letter-spacing: .22em; color: var(--gold); font-weight: 700; }
+  .tagline { font-size: 11px; color: #6b6355; margin-top: 2px; }
+
+  .stack { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+  .btn {
+    cursor: pointer; border: none; color: var(--cream);
+    background: linear-gradient(180deg, #a32633, var(--maroon));
+    padding: 10px 26px; border-radius: 12px; font-size: 14.5px; font-weight: 700;
+    font-family: inherit; transition: transform .15s, filter .15s;
+    box-shadow: 0 5px 16px rgba(138,31,43,.35);
+  }
+  .btn:hover { transform: translateY(-1px); filter: brightness(1.12); }
+  .btn:active { transform: translateY(1px); }
+  .kbd { font-size: 10px; color: #8a7f6c; text-align: center; margin-top: 4px; }
+
+  .hud {
+    position: fixed; bottom: 12px; inset-inline-start: 16px; z-index: 10;
+    color: #565046; font-size: 12px; line-height: 1.9;
+    background: rgba(246,241,230,.72); border-radius: 10px; padding: 6px 12px;
+    border: 1px solid rgba(138,31,43,.18); backdrop-filter: blur(8px);
+  }
+  .hud b { color: var(--maroon); font-weight: 700; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #1e5b46; margin-inline-end: 6px; vertical-align: 0;
+    box-shadow: 0 0 8px rgba(30,91,70,.7); }
+  .dot.beating { animation: beat .71s infinite; }   /* هم‌قد با ضربه (۰.۷۱s) */
+  @keyframes beat { 0%,100% { transform: scale(1); } 12% { transform: scale(1.5); } 24% { transform: scale(1); } }
+
+  /* نوار تیترها */
+  .ticker {
+    position: fixed; bottom: 0; inset-inline: 0; z-index: 9;
+    background: var(--ink); color: var(--cream); overflow: hidden;
+    border-top: 3px solid var(--maroon);
+    padding: 8px 0; font-size: 13.5px; white-space: nowrap;
+  }
+  .ticker .label {
+    position: absolute; inset-inline-start: 0; top: 0; bottom: 0; z-index: 2;
+    background: var(--maroon); color: var(--cream); display: flex; align-items: center;
+    padding: 0 18px; font-weight: 700; font-size: 12.5px;
+    box-shadow: 3px 0 12px rgba(0,0,0,.35);
+  }
+  .ticker .track { display: inline-block; padding-inline-start: 120px; }
+  .ticker .item { margin-inline-end: 56px; color: #d8cfba; }
+  .ticker .item .cat { color: #c9a86a; font-weight: 700; margin-inline-end: 8px; }
+  .ticker .track { animation: crawl 60s linear infinite; }
+  @keyframes crawl { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+  html[dir="rtl"] .ticker .track { animation-name: crawl-rtl; }
+  @keyframes crawl-rtl { from { transform: translateX(0); } to { transform: translateX(100%); } }
+
+  #err {
+    position: fixed; top: 50%; inset-inline: 16px; z-index: 20; transform: translateY(-50%);
+    color: #ffb3c0; font-size: 13px; line-height: 1.7;
+    background: rgba(40,10,20,.88); padding: 14px 18px; border-radius: 10px;
+    white-space: pre-wrap; display: none; max-height: 60vh; overflow: auto;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="panel">
+  <div class="card brand">
+    <div class="mark">ن</div>
+    <div class="txt">
+      <div class="fa">نبض ساردو</div>
+      <div class="en">NABEZ SARDO</div>
+      <div class="tagline">روایتِ دقیقِ جنوب کرمان — رسانه مستقل</div>
+    </div>
+  </div>
+  <div class="card stack" style="text-align:center">
+    <button id="playBtn" class="btn">▶ پخش نبض</button>
+    <div class="kbd">Space</div>
+  </div>
+</div>
+
+<div class="hud">
+  <span class="dot" id="liveDot"></span>ضربه: <b id="beatLbl">۰</b> از <b id="nbeatsLbl">۳۴</b> ·
+  شدت: <b id="strLbl">—</b> · <b id="fpsLbl">—</b> FPS<br>
+  درگ: چرخش · اسکرول: زوم · درگ‌راست: جابه‌جایی
+</div>
+
+<div class="ticker">
+  <div class="label">آخرین عناوین</div>
+  <div class="track" id="tickerTrack"></div>
+</div>
+
+<div id="err"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "/demo/vendor/three.module.js",
+    "three/addons/": "/demo/vendor/jsm/",
+    "rapier": "/demo/vendor/rapier3d-compat.esm.js",
+    "postprocessing": "/demo/vendor/postprocessing.esm.js"
+  }
+}
+</script>
+
+<script type="module">
+// ============================================================
+// نبض ساردو — دموی سه‌بعدی همگام با ضرب‌آهنگ
+// تیترها از nabzesardo.ir (آبان ۱۴۰۵) · جینگل «نبض» ۶/8 @ 126 BPM
+// ضربه‌ها با librosa 0.10.2 از nabzesardo_jingle.wav استخراج شده‌اند
+// ============================================================
+const errBox = document.getElementById('err');
+const showErr = (tag, e) => {
+  errBox.style.display = 'block';
+  errBox.textContent = `${errBox.textContent}\n[${tag}] ${e && (e.message || e)}`;
+  console.error(tag, e);
+};
+window.addEventListener('error', (e) => showErr('window', e.error || e.message));
+window.addEventListener('unhandledrejection', (e) => showErr('promise', e.reason));
+
+// ---------- تیترهای واقعی سایت (آبان ۱۴۰۵) ----------
+const NEWS = [
+  { c: 'اجتماعی', t: 'مراسم تشییع و تدفین مرحوم «محمدرسول شهدادی» فردا از غسالخانه عنبرآباد برگزار می‌شود' },
+  { c: 'اجتماعی', t: 'پیشرفت ۹۵ درصدی سنجش سلامت کارگران در واحدهای اقتصادی استان کرمان' },
+  { c: 'سیاسی',   t: 'امام جمعه کرمان: دشمنی آمریکا با ایران با تغییر دولت‌ها پایان نمی‌یابد' },
+  { c: 'سیاسی',   t: 'سپاه پاسداران: رادار هشدار اولیه ارتش متجاوز آمریکا در جزیره بحرین منهدم شد' },
+  { c: 'ورزش',    t: 'سعید افروز: آکادمی تخصصی دوومیدانی در جیرفت راه‌اندازی می‌کنم' },
+  { c: 'آب‌وهوا',  t: 'هشدار زرد؛ رگبار و رعدوبرق در مرکز و نیمه جنوبی کرمان' },
+  { c: 'آب‌وهوا',  t: 'اجرای سیستم آبیاری قطره‌ای در بلوارهای جیرفت' },
+  { c: 'خبر کوتاه', t: 'انهدام باند سه نفره سرقت در «فاریاب»' },
+  { c: 'خبر کوتاه', t: 'اطلاعیه مهم | قطعی و افت فشار آب' },
+  { c: 'اجتماعی', t: 'فرآیند انتخاب واحد تکمیلی دانشگاه آزاد اسلامی از امروز آغاز شد' },
+];
+
+// نوار تیترها
+const track = document.getElementById('tickerTrack');
+track.innerHTML = [...NEWS, ...NEWS]
+  .map((n) => `<span class="item"><span class="cat">◆ ${n.c}</span>${n.t}</span>`)
+  .join('');
+
+// ---------- ضربه‌های librosa (nabzesardo_beats.json) ----------
+const BEATS = {
+  tempo: 85.23, n: 34, duration: 24.06,   // ۶/8: ضربه‌ی سواری هر ۰.۷۱s
+  times:     [0.032,0.736,1.472,2.176,2.880,3.616,4.320,5.024,5.728,6.464,7.168,7.872,8.576,9.312,10.016,10.752,11.456,12.192,12.896,13.600,14.304,15.040,15.744,16.448,17.152,17.888,18.624,19.328,20.032,20.736,21.472,22.176,22.848,23.456],
+  strengths: [0.000,0.773,0.645,0.996,0.960,0.600,0.783,0.835,1.000,0.706,0.401,0.395,0.638,0.656,0.515,0.713,0.695,0.420,0.643,0.559,0.753,0.533,0.771,0.382,0.897,0.171,0.154,0.568,0.510,0.616,0.614,0.884,0.407,0.000],
+};
+
+const fa = (x) => String(x).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
+document.getElementById('nbeatsLbl').textContent = fa(BEATS.n);
+
+async function main() {
+  const THREE = await import('three');
+  const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
+  const { EffectComposer, RenderPass, EffectPass, BloomEffect, VignetteEffect, ChromaticAberrationEffect } = await import('postprocessing');
+  const RAPIER = await import('rapier');
+
+  // ---------- رندرر روی زمینه‌ی کرم ----------
+  const app = document.getElementById('app');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.12;
+  app.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf6f1e6);        // کرمِ سایت
+  scene.fog = new THREE.FogExp2(0xf0e9d8, 0.022);      // مه کرم گرم
+
+  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 200);
+  camera.position.set(10, 7, 13);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.maxPolarAngle = Math.PI * 0.495;
+  controls.target.set(0, 1.6, 0);
+
+  // ---------- نور: گرم و «روزنامه‌ای» ----------
+  const key = new THREE.DirectionalLight(0xfff2dd, 2.2);   // آفتاب گرم جنوب
+  key.position.set(9, 15, 7);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -22; key.shadow.camera.right = 22;
+  key.shadow.camera.top = 22;  key.shadow.camera.bottom = -22;
+  scene.add(key);
+
+  const rim = new THREE.PointLight(0x8a1f2b, 30, 45, 2);   // زرشکی برند از پشت
+  rim.position.set(-9, 5.5, -9);
+  scene.add(rim);
+
+  const green = new THREE.PointLight(0x1e5b46, 14, 35, 2); // سبز از راست
+  green.position.set(10, 4, -6);
+  scene.add(green);
+
+  scene.add(new THREE.HemisphereLight(0xfdf6e3, 0xcbb98d, 1.0));
+
+  // زمین: «مغال» خاکیِ کرم‌روشن با کمی متال
+  const floorMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(60, 1, 60),
+    new THREE.MeshStandardMaterial({ color: 0xe9dfc7, roughness: 0.55, metalness: 0.25 }),
+  );
+  floorMesh.position.y = -0.5;
+  floorMesh.receiveShadow = true;
+  scene.add(floorMesh);
+
+  // حلقه‌های برند (زرشکی/طلایی/سبز/آبی/کرم)
+  const ringColors = [0x8a1f2b, 0x8a6a33, 0x1e5b46, 0x1d4573, 0xb89b6a];
+  const rings = [];
+  for (let i = 0; i < 5; i++) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(6.5 + i * 2.1, 0.05, 8, 140),
+      new THREE.MeshBasicMaterial({ color: ringColors[i] }),
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.02 + i * 0.35;
+    scene.add(ring);
+    rings.push(ring);
+  }
+
+  // ---------- فیزیک ----------
+  await RAPIER.init();
+  const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+  world.timestep = 1 / 120;
+
+  const floorBody = world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.05, 0));
+  world.createCollider(RAPIER.ColliderDesc.cuboid(30, 0.45, 30).setRestitution(0.38), floorBody);
+
+  // ---------- ۱۰ «کاشی خبر» — به ازای هر تیتر واقعی ----------
+  const CUBE_N = NEWS.length;
+  const cubes = [];
+  const cubeGeo = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+  const cubeMats = [
+    { color: 0x8a1f2b, rough: 0.28 },   // زرشکی
+    { color: 0x8a6a33, rough: 0.3 },    // طلایی
+    { color: 0x1e5b46, rough: 0.3 },    // سبز
+    { color: 0x1d4573, rough: 0.3 },    // آبی
+    { color: 0x6b6355, rough: 0.4 },    // خاکی
+  ];
+  for (let i = 0; i < CUBE_N; i++) {
+    const m = cubeMats[i % cubeMats.length];
+    const mesh = new THREE.Mesh(cubeGeo, new THREE.MeshStandardMaterial({
+      color: m.color, roughness: m.rough, metalness: 0.7,
+      emissive: m.color, emissiveIntensity: 0.35,
+    }));
+    mesh.castShadow = true;
+    scene.add(mesh);
+    const ang = (i / CUBE_N) * Math.PI * 2;
+    const rb = world.createRigidBody(
+      RAPIER.RigidBodyDesc.dynamic()
+        .setTranslation(Math.cos(ang) * 5.6, 0.5 + (i % 4) * 1.05, Math.sin(ang) * 5.6)
+        .setLinearDamping(0.28),
+    );
+    world.createCollider(RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5).setRestitution(0.55), rb);
+    cubes.push({ mesh, rb });
+  }
+
+  // هسته‌ی «نبض» — قلب زرشکی که هر ضربه او را می‌کوبد
+  const coreMat = new THREE.MeshStandardMaterial({
+    color: 0x8a1f2b, roughness: 0.15, metalness: 0.55,
+    emissive: 0x8a1f2b, emissiveIntensity: 1.3,
+  });
+  const coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.25, 3), coreMat);
+  coreMesh.castShadow = true;
+  scene.add(coreMesh);
+  const coreBody = world.createRigidBody(
+    RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 3.4, 0).setLinearDamping(0.9),
+  );
+  world.createCollider(RAPIER.ColliderDesc.ball(1.25).setRestitution(0.62), coreBody);
+
+  // «سیم‌های خبر» — خطوط اتصال کاشی‌ها به قلب
+  const wireGeo = new THREE.BufferGeometry();
+  const wirePositions = new Float32Array(CUBE_N * 6);
+  wireGeo.setAttribute('position', new THREE.BufferAttribute(wirePositions, 3));
+  const wires = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({
+    color: 0x8a6a33, transparent: true, opacity: 0.3,
+  }));
+  scene.add(wires);
+
+  // ---------- افکت‌ها ----------
+  const composer = new EffectComposer(renderer, { frameBufferType: THREE.HalfFloatType });
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new BloomEffect({ intensity: 0.85, luminanceThreshold: 0.32, luminanceSmoothing: 0.35, mipmapBlur: true });
+  const vignette = new VignetteEffect({ darkness: 0.5, offset: 0.3 });
+  const chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(0.0004, 0.0004), radialModulation: true, modulationOffset: 0.4 });
+  composer.addPass(new EffectPass(camera, bloom, vignette, chroma));
+
+  // ---------- جینگل WebAudio: همان جینگلِ «نبض» بازسازی‌شده ----------
+  const audio = { ctx: null, t0: 0, tSuspend: 0, next8th: 0, step: 0 };
+  let musicPlaying = false;
+
+  function tombak(t, strong) {
+    const ctx = audio.ctx, o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(strong ? 215 : 175, t);
+    o.frequency.exponentialRampToValueAtTime(72, t + 0.1);
+    g.gain.setValueAtTime(strong ? 0.85 : 0.55, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    o.connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + 0.17);
+  }
+  function daf(t) {
+    const ctx = audio.ctx;
+    const b = ctx.createBuffer(1, ctx.sampleRate * 0.28, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      const dt = i / ctx.sampleRate;
+      d[i] = ((Math.random() * 2 - 1) * Math.exp(-dt * 26) * 0.5
+        + (Math.sin(2 * Math.PI * 2340 * dt) + Math.sin(2 * Math.PI * 3100 * dt)) * Math.exp(-dt * 9) * 0.14);
+    }
+    const s = ctx.createBufferSource(); s.buffer = b;
+    const g = ctx.createGain(); g.gain.value = 0.3;
+    s.connect(g).connect(ctx.destination);
+    s.start(t);
+  }
+  function santoor(t, freq, vel) {
+    const ctx = audio.ctx, o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    o2.type = 'sine'; o2.frequency.value = freq * 1.0035;   // چله‌ی خمیده
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(0.16 * vel, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    o.connect(g); o2.connect(g); g.connect(ctx.destination);
+    o.start(t); o2.start(t); o.stop(t + 0.32); o2.stop(t + 0.32);
+  }
+  function bass(t, freq) {
+    const ctx = audio.ctx, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle'; o.frequency.value = freq;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 300;
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.linearRampToValueAtTime(0.26, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+    o.connect(lp).connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + 0.95);
+  }
+  const PENT = [220, 261.63, 293.66, 329.63, 392];
+  const BASSF = [110, 110, 130.81, 98];
+  function scheduleAudio() {
+    // ۶/8: هر eighth = SPB/3 (SPB = 60/tempo از librosa)
+    const ctx = audio.ctx;
+    const SPB = 60 / BEATS.tempo;           // ۰.۷۰۴s — ضربه‌ی سواری
+    const e8 = SPB / 3;                     // یک‌هشتم واقعی
+    const ahead = ctx.currentTime + 0.12;
+    while (audio.next8th < ahead) {
+      const t = audio.next8th, st = audio.step % 18;   // ۱۸ هشتم = یک میزان کامل ۶/8×۳
+      const measure = Math.floor(audio.step / 18);
+      if (st === 0 || st === 9) tombak(t, true);       // تومِ ۱ و ۴ (سواری)
+      if (st === 3 || st === 12) tombak(t, false);     // تیک‌های میان
+      if (st === 17) daf(t);
+      if (measure >= 2 && st === 0) bass(t, BASSF[measure % 4]);
+      if (measure >= 4 && st % 2 === 0) santoor(t, PENT[(measure * 3 + st / 2) % 5], st % 6 === 0 ? 1 : 0.7);
+      audio.step += 1;
+      audio.next8th += e8;
+    }
+  }
+
+  const playBtn = document.getElementById('playBtn');
+  const togglePlay = () => {
+    if (!audio.ctx) audio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.ctx.state === 'suspended') audio.ctx.resume();
+    if (musicPlaying) {
+      musicPlaying = false;
+      audio.tSuspend = audio.ctx.currentTime;
+      audio.ctx.suspend();
+      playBtn.textContent = '▶ ادامه';
+      return;
+    }
+    if (audio.step === 0) {
+      audio.t0 = audio.ctx.currentTime + 0.05;
+      audio.next8th = audio.t0;
+    } else {
+      const delta = audio.ctx.currentTime - audio.tSuspend;
+      audio.t0 += delta;
+      audio.next8th += delta;
+    }
+    musicPlaying = true;
+    playBtn.textContent = '⏸ توقف';
+  };
+  playBtn.addEventListener('click', togglePlay);
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  });
+
+  // ---------- حلقه‌ی رندر ----------
+  const clock = new THREE.Clock();
+  let simTime = 0, clockTime = 0, worldTime = 0, beatIdx = -1;
+  let fpsFrames = 0, fpsTime = 0;
+  const beatPulse = [0, 0, 0];
+  const beatLbl = document.getElementById('beatLbl');
+  const strLbl = document.getElementById('strLbl');
+  const fpsLbl = document.getElementById('fpsLbl');
+  const liveDot = document.getElementById('liveDot');
+
+  function fireBeat(i) {
+    const s = BEATS.strengths[i] || 0;
+    beatPulse[0] = s; beatPulse[1] = s * 0.6; beatPulse[2] = s;
+    coreBody.applyImpulse({ x: 0, y: 3.0 * (0.4 + s), z: 0 }, true);
+    for (const { rb } of cubes) {
+      const ang = Math.random() * Math.PI * 2;
+      rb.applyImpulse({
+        x: Math.cos(ang) * 0.6 * (0.35 + s),
+        y: (0.6 + Math.random() * 0.5) * (0.4 + s),
+        z: Math.sin(ang) * 0.6 * (0.35 + s),
+      }, true);
+    }
+    coreMat.emissiveIntensity = 1.2 + 3.4 * s;
+    bloom.intensity = 0.8 + 1.8 * s;
+    chroma.offset.set(0.0004 + 0.0009 * s, 0.0004 + 0.0009 * s);
+    rim.intensity = 22 + 34 * s;
+    beatLbl.textContent = fa(i + 1);
+    strLbl.textContent = fa(s.toFixed(2));
+    liveDot.classList.add('beating');
+    setTimeout(() => liveDot.classList.remove('beating'), 140);
+  }
+
+  function render() {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    controls.update();
+
+    if (musicPlaying) scheduleAudio();
+
+    if (musicPlaying && audio.ctx && audio.ctx.state === 'running') {
+      simTime = audio.ctx.currentTime - audio.t0;
+    } else {
+      clockTime += dt;
+      simTime = clockTime;
+    }
+
+    let guard = 0;
+    while (guard++ < 8 && worldTime + world.timestep <= simTime + 1e-9) {
+      world.step();
+      worldTime += world.timestep;
+    }
+    const next = beatIdx + 1;
+    if (next < BEATS.n && simTime >= BEATS.times[next]) {
+      beatIdx = next;
+      fireBeat(next);
+    }
+    if (simTime > BEATS.duration + 1.5) {          // پایان جینگل → توقف و ریست کامل
+      if (musicPlaying) togglePlay();
+      musicPlaying = false; clockTime = 0; simTime = 0; worldTime = 0; beatIdx = -1;
+      audio.step = 0;                               // پخش بعدی از نو شروع می‌شود
+      playBtn.textContent = '▶ پخش نبض';
+      beatLbl.textContent = fa(0);
+      strLbl.textContent = '—';
+    }
+
+    for (const { mesh, rb } of cubes) {
+      const t = rb.translation(), r = rb.rotation();
+      mesh.position.set(t.x, t.y, t.z);
+      mesh.quaternion.set(r.x, r.y, r.z, r.w);
+    }
+    const ct = coreBody.translation(), cr = coreBody.rotation();
+    coreMesh.position.set(ct.x, ct.y, ct.z);
+    coreMesh.quaternion.set(cr.x, cr.y, cr.z, cr.w);
+    coreMesh.rotation.y += dt * 0.35;
+
+    const cp = coreMesh.position;
+    for (let i = 0; i < CUBE_N; i++) {
+      const p = cubes[i].mesh.position;
+      wirePositions[i * 6] = p.x; wirePositions[i * 6 + 1] = p.y; wirePositions[i * 6 + 2] = p.z;
+      wirePositions[i * 6 + 3] = cp.x; wirePositions[i * 6 + 4] = cp.y; wirePositions[i * 6 + 5] = cp.z;
+    }
+    wireGeo.attributes.position.needsUpdate = true;
+
+    for (let i = 0; i < rings.length; i++) {
+      rings[i].rotation.z += (0.1 + i * 0.05 + beatPulse[i % 3] * 0.9) * dt;
+    }
+    coreMat.emissiveIntensity += (1.3 - coreMat.emissiveIntensity) * dt * 3;
+    bloom.intensity += (0.85 - bloom.intensity) * dt * 2.2;
+    rim.intensity += (30 - rim.intensity) * dt * 4;
+
+    fpsFrames++; fpsTime += dt;
+    if (fpsTime >= 0.5) {
+      fpsLbl.textContent = fa(Math.round(fpsFrames / fpsTime));
+      fpsFrames = 0; fpsTime = 0;
+    }
+
+    composer.render();
+    requestAnimationFrame(render);
+  }
+  render();
+  window.__demo = { THREE, RAPIER, world, cubes, BEATS, composer, NEWS };
+}
+main().catch((e) => showErr('boot', e));
+</script>
+</body>
+</html>

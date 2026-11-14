@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fa-IR" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>دموهای سه‌بعدی نبض ساردو</title>
+<meta name="description" content="دموهای تعاملی سه‌بعدی و همگام‌سازی موزیک برای استک نبض ساردو">
+<link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon.png">
+<link rel="stylesheet" href="/assets/fonts.css">
+<style>
+  :root{--gold:#c9a24b;--ink:#14110c;--paper:#f7f5ef;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Vazirmatn',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 20px}
+  header{text-align:center;margin-bottom:40px}
+  header h1{font-size:clamp(22px,4vw,34px);font-weight:800;letter-spacing:-.5px}
+  header h1 b{color:var(--gold)}
+  header p{margin-top:10px;font-size:14px;opacity:.75;max-width:560px;line-height:1.9}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;width:100%;max-width:980px}
+  a.card{display:block;background:#fff;border:1px solid #e8e2d2;border-radius:18px;padding:26px 22px;text-decoration:none;color:inherit;transition:transform .25s,box-shadow .25s}
+  a.card:hover{transform:translateY(-4px);box-shadow:0 14px 40px -18px rgba(20,17,12,.35)}
+  .card .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--gold);border:1px solid var(--gold);border-radius:99px;padding:3px 12px;margin-bottom:14px}
+  .card h2{font-size:19px;font-weight:800;margin-bottom:8px}
+  .card p{font-size:13px;line-height:1.9;opacity:.72}
+  .card .meta{margin-top:14px;font-size:11px;opacity:.5;font-family:monospace}
+  footer{margin-top:44px;font-size:12px;opacity:.55}
+  footer a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>دموهای <b>نبض ساردو</b></h1>
+  <p>نمونه‌های تعاملی استک سه‌بعدی (Three.js + Rapier + postprocessing) و همگام‌سازی حرکت با ضرب‌آهنگ موزیک (librosa) — ساخته‌شده برای توسعه‌ی تجربه‌ی بصری سایت.</p>
+</header>
+<div class="grid">
+  <a class="card" href="/demo/hero.html">
+    <span class="tag">ویژه</span>
+    <h2>Hero سه‌بعدی برندشده</h2>
+    <p>صفحه‌ی آغازین سه‌بعدی با تایپوگرافی طلایی، فیزیک Rapier و افکت‌های نوری — کاملاً خودکفا و بدون وابستگی خارجی.</p>
+    <p class="meta">three · rapier · postprocessing · ~1.2MB</p>
+  </a>
+  <a class="card" href="/demo/3d.html">
+    <span class="tag">سه‌بعدی</span>
+    <h2>صحنه‌ی سه‌بعدی نبض ساردو</h2>
+    <p>صحنه‌ی تعاملی با کنترل دوربین، نور و متریال — قابل چرخش و زوم با موس و لمس.</p>
+    <p class="meta">three · ~24KB + vendor</p>
+  </a>
+  <a class="card" href="/demo/beat-physics.html">
+    <span class="tag">موسیقی</span>
+    <h2>فیزیک سینک با ضرب‌آهنگ</h2>
+    <p>اجسام فیزیکی که روی هر ضرب موزیک واکنش نشان می‌دهند — ساعت صوتی AudioContext با دقت بالا و صدای تولیدشده در لحظه.</p>
+    <p class="meta">rapier · webaudio · ~20KB</p>
+  </a>
+</div>
+<footer>بازگشت به <a href="/">نبض ساردو</a> · این صفحه فقط دمو است و ایندکس نمی‌شود.</footer>
+</body>
+</html>

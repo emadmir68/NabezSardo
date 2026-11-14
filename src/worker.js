@@ -2067,7 +2067,7 @@ export default {
       return serveUpload(path.basename(p),request);
     }
 
-    if ((p.startsWith("/assets/") || p === "/hero-mosque.jpg") && request.method === "GET") {
+    if ((p.startsWith("/assets/") || p === "/hero-mosque.jpg" || p.startsWith("/demo/")) && request.method === "GET") {
       return serveAsset(request, p);
     }
 
