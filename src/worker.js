@@ -2036,7 +2036,7 @@ export default {
     }
     const p = decodeURIComponent(url.pathname);
     if(isReadOnlyPreview()&&p==="/robots.txt"&&(request.method==="GET"||request.method==="HEAD")){
-      return new Response(request.method==="HEAD"?null:"User-agent: *\\nDisallow: /\\n",{status:200,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-robots-tag":"noindex, nofollow, noarchive"}});
+      return new Response(request.method==="HEAD"?null:"User-agent: *\nDisallow: /\n",{status:200,headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-robots-tag":"noindex, nofollow, noarchive"}});
     }
     if(isReadOnlyPreview()&&request.method==="GET"&&(p==="/__preview/admin"||p==="/__preview/admin/editor")){
       const db=await loadDbObject();
