@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('node:fs');
+const {blockedMonitoredContentReason}=require('../lib/content-policy');
 
 function parseJsonOutput(text){
   const source=String(text||'').trim();
@@ -37,7 +38,7 @@ function scrub(value){
 }
 function sanitizeDb(input){
   const db=scrub(JSON.parse(JSON.stringify(input)));
-  db.articles=(Array.isArray(db.articles)?db.articles:[]).filter(a=>a&&a.status==='published');
+  db.articles=(Array.isArray(db.articles)?db.articles:[]).filter(a=>a&&a.status==='published'&&(a.imported!==true||!blockedMonitoredContentReason(a)));
   for(const key of ['contacts','citizens','messages','submissions','users','sessions','admins','credentials','backups'])db[key]=[];
   if(db.settings&&typeof db.settings==='object')db.settings.socialDistribution=false;
   return db;
