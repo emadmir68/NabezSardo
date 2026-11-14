@@ -112,7 +112,7 @@ jobs:
           grep -q '/assets/rebirth.js' /tmp/preview-home.html
           grep -q 'Experimental Editorial' /tmp/preview-home.html || grep -q 'rb-' /tmp/preview-home.html
           grep -q 'Disallow: /' /tmp/preview-robots.txt
-          grep -q 'EDITORIAL STUDIO' /tmp/preview-admin.html
+          grep -q 'EDITORIAL CONTROL ROOM' /tmp/preview-admin.html
           grep -q 'data-rebirth-editor' /tmp/preview-editor.html
 
           if grep -q '/assets/site.css' /tmp/preview-home.html || grep -q 'premium.css' /tmp/preview-home.html; then
