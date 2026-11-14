@@ -212,7 +212,7 @@
         if(galleryStatus)galleryStatus.textContent='در حال بارگذاری تصویر...';
         try{
           const url=await uploadImage(file);
-          area.focus();document.execCommand('insertHTML',false,'<p><img src="'+url.replace(/"/g,'%22')+'" alt=""></p>');
+          area.focus();document.execCommand('insertHTML',false,'<figure><img src="'+url.replace(/"/g,'%22')+'" alt=""><figcaption>شرح تصویر را اینجا وارد کنید.</figcaption></figure><p><br></p>');
           sync();if(galleryStatus)galleryStatus.textContent='تصویر به متن خبر افزوده شد.';
         }catch(err){if(galleryStatus)galleryStatus.textContent=err.message;}
         inlineInput.value='';
