@@ -48,9 +48,14 @@ const local=views.localHub(sample,'south-kerman');
 fresh(local,'local hub');
 assert.match(local,/جنوب کرمان/);
 
+const oldTurnstileSiteKey=process.env.TURNSTILE_SITE_KEY;
+process.env.TURNSTILE_SITE_KEY='test-turnstile-site-key';
 const contact=views.simple(sample,'contact',false);
 fresh(contact,'contact');
 assert.match(contact,/action="\/contact"/);
+assert.match(contact,/name="website"/);
+assert.match(contact,/data-sitekey="test-turnstile-site-key"/);
+if(oldTurnstileSiteKey===undefined)delete process.env.TURNSTILE_SITE_KEY;else process.env.TURNSTILE_SITE_KEY=oldTurnstileSiteKey;
 
 const citizen=views.simple(sample,'send-news',false);
 fresh(citizen,'citizen news');
