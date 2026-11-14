@@ -523,3 +523,11 @@ img,video{max-width:100%}
 .rb-share-state small{font-size:11px;color:var(--rb-muted)}
 .rb-preview-ribbon{position:sticky;top:0;z-index:1000;padding:10px 16px;background:#e8c76b;color:#161616;text-align:center;font:700 12px/1.6 sans-serif}
 @media(max-width:720px){.rb-policy-grid,.rb-followup-grid{grid-template-columns:1fr}.rb-share-grid{grid-template-columns:1fr}}
+
+@media(max-width:760px){
+  .rb-admin-layout,.rb-editor-layout,.rb-admin-sidebar,.rb-admin-main,.rb-admin-main-inner{min-width:0;max-width:100%;width:100%}
+  .rb-admin-sidebar nav{width:100%;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden}
+  .rb-admin-sidebar nav a{white-space:nowrap}
+  .rb-admin-sidebar-bottom{min-width:0;max-width:100%;flex-wrap:wrap}
+  .rb-admin-row-actions{flex-wrap:wrap}
+}
