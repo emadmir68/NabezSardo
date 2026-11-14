@@ -120,7 +120,7 @@ try{
         const rect=selector=>document.querySelector(selector)?.getBoundingClientRect().toJSON()||null;
         return {
           width:window.innerWidth,
-          scrollWidth:document.documentElement.scrollWidth,
+          scrollWidth:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth),
           direction:document.documentElement.dir,
           rebirthCss:[...document.styleSheets].some(sheet=>sheet.href&&sheet.href.includes('rebirth.css')),
           header:rect('.rb-header'),
@@ -163,11 +163,13 @@ try{
       }
       if(size.w===390&&['/','/all-news','/news/rebirth-story-0','/admin/login','/admin','/admin/articles/new'].includes(route)){
         const name=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
-        await page.screenshot({path:screenshotDir+'/'+name+'-390.png',fullPage:true});
+        const shot=await page.screenshot({path:screenshotDir+'/'+name+'-390.png',fullPage:true});
+        report(shot.readUInt32BE(16)<=size.w+3,size.w+' '+route+' screenshot width stays within the viewport');
       }
       if(size.w===1280&&['/','/all-news','/news/rebirth-story-0','/admin','/admin/articles/new'].includes(route)){
         const name=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
-        await page.screenshot({path:screenshotDir+'/'+name+'-1280.png',fullPage:true});
+        const shot=await page.screenshot({path:screenshotDir+'/'+name+'-1280.png',fullPage:true});
+        report(shot.readUInt32BE(16)<=size.w+3,size.w+' '+route+' screenshot width stays within the viewport');
       }
     }
     report(pageErrors.length===0,size.w+' no uncaught browser errors: '+pageErrors.join(' | '));
