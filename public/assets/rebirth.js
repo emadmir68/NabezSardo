@@ -243,7 +243,7 @@
         const art=ctx.createLinearGradient(72,330,1008,930);art.addColorStop(0,'#262b35');art.addColorStop(1,'#10131a');ctx.fillStyle=art;rounded(72,330,936,600,28);ctx.fill();ctx.fillStyle='#e11b22';ctx.fillRect(120,430,12,400);ctx.fillStyle='#f2ede6';ctx.font='900 130px Georgia, serif';ctx.textAlign='left';ctx.fillText('NS',180,720);
       }
       ctx.fillStyle='#e11b22';ctx.fillRect(72,990,86,5);
-      ctx.textAlign='right';ctx.fillStyle='#f7f3ed';const titleLines=wrap(title,'900 58px Estedad, Vazirmatn, sans-serif',920,4);ctx.font='900 58px Estedad, Vazirmatn, sans-serif';let y=1090;for(const line of titleLines){ctx.fillText(line,1008,y);y+=92;}
+      ctx.direction='rtl';ctx.textAlign='right';ctx.fillStyle='#f7f3ed';const titleLines=wrap(title,'900 58px Estedad, Vazirmatn, sans-serif',920,4);ctx.font='900 58px Estedad, Vazirmatn, sans-serif';let y=1090;for(const line of titleLines){ctx.fillText(line,1008,y);y+=92;}
       const leadLines=wrap(lead,'400 32px Vazirmatn, sans-serif',900,4);ctx.font='400 32px Vazirmatn, sans-serif';ctx.fillStyle='#c6c0b8';y+=18;for(const line of leadLines){ctx.fillText(line,1008,y);y+=58;}
       ctx.fillStyle='#e11b22';ctx.fillRect(72,1630,936,2);
       ctx.textAlign='right';ctx.fillStyle='#f2ede6';ctx.font='700 24px Vazirmatn, sans-serif';ctx.fillText('خبر را دقیق بخوان؛ روایت را دنبال کن.',1008,1700);
