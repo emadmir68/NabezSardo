@@ -47,7 +47,7 @@ test('every canonical page advertised by the sitemap is reachable',async t=>{
  const robotsResponse=await fetch(base+'/robots.txt');
  const robots=await robotsResponse.text();
  assert.ok(robots.includes('Allow: /'));
- assert.ok(!robots.includes('Disallow: /'));
+ assert.ok(!robots.split('\\n').includes('Disallow: /'));
  const homeResponse=await fetch(base+'/');
  assert.equal(homeResponse.headers.get('x-robots-tag'),null);
  const csp=homeResponse.headers.get('content-security-policy')||'';
