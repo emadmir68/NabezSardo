@@ -1,0 +1,136 @@
+name: Cloudflare Editorial Rebuild Preview
+
+on:
+  push:
+    branches:
+      - "design/experimental-editorial-cloudflare-preview-20261114"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nabzesardo-editorial-cloudflare-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout Cloudflare preview branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run application and editorial regression tests
+        run: npm test
+
+      - name: Provision isolated preview D1 and Wrangler configuration
+        run: node scripts/prepare-cloudflare-preview-config.js wrangler.preview.jsonc wrangler.preview.generated.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GITHUB_SHA: ${{ github.sha }}
+
+      - name: Export only the production public-content snapshot
+        run: |
+          set -euo pipefail
+          npx wrangler d1 execute nabzesardo-cloudflare-db --remote --json --command "SELECT value FROM app_state WHERE key='db' LIMIT 1" > /tmp/production-db.json
+          node scripts/build-preview-seed.js /tmp/production-db.json /tmp/preview-seed.sql /tmp/preview-meta.json
+          echo "Published-only snapshot prepared. Private contact/citizen records and drafts are excluded."
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Seed isolated preview D1
+        run: |
+          set -euo pipefail
+          npx wrangler d1 execute nabzesardo-editorial-preview --remote --file=cloudflare/schema.sql --yes
+          npx wrangler d1 execute nabzesardo-editorial-preview --remote --file=/tmp/preview-seed.sql --yes
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Create Cloudflare Worker Preview (no Production deploy)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler preview --config wrangler.preview.generated.jsonc --name editorial-rebirth --message "Experimental Editorial — Nabz Sardo" --json 2>&1 | tee /tmp/wrangler-preview-output.txt
+          PREVIEW_URL="$(node - <<'NODE'
+          const fs=require('fs');
+          const raw=fs.readFileSync('/tmp/wrangler-preview-output.txt','utf8');
+          const match=raw.match(/https:\/\/[^\s"'<>]+\.workers\.dev/);
+          if(!match)process.exit(2);
+          process.stdout.write(match[0].replace(/[),.;]+$/,''));
+          NODE
+          )"
+          echo "PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "Preview URL: $PREVIEW_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "preview_url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Smoke test Cloudflare preview and read-only newsroom
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE="$PREVIEW_URL"
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$SITE/health" -o /tmp/preview-health.json; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "Cloudflare Worker Preview did not become ready."
+            exit 1
+          fi
+
+          curl -fsS -D /tmp/preview-home.headers "$SITE/" -o /tmp/preview-home.html
+          curl -fsS "$SITE/all-news" -o /tmp/preview-archive.html
+          curl -fsS "$SITE/editorial-policy" -o /tmp/preview-policy.html
+          curl -fsS "$SITE/follow-up" -o /tmp/preview-followup.html
+          curl -fsS "$SITE/__preview/admin" -o /tmp/preview-admin.html
+          curl -fsS "$SITE/__preview/admin/editor" -o /tmp/preview-editor.html
+          curl -fsS "$SITE/robots.txt" -o /tmp/preview-robots.txt
+
+          grep -qi 'x-robots-tag: noindex, nofollow, noarchive' /tmp/preview-home.headers
+          grep -q '/assets/rebirth.css' /tmp/preview-home.html
+          grep -q '/assets/rebirth.js' /tmp/preview-home.html
+          grep -q 'Experimental Editorial' /tmp/preview-home.html || grep -q 'rb-' /tmp/preview-home.html
+          grep -q 'Disallow: /' /tmp/preview-robots.txt
+          grep -q 'EDITORIAL STUDIO' /tmp/preview-admin.html
+          grep -q 'data-rebirth-editor' /tmp/preview-editor.html
+
+          if grep -q '/assets/site.css' /tmp/preview-home.html || grep -q 'premium.css' /tmp/preview-home.html; then
+            echo "A legacy stylesheet was loaded by the redesigned Cloudflare preview."
+            exit 1
+          fi
+
+          post_status="$(curl -sS -o /tmp/preview-post-response.txt -w '%{http_code}' -X POST "$SITE/admin/articles/new")"
+          test "$post_status" = "403"
+
+          article_slug="$(node -e "const x=require('/tmp/preview-meta.json');process.stdout.write(x.firstArticleSlug||'')")"
+          if [ -n "$article_slug" ]; then
+            curl -fsS "$SITE/news/$article_slug" -o /tmp/preview-article.html
+            grep -q 'rb-article' /tmp/preview-article.html || grep -q 'data-article' /tmp/preview-article.html
+          fi
+
+          node -e "const x=require('/tmp/preview-health.json');if(!x.ok||x.primary!==false||x.origin!=='cloudflare')process.exit(1)"
+          echo "Cloudflare preview passed: homepage, archive, editorial policy, follow-up, article, newsroom dashboard, editor, noindex and read-only checks."
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
