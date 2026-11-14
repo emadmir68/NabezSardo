@@ -502,3 +502,6 @@ img,video{max-width:100%}
 .rb-lang-en .rb-article-body blockquote{border-right:0;border-left:4px solid var(--rb-red)}
 .rb-lang-en .rb-policy-lock{border-right:0;border-left:3px solid var(--rb-red)}
 @media(max-width:760px){.rb-language-switch{padding:2px}.rb-language-switch button{padding:5px;font-size:8px}.rb-topline-inner>span:nth-child(2){display:none}.rb-live-counter{display:none}}
+
+/* Long Persian headlines must remain readable on narrow mobile screens. */
+.rb-hero-copy h1,.rb-article-head h1,.rb-story h3,.rb-hero-side-item b,.rb-page-heading h1{overflow-wrap:anywhere;word-break:normal}
