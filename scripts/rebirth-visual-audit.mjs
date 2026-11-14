@@ -75,6 +75,11 @@ for(const v of viewports){
   await page.screenshot({path:out+'/admin-'+v.name+'.png',fullPage:true});
   await open(page,'/__preview/admin/editor',v.name+' article editor');
   check(await page.locator('[data-rebirth-editor]').count()===1,v.name+' article editor is rendered');
+  await open(page,'/__preview/admin/share-kit',v.name+' social share kit');
+  check(await page.locator('[data-share-kit-story]').count()===1,v.name+' share kit story generator is rendered');
+  check(await page.locator('[data-share-copy]').count()===3,v.name+' share kit exposes channel copy controls');
+  await page.locator('[data-share-kit-story-download]').waitFor({state:'visible',timeout:10000});
+  check(await page.locator('[data-share-kit-story-download]').isEnabled(),v.name+' share kit story PNG becomes downloadable');
   if(v.width===390||v.width===1440){
     for(const route of ['/all-news','/about','/contact','/send-news','/editorial-policy','/follow-up']){
       await open(page,route,v.name+' '+route);
