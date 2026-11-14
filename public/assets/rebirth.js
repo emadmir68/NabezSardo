@@ -13,7 +13,7 @@
     document.body.classList.toggle('rb-lang-en',lang==='en');
     try{localStorage.setItem(languageKey,lang);}catch{}
     languageButtons.forEach(button=>button.classList.toggle('active',button.dataset.langOption===lang));
-    $('[data-placeholder-fa]').forEach(input=>{
+    $$('[data-placeholder-fa]').forEach(input=>{
       input.placeholder=lang==='en'?(input.dataset.placeholderEn||input.dataset.placeholderFa):(input.dataset.placeholderFa||'');
     });
   }
@@ -27,8 +27,8 @@
     const dateLocale=lang==='en'?'en-US-u-ca-persian':'fa-IR-u-ca-persian';
     const clockLocale=lang==='en'?'en-GB':'fa-IR';
     const now=new Date();
-    $('[data-jalali-date]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat(dateLocale,{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Tehran'}).format(now);}catch{}});
-    $('[data-live-clock]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat(clockLocale,{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Tehran'}).format(now);}catch{}});
+    $$('[data-jalali-date]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat(dateLocale,{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Tehran'}).format(now);}catch{}});
+    $$('[data-live-clock]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat(clockLocale,{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Tehran'}).format(now);}catch{}});
   };
   updateClock();setInterval(updateClock,30000);
   const liveCounter=$('[data-live-views]');
@@ -138,7 +138,7 @@
         sync();
       });
     });
-    $('[data-dir]',form).forEach(button=>{
+    $$('[data-dir]',form).forEach(button=>{
       button.addEventListener('click',()=>{
         if(!area)return;
         area.focus();area.dir=button.dataset.dir==='ltr'?'ltr':'rtl';
@@ -192,7 +192,7 @@
     });
     sync();
   });
-  $('[data-search-toggle]').forEach(button=>{
+  $$('[data-search-toggle]').forEach(button=>{
     button.addEventListener('click',()=>{
       const form=button.closest('.rb-search'),input=form&&form.querySelector('input[name="q"]');
       if(!form||!input)return;
