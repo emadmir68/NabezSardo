@@ -297,15 +297,16 @@ async function putState(key, value) {
 }
 
 function html(body, status = 200) {
-  return new Response(body, {
-    status,
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store",
-      "x-content-type-options": "nosniff",
-      "x-frame-options": "SAMEORIGIN"
-    }
-  });
+  const headers = {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN"
+  };
+  if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1") {
+    headers["x-robots-tag"] = "noindex, nofollow, noarchive";
+  }
+  return new Response(body, { status, headers });
 }
 
 async function loadDbObject() {
@@ -2016,6 +2017,10 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const p = decodeURIComponent(url.pathname);
+    if (!isPrimary()) {
+      if (env.PREVIEW_READONLY !== undefined) process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
+      if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
+    }
     const internalRoute=(p==="/__migration"||p.startsWith("/__migration/")||p==="/__sync/status"||p==="/__sync/public-pull"||p.startsWith("/__cutover/"));
     if(internalRoute&&!isAuthorizedMigration(request)){
       return new Response("Not found",{status:404,headers:securityHeaders()});
