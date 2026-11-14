@@ -558,3 +558,19 @@ img,video{max-width:100%}
   .rb-editor-layout{gap:18px}
   .rb-form-row{grid-template-columns:minmax(0,1fr)}
 }
+
+@media(max-width:820px){
+  .rb-shell{width:calc(100% - 28px)}
+  .rb-hero-grid{grid-template-columns:minmax(0,1fr);gap:16px}
+  .rb-hero-story{grid-template-columns:minmax(0,1fr);min-width:0;min-height:0}
+  .rb-hero-visual,.rb-hero-media{min-height:220px;max-height:300px}
+  .rb-hero-copy{min-width:0;padding:22px}
+  .rb-hero-copy h1{font-size:clamp(26px,7vw,38px);letter-spacing:-.5px;line-height:1.5}
+  .rb-hero-sidebar,.rb-hero-side-item{min-width:0;max-width:100%}
+  .rb-hero-bottomline{flex-wrap:wrap;gap:8px}
+}
+@media(max-width:420px){
+  .rb-hero-visual,.rb-hero-media{min-height:195px;max-height:240px}
+  .rb-hero-copy{padding:18px}
+  .rb-hero-copy h1{font-size:clamp(24px,7vw,31px);letter-spacing:0}
+}
