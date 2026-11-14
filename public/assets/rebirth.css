@@ -14,7 +14,7 @@ img,video{max-width:100%}
 .rb-header{background:var(--rb-ink);position:relative;z-index:50}
 .rb-header-main{min-height:104px;display:flex;align-items:center;justify-content:space-between;gap:28px}
 .rb-brand{display:inline-flex;align-items:center;gap:9px;color:#fff;white-space:nowrap}
-.rb-brand-mark{width:52px;height:32px;color:var(--rb-red);display:block}
+.rb-brand-mark{width:42px;height:42px;color:var(--rb-red);display:block;flex:none}
 .rb-brand-mark svg{width:100%;height:100%}
 .rb-brand-word{font-size:30px;font-weight:900;letter-spacing:-2px;line-height:1.15}
 .rb-brand-word>span{color:var(--rb-red)}
