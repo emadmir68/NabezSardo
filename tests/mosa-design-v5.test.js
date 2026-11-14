@@ -3,68 +3,70 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const views=require('../lib/views-v2');
-const admin=require('../lib/view-admin');
-const cats=[{id:'social',name:'اجتماعی'},{id:'incidents',name:'حوادث'},{id:'weather',name:'آب‌وهوا'},{id:'short-news',name:'خبر کوتاه'},{id:'opinion',name:'یادداشت'}];
+const cats=[
+ {id:'social',name:'اجتماعی'},{id:'incidents',name:'حوادث'},{id:'weather',name:'آب‌وهوا'},
+ {id:'short-news',name:'خبر کوتاه'},{id:'opinion',name:'یادداشت'}
+];
 const db={
  settings:{},categories:cats,followups:[],
  articles:Array.from({length:18},(_,i)=>({
   id:'v5-'+i,slug:'story-'+i,status:'published',title:'بررسی اتفاقات تازه محلی جیرفت و ساردوئیه '+i,
   lead:'خبرهای واقعی از منطقه در قالب یک رسانه مستقل با روایت خوانا',
   body:'متن کامل گزارش برای آزمون خوانایی و ساختار',
+  bodyHtml:'<p>متن کامل گزارش برای آزمون خوانایی و ساختار</p>',
   location:'جیرفت',categoryId:cats[i%cats.length].id,
   createdAt:new Date(Date.now()-i*60000).toISOString(),
+  publishedAt:new Date(Date.now()-i*60000).toISOString(),
   image:i===1?'/uploads/real-local-photo.jpg':'/assets/news-cover.svg',views:i
  }))
 };
-test('Premium glass homepage keeps real content, SEO and brand',()=>{
+test('Experimental Editorial homepage keeps real content, SEO and brand',()=>{
  const html=views.home(db);
- assert.match(html,/class="public-shell pr-body"/);
- assert.match(html,/premium\.css/);
- assert.match(html,/premium\.js/);
- assert.match(html,/href="\/news\/story-1"/);
+ assert.match(html,/rb-home-hero/);
+ assert.match(html,/\/assets\/rebirth\.css/);
+ assert.match(html,/\/assets\/rebirth\.js/);
+ assert.match(html,/href="\/news\/story-17"/);
  assert.match(html,/"@type":"NewsMediaOrganization"/);
  assert.match(html,/href="\/category\/incidents"/);
  assert.doesNotMatch(html,/mosa-ai-v1\.21st\.app/);
  assert.doesNotMatch(html,/images\.unsplash\.com/);
 });
-
-test('all public editorial routes receive unified design but admin stays isolated',()=>{
+test('all public editorial routes use the new design system while admin remains separate',()=>{
  const pages=[
   ['archive',views.archive(db)],
   ['article',views.article(db,db.articles[0])],
   ['category',views.category(db,cats[0])],
-  ['briefs',views.category(db,cats[3])],
+  ['briefs',views.briefs(db)],
   ['local',views.localHub(db,'jiroft')],
+  ['anbarabad',views.localHub(db,'anbarabad')],
+  ['kahnuj',views.localHub(db,'kahnuj')],
   ['search',views.search(db,'جیرفت')],
   ['about',views.simple(db,'about')],
   ['contact',views.simple(db,'contact')],
   ['send-news',views.simple(db,'send-news')],
-  ['editorial-policy',views.editorialPolicy(db)]
+  ['editorial-policy',views.editorialPolicy(db)],
+  ['followup',views.followup(db)]
  ];
  for(const [name,html] of pages){
-  assert.match(html,/mosa-sitewide-v5\.css/,name+' stylesheet');
-  assert.match(html,/glass-sitewide-v4\.js/,name+' navigation');
-  assert.match(html,/class="ns4-footer"/,name+' shared footer');
-  assert.match(html,/class="site-capsule" data-ns4-header/,name+' header');
+  assert.match(html,/\/assets\/rebirth\.css/,name+' stylesheet');
+  assert.match(html,/class="rb-header"/,name+' header');
+  assert.match(html,/class="rb-footer"/,name+' footer');
  }
  const article=pages[1][1];
- assert.match(article,/data-article-share/);
- assert.match(article,/data-article-copy/);
- const login=admin.login(false);
+ for(const selector of ['data-article-share','data-article-copy','data-article-share-image','data-article-instagram-post','data-article-text-story','data-article-root'])assert.ok(article.includes(selector),selector);
+ const login=views.login(false);
  assert.doesNotMatch(login,/mosa-sitewide-v5\.css/);
- assert.match(login,/glass-admin-v4\.css/);
+ assert.match(login,/\/assets\/rebirth\.css/);
+ assert.match(login,/rb-admin-body/);
 });
-test('premium design supports constrained media, RTL and reduced motion',()=>{
- const site=fs.readFileSync(path.join(__dirname,'../public/mosa-sitewide-v5.css'),'utf8');
- const home=fs.readFileSync(path.join(__dirname,'../public/mosa-home-v5.css'),'utf8');
- for(const css of [site,home]){
-  assert.match(css,/@media\(max-width:620px\)|@media\(max-width:660px\)/);
-  assert.match(css,/prefers-reduced-motion/);
-  assert.match(css,/prefers-reduced-transparency/);
-  assert.doesNotMatch(css,/url\(['"]?https?:/);
- }
- assert.match(site,/body\.public-shell/);
- assert.match(home,/\.ns29-backdrop/);
- assert.match(home,/object-fit:cover/);
- assert.match(home,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+test('new design supports constrained media, RTL and reduced motion',()=>{
+ const site=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
+ const client=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.js'),'utf8');
+ assert.match(site,/@media\(max-width:820px\)/);
+ assert.match(site,/prefers-reduced-motion/);
+ assert.match(site,/min-height:44px/);
+ assert.match(site,/object-fit:cover/);
+ assert.match(client,/data-lang-option/);
+ assert.match(client,/data-menu-toggle/);
+ assert.match(client,/data-search-toggle/);
 });

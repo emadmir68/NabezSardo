@@ -153,6 +153,34 @@ assert.deepStrictEqual(monitor.desiredMix(2),{local:2,country:0,world:0});
 assert.strictEqual(monitor.candidateQualityReason({title:'یه فرصت طلایی برای ثبت نام',lead:'عضویت در کانال 👇 و ثبت نام از لینک زیر',body:'برای ثبت نام و عضویت در کانال از لینک زیر استفاده کنید و این فرصت طلایی را از دست ندهید.'}),'cta-or-promotional');
 assert.strictEqual(monitor.candidateQualityReason({title:'فرماندار جیرفت از افتتاح طرح جدید آب‌رسانی خبر داد',lead:'این طرح در روستاهای جنوب کرمان اجرا می‌شود.',body:'عملیات اجرایی طرح آب‌رسانی با حضور مسئولان آغاز شد و طبق اعلام فرمانداری، چند روستای منطقه را پوشش خواهد داد.'}),'');
 
+// Hard publication policy: monitored obituary/funeral notices and advertisements never pass.
+assert.strictEqual(monitor.blockedMonitoredContentReason({
+  title:'آگهی ترحیم مرحوم علی رضایی',
+  lead:'مراسم تشییع و خاکسپاری روز پنجشنبه برگزار می‌شود.',
+  body:'خانواده داغدار از مردم برای حضور در مراسم دعوت کردند.'
+}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({
+  title:'پیام تسلیت به مناسبت درگذشت',
+  lead:'ضمن عرض تسلیت به خانواده داغدار',
+  body:'روحش شاد و یادش گرامی.'
+}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({
+  title:'رپورتاژ آگهی؛ معرفی خدمات یک مجموعه',
+  lead:'این مطلب با هدف معرفی خدمات منتشر شده است.',
+  body:'محتوای تبلیغاتی و اسپانسری.'
+}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({
+  title:'فروش ویژه محصولات با قیمت استثنایی',
+  lead:'برای خرید و سفارش با شماره 09131234567 تماس بگیرید.',
+  body:'تخفیف ویژه و ارسال رایگان برای خریداران.'
+}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({
+  title:'تصادف مرگبار در محور جیرفت؛ دو نفر جان باختند',
+  lead:'در پی برخورد دو خودرو در محور جیرفت، دو نفر جان خود را از دست دادند.',
+  body:'نیروهای امدادی مصدومان را به بیمارستان منتقل کردند و علت حادثه در دست بررسی است.'
+}),'');
+
+
 const sourceRotationMonitor={
   sourceCycleCursor:0,
   sources:[

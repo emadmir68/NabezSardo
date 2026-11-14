@@ -93,44 +93,45 @@ jobs:
           curl -fsS --retry 5 --retry-delay 3 "$SITE/admin/login" -o /tmp/admin-login.html
 
           grep -q "نبض ساردو" /tmp/home.html
-          # Protect design rollouts against the Worker loading legacy view-public.home.
-          grep -q 'class="public-shell pr-body"' /tmp/home.html
-          grep -q 'premium.css' /tmp/home.html
-          grep -q 'premium.js' /tmp/home.html
-          # Confirm the live Worker serves the new homepage CSS, not a cached old asset.
-          curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/premium.css?v=${GITHUB_SHA}" -o /tmp/premium-home.css
-          grep -q 'LUXE CASCADE' /tmp/premium-home.css
-          grep -q 'body.public-shell.pr-body .pr-cta{' /tmp/premium-home.css
-          grep -q 'aria-label="دسته‌های خبری"' /tmp/home.html
-          grep -q 'class="pr-hero"' /tmp/home.html
-          grep -q 'class="pr-feature' /tmp/home.html
-          # Entire public site must now share V4 glass design, not just homepage.
-          grep -q 'glass-sitewide-v4.css' /tmp/home.html
-          grep -q 'mosa-sitewide-v5.css' /tmp/home.html
-          grep -q 'class="pr-grid"' /tmp/home.html
-          grep -q 'class="pr-ticker"' /tmp/home.html
-          grep -q 'glass-sitewide-v4.css' /tmp/archive.html
-          grep -q 'data-ns4-header' /tmp/archive.html
-          grep -q 'class="ns4-footer"' /tmp/archive.html
-          grep -q 'glass-admin-v4.css' /tmp/admin-login.html
-          curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/glass-sitewide-v4.css" -o /tmp/ns4-sitewide.css
-          grep -q 'SITEWIDE GLASS DESIGN SYSTEM v4' /tmp/ns4-sitewide.css
-          curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/mosa-sitewide-v5.css" -o /tmp/ns5-sitewide.css
-          grep -q 'MOSA-INSPIRED EDITORIAL SYSTEM V5' /tmp/ns5-sitewide.css
-          curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/mosa-home-v5.css" -o /tmp/ns5-home.css
-          grep -q 'MOSA-INSPIRED NEWSROOM V5' /tmp/ns5-home.css
-          curl -fsS --retry 4 --retry-delay 3 "$SITE/assets/glass-sitewide-v4.js" -o /tmp/ns4-navigation.js
-          grep -q 'data-ns4-menu-toggle' /tmp/ns4-navigation.js
+          # Production must serve the approved Experimental Editorial system, not any legacy shell.
+          grep -q 'class="rb-header"' /tmp/home.html
+          grep -q 'class="rb-home-hero"' /tmp/home.html
+          grep -q 'class="rb-hero-story"' /tmp/home.html
+          grep -q 'class="rb-footer"' /tmp/home.html
+          grep -q '/assets/rebirth.css?v=' /tmp/home.html
+          grep -q '/assets/rebirth.js?v=' /tmp/home.html
+          grep -q 'name="robots" content="index,follow' /tmp/home.html
+          grep -q 'class="rb-archive-filters"' /tmp/archive.html
+          grep -q 'class="rb-news-grid"' /tmp/archive.html
+          grep -q 'class="rb-header"' /tmp/archive.html
+          grep -q 'class="rb-footer"' /tmp/archive.html
+          grep -q 'class="rb-admin-body"' /tmp/admin-login.html
+          grep -q 'class="rb-login"' /tmp/admin-login.html
 
-          grep -q 'class="pr-ticker__track"' /tmp/home.html
-          grep -q 'class="pr-cta' /tmp/home.html
-          curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/cloud-dancer-2026.css" -o /tmp/cloud-dancer.css
-          grep -q 'EDITORIAL TYPOGRAPHY' /tmp/cloud-dancer.css
-          grep -q "نبض ساردو" /tmp/archive.html
+          # Verify cache-busted production assets and the responsive newsroom client.
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/rebirth.css?v=${GITHUB_SHA}" -o /tmp/rebirth.css
+          grep -q 'rb-home-hero' /tmp/rebirth.css
+          grep -q 'rb-archive-filters' /tmp/rebirth.css
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/assets/rebirth.js?v=${GITHUB_SHA}" -o /tmp/rebirth.js
+          grep -q 'data-article-share-image' /tmp/rebirth.js
+          grep -q 'data-menu-toggle' /tmp/rebirth.js
+          grep -q 'prefers-reduced-motion' /tmp/rebirth.css
+
           grep -q 'href="/category/incidents"' /tmp/home.html
           grep -q 'href="/category/weather"' /tmp/home.html
-          grep -q '<h1>حوادث</h1>' /tmp/incidents.html
-          grep -q '<h1>آب‌وهوا</h1>' /tmp/weather.html
+          grep -q 'حوادث' /tmp/incidents.html
+          grep -q 'آب‌وهوا' /tmp/weather.html
+          grep -q '^Allow: /$' /tmp/robots.txt
+          if grep -q '^Disallow: /$' /tmp/robots.txt; then
+            echo "Production robots.txt is incorrectly blocking all crawlers."
+            exit 1
+          fi
+          curl -fsSI --retry 3 --retry-delay 3 "$SITE/" -o /tmp/home-headers.txt
+          if grep -qi '^x-robots-tag: noindex' /tmp/home-headers.txt; then
+            echo "Production homepage is incorrectly marked noindex."
+            cat /tmp/home-headers.txt
+            exit 1
+          fi
           grep -q "<urlset" /tmp/sitemap.xml
           grep -q "<rss" /tmp/feed.xml
           grep -q "admin" /tmp/admin-login.html || grep -q "ورود" /tmp/admin-login.html

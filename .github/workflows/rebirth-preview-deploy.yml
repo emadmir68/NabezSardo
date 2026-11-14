@@ -1,0 +1,188 @@
+name: Experimental Editorial — isolated Cloudflare preview
+
+on:
+  pull_request:
+    branches:
+      - cloudflare-migration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nabzesardo-experimental-editorial-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event_name != 'pull_request' || github.head_ref == 'preview/experimental-editorial-cloudflare-20261114'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout isolated preview branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run full regression suite
+        run: npm test
+
+      - name: Create or reuse isolated preview D1 and Workers.dev hostname
+        id: cloudflare
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
+          API="https://api.cloudflare.com/client/v4"
+          AUTH=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          DB_NAME="nabzesardo-rebirth-preview"
+          WORKER_NAME="nabzesardo-rebirth-preview"
+
+          curl -fsS "${AUTH[@]}" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" -o /tmp/cf-subdomain.json
+          SUBDOMAIN="$(jq -r '.result.subdomain // empty' /tmp/cf-subdomain.json)"
+          if [ -z "$SUBDOMAIN" ]; then
+            echo "Cloudflare Workers.dev subdomain is not configured for this account."
+            cat /tmp/cf-subdomain.json
+            exit 1
+          fi
+          PREVIEW_URL="https://$WORKER_NAME.$SUBDOMAIN.workers.dev"
+
+          curl -fsS "${AUTH[@]}" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database?per_page=100" -o /tmp/cf-d1-list.json
+          DB_ID="$(jq -r --arg name "$DB_NAME" '.result[]? | select(.name == $name) | .uuid' /tmp/cf-d1-list.json | head -n 1)"
+          if [ -z "$DB_ID" ]; then
+            curl -fsS -X POST "${AUTH[@]}" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database" \
+              --data "$(jq -nc --arg name "$DB_NAME" '{name:$name}')" -o /tmp/cf-d1-create.json
+            DB_ID="$(jq -r '.result.uuid // empty' /tmp/cf-d1-create.json)"
+          fi
+          if [ -z "$DB_ID" ]; then
+            echo "Could not create or resolve the isolated preview D1 database."
+            cat /tmp/cf-d1-list.json
+            cat /tmp/cf-d1-create.json 2>/dev/null || true
+            exit 1
+          fi
+
+          echo "PREVIEW_DB_ID=$DB_ID" >> "$GITHUB_ENV"
+          echo "PREVIEW_URL=$PREVIEW_URL" >> "$GITHUB_ENV"
+          echo "WORKER_NAME=$WORKER_NAME" >> "$GITHUB_ENV"
+          echo "Resolved isolated preview host: $PREVIEW_URL"
+
+      - name: Build a production-disconnected Wrangler configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('node:fs');
+          const config=JSON.parse(fs.readFileSync('wrangler.jsonc','utf8'));
+          config.name=process.env.WORKER_NAME;
+          config.workers_dev=true;
+          config.preview_urls=true;
+          delete config.routes;
+          delete config.triggers;
+          delete config.queues;
+          delete config.ai;
+          config.d1_databases=[{
+            binding:'DB',
+            database_name:'nabzesardo-rebirth-preview',
+            database_id:process.env.PREVIEW_DB_ID
+          }];
+          config.vars={
+            ...config.vars,
+            CLOUDFLARE_PRIMARY:'0',
+            PREVIEW_READONLY:'1',
+            CUTOVER_MODE:'preview',
+            AUTO_DISTRIBUTION_ENABLED:'0',
+            DATA_DIR:'/tmp/nabzesardo-rebirth-preview',
+            PUBLIC_BASE_URL:process.env.PREVIEW_URL,
+            CLOUDFLARE_ASSET_VERSION:process.env.GITHUB_SHA
+          };
+          delete config.vars.ARVAN_ENDPOINT;
+          delete config.vars.ARVAN_BUCKET;
+          delete config.vars.ARVAN_REGION;
+          fs.writeFileSync('wrangler.preview.jsonc',JSON.stringify(config,null,2)+'\n');
+          NODE
+
+      - name: Validate Worker bundle without deploying
+        run: npx wrangler deploy --dry-run --outdir /tmp/nabez-rebirth-preview-build --config wrangler.preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Initialize isolated preview database with sample content
+        run: |
+          npx wrangler d1 execute nabzesardo-rebirth-preview --remote --file=cloudflare/schema.sql --config wrangler.preview.jsonc
+          npx wrangler d1 execute nabzesardo-rebirth-preview --remote --file=cloudflare/preview-seed.sql --config wrangler.preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy only the isolated Workers.dev preview
+        run: npx wrangler deploy --config wrangler.preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Verify preview pages, assets, noindex and read-only protections
+        shell: bash
+        run: |
+          set -euo pipefail
+          sleep 10
+          curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/" -o /tmp/rebirth-home.html
+          curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/all-news" -o /tmp/rebirth-archive.html
+          SHORT_CODE="$(node -e "const v=require('./lib/views-v2');process.stdout.write(v.shortArticleCode('preview-001'))")"
+          curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/news/$SHORT_CODE" -o /tmp/rebirth-short-article.html
+          curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/assets/rebirth.css" -o /tmp/rebirth.css
+          curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/robots.txt" -o /tmp/rebirth-robots.txt
+          curl -sS -D /tmp/rebirth-headers.txt -o /dev/null "$PREVIEW_URL/"
+          curl -sS -o /tmp/rebirth-admin-preview.html -w '%{http_code}' "$PREVIEW_URL/__preview/admin" > /tmp/rebirth-admin-status.txt
+          curl -sS -o /dev/null -w '%{http_code}' "$PREVIEW_URL/admin" > /tmp/rebirth-admin-blocked-status.txt
+
+          node <<'NODE'
+          const fs=require('node:fs');
+          const home=fs.readFileSync('/tmp/rebirth-home.html','utf8');
+          const archive=fs.readFileSync('/tmp/rebirth-archive.html','utf8');
+          const shortArticle=fs.readFileSync('/tmp/rebirth-short-article.html','utf8');
+          const css=fs.readFileSync('/tmp/rebirth.css','utf8');
+          const robots=fs.readFileSync('/tmp/rebirth-robots.txt','utf8');
+          const headers=fs.readFileSync('/tmp/rebirth-headers.txt','utf8').toLowerCase();
+          const admin=fs.readFileSync('/tmp/rebirth-admin-preview.html','utf8');
+          const adminStatus=fs.readFileSync('/tmp/rebirth-admin-status.txt','utf8').trim();
+          const blockedStatus=fs.readFileSync('/tmp/rebirth-admin-blocked-status.txt','utf8').trim();
+          const checks=[
+            ['home uses Experimental Editorial hero',home.includes('rb-hero-story')],
+            ['home includes seeded sample headline',home.includes('آینده کشاورزی جنوب کرمان')],
+            ['home loads rebirth stylesheet',home.includes('/assets/rebirth.css')],
+            ['home includes noindex robots meta',home.includes('noindex,nofollow,noarchive')],
+            ['archive includes seeded sample headline',archive.includes('آینده کشاورزی جنوب کرمان')],
+            ['short article URL resolves after refresh',shortArticle.includes('آینده کشاورزی جنوب کرمان')],
+            ['rebirth stylesheet is served',css.includes('rb-hero-story')],
+            ['robots.txt disallows all crawling',robots.includes('Disallow: /')],
+            ['preview HTML sends X-Robots-Tag',headers.includes('x-robots-tag: noindex, nofollow, noarchive')],
+            ['read-only admin preview responds 200',adminStatus==='200'],
+            ['read-only admin preview renders rebirth dashboard',admin.includes('rb-admin-layout')],
+            ['read-only admin banner is visible',admin.includes('پیش‌نمایش آزمایشی نبض ساردو')],
+            ['normal admin route is blocked',blockedStatus==='403']
+          ];
+          let failures=0;
+          for(const [name,ok] of checks){console.log((ok?'PASS ':'FAIL ')+name);if(!ok)failures++;}
+          if(failures)process.exitCode=1;
+          NODE
+
+          {
+            echo "### Experimental Editorial preview deployed"
+            echo
+            echo "- Public preview: $PREVIEW_URL"
+            echo "- Read-only admin design preview: $PREVIEW_URL/__preview/admin"
+            echo "- Data: isolated D1 database with sample-only content"
+            echo "- Production domain routes, cron triggers, queues, AI and Arvan storage credentials are not attached."
+          } >> "$GITHUB_STEP_SUMMARY"

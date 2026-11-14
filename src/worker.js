@@ -192,6 +192,10 @@ async function decryptRuntimeSecrets() {
 }
 
 async function applyRuntimeEnv() {
+  if (env.CLOUDFLARE_PRIMARY !== undefined) process.env.CLOUDFLARE_PRIMARY = String(env.CLOUDFLARE_PRIMARY);
+  if (env.PREVIEW_READONLY !== undefined) process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
+  if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
+  if (env.CLOUDFLARE_ASSET_VERSION !== undefined) process.env.CLOUDFLARE_ASSET_VERSION = String(env.CLOUDFLARE_ASSET_VERSION);
   const auth = await runtimeAuth();
   if (!auth) return false;
   process.env.ADMIN_USER = String(auth.user);
@@ -295,15 +299,16 @@ async function putState(key, value) {
 }
 
 function html(body, status = 200) {
-  return new Response(body, {
-    status,
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store",
-      "x-content-type-options": "nosniff",
-      "x-frame-options": "SAMEORIGIN"
-    }
-  });
+  const headers = {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN"
+  };
+  if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1") {
+    headers["x-robots-tag"] = "noindex, nofollow, noarchive";
+  }
+  return new Response(body, { status, headers });
 }
 
 async function loadDbObject() {
@@ -452,7 +457,7 @@ function securityHeaders(){
     "referrer-policy":"strict-origin-when-cross-origin",
     "strict-transport-security":"max-age=31536000; includeSubDomains",
     "permissions-policy":"camera=(), microphone=(), geolocation=()",
-    "content-security-policy":"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    "content-security-policy":"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
   };
 }
 let publicRateSchemaReady=false;
@@ -648,7 +653,7 @@ async function handlePublicPreview(request, url, pathname) {
   let m = pathname.match(/^\/news\/(.+)$/);
   if (m) {
     const slug = m[1];
-    const a = (db.articles || []).find(x => store.publiclyVisibleArticle(x) && x.slug === slug);
+    const a = (db.articles || []).find(x => store.publiclyVisibleArticle(x) && (x.slug === slug || (typeof views.shortArticleCode === "function" && views.shortArticleCode(x.id) === slug)));
     if (!a) return html("خبر یافت نشد", 404);
     // Render article pages with the current build so interactive controls and
     // versioned assets never get stuck on a stale HTML snapshot after deploys.
@@ -1476,9 +1481,18 @@ async function serveAsset(request, pathname) {
     }
   }
   const u = new URL(request.url);
-  if (pathname.startsWith("/assets/")) u.pathname = pathname.slice("/assets".length);
-  if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
-  const assetResponse = await env.ASSETS.fetch(new Request(u, request));
+  let assetResponse;
+  if (pathname.startsWith("/assets/")) {
+    // New rebirth assets live in public/assets; legacy assets remain at public root.
+    assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    if (!assetResponse.ok) {
+      u.pathname = pathname.slice("/assets".length);
+      assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    }
+  } else {
+    if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
+    assetResponse = await env.ASSETS.fetch(new Request(u, request));
+  }
   if (request.method !== "GET" || !assetResponse.ok) return assetResponse;
   const headers = new Headers(assetResponse.headers);
   if (u.searchParams.has("v")) {
@@ -2005,6 +2019,12 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
     const p = decodeURIComponent(url.pathname);
+    if (typeof process !== "undefined" && process.env) {
+      if (env.CLOUDFLARE_PRIMARY !== undefined) process.env.CLOUDFLARE_PRIMARY = String(env.CLOUDFLARE_PRIMARY);
+      if (env.PREVIEW_READONLY !== undefined) process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
+      if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
+      if (env.CLOUDFLARE_ASSET_VERSION !== undefined) process.env.CLOUDFLARE_ASSET_VERSION = String(env.CLOUDFLARE_ASSET_VERSION);
+    }
     const internalRoute=(p==="/__migration"||p.startsWith("/__migration/")||p==="/__sync/status"||p==="/__sync/public-pull"||p.startsWith("/__cutover/"));
     if(internalRoute&&!isAuthorizedMigration(request)){
       return new Response("Not found",{status:404,headers:securityHeaders()});
@@ -2057,6 +2077,33 @@ export default {
 
     if (isPrimary() && p === "/admin/login" && request.method === "POST") {
       return handleCloudflareAdminLogin(request);
+    }
+
+    if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1" && p === "/__preview/admin" && request.method === "GET") {
+      process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
+      if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
+      const db = await loadDbObject();
+      const dashboard = views.admin(
+        db,
+        [],
+        new URLSearchParams(),
+        { telegram: false, rubika: false, whatsapp: false, baseUrl: true },
+        { totalPageViews: 0, today: { pageViews: 0 } },
+        { settings: { enabled: false, keywords: "" }, sources: [], queue: [], counts: { pending: 0, sourcesOn: 0, sources: 0 } }
+      );
+      const banner = '<div class="rb-preview-banner" role="status">پیش‌نمایش آزمایشی نبض ساردو — اطلاعات نمونه است و همه عملیات ذخیره و انتشار غیرفعال‌اند.</div>';
+      const styled = dashboard
+        .replace('<body class="rb-admin-body">', '<body class="rb-admin-body">' + banner)
+        .replace('</head>', '<style>.rb-preview-banner{position:sticky;top:0;z-index:99999;padding:12px 18px;background:#f6d36a;color:#171717;text-align:center;font:700 13px Vazirmatn,sans-serif;border-bottom:1px solid #171717}.rb-admin-body form button,.rb-admin-body form input[type=submit]{pointer-events:none;opacity:.55}</style></head>');
+      return new Response(styled, {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+          "x-robots-tag": "noindex, nofollow, noarchive",
+          "x-content-type-options": "nosniff"
+        }
+      });
     }
 
     if (!isPrimary() && (p.startsWith("/admin") || (request.method !== "GET" && request.method !== "HEAD"))) {

@@ -29,10 +29,11 @@ function headers(type='text/html; charset=utf-8'){
     'Referrer-Policy':'strict-origin-when-cross-origin',
     'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
     'Strict-Transport-Security':'max-age=31536000; includeSubDomains',
-    'Content-Security-Policy':"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    'Content-Security-Policy':"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
   };
 }
-function send(res,status,body,type,extra={}){const h={...headers(type),...extra};const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
+function isPreviewReadonly(){return String(process.env.PREVIEW_READONLY||'')==='1'&&String(process.env.CLOUDFLARE_PRIMARY||'')!=='1';}
+function send(res,status,body,type,extra={}){const h={...headers(type),...extra};if(isPreviewReadonly())h['X-Robots-Tag']='noindex, nofollow, noarchive';const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
 function redirect(res,to,cookie){const h={...headers(),Location:to,'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'};if(cookie)h['Set-Cookie']=cookie;res.writeHead(302,h);res.end();}
 function sendArticleHead(res,a){
   const canonical=PUBLIC_BASE+'/news/'+encodeURIComponent(a.slug||'');
@@ -40,7 +41,7 @@ function sendArticleHead(res,a){
     ...headers(),
     'Cache-Control':'public,max-age=300,stale-while-revalidate=900',
     'Link':'<'+canonical+'>; rel="canonical"',
-    'X-Robots-Tag':'index, follow, max-image-preview:large'
+    'X-Robots-Tag':isPreviewReadonly()?'noindex, nofollow, noarchive':'index, follow, max-image-preview:large'
   });
   res.end();
 }
@@ -158,6 +159,7 @@ function newsSitemapXml(db){
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n'+items.map(a=>'<url><loc>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</loc><news:news><news:publication><news:name>نبض ساردو</news:name><news:language>fa</news:language></news:publication><news:publication_date>'+xmlEsc(new Date(a.publishedAt||a.createdAt).toISOString())+'</news:publication_date><news:title>'+xmlEsc(a.title)+'</news:title></news:news></url>').join('\n')+'\n</urlset>';
 }
 function robotsTxt(){
+  if(isPreviewReadonly())return ['User-agent: *','Disallow: /',''].join('\n');
   return ['User-agent: *','Allow: /','Disallow: /admin','Sitemap: '+publicUrl('/sitemap.xml'),'Sitemap: '+publicUrl('/news-sitemap.xml'),''].join('\n');
 }
 function rssXml(db){
@@ -299,7 +301,7 @@ const server=http.createServer(async(req,res)=>{
     return send(res,200,JSON.stringify({ok:true,bytes:raw.length,sha1:sum}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   }
   if(req.method==='GET'&&p==='/hero-mosque.jpg'){res.writeHead(200,{...headers('image/jpeg'),'Cache-Control':'no-store, max-age=0','Content-Length':HERO_MOSQUE_JPG.length,'X-Hero-Sha1':HERO_MOSQUE_SHA1});res.end(HERO_MOSQUE_JPG);return;}
-  if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'public,max-age=604800,stale-while-revalidate=86400':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
+  if(p.startsWith('/assets/')){const cache=/\.(?:css|js)$/i.test(p)?'public,max-age=604800,stale-while-revalidate=86400':'public,max-age=604800';return serveFile(res,path.join(ROOT,'public','assets'),p,'/assets/',cache)||serveFile(res,path.join(ROOT,'public'),p,'/assets/',cache)||send(res,404,'Not found','text/plain; charset=utf-8');}
   if(p.startsWith('/uploads/'))return serveFile(res,UPLOAD_DIR,p,'/uploads/','public,max-age=31536000,immutable')||send(res,404,'Not found','text/plain; charset=utf-8');
   if(req.method==='GET'&&p==='/health')return send(res,200,JSON.stringify({ok:true,name:'nabezsardo',version:APP_VERSION,time:now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   if(req.method==='GET'&&p==='/__version')return send(res,200,JSON.stringify({version:APP_VERSION,time:Date.now()}),'application/json; charset=utf-8',{'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'});
