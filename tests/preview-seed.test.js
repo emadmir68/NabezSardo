@@ -7,7 +7,9 @@ const original={
   categories:[{id:'social',name:'اجتماعی'}],
   articles:[
     {id:'published',status:'published',title:'خبر عمومی',slug:'public-story'},
-    {id:'draft',status:'draft',title:'پیش‌نویس خصوصی',slug:'private-draft'}
+    {id:'draft',status:'draft',title:'پیش‌نویس خصوصی',slug:'private-draft'},
+    {id:'ad',status:'published',imported:true,title:'فروش انواع لوازم خانگی با قیمت ویژه',body:'برای خرید با شماره 09123456789 تماس بگیرید',slug:'private-ad'},
+    {id:'obituary',status:'published',imported:true,title:'اطلاعیه مراسم تشییع پیکر مرحوم علی رضایی',body:'مراسم فردا برگزار می‌شود',slug:'private-obituary'}
   ],
   contacts:[{name:'نام خصوصی',contact:'09120000000'}],
   citizens:[{name:'گزارشگر',phone:'09120000001'}],
