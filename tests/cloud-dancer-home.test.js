@@ -83,13 +83,15 @@ test('production SEO exposes WebSite and NewsMediaOrganization structured data',
  assert.ok(html.includes('"@type":"NewsMediaOrganization"'));
  assert.match(html,/rel="canonical" href="https:\/\/nabzesardo\.ir\/"/);
 });
-test('Cloudflare worker reads the new home from views-v2, not legacy view-public',()=>{
+test('Cloudflare Worker and Node adapter use the new Experimental Editorial views',()=>{
  const worker=fs.readFileSync(path.join(__dirname,'../src/worker.js'),'utf8');
- assert.match(worker,/views-v2/);
+ const app=fs.readFileSync(path.join(__dirname,'../app.js'),'utf8');
+ assert.match(worker,/views-rebirth/);
+ assert.match(app,/views-rebirth/);
  assert.doesNotMatch(worker,/import views from "\.\.\/lib\/view-public\.js";/);
- const routing=require('../lib/views-v2');
- assert.equal(routing.home,require('../lib/view-home-2026'));
+ const routing=require('../lib/views-rebirth');
+ assert.equal(typeof routing.home,'function');
  const markup=routing.home(fixture(8));
- assert.match(markup,/premium\.css/);
- assert.match(markup,/class="public-shell pr-body"/);
-});
+ assert.match(markup,/assets\/rebirth\.css/);
+ assert.match(markup,/class="rb-header"/);
+});;
