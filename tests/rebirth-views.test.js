@@ -60,6 +60,7 @@ if(oldTurnstileSiteKey===undefined)delete process.env.TURNSTILE_SITE_KEY;else pr
 const citizen=views.simple(sample,'send-news',false);
 fresh(citizen,'citizen news');
 assert.match(citizen,/name="mediaFile"/);
+assert.match(citizen,/name="website"/);
 
 const login=views.login(false);
 assert.match(login,/name="username"/);
