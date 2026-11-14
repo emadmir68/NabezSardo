@@ -74,6 +74,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          trap 'rc=$?; trap - ERR; echo "::error::Production smoke failed at line ${LINENO}: ${BASH_COMMAND} (exit ${rc})"; for f in /tmp/home.html /tmp/archive.html /tmp/robots.txt /tmp/admin-login.html /tmp/short-article.html /tmp/home-headers.txt; do if [ -f "$f" ]; then echo "---- $f"; head -c 1400 "$f"; echo; fi; done; exit "$rc"' ERR
           SITE="https://nabzesardo.ir"
 
           curl -fsS --retry 5 --retry-delay 3 "$SITE/health" -o /tmp/site-health.json
