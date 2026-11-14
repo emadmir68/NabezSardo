@@ -159,7 +159,7 @@ function newsSitemapXml(db){
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n'+items.map(a=>'<url><loc>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</loc><news:news><news:publication><news:name>نبض ساردو</news:name><news:language>fa</news:language></news:publication><news:publication_date>'+xmlEsc(new Date(a.publishedAt||a.createdAt).toISOString())+'</news:publication_date><news:title>'+xmlEsc(a.title)+'</news:title></news:news></url>').join('\n')+'\n</urlset>';
 }
 function robotsTxt(){
-  if(String(process.env.PREVIEW_READONLY||'')==='1')return ['User-agent: *','Disallow: /',''].join('\n');
+  if(isPreviewReadonly())return ['User-agent: *','Disallow: /',''].join('\n');
   return ['User-agent: *','Allow: /','Disallow: /admin','Sitemap: '+publicUrl('/sitemap.xml'),'Sitemap: '+publicUrl('/news-sitemap.xml'),''].join('\n');
 }
 function rssXml(db){
