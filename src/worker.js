@@ -284,6 +284,18 @@ async function ensureSchema() {
 
 async function getState(key) {
   await ensureSchema();
+  if(isReadOnlyPreview()&&key==="db"){
+    const manifestRow=await env.DB.prepare("SELECT value FROM app_state WHERE key='preview:db:manifest' LIMIT 1").first();
+    const manifest=safeJson(manifestRow?.value,null);
+    if(manifest&&Number.isInteger(Number(manifest.chunks))&&Number(manifest.chunks)>0){
+      const chunks=await env.DB.prepare("SELECT value FROM app_state WHERE key LIKE 'preview:db:chunk:%' ORDER BY key ASC").all();
+      const rows=chunks.results||[];
+      if(rows.length===Number(manifest.chunks)){
+        const joined=rows.map(row=>String(row.value||"")).join("");
+        if(joined.length===Number(manifest.length||joined.length))return joined;
+      }
+    }
+  }
   const row = await env.DB.prepare("SELECT value FROM app_state WHERE key = ? LIMIT 1")
     .bind(key)
     .first();
