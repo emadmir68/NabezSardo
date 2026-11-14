@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Nabz Sardo">
+  <rect x="1" y="1" width="46" height="46" fill="#e11b22"/>
+  <path d="M11 36V12h6l14 16V12h6v24h-6L17 20v16z" fill="#fff"/>
+  <path d="M37 1h10v10" fill="none" stroke="#f2ede6" stroke-width="2"/>
+</svg>
