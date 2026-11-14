@@ -71,7 +71,7 @@ test('article sharing, story exports and admin editor behavior remain connected'
 test('responsive system protects mobile navigation, image framing, touch targets and motion preferences',()=>{
  const css=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
  const js=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.js'),'utf8');
- assert.match(css,/@media\(max-width:760px\)/);
+ assert.match(css,/@media\(max-width:820px\)/);
  assert.match(css,/min-height:44px/);
  assert.match(css,/aspect-ratio/);
  assert.match(css,/prefers-reduced-motion/);
