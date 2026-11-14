@@ -1,5 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
 const {sanitizeRich,normalizeRich,articlePayload}=require('../lib/article-tools');
 
 test('article editor preserves safe headings, pull quotes, lists and captioned inline figures',()=>{
@@ -19,4 +20,11 @@ test('featured-image caption is retained when an existing image is edited',async
   const payload=await articlePayload(db,form,{},current,(_db,slug)=>slug);
   assert.equal(payload.image,'/uploads/cover.webp');
   assert.equal(payload.imageCaption,'نمایی از محل برگزاری جشنواره');
+});
+
+test('newsroom editor applies selected heading levels and inserts captioned figures',()=>{
+  const source=fs.readFileSync(require.resolve('../public/editor.js'),'utf8');
+  assert.match(source,/command==='formatBlock'\?\(btn\.dataset\.value\|\|'h2'\):null/);
+  assert.match(source,/createElement\('figcaption'\)/);
+  assert.match(source,/شرح تصویر را اینجا وارد کنید/);
 });
