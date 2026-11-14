@@ -206,6 +206,7 @@ async function applyRuntimeEnv() {
     if (value !== undefined && value !== null && String(value).length) process.env[key] = String(value);
   }
   if (env.GOOGLE_SITE_VERIFICATION) process.env.GOOGLE_SITE_VERIFICATION = String(env.GOOGLE_SITE_VERIFICATION);
+  if (env.TURNSTILE_SITE_KEY) process.env.TURNSTILE_SITE_KEY = String(env.TURNSTILE_SITE_KEY);
   return true;
 }
 
@@ -2024,6 +2025,7 @@ async function runBackgroundMaintenance(){
 
 export default {
   async fetch(request, _bindings, ctx) {
+    if (env.TURNSTILE_SITE_KEY) process.env.TURNSTILE_SITE_KEY = String(env.TURNSTILE_SITE_KEY);
     const url = new URL(request.url);
     if (url.hostname.toLowerCase() === "www.nabzesardo.ir") {
       url.protocol = "https:";
