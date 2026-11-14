@@ -1,6 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const views=require('../lib/views-rebirth');
+const {shortArticleCode}=require('../lib/rebirth-shared');
 
 const now=new Date().toISOString();
 const sample={
@@ -28,6 +29,19 @@ fresh(article,'article');
 assert.match(article,/NewsArticle/);
 assert.match(article,/rb-article-body/);
 assert.match(article,/آینده کشاورزی جنوب کرمان/);
+const shortArticlePath='/news/'+shortArticleCode(sample.articles[0].id);
+assert.ok(article.includes('rel="canonical" href="https://nabzesardo.ir'+shortArticlePath+'"'));
+assert.ok(article.includes('property="og:url" content="https://nabzesardo.ir'+shortArticlePath+'"'));
+assert.ok(article.includes('property="og:title" content="آینده کشاورزی جنوب کرمان"'));
+assert.ok(article.includes('property="og:image:secure_url"'));
+assert.ok(article.includes('property="og:image:alt" content="آینده کشاورزی جنوب کرمان"'));
+assert.ok(article.includes('name="twitter:card" content="summary_large_image"'));
+assert.ok(article.includes('data-article-url="'+shortArticlePath+'"'));
+assert.ok(article.includes('data-article-canonical="'+shortArticlePath+'"'));
+assert.ok(article.includes('property="article:published_time"'));
+const noImageArticle=views.article(sample,{...sample.articles[0],id:'no-image',image:'',socialImage:''});
+assert.ok(noImageArticle.includes('https://nabzesardo.ir/header-mosque-fixed.jpg'));
+assert.ok(!noImageArticle.includes('property="og:image" content="https://nabzesardo.ir/assets/placeholder.svg"'));
 
 const category=views.category(sample,sample.categories[0]);
 fresh(category,'category');
@@ -70,5 +84,22 @@ assert.match(editor,/name="bodyHtml"/);
 assert.match(editor,/name="imageFile"/);
 assert.match(editor,/name="videoFile"/);
 assert.match(editor,/name="galleryJson"/);
+
+const previousEnv={primary:process.env.CLOUDFLARE_PRIMARY,readonly:process.env.PREVIEW_READONLY,assetVersion:process.env.CLOUDFLARE_ASSET_VERSION};
+try{
+  process.env.CLOUDFLARE_PRIMARY='1';
+  process.env.PREVIEW_READONLY='1';
+  process.env.CLOUDFLARE_ASSET_VERSION='production-test-sha';
+  const productionHtml=views.home(sample);
+  assert.match(productionHtml,/name="robots" content="index,follow/);
+  assert.match(productionHtml,/\\/assets\\/rebirth\\.css\\?v=production-test-sha/);
+  process.env.CLOUDFLARE_PRIMARY='0';
+  const previewHtml=views.home(sample);
+  assert.match(previewHtml,/name="robots" content="noindex,nofollow,noarchive"/);
+}finally{
+  if(previousEnv.primary===undefined)delete process.env.CLOUDFLARE_PRIMARY;else process.env.CLOUDFLARE_PRIMARY=previousEnv.primary;
+  if(previousEnv.readonly===undefined)delete process.env.PREVIEW_READONLY;else process.env.PREVIEW_READONLY=previousEnv.readonly;
+  if(previousEnv.assetVersion===undefined)delete process.env.CLOUDFLARE_ASSET_VERSION;else process.env.CLOUDFLARE_ASSET_VERSION=previousEnv.assetVersion;
+}
 
 console.log('rebirth view tests passed');
