@@ -36,6 +36,15 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({title:'پیام مرد
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سلام فرمانده در جیرفت اجرا شد',body:'این برنامه فرهنگی با حضور دانش‌آموزان برگزار شد'}),'');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'واکاوی بایسته‌های مشارکت نسل نو در معادلات پیشرفت جنوب کرمان',body:'یادداشتی تحلیلی'}),'opinion-or-non-news');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'به نام باور بی منت',body:'متن شخصی'}),'opinion-or-non-news');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'اطلاعیه مراسم تشییع پیکر مرحوم علی رضایی',body:'مراسم فردا برگزار می‌شود'}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'زمان و مکان خاکسپاری مرحومه اعلام شد',body:'خانواده داغدار اطلاع دادند'}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'دعوت به مراسم هفتم مرحوم محمدی',body:'مراسم در مسجد برگزار می‌شود'}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'درگذشت راننده در سانحه جاده‌ای',body:'پلیس علت حادثه را اعلام کرد'}),'');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'رپورتاژ آگهی؛ فروش ویژه تجهیزات با تخفیف',body:'برای سفارش با شماره تماس بگیرید'}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'فروش انواع لوازم خانگی با قیمت ویژه',body:'برای خرید با شماره 09123456789 تماس بگیرید'}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'آغاز ثبت‌نام آزمون استخدامی دستگاه‌های اجرایی',body:'جزئیات ثبت‌نام در اطلاعیه رسمی منتشر شد'}),'');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'ممنوعیت تبلیغات غیرمجاز در معابر جیرفت',body:'شهرداری از اجرای طرح ساماندهی خبر داد'}),'');
+
 const relSettings={settings:{keywords:'ساردوئیه,جیرفت,جنوب کرمان,عنبرآباد,کهنوج,فاریاب,رودبار جنوب,منوجان,قلعه گنج,جازموریان,کرمان'}};
 assert.strictEqual(monitor.relevant(relSettings,{scope:'kerman'},{title:'ویزیت پنج‌دقیقه‌ای، در این زمان واقعاً چقدر می‌توان بیمار را شناخت؟',lead:'گزارش سلامت',body:'گزارش عمومی پزشکی'}),false);
 assert.strictEqual(monitor.relevant(relSettings,{scope:'kerman'},{title:'افتتاح طرح جدید در کرمان',lead:'استاندار کرمان خبر داد',body:'متن خبر'}),true);
@@ -45,6 +54,8 @@ const store=require('../lib/store');
 const publicRows=store.published({articles:[
   {id:'bad1',status:'published',imported:true,title:'بسم الله الرحمن الرحیم',body:'متن غیرخبری',publishedAt:'2026-10-13T06:00:00Z'},
   {id:'bad2',status:'published',imported:true,title:'سلام این وضعیت پاسداران ۳ در مرکز شهر هست لطفاً بررسی کنید',body:'پیام خام شهروندی',publishedAt:'2026-10-13T06:01:00Z'},
+  {id:'bad3',status:'published',imported:true,title:'اطلاعیه مراسم تشییع پیکر مرحوم',body:'مراسم فردا برگزار می‌شود',publishedAt:'2026-10-13T06:01:30Z'},
+  {id:'bad4',status:'published',imported:true,title:'فروش ویژه انواع لوازم با تخفیف',body:'برای خرید با شماره 09123456789 تماس بگیرید',publishedAt:'2026-10-13T06:01:45Z'},
   {id:'good1',status:'published',imported:true,title:'سلام فرمانده در جیرفت اجرا شد',body:'برنامه فرهنگی برگزار شد',publishedAt:'2026-10-13T06:02:00Z'},
   {id:'manual1',status:'published',imported:false,title:'بسم الله الرحمن الرحیم',body:'انتشار دستی تحریریه',publishedAt:'2026-10-13T06:03:00Z'}
 ]});
