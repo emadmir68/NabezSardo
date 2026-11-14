@@ -590,16 +590,17 @@ async function handleFastPublic(request,url,pathname,ctx){
     if(request.method==="GET"){
       const cached=await fastArticleCacheGet(pathname);
       if(cached){
-        // Bots are filtered out of analytics anyway; skip the db load so cached
-        // hits cost near-zero CPU even while the every-minute cron is running.
+        // Re-check publication policy before serving cached HTML. A legacy
+        // funeral notice or advertisement must not survive in the edge cache.
+        const idx=await fastArticleIndex(db);
+        const cachedArticle=idx.get(key);
+        if(!cachedArticle){
+          try{await caches.default.delete(fastArticleCacheKey(pathname));}catch{}
+          return new Response("خبر پیدا نشد.",{status:404,headers:{...securityHeaders(),"content-type":"text/plain; charset=utf-8","cache-control":"no-store"}});
+        }
         if(ctx&&fastTrackablePath(pathname)&&!fastBot(request.headers.get("user-agent")||"")){
-          const dbForViews=await loadPublicDbFast();
-          const idx=await fastArticleIndex(dbForViews);
-          const cachedArticle=idx.get(key);
-          const cachedArticleId=cachedArticle?String(cachedArticle.id):"";
-          if(cachedArticleId){
-            ctx.waitUntil(recordFastVisit(request,pathname,cachedArticleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
-          }
+          const cachedArticleId=String(cachedArticle.id);
+          ctx.waitUntil(recordFastVisit(request,pathname,cachedArticleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
         }
         return new Response(cached.body,{status:200,headers:{
           ...securityHeaders(),
