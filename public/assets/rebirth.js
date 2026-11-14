@@ -230,17 +230,17 @@
       await document.fonts.ready;
       const bg=ctx.createLinearGradient(0,0,1080,1920);bg.addColorStop(0,'#0b0d14');bg.addColorStop(.62,'#171a23');bg.addColorStop(1,'#08090e');ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1920);
       ctx.fillStyle='#e11b22';ctx.fillRect(72,72,92,92);ctx.fillStyle='#fff';ctx.font='900 64px Vazirmatn, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N',118,118);
-      ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillStyle='#fff';ctx.font='900 43px Estedad, Vazirmatn, sans-serif';ctx.fillText('نبض ساردو',1005,128);
-      ctx.fillStyle='#aaa59e';ctx.font='18px Georgia, serif';ctx.textAlign='left';ctx.fillText('NABZ SARDO / SOUTH KERMAN',170,120);
+      ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillStyle='#fff';ctx.font='900 43px Estedad, Vazirmatn, sans-serif';ctx.fillText('نبض ساردو',1005,128);
+      ctx.direction='ltr';ctx.fillStyle='#aaa59e';ctx.font='18px Georgia, serif';ctx.textAlign='left';ctx.fillText('NABZ SARDO / SOUTH KERMAN',170,120);
       ctx.fillStyle='#e11b22';ctx.fillRect(72,205,936,3);
-      ctx.fillStyle='#ff5b60';ctx.textAlign='right';ctx.font='700 26px Estedad, Vazirmatn, sans-serif';ctx.fillText(category+'  /  '+locationName,1008,280);
+      ctx.direction='rtl';ctx.fillStyle='#ff5b60';ctx.textAlign='right';ctx.font='700 26px Estedad, Vazirmatn, sans-serif';ctx.fillText(category+'  /  '+locationName,1008,280);
       const imageSrc=root.dataset.storyImage||'';
       if(imageSrc){
         const image=await new Promise(resolve=>{const im=new Image();if(/^https?:\/\//i.test(imageSrc)&&!imageSrc.startsWith(location.origin))im.crossOrigin='anonymous';im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src=imageSrc;});
         ctx.fillStyle='#252a33';rounded(72,330,936,600,28);ctx.fill();
         if(image){ctx.save();rounded(72,330,936,600,28);ctx.clip();const scale=Math.max(936/image.naturalWidth,600/image.naturalHeight);const w=image.naturalWidth*scale,h=image.naturalHeight*scale;ctx.drawImage(image,72+(936-w)/2,330+(600-h)/2,w,h);ctx.restore();}
       }else{
-        const art=ctx.createLinearGradient(72,330,1008,930);art.addColorStop(0,'#262b35');art.addColorStop(1,'#10131a');ctx.fillStyle=art;rounded(72,330,936,600,28);ctx.fill();ctx.fillStyle='#e11b22';ctx.fillRect(120,430,12,400);ctx.fillStyle='#f2ede6';ctx.font='900 130px Georgia, serif';ctx.textAlign='left';ctx.fillText('NS',180,720);
+        const art=ctx.createLinearGradient(72,330,1008,930);art.addColorStop(0,'#262b35');art.addColorStop(1,'#10131a');ctx.fillStyle=art;rounded(72,330,936,600,28);ctx.fill();ctx.fillStyle='#e11b22';ctx.fillRect(120,430,12,400);ctx.direction='ltr';ctx.fillStyle='#f2ede6';ctx.font='900 130px Georgia, serif';ctx.textAlign='left';ctx.fillText('NS',180,720);
       }
       ctx.fillStyle='#e11b22';ctx.fillRect(72,990,86,5);
       ctx.direction='rtl';ctx.textAlign='right';ctx.fillStyle='#f7f3ed';const titleLines=wrap(title,'900 58px Estedad, Vazirmatn, sans-serif',920,4);ctx.font='900 58px Estedad, Vazirmatn, sans-serif';let y=1090;for(const line of titleLines){ctx.fillText(line,1008,y);y+=92;}
