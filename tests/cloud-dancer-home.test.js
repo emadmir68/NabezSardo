@@ -41,7 +41,7 @@ test('new home links to original news, categories, cities and community submissi
 test('responsive design assets include mobile breakpoints and reduced-motion support',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
   const js=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.js'),'utf8');
-  assert.match(css,/@media\(max-width:760px\)/);
+  assert.match(css,/@media\(max-width:820px\)/);
   assert.match(css,/prefers-reduced-motion/);
   assert.match(css,/min-height:44px/);
   assert.match(css,/object-fit:cover/);
@@ -72,7 +72,7 @@ test('article page preserves reading typography and sharing tools',()=>{
   assert.match(html,/data-article-text-story/);
   const css=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
   assert.match(css,/rb-article-body/);
-  assert.match(css,/@media\(max-width:760px\)/);
+  assert.match(css,/@media\(max-width:820px\)/);
 });
 test('homepage retains protected category routes and premium covers',()=>{
  const db=fixture(15);
