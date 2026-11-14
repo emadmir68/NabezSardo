@@ -1,7 +1,47 @@
 'use strict';
 (function(){
   const $=(s,r=document)=>r.querySelector(s);
-  const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+  const $=(s,r=document)=>Array.from(r.querySelectorAll(s));
+
+  const languageKey='nabez-lang';
+  const languageButtons=$('[data-lang-option]');
+  function setLanguage(value){
+    const lang=value==='en'?'en':'fa';
+    document.documentElement.dataset.lang=lang;
+    document.documentElement.lang=lang==='en'?'en':'fa-IR';
+    document.documentElement.dir=lang==='en'?'ltr':'rtl';
+    document.body.classList.toggle('rb-lang-en',lang==='en');
+    try{localStorage.setItem(languageKey,lang);}catch{}
+    languageButtons.forEach(button=>button.classList.toggle('active',button.dataset.langOption===lang));
+    $('[data-placeholder-fa]').forEach(input=>{
+      input.placeholder=lang==='en'?(input.dataset.placeholderEn||input.dataset.placeholderFa):(input.dataset.placeholderFa||'');
+    });
+  }
+  if(languageButtons.length){
+    let saved='fa';try{saved=localStorage.getItem(languageKey)||'fa';}catch{}
+    languageButtons.forEach(button=>button.addEventListener('click',()=>setLanguage(button.dataset.langOption)));
+    setLanguage(saved);
+  }
+  const updateClock=()=>{
+    const lang=document.documentElement.dataset.lang==='en'?'en':'fa';
+    const dateLocale=lang==='en'?'en-US-u-ca-persian':'fa-IR-u-ca-persian';
+    const clockLocale=lang==='en'?'en-GB':'fa-IR';
+    const now=new Date();
+    $('[data-jalali-date]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat(dateLocale,{year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Tehran'}).format(now);}catch{}});
+    $('[data-live-clock]').forEach(el=>{try{el.textContent=new Intl.DateTimeFormat(clockLocale,{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Tehran'}).format(now);}catch{}});
+  };
+  updateClock();setInterval(updateClock,30000);
+  const liveCounter=$('[data-live-views]');
+  async function refreshLiveViews(){
+    if(!liveCounter||document.visibilityState==='hidden')return;
+    try{
+      const response=await fetch('/api/live-stats?_='+Date.now(),{cache:'no-store',credentials:'same-origin'});
+      if(!response.ok)return;
+      const data=await response.json();
+      if(Number.isFinite(Number(data.totalPageViews)))liveCounter.textContent=Number(data.totalPageViews).toLocaleString(document.documentElement.dataset.lang==='en'?'en-US':'fa-IR');
+    }catch{}
+  }
+  if(liveCounter){refreshLiveViews();setInterval(refreshLiveViews,20000);}
 
   $$('[data-menu-toggle]').forEach(button=>{
     button.addEventListener('click',()=>{
