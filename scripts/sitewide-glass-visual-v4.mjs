@@ -159,6 +159,7 @@ try{
         report(await page.locator('.rb-search.is-open input[name=q]').count()===1,size.w+' mobile search expands');
         const searchWidth=await page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth));
         report(searchWidth<=size.w+3,size.w+' expanded mobile search stays within viewport ('+searchWidth+')');
+        await search.click();
       }
       if(size.w<=412&&metrics.inputSizes.length){
         report(metrics.inputSizes.every(value=>value>=16),size.w+' '+route+' mobile form inputs avoid iOS zoom');
