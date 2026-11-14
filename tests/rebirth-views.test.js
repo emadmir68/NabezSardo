@@ -38,7 +38,7 @@ assert.ok(article.includes('property="og:image:secure_url"'));
 assert.ok(article.includes('property="og:image:alt" content="آینده کشاورزی جنوب کرمان"'));
 assert.ok(article.includes('name="twitter:card" content="summary_large_image"'));
 assert.ok(article.includes('data-article-url="'+shortArticlePath+'"'));
-assert.ok(article.includes('data-article-canonical="https://nabzesardo.ir/news/agriculture-future"'));
+assert.ok(article.includes('data-article-canonical="/news/agriculture-future"'));
 assert.ok(article.includes('property="article:published_time"'));
 const noImageArticle=views.article(sample,{...sample.articles[0],id:'no-image',image:'',socialImage:''});
 assert.ok(noImageArticle.includes('https://nabzesardo.ir/header-mosque-fixed.jpg'));
