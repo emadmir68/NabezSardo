@@ -71,7 +71,66 @@
     });
   });
 
-  $$('[data-admin-filter]').forEach(input=>{
+  const articleRoot=$('[data-article-root]');
+  if(articleRoot){
+    const articleTitle=articleRoot.dataset.articleTitle||document.title;
+    const articleLead=String(articleRoot.dataset.articleLead||'').replace(/\\s+/g,' ').trim();
+    const articleUrl=new URL(articleRoot.dataset.articleUrl||location.href,location.origin).href;
+    const articleImage=articleRoot.dataset.articleImage?new URL(articleRoot.dataset.articleImage,location.origin).href:'';
+    const articleVideo=articleRoot.dataset.articleVideo?new URL(articleRoot.dataset.articleVideo,location.origin).href:'';
+    const shareMessage=[articleTitle,articleLead,articleUrl].filter(Boolean).join('\\n\\n');
+    if(location.pathname.startsWith('/news/')&&history.replaceState){
+      try{const shortPath=new URL(articleUrl,location.origin);history.replaceState(history.state,'',shortPath.pathname+shortPath.search+location.hash);}catch{}
+    }
+    const copyText=async(value)=>{
+      try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return true;}}catch{}
+      try{const area=document.createElement('textarea');area.value=value;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();const ok=document.execCommand('copy');area.remove();return ok;}catch{return false;}
+    };
+    $('[data-article-copy-message]',articleRoot).forEach(button=>{
+      button.addEventListener('click',async()=>{
+        const ok=await copyText(shareMessage);
+        button.textContent=ok?'متن آماده کپی شد ✓':'کپی متن در دسترس نیست';
+      });
+    });
+    $('[data-article-share-image]',articleRoot).forEach(button=>{
+      button.addEventListener('click',async()=>{
+        let shared=false;
+        if(articleImage&&navigator.share&&navigator.canShare){
+          try{
+            const response=await fetch(articleImage,{credentials:'same-origin'});
+            if(!response.ok)throw new Error('image unavailable');
+            const blob=await response.blob();
+            const ext=/png/i.test(blob.type)?'png':/webp/i.test(blob.type)?'webp':'jpg';
+            const file=new File([blob],'nabz-sardo-story.'+ext,{type:blob.type||'image/jpeg'});
+            if(navigator.canShare({files:[file]})){await navigator.share({title:articleTitle,text:shareMessage,url:articleUrl,files:[file]});shared=true;}
+          }catch{}
+        }
+        if(!shared){
+          const ok=await copyText(shareMessage);
+          button.textContent=ok?'پیوند و متن کپی شد ✓':'اشتراک تصویر در دسترس نیست';
+        }
+      });
+    });
+    $('[data-article-share-video]',articleRoot).forEach(button=>{
+      button.addEventListener('click',async()=>{
+        if(navigator.share){try{await navigator.share({title:articleTitle,text:shareMessage,url:articleVideo||articleUrl});return;}catch{}}
+        const ok=await copyText(articleVideo||shareMessage);
+        button.textContent=ok?'پیوند ویدئو کپی شد ✓':'اشتراک ویدئو در دسترس نیست';
+      });
+    });
+    const progress=$('[data-article-progress] i',articleRoot);
+    if(progress){
+      const update=()=>{
+        const rect=articleRoot.getBoundingClientRect();
+        const total=Math.max(1,rect.height-window.innerHeight*.72);
+        const done=Math.max(0,Math.min(1,(window.innerHeight*.18-rect.top)/total));
+        progress.style.width=(done*100).toFixed(2)+'%';
+      };
+      update();window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update,{passive:true});
+    }
+  }
+
+  $('[data-admin-filter]').forEach(input=>{
     input.addEventListener('input',()=>{
       const q=input.value.trim().toLocaleLowerCase();
       $$('[data-admin-list] .rb-admin-list-row').forEach(row=>{
