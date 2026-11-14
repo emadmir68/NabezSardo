@@ -46,8 +46,8 @@ test('every canonical page advertised by the sitemap is reachable',async t=>{
  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('server timeout')),10000);child.stdout.on('data',data=>{if(String(data).includes('running on')){clearTimeout(timer);resolve()}});child.on('error',reject)});
  const robotsResponse=await fetch(base+'/robots.txt');
  const robots=await robotsResponse.text();
- assert.match(robots,/Allow: \\/);
- assert.doesNotMatch(robots,/Disallow: \\/$/);
+ assert.ok(robots.includes('Allow: /'));
+ assert.ok(!robots.includes('Disallow: /'));
  const homeResponse=await fetch(base+'/');
  assert.equal(homeResponse.headers.get('x-robots-tag'),null);
  assert.match(await homeResponse.text(),/name="robots" content="index,follow/);
