@@ -1,17 +1,30 @@
-# Cloudflare migration status
+# Cloudflare-only deployment status
 
-This branch is isolated from the Railway production deployment.
+Cloudflare Workers is the sole Production runtime for `nabzesardo.ir`. Railway is not part of the active request, storage, or deployment path.
 
-Current migration design:
-- Existing public/admin templates remain in the repository.
-- Cloudflare Workers runs the existing Node HTTP application through a compatibility adapter.
-- D1 stores the application JSON state and analytics state.
-- R2 stores uploaded images and citizen media.
-- Workers Static Assets serves files from public/.
-- /__migration/import and /__migration/export are protected by MIGRATION_TOKEN.
-- No production domain route is configured in this branch.
-- Railway production must remain untouched until preview verification is complete.
+## Production architecture
 
-Safety rule: do not merge this branch to main or point nabzesardo.ir to Cloudflare until the preview passes.
+- Cloudflare Worker: public site, newsroom routes, and Node compatibility adapter.
+- Cloudflare D1: application JSON state and analytics state.
+- Arvan Object Storage: uploaded images and citizen media.
+- Workers Static Assets: versioned public CSS, JavaScript, and static files.
+- GitHub Actions: production deployment is triggered only from `cloudflare-migration`.
 
-- Combined smart covers: Workers AI first; branded SVG fallback if AI is unavailable.
+## Editorial rebuild preview
+
+The Experimental Editorial redesign is being ported directly onto the Cloudflare Worker runtime.
+
+- `wrangler.preview.jsonc` defines Worker Preview settings.
+- Preview uses the separate D1 database `nabzesardo-editorial-preview`.
+- The preview snapshot contains published articles only; drafts, contact messages, citizen submissions, credentials, and analytics are excluded.
+- `PREVIEW_READONLY=1` and `CLOUDFLARE_PRIMARY=0` prevent production writes.
+- Preview does not receive production cron triggers or queue consumers.
+- Telegram, Rubika, WhatsApp, and automatic distribution remain disabled.
+- Public media is read through the production public upload endpoint; the preview does not write to Arvan storage.
+- HTML responses carry `X-Robots-Tag: noindex, nofollow, noarchive`, and `robots.txt` blocks crawling.
+- Read-only newsroom dashboard: `/__preview/admin`.
+- Read-only article editor: `/__preview/admin/editor`.
+
+## Release safety
+
+Do not merge the editorial preview branch into `cloudflare-migration` until the preview has been visually and functionally approved. Only the Cloudflare production workflow on `cloudflare-migration` can change the live domain.
