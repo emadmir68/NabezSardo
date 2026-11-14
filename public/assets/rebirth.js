@@ -219,7 +219,7 @@
     const locationName=root.dataset.storyLocation||'جنوب کرمان';
     const storyUrl=root.dataset.storyUrl||location.href;
     const wrap=(value,font,maxWidth,maxLines)=>{
-      ctx.font=font;const words=String(value||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+      ctx.direction='rtl';ctx.textAlign='right';ctx.font=font;const words=String(value||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
       for(const word of words){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>maxWidth){lines.push(line);line=word;if(lines.length>=maxLines)break;}else line=next;}
       if(line&&lines.length<maxLines)lines.push(line);
       if(words.length&&lines.length===maxLines&&ctx.measureText(lines[lines.length-1]+'…').width>maxWidth){while(lines[lines.length-1].length>2&&ctx.measureText(lines[lines.length-1]+'…').width>maxWidth)lines[lines.length-1]=lines[lines.length-1].slice(0,-1);lines[lines.length-1]+='…';}
@@ -247,7 +247,7 @@
       const leadLines=wrap(lead,'400 32px Vazirmatn, sans-serif',900,4);ctx.font='400 32px Vazirmatn, sans-serif';ctx.fillStyle='#c6c0b8';y+=18;for(const line of leadLines){ctx.fillText(line,1008,y);y+=58;}
       ctx.fillStyle='#e11b22';ctx.fillRect(72,1630,936,2);
       ctx.textAlign='right';ctx.fillStyle='#f2ede6';ctx.font='700 24px Vazirmatn, sans-serif';ctx.fillText('خبر را دقیق بخوان؛ روایت را دنبال کن.',1008,1700);
-      ctx.textAlign='left';ctx.fillStyle='#aaa59e';ctx.font='20px Arial, sans-serif';ctx.fillText(storyUrl.slice(0,70),72,1790);
+      ctx.direction='ltr';ctx.textAlign='left';ctx.fillStyle='#aaa59e';ctx.font='20px Arial, sans-serif';ctx.fillText(storyUrl.slice(0,70),72,1790);
       ctx.fillStyle='#e11b22';ctx.fillRect(72,1840,936,8);
       const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
       if(!blob)throw new Error('ساخت تصویر PNG ممکن نشد');
