@@ -6,7 +6,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "node --check app.js && node --check lib/rebirth-shared.js && node --check lib/rebirth-public.js && node --check lib/rebirth-admin.js && node --check lib/views-rebirth.js && node tests/news-monitor.test.js && node tests/rebirth-views.test.js"
+    "test": "node --check app.js && node --check lib/rebirth-shared.js && node --check lib/rebirth-public.js && node --check lib/rebirth-admin.js && node --check lib/views-rebirth.js && node --check public/assets/rebirth.js && node --check tests/rebirth-views.test.js && node tests/news-monitor.test.js && node tests/rebirth-views.test.js"
   },
   "engines": {
     "node": ">=20"
