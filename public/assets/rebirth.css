@@ -372,7 +372,7 @@ img,video{max-width:100%}
 .rb-news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .rb-integration-grid{grid-template-columns:repeat(2,1fr)}
 }
-@media(max-width:760px){
+@media(max-width:820px){
 .rb-shell{width:min(100% - 32px,640px)}
 .rb-topline-inner{min-height:30px}
 .rb-topline-inner>span:nth-child(2){display:none}
@@ -487,7 +487,7 @@ img,video{max-width:100%}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
-@media(max-width:760px){.rb-search.is-open{width:min(260px,58vw);border:1px solid #454954}.rb-search.is-open input{display:block;min-width:0;flex:1;padding:0 9px;font-size:10px}.rb-search.is-open button{flex:none}}
+@media(max-width:820px){.rb-search.is-open{width:min(260px,58vw);border:1px solid #454954}.rb-search.is-open input{display:block;min-width:0;flex:1;padding:0 9px;font-size:10px}.rb-search.is-open button{flex:none}}
 
 .rb-en{display:none}
 .rb-lang-en .rb-fa{display:none!important}
@@ -501,7 +501,52 @@ img,video{max-width:100%}
 .rb-lang-en .rb-article-lead{border-right:0;border-left:4px solid var(--rb-red);padding-right:0;padding-left:18px}
 .rb-lang-en .rb-article-body blockquote{border-right:0;border-left:4px solid var(--rb-red)}
 .rb-lang-en .rb-policy-lock{border-right:0;border-left:3px solid var(--rb-red)}
-@media(max-width:760px){.rb-language-switch{padding:2px}.rb-language-switch button{padding:5px;font-size:8px}.rb-topline-inner>span:nth-child(2){display:none}.rb-live-counter{display:none}}
+@media(max-width:820px){.rb-language-switch{padding:2px}.rb-language-switch button{padding:5px;font-size:8px}.rb-topline-inner>span:nth-child(2){display:none}.rb-live-counter{display:none}}
 
 /* Long Persian headlines must remain readable on narrow mobile screens. */
 .rb-hero-copy h1,.rb-article-head h1,.rb-story h3,.rb-hero-side-item b,.rb-page-heading h1{overflow-wrap:anywhere;word-break:normal}
+
+/* Tablet and mobile refinements for archive filters and newsroom controls. */
+.rb-archive-filters{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) auto;gap:10px;align-items:end;width:100%;max-width:100%;padding:12px;background:#141720;border:1px solid #30343e}
+.rb-archive-field{display:flex;flex-direction:column;gap:6px;min-width:0;color:#a8a5a0;font-size:10px}
+.rb-archive-field input,.rb-archive-field select{display:block;width:100%;min-width:0;max-width:100%;background:#10131a;border:1px solid #3a3d46;color:#f6f2eb;padding:11px 10px;font-size:14px}
+.rb-archive-filters button{min-height:44px;max-width:100%;padding:0 15px;white-space:nowrap}
+.rb-admin-layout,.rb-admin-main,.rb-admin-main-inner,.rb-admin-section{min-width:0;max-width:100%}
+.rb-admin-main input,.rb-admin-main select,.rb-admin-main textarea{max-width:100%;min-width:0}
+.rb-admin-main table{display:block;max-width:100%;overflow-x:auto}
+.rb-admin-toolbar{flex-wrap:wrap;min-width:0}
+.rb-admin-toolbar input{max-width:100%;min-width:0}
+@media(max-width:820px){
+  .rb-archive-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .rb-archive-filters .rb-archive-field:first-child{grid-column:1/-1}
+  .rb-archive-filters button{grid-column:1/-1;width:100%}
+  .rb-admin-layout{grid-template-columns:minmax(0,1fr)}
+  .rb-admin-sidebar{position:relative;top:auto;height:auto;min-width:0;padding:12px 14px;border-left:0;border-bottom:1px solid #30333c}
+  .rb-admin-brand{display:flex;align-items:center;gap:12px;padding-bottom:12px}
+  .rb-admin-brand>small{margin-top:0}
+  .rb-admin-sidebar nav{display:flex;flex-direction:row;gap:5px;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:12px 0 4px;scrollbar-width:thin}
+  .rb-admin-sidebar nav a{flex:0 0 auto;white-space:nowrap;padding:9px 10px}
+  .rb-admin-sidebar-bottom{display:none}
+  .rb-admin-main{padding:18px 14px}
+  .rb-admin-header{align-items:flex-start;flex-wrap:wrap}
+  .rb-admin-header h1{font-size:28px}
+  .rb-admin-user{max-width:100%}
+  .rb-admin-list-row{grid-template-columns:minmax(0,1fr);gap:8px}
+  .rb-admin-snapshot{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rb-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rb-metrics-compact{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rb-rich-toolbar{flex-wrap:wrap;max-width:100%}
+  .rb-admin-main form{max-width:100%;min-width:0}
+  .rb-admin-main input:not([type=checkbox]):not([type=radio]):not([type=file]),.rb-admin-main select,.rb-admin-main textarea,.rb-form input,.rb-form select,.rb-form textarea,.rb-page-search input,.rb-page-search select{font-size:16px!important}
+  .rb-search.is-open input{font-size:16px!important}
+}
+@media(max-width:420px){
+  .rb-archive-filters{grid-template-columns:minmax(0,1fr)}
+  .rb-archive-filters .rb-archive-field:first-child{grid-column:auto}
+  .rb-admin-main{padding:14px 10px}
+  .rb-admin-sidebar{padding:10px}
+  .rb-admin-sidebar nav a{font-size:10px;padding:8px}
+  .rb-admin-snapshot{grid-template-columns:minmax(0,1fr)}
+  .rb-admin-header{gap:10px}
+  .rb-admin-header h1{font-size:24px}
+}
