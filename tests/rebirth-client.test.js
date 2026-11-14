@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 
 const source=fs.readFileSync(require.resolve('../public/assets/rebirth.js'),'utf8');
-assert.doesNotMatch(source,/\$\('\[data-[^']+\]'.*\)\.forEach/,'multi-element selectors must use the query-all helper');
+assert.doesNotMatch(source,/(?<!\$)\$\('\[data-[^']+\]'.*\)\.forEach/,'multi-element selectors must use the query-all helper');
 
 function element(dataset={}){
   const handlers={};
