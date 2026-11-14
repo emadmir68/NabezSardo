@@ -11,7 +11,8 @@ const sample={
     {id:'two',slug:'water-resources',title:'مدیریت منابع آب در جنوب کرمان',lead:'ضرورت مدیریت پایدار منابع آب',body:'گزارش آب',categoryId:'social',status:'published',publishedAt:now,createdAt:now,location:'جنوب کرمان',views:10,image:'/uploads/water.webp'}
   ],
   contacts:[{id:'c1',name:'مخاطب',subject:'پیگیری خبر',message:'لطفاً این موضوع را بررسی کنید',contact:'09120000000',createdAt:now}],
-  citizens:[{id:'u1',name:'شهروند',headline:'گزارش مردمی',details:'شرح رویداد',phone:'09120000000',location:'جیرفت',createdAt:now}]
+  citizens:[{id:'u1',name:'شهروند',headline:'گزارش مردمی',details:'شرح رویداد',phone:'09120000000',location:'جیرفت',createdAt:now}],
+  followups:[{id:'f1',title:'پیگیری آب‌رسانی',promise:'بررسی وضعیت آب‌رسانی منطقه',promisor:'دستگاه اجرایی',location:'جیرفت',status:'progress',createdAt:now}]
 };
 function fresh(html,label){
   assert.match(html,/\/assets\/rebirth\.css\?v=1\.0\.0/,label+' loads new design system');
@@ -61,6 +62,13 @@ assert.match(login,/\/assets\/rebirth\.css/);
 const admin=views.admin(sample,[],new URLSearchParams(),{telegram:false,rubika:false,whatsapp:false,baseUrl:true},{totalPageViews:100,today:{pageViews:20}},{settings:{enabled:true,keywords:'جیرفت'},sources:[],queue:[],counts:{pending:0,sourcesOn:0,sources:0}});
 assert.match(admin,/rb-admin-layout/);
 assert.match(admin,/action="\/admin\/news-monitor\/settings"/);
+assert.match(admin,/href="#followups"/);
+assert.match(admin,/id="followups"/);
+assert.match(admin,/action="\/admin\/followups\/new"/);
+assert.match(admin,/action="\/admin\/followups\/f1\/delete"/);
+assert.match(admin,/action="\/admin\/citizens\/u1\/delete"/);
+assert.match(admin,/action="\/admin\/contacts\/c1\/delete"/);
+assert.match(admin,/پیگیری آب‌رسانی/);
 assert.match(admin,/آگهی، محتوای تبلیغاتی و اطلاعیه‌های فوت/);
 assert.doesNotMatch(admin,/\/assets\/site\.css/);
 
