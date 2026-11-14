@@ -39,12 +39,12 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Run full page + mobile regression
+      - name: Run full public + admin desktop and mobile regression
         run: node scripts/sitewide-glass-visual-v4.mjs
       - name: Upload full page screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nabez-rebirth-responsive-visual
-          path: /tmp/nabez-v4-visual/
+          path: /tmp/nabez-rebirth-visual/
           if-no-files-found: ignore
