@@ -1,9 +1,6 @@
 name: Experimental Editorial — isolated Cloudflare preview
 
 on:
-  push:
-    branches:
-      - "preview/experimental-editorial-cloudflare-20261114"
   pull_request:
     branches:
       - cloudflare-migration
@@ -148,18 +145,34 @@ jobs:
           curl -sS -o /tmp/rebirth-admin-preview.html -w '%{http_code}' "$PREVIEW_URL/__preview/admin" > /tmp/rebirth-admin-status.txt
           curl -sS -o /dev/null -w '%{http_code}' "$PREVIEW_URL/admin" > /tmp/rebirth-admin-blocked-status.txt
 
-          grep -q 'rb-hero-story' /tmp/rebirth-home.html
-          grep -q 'آینده کشاورزی جنوب کرمان' /tmp/rebirth-home.html
-          grep -q '/assets/rebirth.css' /tmp/rebirth-home.html
-          grep -q 'noindex,nofollow,noarchive' /tmp/rebirth-home.html
-          grep -q 'آینده کشاورزی جنوب کرمان' /tmp/rebirth-archive.html
-          grep -q 'rb-hero-story' /tmp/rebirth.css
-          grep -q 'Disallow: /' /tmp/rebirth-robots.txt
-          grep -qi 'x-robots-tag: noindex, nofollow, noarchive' /tmp/rebirth-headers.txt
-          test "$(cat /tmp/rebirth-admin-status.txt)" = "200"
-          grep -q 'rb-admin-layout' /tmp/rebirth-admin-preview.html
-          grep -q 'پیش‌نمایش آزمایشی نبض ساردو' /tmp/rebirth-admin-preview.html
-          test "$(cat /tmp/rebirth-admin-blocked-status.txt)" = "403"
+          node <<'NODE'
+          const fs=require('node:fs');
+          const home=fs.readFileSync('/tmp/rebirth-home.html','utf8');
+          const archive=fs.readFileSync('/tmp/rebirth-archive.html','utf8');
+          const css=fs.readFileSync('/tmp/rebirth.css','utf8');
+          const robots=fs.readFileSync('/tmp/rebirth-robots.txt','utf8');
+          const headers=fs.readFileSync('/tmp/rebirth-headers.txt','utf8').toLowerCase();
+          const admin=fs.readFileSync('/tmp/rebirth-admin-preview.html','utf8');
+          const adminStatus=fs.readFileSync('/tmp/rebirth-admin-status.txt','utf8').trim();
+          const blockedStatus=fs.readFileSync('/tmp/rebirth-admin-blocked-status.txt','utf8').trim();
+          const checks=[
+            ['home uses Experimental Editorial hero',home.includes('rb-hero-story')],
+            ['home includes seeded sample headline',home.includes('آینده کشاورزی جنوب کرمان')],
+            ['home loads rebirth stylesheet',home.includes('/assets/rebirth.css')],
+            ['home includes noindex robots meta',home.includes('noindex,nofollow,noarchive')],
+            ['archive includes seeded sample headline',archive.includes('آینده کشاورزی جنوب کرمان')],
+            ['rebirth stylesheet is served',css.includes('rb-hero-story')],
+            ['robots.txt disallows all crawling',robots.includes('Disallow: /')],
+            ['preview HTML sends X-Robots-Tag',headers.includes('x-robots-tag: noindex, nofollow, noarchive')],
+            ['read-only admin preview responds 200',adminStatus==='200'],
+            ['read-only admin preview renders rebirth dashboard',admin.includes('rb-admin-layout')],
+            ['read-only admin banner is visible',admin.includes('پیش‌نمایش آزمایشی نبض ساردو')],
+            ['normal admin route is blocked',blockedStatus==='403']
+          ];
+          let failures=0;
+          for(const [name,ok] of checks){console.log((ok?'PASS ':'FAIL ')+name);if(!ok)failures++;}
+          if(failures)process.exitCode=1;
+          NODE
 
           {
             echo "### Experimental Editorial preview deployed"
