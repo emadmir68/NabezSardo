@@ -31,6 +31,7 @@ assert.equal(store._test.syncEnabled(),false,'Cloudflare sync must be disabled i
 process.env.PREVIEW_MODE='false';
 process.env.RAILWAY_ENVIRONMENT_NAME='production';
 assert.equal(store._test.syncEnabled(),true,'Cloudflare sync remains available in production');
+process.env.PREVIEW_MODE='true';
 process.env.PUBLIC_BASE_URL='https://preview.example.test';
 const social=require('../lib/social');
 assert.deepEqual(social.status(),{telegram:false,rubika:false,whatsapp:false,baseUrl:true});
