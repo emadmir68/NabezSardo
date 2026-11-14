@@ -486,3 +486,5 @@ img,video{max-width:100%}
 .rb-integration-grid{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+@media(max-width:760px){.rb-search.is-open{width:min(260px,58vw);border:1px solid #454954}.rb-search.is-open input{display:block;min-width:0;flex:1;padding:0 9px;font-size:10px}.rb-search.is-open button{flex:none}}
