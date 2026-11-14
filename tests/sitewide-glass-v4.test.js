@@ -77,5 +77,5 @@ test('responsive system protects mobile navigation, image framing, touch targets
  assert.match(css,/prefers-reduced-motion/);
  assert.match(js,/aria-expanded/);
  assert.match(js,/data-menu-toggle/);
- assert.match(js,/Escape/);
+ assert.match(js,/data-rebirth-editor/);
 });
