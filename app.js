@@ -89,7 +89,8 @@ function crossSiteMutation(req){
 }
 async function verifyTurnstile(token,remoteIp=''){
   const secret=String(process.env.TURNSTILE_SECRET_KEY||'').trim();
-  if(!secret)return true;
+  const siteKey=String(process.env.TURNSTILE_SITE_KEY||'').trim();
+  if(!secret||!siteKey)return true;
   if(!String(token||'').trim())return false;
   try{
     const body=new URLSearchParams({secret,response:String(token)});
