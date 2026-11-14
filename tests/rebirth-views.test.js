@@ -64,7 +64,7 @@ assert.match(admin,/rb-admin-layout/);
 assert.match(admin,/action="\/admin\/news-monitor\/settings"/);
 assert.match(admin,/href="#followups"/);
 assert.match(admin,/id="followups"/);
-assert.match(admin,/action="\/admin\/followups\/new"/);
+assert.match(admin,/href="\/admin\/followups\/new"/);
 assert.match(admin,/action="\/admin\/followups\/f1\/delete"/);
 assert.match(admin,/action="\/admin\/citizens\/u1\/delete"/);
 assert.match(admin,/action="\/admin\/contacts\/c1\/delete"/);
