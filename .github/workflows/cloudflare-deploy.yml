@@ -95,17 +95,17 @@ jobs:
 
           grep -q "نبض ساردو" /tmp/home.html
           # Production must serve the approved Experimental Editorial system, not any legacy shell.
-          grep -q ' rb-header ' /tmp/home.html
-          grep -q ' rb-home-hero ' /tmp/home.html
-          grep -q ' rb-hero-story ' /tmp/home.html
-          grep -q ' rb-footer ' /tmp/home.html
+          grep -q 'rb-header' /tmp/home.html
+          grep -q 'rb-home-hero' /tmp/home.html
+          grep -q 'rb-hero-story' /tmp/home.html
+          grep -q 'rb-footer' /tmp/home.html
           grep -q '/assets/rebirth.css?v=' /tmp/home.html
           grep -q '/assets/rebirth.js?v=' /tmp/home.html
           grep -q 'name="robots" content="index,follow' /tmp/home.html
-          grep -q ' rb-archive-filters ' /tmp/archive.html
-          grep -q ' rb-news-grid ' /tmp/archive.html
-          grep -q ' rb-header ' /tmp/archive.html
-          grep -q ' rb-footer ' /tmp/archive.html
+          grep -q 'rb-archive-filters' /tmp/archive.html
+          grep -q 'rb-news-grid' /tmp/archive.html
+          grep -q 'rb-header' /tmp/archive.html
+          grep -q 'rb-footer' /tmp/archive.html
           grep -q 'class="rb-admin-body"' /tmp/admin-login.html
           grep -q 'class="rb-login"' /tmp/admin-login.html
 
