@@ -995,3 +995,12 @@ input[type="file"]{overflow:hidden}
     direction:rtl!important;
   }
 }
+
+
+/* Rich article figures and captions in the newsroom editor. */
+.rich-area figure{margin:18px 0;padding:0;max-width:100%}
+.rich-area figure img{display:block;max-width:100%;height:auto;max-height:520px;object-fit:contain;background:#161b24}
+.rich-area figcaption{padding:8px 11px;background:#151a23;border-right:3px solid #b98945;color:#c5cbd4;font-size:12px;line-height:1.9;outline:0}
+.rich-area h2{font-size:24px;font-weight:900;margin:28px 0 12px}
+.rich-area h3{font-size:19px;font-weight:800;margin:22px 0 10px}
+.rich-area blockquote{margin:22px 0;padding:14px 18px;border-right:3px solid #b98945;background:#121821;color:#f1eee8;border-radius:8px}
