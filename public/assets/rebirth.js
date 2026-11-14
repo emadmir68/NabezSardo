@@ -1,0 +1,148 @@
+'use strict';
+(function(){
+  const $=(s,r=document)=>r.querySelector(s);
+  const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+
+  $$('[data-menu-toggle]').forEach(button=>{
+    button.addEventListener('click',()=>{
+      const nav=$('[data-main-nav]');
+      if(!nav)return;
+      const open=nav.classList.toggle('is-open');
+      button.setAttribute('aria-expanded',String(open));
+    });
+  });
+
+  $$('[data-copy-link]').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      try{
+        await navigator.clipboard.writeText(location.href);
+        button.textContent='پیوند کپی شد ✓';
+      }catch{button.textContent='کپی پیوند در این مرورگر در دسترس نیست';}
+    });
+  });
+  $$('[data-share]').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      const data={title:document.title,url:location.href};
+      if(navigator.share){try{await navigator.share(data);}catch{}}
+      else{
+        try{await navigator.clipboard.writeText(location.href);button.textContent='پیوند کپی شد ✓';}
+        catch{button.textContent='اشتراک‌گذاری در دسترس نیست';}
+      }
+    });
+  });
+
+  $$('[data-admin-filter]').forEach(input=>{
+    input.addEventListener('input',()=>{
+      const q=input.value.trim().toLocaleLowerCase();
+      $$('[data-admin-list] .rb-admin-list-row').forEach(row=>{
+        row.hidden=!row.textContent.toLocaleLowerCase().includes(q);
+      });
+    });
+  });
+
+  $$('form[data-confirm]').forEach(form=>{
+    form.addEventListener('submit',event=>{
+      if(!window.confirm(form.getAttribute('data-confirm')||'ادامه می‌دهید؟'))event.preventDefault();
+    });
+  });
+
+  async function uploadImage(file){
+    const fd=new FormData();
+    fd.append('image',file,file.name||'upload.jpg');
+    const response=await fetch('/admin/upload/image',{method:'POST',body:fd,credentials:'same-origin'});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok||!payload.url)throw new Error(payload.error||'آپلود تصویر انجام نشد.');
+    return payload.url;
+  }
+  function setPreview(input,selector,emptySelector){
+    const file=input.files&&input.files[0];
+    const frame=$(selector);
+    if(!file||!frame)return;
+    const img=$('[data-image-preview]',frame);
+    const empty=$(emptySelector,frame);
+    if(img){img.src=URL.createObjectURL(file);img.hidden=false;}
+    if(empty)empty.hidden=true;
+  }
+  $$('[data-image-input]').forEach(input=>{
+    input.addEventListener('change',()=>setPreview(input,'[data-image-preview-frame]','[data-preview-empty]'));
+  });
+  $$('[data-video-input]').forEach(input=>{
+    input.addEventListener('change',()=>{
+      const file=input.files&&input.files[0],frame=$('[data-video-preview-frame]');
+      if(!file||!frame)return;
+      const video=$('[data-video-preview]',frame),empty=$('[data-video-empty]',frame);
+      if(video){video.src=URL.createObjectURL(file);video.hidden=false;}
+      if(empty)empty.hidden=true;
+    });
+  });
+
+  $$('[data-status-select]').forEach(select=>{
+    const form=select.closest('form');
+    const wrap=form&&$('[data-schedule-wrap]',form);
+    const update=()=>{if(wrap)wrap.hidden=select.value!=='scheduled';};
+    select.addEventListener('change',update);update();
+  });
+
+  $$('[data-rebirth-editor]').forEach(form=>{
+    const area=$('[data-rich-area]',form),hidden=$('[data-rich-input]',form);
+    const galleryInput=$('[data-gallery-json]',form),galleryList=$('[data-gallery-list]',form),galleryStatus=$('[data-gallery-status]',form);
+    const saveStatus=$('[data-save-status]',form);
+    const sync=()=>{if(area&&hidden)hidden.value=area.innerHTML;if(galleryInput&&galleryList){galleryInput.value=JSON.stringify($$('.rb-gallery-item',galleryList).map(x=>x.dataset.url).filter(Boolean));}};
+    $$('[data-cmd]',form).forEach(button=>{
+      button.addEventListener('click',()=>{
+        if(!area)return;
+        area.focus();
+        const command=button.dataset.cmd;
+        if(command==='formatBlock')document.execCommand(command,false,button.dataset.value||'h2');
+        else document.execCommand(command,false,null);
+        sync();
+      });
+    });
+    const inlineButton=$('[data-inline-image]',form),inlineInput=$('[data-inline-file]',form);
+    if(inlineButton&&inlineInput){
+      inlineButton.addEventListener('click',()=>inlineInput.click());
+      inlineInput.addEventListener('change',async()=>{
+        const file=inlineInput.files&&inlineInput.files[0];if(!file||!area)return;
+        if(galleryStatus)galleryStatus.textContent='در حال بارگذاری تصویر...';
+        try{
+          const url=await uploadImage(file);
+          area.focus();document.execCommand('insertHTML',false,'<p><img src="'+url.replace(/"/g,'%22')+'" alt=""></p>');
+          sync();if(galleryStatus)galleryStatus.textContent='تصویر به متن خبر افزوده شد.';
+        }catch(err){if(galleryStatus)galleryStatus.textContent=err.message;}
+        inlineInput.value='';
+      });
+    }
+    const galleryInputFile=$('[data-gallery-input]',form);
+    if(galleryInputFile){
+      galleryInputFile.addEventListener('change',async()=>{
+        const files=Array.from(galleryInputFile.files||[]);
+        if(!files.length||!galleryList)return;
+        if(galleryStatus)galleryStatus.textContent='در حال بارگذاری '+files.length+' تصویر...';
+        for(const file of files){
+          try{
+            const url=await uploadImage(file);
+            const figure=document.createElement('figure');
+            figure.className='rb-gallery-item';figure.dataset.url=url;
+            const img=document.createElement('img');img.src=url;img.alt='';
+            const remove=document.createElement('button');remove.type='button';remove.dataset.galleryRemove='';remove.setAttribute('aria-label','حذف تصویر');remove.textContent='×';
+            figure.append(img,remove);galleryList.appendChild(figure);
+          }catch(err){if(galleryStatus)galleryStatus.textContent=err.message;}
+        }
+        sync();galleryInputFile.value='';
+        if(galleryStatus)galleryStatus.textContent='گالری به‌روزرسانی شد.';
+      });
+    }
+    if(galleryList){
+      galleryList.addEventListener('click',event=>{
+        const button=event.target.closest('[data-gallery-remove]');
+        if(!button)return;
+        const item=button.closest('.rb-gallery-item');if(item)item.remove();sync();
+      });
+    }
+    form.addEventListener('submit',()=>{
+      sync();
+      if(saveStatus)saveStatus.textContent='در حال ذخیره خبر...';
+    });
+    sync();
+  });
+})();
