@@ -2,13 +2,14 @@ const http=require('http');
 const fs=require('fs');
 const path=require('path');
 const crypto=require('crypto');
+const previewMode=require('./lib/preview-mode');
+const PREVIEW_MODE=previewMode.enabled();
 const store=require('./lib/store');
 const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullBackup,restoreFullBackup}=store;
 const views=require('./lib/views-rebirth');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
 const newsMonitor=require('./lib/news-monitor');
-const previewMode=require('./lib/preview-mode');
 const {shortArticleCode,previousShortArticleCode,legacyShortArticleCode}=require('./lib/view-common');
 
 const PORT=Number(process.env.PORT||3000);
@@ -18,7 +19,6 @@ const SECRET=process.env.SESSION_SECRET||(PREVIEW_MODE?crypto.randomBytes(32).to
 const ROOT=__dirname;
 const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
 const APP_VERSION=String(process.env.RAILWAY_GIT_COMMIT_SHA||process.env.RAILWAY_DEPLOYMENT_ID||process.env.RAILWAY_REPLICA_ID||'dev').slice(0,80);
-const PREVIEW_MODE=previewMode.enabled();
 // Canonical-host redirect revision: 2
 
 function headers(type='text/html; charset=utf-8'){
