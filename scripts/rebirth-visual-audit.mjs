@@ -32,9 +32,11 @@ async function open(page,path,label){
       header:header?header.getBoundingClientRect().toJSON():null,
       logo:logo?logo.getBoundingClientRect().toJSON():null,
       legacyStyles:[...document.querySelectorAll('link[rel="stylesheet"]')].some(x=>x.href.includes('premium.css')||x.href.includes('/assets/site.css')),
-      oldWaveform:!!document.querySelector('.rb-brand-mark path[d^="M2 18h16l7-9"]')
+      oldWaveform:!!document.querySelector('.rb-brand-mark path[d^="M2 18h16l7-9"]'),
+      overflowNodes:[...document.querySelectorAll('body *')].map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName,cls:String(el.className||'').slice(0,80),left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scroll:el.scrollWidth,client:el.clientWidth}}).filter(x=>x.right>innerWidth+2&&x.width>0).sort((a,b)=>b.right-a.right).slice(0,8)
     };
   });
+  if(metrics.scrollWidth>metrics.viewport+2)console.log('OVERFLOW '+label+' '+JSON.stringify(metrics.overflowNodes));
   check(metrics.scrollWidth<=metrics.viewport+2,label+' has no horizontal overflow ('+metrics.scrollWidth+'/'+metrics.viewport+')');
   check(metrics.bodyBackground==='rgb(11, 13, 20)',label+' loads the new dark editorial canvas');
   check(Boolean(metrics.header&&metrics.header.width<=metrics.viewport+2),label+' header fits viewport');
