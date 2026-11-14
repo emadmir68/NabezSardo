@@ -105,6 +105,7 @@ jobs:
           curl -fsS "$SITE/follow-up" -o /tmp/preview-followup.html
           curl -fsS "$SITE/__preview/admin" -o /tmp/preview-admin.html
           curl -fsS "$SITE/__preview/admin/editor" -o /tmp/preview-editor.html
+          curl -fsS "$SITE/__preview/admin/share-kit" -o /tmp/preview-share-kit.html
           curl -fsS "$SITE/robots.txt" -o /tmp/preview-robots.txt
           curl -fsS "$SITE/assets/rebirth.css?v=smoke" -o /tmp/preview-rebirth.css
           curl -fsS "$SITE/assets/rebirth.js?v=smoke" -o /tmp/preview-rebirth.js
@@ -127,6 +128,8 @@ jobs:
           grep -q 'href="/admin/followups/new"' /tmp/preview-admin.html
           grep -q 'id="followups"' /tmp/preview-admin.html
           grep -q 'data-rebirth-editor' /tmp/preview-editor.html
+          grep -q 'data-share-kit-story' /tmp/preview-share-kit.html
+          grep -q 'data-share-copy' /tmp/preview-share-kit.html
 
           if grep -q '/assets/site.css' /tmp/preview-home.html || grep -q 'premium.css' /tmp/preview-home.html; then
             echo "A legacy stylesheet was loaded by the redesigned Cloudflare preview."
