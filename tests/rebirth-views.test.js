@@ -20,6 +20,8 @@ function fresh(html,label){
 }
 const home=views.home(sample);
 fresh(home,'homepage');
+assert.match(home,/rebirth-mark\.svg/,'new editorial favicon is loaded');
+assert.doesNotMatch(home,/M2 18h16l7-9/,'legacy pulse waveform logo is not reused');
 assert.match(home,/rb-hero-story/);
 assert.match(home,/آینده کشاورزی جنوب کرمان/);
 assert.match(home,/نبض فوری/);
