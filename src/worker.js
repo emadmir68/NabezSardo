@@ -660,8 +660,16 @@ async function handlePublicPreview(request, url, pathname) {
   if (pathname === "/about") return html(views.simple(db, "about"));
   if (pathname === "/contact") return html(views.simple(db, "contact", url.searchParams.get("ok") === "1"));
   if (pathname === "/send-news") return html(views.simple(db, "send-news", url.searchParams.get("ok") === "1", url.searchParams.get("uploadError") || ""));
+  if (pathname === "/editorial-policy") return html(views.editorialPolicy(db));
+  if (pathname === "/follow-up") return html(views.followup(db));
 
-  let m = pathname.match(/^\/news\/(.+)$/);
+  let m = pathname.match(/^\/local\/(.+)$/);
+  if(m){
+    const page=views.localHub(db,m[1]);
+    return page?html(page):html("صفحه پیدا نشد",404);
+  }
+
+  m = pathname.match(/^\/news\/(.+)$/);
   if (m) {
     const slug = m[1];
     const a = (db.articles || []).find(x => store.publiclyVisibleArticle(x) && x.slug === slug);
