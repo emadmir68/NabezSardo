@@ -192,6 +192,8 @@ async function decryptRuntimeSecrets() {
 }
 
 async function applyRuntimeEnv() {
+  if (env.PREVIEW_READONLY !== undefined) process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
+  if (env.PUBLIC_BASE_URL !== undefined) process.env.PUBLIC_BASE_URL = String(env.PUBLIC_BASE_URL);
   const auth = await runtimeAuth();
   if (!auth) return false;
   process.env.ADMIN_USER = String(auth.user);
@@ -2057,6 +2059,31 @@ export default {
 
     if (isPrimary() && p === "/admin/login" && request.method === "POST") {
       return handleCloudflareAdminLogin(request);
+    }
+
+    if (!isPrimary() && String(env.PREVIEW_READONLY || "") === "1" && p === "/__preview/admin" && request.method === "GET") {
+      const db = await loadDbObject();
+      const dashboard = views.admin(
+        db,
+        [],
+        new URLSearchParams(),
+        { telegram: false, rubika: false, whatsapp: false, baseUrl: true },
+        { totalPageViews: 0, today: { pageViews: 0 } },
+        { settings: { enabled: false, keywords: "" }, sources: [], queue: [], counts: { pending: 0, sourcesOn: 0, sources: 0 } }
+      );
+      const banner = '<div class="rb-preview-banner" role="status">پیش‌نمایش آزمایشی نبض ساردو — اطلاعات نمونه است و همه عملیات ذخیره و انتشار غیرفعال‌اند.</div>';
+      const styled = dashboard
+        .replace('<body class="rb-admin-body">', '<body class="rb-admin-body">' + banner)
+        .replace('</head>', '<style>.rb-preview-banner{position:sticky;top:0;z-index:99999;padding:12px 18px;background:#f6d36a;color:#171717;text-align:center;font:700 13px Vazirmatn,sans-serif;border-bottom:1px solid #171717}.rb-admin-body form button,.rb-admin-body form input[type=submit]{pointer-events:none;opacity:.55}</style></head>');
+      return new Response(styled, {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+          "x-robots-tag": "noindex, nofollow, noarchive",
+          "x-content-type-options": "nosniff"
+        }
+      });
     }
 
     if (!isPrimary() && (p.startsWith("/admin") || (request.method !== "GET" && request.method !== "HEAD"))) {
