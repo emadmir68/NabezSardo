@@ -2,26 +2,22 @@ name: SEO Live Audit
 
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: ["Deploy Nabez Sardo Cloudflare Worker"]
+    types: [completed]
     branches: [cloudflare-migration]
-    paths:
-      - 'app.js'
-      - 'lib/view-common.js'
-      - 'lib/view-public.js'
-      - 'public/site.css'
-      - 'public/logo.svg'
-      - 'src/worker.js'
-      - '.github/workflows/cloudflare-deploy.yml'
-      - '.github/workflows/seo-live-audit.yml'
 
 permissions:
   contents: read
 
 jobs:
   audit:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Audit Googlebot-visible SEO surfaces
+        env:
+          EXPECTED_BUILD: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           set -Eeuo pipefail
           trap 'rc=$?; echo "::error::SEO audit failed at shell line ${LINENO}: ${BASH_COMMAND} (exit ${rc})"; exit "$rc"' ERR
@@ -34,7 +30,7 @@ jobs:
           live=0
           for i in $(seq 1 24); do
             curl -fsS --retry 3 --retry-delay 2 --retry-max-time 45 -A "$googlebot" --max-time 20 "$base/" -o /tmp/revision.html || true
-            if grep -q "name=\"nabez-build\" content=\"$GITHUB_SHA\"" /tmp/revision.html; then
+            if grep -q "name=\"nabez-build\" content=\"$EXPECTED_BUILD\"" /tmp/revision.html; then
               live=1
               break
             fi
@@ -66,7 +62,7 @@ jobs:
           grep -q 'name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"' home.html
           grep -q '"@type":"WebSite"' home.html
           grep -q '"@type":"NewsMediaOrganization"' home.html
-          grep -q '/assets/logo.svg' home.html
+          grep -q 'rb-brand-mark' home.html
           grep -q 'rel="canonical" href="https://nabzesardo.ir/editorial-policy"' editorial.html
           grep -q 'سیاست تحریریه' editorial.html
           grep -q 'اصلاح' editorial.html
@@ -195,10 +191,10 @@ jobs:
             grep -q '"datePublished":' article.html
             grep -q '"author":' article.html
             grep -q '"publisher":' article.html
-            grep -q '/assets/logo.svg' article.html
+            grep -q 'rb-brand-mark' article.html
             # The approved layout places author/location/date in article-meta-grid.
-            grep -q 'article-meta-grid' article.html
-            grep -q 'data-news-date=' article.html
+            grep -q 'rb-article-meta' article.html
+            grep -q 'property="article:published_time"' article.html
           fi
 
           curl -A "$googlebot" -sS -o /dev/null -w 'home_ttfb=%{time_starttransfer} home_total=%{time_total}\n' --max-time 30 "$base/"
