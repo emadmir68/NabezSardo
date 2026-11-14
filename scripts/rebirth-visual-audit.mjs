@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 
-const base=String(process.env.SITE_URL||'https://nabzesardo.ir').replace(/\\/+$/,'');
+const base=String(process.env.SITE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
 const viewports=[
   {name:'360x800',width:360,height:800},
   {name:'390x844',width:390,height:844},
@@ -31,7 +31,7 @@ async function open(page,path,label){
       bodyBackground:getComputedStyle(document.body).backgroundColor,
       header:header?header.getBoundingClientRect().toJSON():null,
       logo:logo?logo.getBoundingClientRect().toJSON():null,
-      legacyStyles:[...document.querySelectorAll('link[rel="stylesheet"]')].some(x=>/premium\\.css|\\/assets\\/site\\.css/.test(x.href)),
+      legacyStyles:[...document.querySelectorAll('link[rel="stylesheet"]')].some(x=>x.href.includes('premium.css')||x.href.includes('/assets/site.css')),
       oldWaveform:!!document.querySelector('.rb-brand-mark path[d^="M2 18h16l7-9"]')
     };
   });
@@ -48,7 +48,7 @@ for(const v of viewports){
   const page=await browser.newPage({viewport:{width:v.width,height:v.height},locale:'fa-IR',reducedMotion:'reduce',deviceScaleFactor:1});
   const errors=[];
   page.on('pageerror',e=>errors.push(String(e.message||e)));
-  const home=await open(page,'/',v.name+' homepage');
+  await open(page,'/',v.name+' homepage');
   const articleHref=await page.locator('a[href^="/news/"]').first().getAttribute('href').catch(()=>null);
   check(Boolean(articleHref),v.name+' homepage exposes a lead article link');
   if(v.width<=760){
@@ -76,12 +76,8 @@ for(const v of viewports){
   if(v.width===390||v.width===1440){
     for(const route of ['/all-news','/about','/contact','/send-news','/editorial-policy','/follow-up']){
       await open(page,route,v.name+' '+route);
-    }
-    if(v.width===390){
-      await page.goto(base+'/contact',{waitUntil:'domcontentloaded'});
-      check(await page.locator('form[action="/contact"] input[name="website"]').count()===1,'contact form includes honeypot');
-      await page.goto(base+'/send-news',{waitUntil:'domcontentloaded'});
-      check(await page.locator('form[action="/send-news"] input[name="website"]').count()===1,'citizen form includes honeypot');
+      if(route==='/contact')check(await page.locator('form[action="/contact"] input[name="website"]').count()===1,v.name+' contact form includes honeypot');
+      if(route==='/send-news')check(await page.locator('form[action="/send-news"] input[name="website"]').count()===1,v.name+' citizen form includes honeypot');
     }
   }
   check(errors.length===0,v.name+' has no uncaught browser errors'+(errors.length?': '+errors.join(' | '):''));
