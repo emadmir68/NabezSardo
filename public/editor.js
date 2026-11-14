@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     box.querySelectorAll('[data-cmd]').forEach(btn=>{
       btn.addEventListener('click',()=>{
         focus();
-        document.execCommand(btn.dataset.cmd,false,null);
+        const command=btn.dataset.cmd;document.execCommand(command,false,command==='formatBlock'?(btn.dataset.value||'h2'):null);
         sync();saveRange();
       });
     });
@@ -121,12 +121,14 @@ document.addEventListener('DOMContentLoaded',()=>{
         try{
           const url=await uploadImage(file,inlineStatus);
           focus();
+          const figure=document.createElement('figure');
           const img=document.createElement('img');img.src=url;img.alt=file.name||'تصویر خبر';
-          const p=document.createElement('p');p.appendChild(img);
+          const caption=document.createElement('figcaption');caption.textContent='شرح تصویر را اینجا وارد کنید.';
+          figure.appendChild(img);figure.appendChild(caption);
           if(savedRange&&area.contains(savedRange.commonAncestorContainer)){
-            savedRange.deleteContents();savedRange.insertNode(p);savedRange.setStartAfter(p);savedRange.collapse(true);
+            savedRange.deleteContents();savedRange.insertNode(figure);savedRange.setStartAfter(figure);savedRange.collapse(true);
             const sel=window.getSelection();sel.removeAllRanges();sel.addRange(savedRange);
-          }else area.appendChild(p);
+          }else area.appendChild(figure);
           sync();
         }catch(err){if(inlineStatus){inlineStatus.hidden=false;inlineStatus.textContent=err.message}else alert(err.message)}
         finally{inlineBtn.disabled=false;inlineFile.value='';setTimeout(()=>{if(inlineStatus)inlineStatus.hidden=true},2500);}
