@@ -80,8 +80,11 @@ const server=http.createServer(async(req,res)=>{
   }else{
     candidates=[path.resolve(publicRoot,'.'+url.pathname)];
   }
-  const full=candidates.find(file=>file.startsWith(publicRoot+path.sep)&&file.startsWith(publicRoot)&&fs.stat(file).then(x=>x.isFile()).catch(()=>false));
-  const resolved=full?await Promise.resolve(full):null;
+  let resolved=null;
+  for(const file of candidates){
+    if(!file.startsWith(publicRoot+path.sep))continue;
+    try{const stat=await fs.stat(file);if(stat.isFile()){resolved=file;break;}}catch{}
+  }
   if(!resolved){res.writeHead(404).end('Not found');return;}
   const ext=path.extname(resolved).toLowerCase();
   const type={
