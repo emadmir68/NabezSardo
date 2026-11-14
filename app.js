@@ -13,8 +13,8 @@ const {shortArticleCode,previousShortArticleCode,legacyShortArticleCode}=require
 
 const PORT=Number(process.env.PORT||3000);
 const ADMIN_USER=process.env.ADMIN_USER||'editor';
-const ADMIN_PASS=process.env.ADMIN_PASS||'change-this';
-const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
+const ADMIN_PASS=process.env.ADMIN_PASS||(PREVIEW_MODE?'':'change-this');
+const SECRET=process.env.SESSION_SECRET||(PREVIEW_MODE?crypto.randomBytes(32).toString('hex'):'dev-secret-change');
 const ROOT=__dirname;
 const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
 const APP_VERSION=String(process.env.RAILWAY_GIT_COMMIT_SHA||process.env.RAILWAY_DEPLOYMENT_ID||process.env.RAILWAY_REPLICA_ID||'dev').slice(0,80);
@@ -445,15 +445,19 @@ const server=http.createServer(async(req,res)=>{
  }
 });
 server.listen(PORT,'0.0.0.0',()=>console.log('Nabez Sardo running on :'+PORT));
-setTimeout(()=>{
-  try{
-    const result=newsMonitor.purgePublishedNonNews();
-    if(result&&result.removed)console.log('monitor-cleanup-removed',result.removed);
-  }catch(err){console.error('monitor cleanup',err);}
-},1500);
-articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('Featured image metadata backfilled');}).catch(err=>console.error('featured image metadata',err));
-articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
-setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
-setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
-setTimeout(()=>newsMonitor.tick().catch(err=>console.error('news monitor',err)),12000);
-setInterval(()=>newsMonitor.tick().catch(err=>console.error('news monitor',err)),60000);
+if(!PREVIEW_MODE){
+  setTimeout(()=>{
+    try{
+      const result=newsMonitor.purgePublishedNonNews();
+      if(result&&result.removed)console.log('monitor-cleanup-removed',result.removed);
+    }catch(err){console.error('monitor cleanup',err);}
+  },1500);
+  articleTools.backfillFeaturedMetadata().then(changed=>{if(changed)console.log('Featured image metadata backfilled');}).catch(err=>console.error('featured image metadata',err));
+  articleTools.backfillTypography().then(changed=>{if(changed)console.log('Article typography normalized');}).catch(err=>console.error('article typography',err));
+  setTimeout(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),5000);
+  setInterval(()=>articleTools.schedulerTick().catch(err=>console.error('scheduler',err)),30000);
+  setTimeout(()=>newsMonitor.tick().catch(err=>console.error('news monitor',err)),12000);
+  setInterval(()=>newsMonitor.tick().catch(err=>console.error('news monitor',err)),60000);
+}else{
+  console.log('Preview mode active: background publishing, monitoring scheduler, social delivery and Cloudflare sync are disabled.');
+}
