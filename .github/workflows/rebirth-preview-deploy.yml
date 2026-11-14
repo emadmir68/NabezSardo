@@ -139,6 +139,8 @@ jobs:
           sleep 10
           curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/" -o /tmp/rebirth-home.html
           curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/all-news" -o /tmp/rebirth-archive.html
+          SHORT_CODE="$(node -e "const v=require('./lib/views-v2');process.stdout.write(v.shortArticleCode('preview-001'))")"
+          curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/news/$SHORT_CODE" -o /tmp/rebirth-short-article.html
           curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/assets/rebirth.css" -o /tmp/rebirth.css
           curl -fsS --retry 5 --retry-delay 3 "$PREVIEW_URL/robots.txt" -o /tmp/rebirth-robots.txt
           curl -sS -D /tmp/rebirth-headers.txt -o /dev/null "$PREVIEW_URL/"
@@ -149,6 +151,7 @@ jobs:
           const fs=require('node:fs');
           const home=fs.readFileSync('/tmp/rebirth-home.html','utf8');
           const archive=fs.readFileSync('/tmp/rebirth-archive.html','utf8');
+          const shortArticle=fs.readFileSync('/tmp/rebirth-short-article.html','utf8');
           const css=fs.readFileSync('/tmp/rebirth.css','utf8');
           const robots=fs.readFileSync('/tmp/rebirth-robots.txt','utf8');
           const headers=fs.readFileSync('/tmp/rebirth-headers.txt','utf8').toLowerCase();
@@ -161,6 +164,7 @@ jobs:
             ['home loads rebirth stylesheet',home.includes('/assets/rebirth.css')],
             ['home includes noindex robots meta',home.includes('noindex,nofollow,noarchive')],
             ['archive includes seeded sample headline',archive.includes('آینده کشاورزی جنوب کرمان')],
+            ['short article URL resolves after refresh',shortArticle.includes('آینده کشاورزی جنوب کرمان')],
             ['rebirth stylesheet is served',css.includes('rb-hero-story')],
             ['robots.txt disallows all crawling',robots.includes('Disallow: /')],
             ['preview HTML sends X-Robots-Tag',headers.includes('x-robots-tag: noindex, nofollow, noarchive')],
