@@ -57,6 +57,12 @@ jobs:
           grep -q '<urlset' sitemap.xml
           grep -q '<urlset' news-sitemap.xml
           grep -q '<rss' feed.xml
+          for content_file in home.html feed.xml news-sitemap.xml; do
+            if grep -Eqi 'مراسم تشییع و تدفین مرحوم|مراسم تشییع پیکر شهید علی اکبر فیروزی|آگهی ترحیم|رپورتاژ آگهی|محتوای تبلیغاتی' "$content_file"; then
+              echo "Forbidden funeral/advertising content is visible to crawlers in $content_file"
+              exit 1
+            fi
+          done
 
           grep -q 'rel="canonical" href="https://nabzesardo.ir/"' home.html
           grep -q 'name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"' home.html
