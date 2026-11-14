@@ -550,3 +550,11 @@ img,video{max-width:100%}
   .rb-admin-header{gap:10px}
   .rb-admin-header h1{font-size:24px}
 }
+
+@media(max-width:820px){
+  .rb-results-meta{flex-wrap:wrap;align-items:center}
+  .rb-admin-two-col,.rb-media-grid,.rb-editor-layout{grid-template-columns:minmax(0,1fr)}
+  .rb-editor-sidebar{width:100%;position:relative}
+  .rb-editor-layout{gap:18px}
+  .rb-form-row{grid-template-columns:minmax(0,1fr)}
+}
