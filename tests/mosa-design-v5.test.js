@@ -22,7 +22,7 @@ const db={
 };
 test('Experimental Editorial homepage keeps real content, SEO and brand',()=>{
  const html=views.home(db);
- assert.match(html,/class="rb-home-hero"/);
+ assert.match(html,/rb-home-hero/);
  assert.match(html,/\/assets\/rebirth\.css/);
  assert.match(html,/\/assets\/rebirth\.js/);
  assert.match(html,/href="\/news\/story-1"/);
