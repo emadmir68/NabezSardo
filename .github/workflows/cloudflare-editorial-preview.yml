@@ -110,11 +110,13 @@ jobs:
           curl -fsS "$SITE/assets/rebirth.js?v=smoke" -o /tmp/preview-rebirth.js
           curl -fsS "$SITE/assets/text-story.css?v=smoke" -o /tmp/preview-text-story.css
           curl -fsS "$SITE/assets/text-story.js?v=smoke" -o /tmp/preview-text-story.js
+          curl -fsS "$SITE/assets/rebirth-mark.svg?v=smoke" -o /tmp/preview-rebirth-mark.svg
 
           grep -q '\.rb-topline' /tmp/preview-rebirth.css
           grep -q 'data-menu-toggle' /tmp/preview-rebirth.js
           grep -q 'text-story-dialog' /tmp/preview-text-story.css
           grep -q 'data-article-text-story' /tmp/preview-text-story.js
+          grep -q 'viewBox="0 0 48 48"' /tmp/preview-rebirth-mark.svg
 
           grep -qi 'x-robots-tag: noindex, nofollow, noarchive' /tmp/preview-home.headers
           grep -q '/assets/rebirth.css' /tmp/preview-home.html
@@ -122,6 +124,8 @@ jobs:
           grep -q 'Experimental Editorial' /tmp/preview-home.html || grep -q 'rb-' /tmp/preview-home.html
           grep -q 'Disallow: /' /tmp/preview-robots.txt
           grep -q 'EDITORIAL CONTROL ROOM' /tmp/preview-admin.html
+          grep -q 'href="/admin/followups/new"' /tmp/preview-admin.html
+          grep -q 'id="followups"' /tmp/preview-admin.html
           grep -q 'data-rebirth-editor' /tmp/preview-editor.html
 
           if grep -q '/assets/site.css' /tmp/preview-home.html || grep -q 'premium.css' /tmp/preview-home.html; then
