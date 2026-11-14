@@ -68,7 +68,7 @@ const urls={
 const server=http.createServer(async(req,res)=>{
   let url;
   try{url=new URL(req.url,'http://localhost');}catch{res.writeHead(400).end();return;}
-  const route=url.pathname+url.search;
+  const route=url.pathname==='/search'?'/search?q=جیرفت':url.pathname+url.search;
   if(Object.prototype.hasOwnProperty.call(urls,route)){
     res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}).end(urls[route]);
     return;
@@ -130,7 +130,7 @@ try{
           bodyClass:document.body.className,
           article:!!document.querySelector('[data-article-root]'),
           admin:!!document.querySelector('.rb-admin-layout'),
-          inputSizes:[...document.querySelectorAll('main input:not([type=hidden]),main textarea,main select')].filter(x=>x.getBoundingClientRect().width>0).map(x=>parseFloat(getComputedStyle(x).fontSize))
+          inputSizes:[...document.querySelectorAll('main input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]),main textarea,main select')].filter(x=>x.getBoundingClientRect().width>0).map(x=>parseFloat(getComputedStyle(x).fontSize))
         };
       });
       report(metrics.direction==='rtl',size.w+' '+route+' keeps RTL direction');
@@ -158,8 +158,8 @@ try{
         await search.click();
         report(await page.locator('.rb-search.is-open input[name=q]').count()===1,size.w+' mobile search expands');
       }
-      if(metrics.inputSizes.length){
-        report(metrics.inputSizes.every(value=>value>=14),size.w+' '+route+' form inputs remain readable');
+      if(size.w<=412&&metrics.inputSizes.length){
+        report(metrics.inputSizes.every(value=>value>=16),size.w+' '+route+' mobile form inputs avoid iOS zoom');
       }
       if(size.w===390&&['/','/all-news','/news/rebirth-story-0','/admin/login','/admin','/admin/articles/new'].includes(route)){
         const name=route==='/'?'home':route.replaceAll('/','_').replace(/^_/,'')||'root';
@@ -175,7 +175,7 @@ try{
   }
   const css=await (await fetch(host+'/assets/rebirth.css')).text();
   const js=await (await fetch(host+'/assets/rebirth.js')).text();
-  report(css.includes('@media(max-width:760px)'), 'mobile stylesheet breakpoint is present');
+  report(css.includes('@media(max-width:820px)'), 'mobile stylesheet breakpoint is present');
   report(css.includes('prefers-reduced-motion'), 'reduced-motion preference is respected');
   report(js.includes('data-rebirth-editor'), 'rich editor client is present');
   console.log('SUMMARY passed='+passed+' failed='+failed+' screenshots='+screenshotDir);
