@@ -148,7 +148,7 @@ jobs:
           node <<'NODE'
           const fs=require('fs');
           const html=fs.readFileSync('/tmp/home.html','utf8');
-          const cards=[...html.matchAll(/<article\\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\\/news\\/[A-Za-z0-9_-]+)"[^>]*>/g)];
+          const cards=[...html.matchAll(/<article\b[^>]*data-story-title-fa="([^"]*)"[^>]*data-story-url="(\/news\/[A-Za-z0-9_-]+)"[^>]*>/g)];
           if(!cards.length)throw new Error('Compact article URL missing from homepage');
           const seen=new Map();
           for(const [,title,path] of cards){
