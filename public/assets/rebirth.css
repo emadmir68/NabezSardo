@@ -531,3 +531,26 @@ img,video{max-width:100%}
   .rb-admin-sidebar-bottom{min-width:0;max-width:100%;flex-wrap:wrap}
   .rb-admin-row-actions{flex-wrap:wrap}
 }
+
+.rb-share-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.rb-share-state{display:flex;flex-direction:column;gap:6px;padding:17px;border:1px solid #343944;background:#151922;min-width:0}
+.rb-share-state b{font-size:13px}
+.rb-share-state span{font-size:11px;color:#d8d2c9}
+.rb-share-state span[data-state="sent"]{color:#69d6a0}
+.rb-share-state span[data-state="failed"]{color:#ff7a7e}
+.rb-share-state small{font-size:9px;color:#888}
+.rb-share-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px;align-items:start}
+.rb-share-story-panel,.rb-share-copy{border:1px solid #343944;background:#141821;padding:16px;min-width:0}
+.rb-share-story-preview{width:min(100%,320px);margin:0 auto 14px;background:#08090e;aspect-ratio:9/16;overflow:hidden}
+.rb-share-story-preview img{display:block;width:100%;height:100%;object-fit:contain}
+.rb-share-story-preview>span{display:grid;place-items:center;height:100%;color:#aaa;font-size:11px}
+.rb-share-story-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.rb-share-copy-stack{display:grid;gap:10px;min-width:0}
+.rb-share-copy>div{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.rb-share-copy>div b{font-size:12px}
+.rb-share-copy>div small{font-size:9px;color:#888}
+.rb-share-copy textarea{width:100%;min-height:100px;margin:10px 0;background:#0c0f16;border:1px solid #353a44;color:#e9e3db;padding:10px;direction:rtl;line-height:2;font-size:10px;resize:vertical}
+.rb-share-short{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid #343944;padding:12px;background:#10131a}
+.rb-share-short span{font-size:10px;color:#aaa}
+.rb-share-short code{direction:ltr;overflow-wrap:anywhere;color:#f2ede6;flex:1;min-width:0}
+@media(max-width:760px){.rb-share-grid{grid-template-columns:1fr}.rb-share-layout{grid-template-columns:1fr}.rb-share-story-preview{width:min(100%,270px)}}
