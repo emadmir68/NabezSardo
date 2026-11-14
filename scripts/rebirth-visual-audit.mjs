@@ -33,7 +33,7 @@ async function open(page,path,label){
       logo:logo?logo.getBoundingClientRect().toJSON():null,
       legacyStyles:[...document.querySelectorAll('link[rel="stylesheet"]')].some(x=>x.href.includes('premium.css')||x.href.includes('/assets/site.css')),
       oldWaveform:!!document.querySelector('.rb-brand-mark path[d^="M2 18h16l7-9"]'),
-      overflowNodes:[...document.querySelectorAll('body *')].map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName,cls:String(el.className||'').slice(0,80),left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scroll:el.scrollWidth,client:el.clientWidth}}).filter(x=>x.right>innerWidth+2&&x.width>0).sort((a,b)=>b.right-a.right).slice(0,8)
+      overflowNodes:[...document.querySelectorAll('body *')].map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName,cls:String(el.className||'').slice(0,80),left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scroll:el.scrollWidth,client:el.clientWidth}}).filter(x=>(x.left< -2||x.right>innerWidth+2)&&x.width>0).sort((a,b)=>b.right-a.right).slice(0,8)
     };
   });
   if(metrics.scrollWidth>metrics.viewport+2)console.log('OVERFLOW '+label+' '+JSON.stringify(metrics.overflowNodes));
@@ -79,6 +79,7 @@ for(const v of viewports){
   check(await page.locator('[data-share-kit-story]').count()===1,v.name+' share kit story generator is rendered');
   check(await page.locator('[data-share-copy]').count()===3,v.name+' share kit exposes channel copy controls');
   await page.locator('[data-share-kit-story-download]').waitFor({state:'visible',timeout:10000});
+  await page.waitForFunction(()=>{const button=document.querySelector('[data-share-kit-story-download]');return Boolean(button&&!button.disabled);},{timeout:15000}).catch(()=>{});
   check(await page.locator('[data-share-kit-story-download]').isEnabled(),v.name+' share kit story PNG becomes downloadable');
   if(v.width===390||v.width===1440){
     for(const route of ['/all-news','/about','/contact','/send-news','/editorial-policy','/follow-up']){
