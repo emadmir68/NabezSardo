@@ -1478,9 +1478,18 @@ async function serveAsset(request, pathname) {
     }
   }
   const u = new URL(request.url);
-  if (pathname.startsWith("/assets/")) u.pathname = pathname.slice("/assets".length);
-  if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
-  const assetResponse = await env.ASSETS.fetch(new Request(u, request));
+  let assetResponse;
+  if (pathname.startsWith("/assets/")) {
+    // New rebirth assets live in public/assets; legacy assets remain at public root.
+    assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    if (!assetResponse.ok) {
+      u.pathname = pathname.slice("/assets".length);
+      assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    }
+  } else {
+    if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
+    assetResponse = await env.ASSETS.fetch(new Request(u, request));
+  }
   if (request.method !== "GET" || !assetResponse.ok) return assetResponse;
   const headers = new Headers(assetResponse.headers);
   if (u.searchParams.has("v")) {
