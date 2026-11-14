@@ -35,7 +35,7 @@ test('new home links to original news, categories, cities and community submissi
   const html=views.home(fixture(15));
   assert.match(html,/href="\/local\/jiroft"/);
   assert.match(html,/href="\/category\/social"/);
-  assert.match(html,/href="\/search"/);
+  assert.match(html,/action="\/search"/);
   assert.match(html,/data-story-title-fa="خبر محلی شماره/);
 });
 test('responsive design assets include mobile breakpoints and reduced-motion support',()=>{
