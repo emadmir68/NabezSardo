@@ -1840,7 +1840,7 @@ async function suppressPendingAutomaticPublications(){
   }
   if(afterArticles.length){
     await publishing.commitChanges(env.DB,{articles:beforeArticles},{articles:afterArticles});
-    try{invalidateFastArticleCache();}catch{} publicDbCache.at=0;
+    try{await invalidateFastArticleCache();}catch{} publicDbCache.at=0;
   }
   return afterArticles.length>0;
 }
