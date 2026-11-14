@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - "preview/experimental-editorial-cloudflare-20261114"
+  pull_request:
+    branches:
+      - cloudflare-migration
   workflow_dispatch:
 
 permissions:
@@ -15,6 +18,7 @@ concurrency:
 
 jobs:
   preview:
+    if: github.event_name != 'pull_request' || github.head_ref == 'preview/experimental-editorial-cloudflare-20261114'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
