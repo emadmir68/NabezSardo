@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   preview:
-    if: github.event_name != 'pull_request' || github.head_ref == 'preview/experimental-editorial-cloudflare-20261114'
+    if: github.event_name != 'pull_request' || github.head_ref == 'preview/experimental-editorial-cloudflare-20261114' || github.head_ref == 'feature/glass-news-cards-correction-20261115'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
