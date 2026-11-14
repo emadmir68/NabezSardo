@@ -7,7 +7,7 @@ const sample={
   settings:{siteName:'نبض ساردو',breakingText:'گزارش‌های تازه جنوب کرمان',liveDeskEnabled:true,adEnabled:false},
   categories:[{id:'agriculture',name:'کشاورزی'},{id:'social',name:'اجتماعی'},{id:'short-news',name:'خبر کوتاه'}],
   articles:[
-    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',featured:true},
+    {id:'one',slug:'agriculture-future',title:'آینده کشاورزی جنوب کرمان',lead:'گزارشی از فرصت‌ها و چالش‌های کشاورزی منطقه',body:'متن کامل گزارش',bodyHtml:'<p>متن کامل گزارش</p>',categoryId:'agriculture',status:'published',publishedAt:now,createdAt:now,author:'تحریریه نبض ساردو',location:'جیرفت',views:25,image:'/uploads/sample.webp',featured:true,distribution:{telegram:{status:'sent'},rubika:{status:'failed'},whatsapp:{status:'disabled'}}},
     {id:'two',slug:'water-resources',title:'مدیریت منابع آب در جنوب کرمان',lead:'ضرورت مدیریت پایدار منابع آب',body:'گزارش آب',categoryId:'social',status:'published',publishedAt:now,createdAt:now,location:'جنوب کرمان',views:10,image:'/uploads/water.webp'}
   ],
   contacts:[{id:'c1',name:'مخاطب',subject:'پیگیری خبر',message:'لطفاً این موضوع را بررسی کنید',contact:'09120000000',createdAt:now}],
@@ -81,6 +81,9 @@ assert.match(admin,/action="\/admin\/followups\/f1\/delete"/);
 assert.match(admin,/action="\/admin\/citizens\/u1\/delete"/);
 assert.match(admin,/action="\/admin\/contacts\/c1\/delete"/);
 assert.match(admin,/پیگیری آب‌رسانی/);
+assert.match(admin,/href="\/admin\/articles\/one\/share-kit"/);
+assert.match(admin,/تلگرام: ارسال شد/);
+assert.match(admin,/روبیکا: خطا/);
 assert.match(admin,/آگهی، محتوای تبلیغاتی و اطلاعیه‌های فوت/);
 assert.doesNotMatch(admin,/\/assets\/site\.css/);
 
