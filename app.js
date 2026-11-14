@@ -19,7 +19,7 @@ const ADMIN_PASS=process.env.ADMIN_PASS||'change-this';
 const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
 const ROOT=(typeof __dirname!=='undefined'?__dirname:process.cwd());
 const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
-const APP_VERSION=String(process.env.RAILWAY_GIT_COMMIT_SHA||process.env.RAILWAY_DEPLOYMENT_ID||process.env.RAILWAY_REPLICA_ID||'dev').slice(0,80);
+const APP_VERSION=String(process.env.CLOUDFLARE_ASSET_VERSION||'dev').slice(0,80);
 
 function headers(type='text/html; charset=utf-8'){
   return {
