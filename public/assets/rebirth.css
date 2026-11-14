@@ -378,7 +378,7 @@ img,video{max-width:100%}
 .rb-topline-inner>span:nth-child(2){display:none}
 .rb-header-main{min-height:76px;gap:12px}
 .rb-menu-toggle{display:block;flex:none}
-.rb-brand-mark{width:37px;height:25px}
+.rb-brand-mark{width:32px;height:32px}
 .rb-brand-word{font-size:23px}
 .rb-brand-word small{font-size:6px;letter-spacing:2px}
 .rb-header-side{gap:8px}
@@ -434,7 +434,7 @@ img,video{max-width:100%}
 .rb-article-meta{gap:9px;font-size:9px}
 .rb-article-cover{margin-bottom:20px}
 .rb-article-layout{grid-template-columns:1fr;gap:25px}
-.rb-article-body{font-size:13px;line-height:2.5}
+.rb-article-body{font-size:15px;line-height:2.35}
 .rb-article-body h2,.rb-article-body h3{font-size:21px}
 .rb-article-aside{border:0;border-top:1px solid #d1c8bd;padding:18px 0 0}
 .rb-aside-sticky{position:static}
