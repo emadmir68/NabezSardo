@@ -8,6 +8,7 @@ const views=require('./lib/views-rebirth');
 const articleTools=require('./lib/article-tools');
 const analytics=require('./lib/analytics');
 const newsMonitor=require('./lib/news-monitor');
+const previewMode=require('./lib/preview-mode');
 const {shortArticleCode,previousShortArticleCode,legacyShortArticleCode}=require('./lib/view-common');
 
 const PORT=Number(process.env.PORT||3000);
@@ -17,10 +18,11 @@ const SECRET=process.env.SESSION_SECRET||'dev-secret-change';
 const ROOT=__dirname;
 const PUBLIC_BASE=(process.env.PUBLIC_BASE_URL||'https://nabzesardo.ir').replace(/\/+$/,'');
 const APP_VERSION=String(process.env.RAILWAY_GIT_COMMIT_SHA||process.env.RAILWAY_DEPLOYMENT_ID||process.env.RAILWAY_REPLICA_ID||'dev').slice(0,80);
+const PREVIEW_MODE=previewMode.enabled();
 // Canonical-host redirect revision: 2
 
 function headers(type='text/html; charset=utf-8'){
-  return {'Content-Type':type,'X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()'};
+  return {'Content-Type':type,'X-Content-Type-Options':'nosniff','X-Frame-Options':'SAMEORIGIN','Referrer-Policy':'strict-origin-when-cross-origin','Permissions-Policy':'camera=(), microphone=(), geolocation=()',...previewMode.securityHeaders(PREVIEW_MODE)};
 }
 function send(res,status,body,type,extra={}){const h={...headers(type),...extra};const ct=String(h['Content-Type']||'').toLowerCase();if(ct.startsWith('text/html')){h['Cache-Control']='no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';h['Pragma']='no-cache';h['Expires']='0';}res.writeHead(status,h);res.end(body);}
 function redirect(res,to,cookie){const h={...headers(),Location:to,'Cache-Control':'no-store, no-cache, must-revalidate, max-age=0','Pragma':'no-cache','Expires':'0'};if(cookie)h['Set-Cookie']=cookie;res.writeHead(302,h);res.end();}
@@ -30,7 +32,7 @@ function sendArticleHead(res,a){
     ...headers(),
     'Cache-Control':'public,max-age=300,stale-while-revalidate=900',
     'Link':'<'+canonical+'>; rel="canonical"',
-    'X-Robots-Tag':'index, follow, max-image-preview:large'
+    'X-Robots-Tag':PREVIEW_MODE?'noindex, nofollow, noarchive':'index, follow, max-image-preview:large'
   });
   res.end();
 }
@@ -116,6 +118,7 @@ function newsSitemapXml(db){
   return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n'+items.map(a=>'<url><loc>'+xmlEsc(publicUrl('/news/'+encodeURIComponent(a.slug)))+'</loc><news:news><news:publication><news:name>نبض ساردو</news:name><news:language>fa</news:language></news:publication><news:publication_date>'+xmlEsc(new Date(a.publishedAt||a.createdAt).toISOString())+'</news:publication_date><news:title>'+xmlEsc(a.title)+'</news:title></news:news></url>').join('\n')+'\n</urlset>';
 }
 function robotsTxt(){
+  if(PREVIEW_MODE)return previewMode.robotsTxt();
   return ['User-agent: *','Allow: /','Disallow: /admin','Disallow: /search','Sitemap: '+publicUrl('/sitemap.xml'),'Sitemap: '+publicUrl('/news-sitemap.xml'),''].join('\n');
 }
 function rssXml(db){
@@ -227,7 +230,7 @@ const server=http.createServer(async(req,res)=>{
     res.end();
     return;
   }
-  if(incomingHost.endsWith('.up.railway.app')&&p!=='/health'){
+  if(incomingHost.endsWith('.up.railway.app')&&p!=='/health'&&!PREVIEW_MODE){
     const target=PUBLIC_BASE+(req.url||'/');
     res.writeHead(301,{...headers(),Location:target,'Cache-Control':'public, max-age=3600'});
     res.end();
