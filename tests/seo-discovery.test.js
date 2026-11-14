@@ -50,6 +50,9 @@ test('every canonical page advertised by the sitemap is reachable',async t=>{
  assert.ok(!robots.includes('Disallow: /'));
  const homeResponse=await fetch(base+'/');
  assert.equal(homeResponse.headers.get('x-robots-tag'),null);
+ const csp=homeResponse.headers.get('content-security-policy')||'';
+ assert.ok(csp.includes('https://fonts.googleapis.com'));
+ assert.ok(csp.includes('https://fonts.gstatic.com'));
  assert.match(await homeResponse.text(),/name="robots" content="index,follow/);
  const filtered=await (await fetch(base+'/all-news?category=short-news&q='+encodeURIComponent('کهنوج'))).text();
  assert.match(filtered,/data-story-title-fa="خبر کوتاه کهنوج"/);
