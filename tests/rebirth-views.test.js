@@ -93,7 +93,7 @@ try{
   process.env.CLOUDFLARE_ASSET_VERSION='production-test-sha';
   const productionHtml=views.home(sample);
   assert.match(productionHtml,/name="robots" content="index,follow/);
-  assert.match(productionHtml,/\\/assets\\/rebirth\\.css\\?v=production-test-sha/);
+  assert.match(productionHtml,/\/assets\/rebirth\.css\?v=production-test-sha/);
   process.env.CLOUDFLARE_PRIMARY='0';
   const previewHtml=views.home(sample);
   assert.match(previewHtml,/name="robots" content="noindex,nofollow,noarchive"/);
