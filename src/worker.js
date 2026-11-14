@@ -1449,7 +1449,7 @@ async function serveUpload(name,request=null) {
   const safe = path.basename(name);
   if (!safe || safe !== name) return new Response("Not found", { status: 404 });
   const range=String(request?.headers?.get("range")||"");
-  if(isReadOnlyPreview()&&!arvanConfig()){
+  if(isReadOnlyPreview()){
     const headers=new Headers();
     if(range)headers.set("range",range);
     const upstream=await fetch(new Request("https://nabzesardo.ir/uploads/"+encodeURIComponent(safe),{method:request?.method||"GET",headers}));
