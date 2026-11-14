@@ -25,6 +25,6 @@ test('featured-image caption is retained when an existing image is edited',async
 test('newsroom editor applies selected heading levels and inserts captioned figures',()=>{
   const source=fs.readFileSync(require.resolve('../public/assets/rebirth.js'),'utf8');
   assert.match(source,/if\(command==='formatBlock'\)document\.execCommand\(command,false,button\.dataset\.value\|\|'h2'\)/);
-  assert.match(source,/createElement\('figcaption'\)/);
+  assert.match(source,/<figcaption>شرح تصویر را اینجا وارد کنید\.<\/figcaption>/);
   assert.match(source,/شرح تصویر را اینجا وارد کنید/);
 });
