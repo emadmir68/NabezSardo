@@ -1,4 +1,4 @@
-name: Sitewide Glass V4 Visual and Functional Check
+name: Experimental Editorial Responsive Visual Check
 on:
   pull_request:
     branches:
@@ -16,6 +16,11 @@ on:
       - 'public/glass-admin-v4.css'
       - 'tests/sitewide-glass-v4.test.js'
       - 'scripts/sitewide-glass-visual-v4.mjs'
+      - 'lib/rebirth-*.js'
+      - 'lib/views-v2.js'
+      - 'public/assets/rebirth.css'
+      - 'public/assets/rebirth.js'
+      - 'src/worker.js'
       - '.github/workflows/sitewide-glass-v4.yml'
   workflow_dispatch:
 
@@ -40,6 +45,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nabzesardo-v4-sitewide-visual
+          name: nabez-rebirth-responsive-visual
           path: /tmp/nabez-v4-visual/
           if-no-files-found: ignore
