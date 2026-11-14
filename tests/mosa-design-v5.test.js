@@ -25,7 +25,7 @@ test('Experimental Editorial homepage keeps real content, SEO and brand',()=>{
  assert.match(html,/rb-home-hero/);
  assert.match(html,/\/assets\/rebirth\.css/);
  assert.match(html,/\/assets\/rebirth\.js/);
- assert.match(html,/href="\/news\/story-1"/);
+ assert.match(html,/href="\/news\/story-17"/);
  assert.match(html,/"@type":"NewsMediaOrganization"/);
  assert.match(html,/href="\/category\/incidents"/);
  assert.doesNotMatch(html,/mosa-ai-v1\.21st\.app/);
