@@ -537,7 +537,7 @@ img,video{max-width:100%}
   .rb-metrics-compact{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rb-rich-toolbar{flex-wrap:wrap;max-width:100%}
   .rb-admin-main form{max-width:100%;min-width:0}
-  .rb-admin-main input:not([type=checkbox]):not([type=radio]):not([type=file]),.rb-admin-main select,.rb-admin-main textarea,.rb-form input,.rb-form select,.rb-form textarea,.rb-page-search input,.rb-page-search select{font-size:16px!important}
+  .rb-admin-body input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),.rb-admin-body select,.rb-admin-body textarea,.rb-form input,.rb-form select,.rb-form textarea,.rb-page-search input,.rb-page-search select{font-size:16px!important}
   .rb-search.is-open input{font-size:16px!important}
 }
 @media(max-width:420px){
