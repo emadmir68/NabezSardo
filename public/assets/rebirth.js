@@ -1,10 +1,10 @@
 'use strict';
 (function(){
+  const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  const $=(s,r=document)=>Array.from(r.querySelectorAll(s));
-  const languageButtons=$$('[data-lang-option]');
+
   const languageKey='nabez-lang';
-  const languageButtons=$('[data-lang-option]');
+  const languageButtons=$$('[data-lang-option]');
   function setLanguage(value){
     const lang=value==='en'?'en':'fa';
     document.documentElement.dataset.lang=lang;
