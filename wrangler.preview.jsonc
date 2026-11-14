@@ -30,5 +30,6 @@
     "ai": {
       "binding": "AI"
     }
-  }
+  },
+  "preview_urls": true
 }
