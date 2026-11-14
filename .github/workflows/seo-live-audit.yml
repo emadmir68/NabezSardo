@@ -2,17 +2,25 @@ name: SEO Live Audit
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Deploy Nabez Sardo Cloudflare Worker"]
-    types: [completed]
+  push:
     branches: [cloudflare-migration]
+    paths:
+      - 'app.js'
+      - 'lib/rebirth-*.js'
+      - 'lib/store.js'
+      - 'lib/news-monitor.js'
+      - 'src/worker.js'
+      - 'public/assets/rebirth.css'
+      - 'public/assets/rebirth.js'
+      - '.github/workflows/cloudflare-deploy.yml'
+      - '.github/workflows/seo-live-audit.yml'
 
 permissions:
   contents: read
 
 jobs:
   audit:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Audit Googlebot-visible SEO surfaces
