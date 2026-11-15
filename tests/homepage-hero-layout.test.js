@@ -30,7 +30,7 @@ test('homepage lead story keeps a full-bleed media panel and readable headline',
 test('homepage hero rearranges before the news index becomes cramped',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
   const fix=css.slice(css.lastIndexOf('2026-11-15: restore balance'));
-  assert.match(fix,/@media\(max-width:1100px\)[\s\S]*?\.rb-hero-grid\{grid-template-columns:minmax\(0,1fr\)\}/);
+  assert.match(fix,/@media\(max-width:1100px\)[\s\S]*?\.rb-hero-grid\{grid-template-columns:minmax\(0,1fr\)[^}]*\}/);
   assert.match(fix,/@media\(max-width:1100px\)[\s\S]*?\.rb-hero-sidebar\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
   assert.match(fix,/@media\(max-width:820px\)[\s\S]*?\.rb-hero-story\{grid-template-columns:minmax\(0,1fr\)/);
   assert.match(fix,/@media\(max-width:520px\)[\s\S]*?\.rb-hero-visual\{height:240px/);
