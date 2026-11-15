@@ -14,24 +14,24 @@ const sample={
   ]
 };
 
-test('homepage lead story keeps a full-bleed media panel and readable headline',()=>{
+test('homepage keeps the approved compact lead-card proportions',()=>{
   const html=views.home(sample);
   const css=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
   assert.match(html,/class="rb-hero-story"/);
   assert.match(html,/class="rb-hero-visual"/);
   assert.match(html,/class="rb-hero-media"/);
-  const fix=css.slice(css.lastIndexOf('2026-11-15: restore balance'));
-  assert.match(fix,/\.rb-hero-visual\{[\s\S]*?min-height:470px;[\s\S]*?height:100%/);
-  assert.match(fix,/\.rb-hero-media\{[\s\S]*?position:absolute;[\s\S]*?inset:0;[\s\S]*?height:100%;[\s\S]*?object-fit:cover/);
-  assert.match(fix,/font-size:clamp\(31px,3\.25vw,46px\)/);
-  assert.match(fix,/line-height:1\.45/);
+  assert.match(css,/\.rb-hero-grid\{display:grid;grid-template-columns:minmax\(0,1fr\) 320px;gap:22px;align-items:stretch\}/);
+  assert.match(css,/\.rb-hero-story\{display:grid;grid-template-columns:1\.08fr \.92fr;min-height:435px/);
+  assert.match(css,/\.rb-hero-visual\{position:relative;display:block;min-height:435px/);
+  assert.match(css,/\.rb-hero-media\{display:block;width:100%;height:100%;min-height:435px;object-fit:cover/);
+  assert.doesNotMatch(css,/2026-11-15: restore balance/);
+  assert.doesNotMatch(css,/\.rb-hero-story\{[^}]*min-height:470px/);
 });
 
-test('homepage hero rearranges before the news index becomes cramped',()=>{
+test('homepage retains the original tablet and mobile hero breakpoints',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
-  const fix=css.slice(css.lastIndexOf('2026-11-15: restore balance'));
-  assert.match(fix,/@media\(max-width:1100px\)[\s\S]*?\.rb-hero-grid\{grid-template-columns:minmax\(0,1fr\)[^}]*\}/);
-  assert.match(fix,/@media\(max-width:1100px\)[\s\S]*?\.rb-hero-sidebar\{[\s\S]*?grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
-  assert.match(fix,/@media\(max-width:820px\)[\s\S]*?\.rb-hero-story\{grid-template-columns:minmax\(0,1fr\)/);
-  assert.match(fix,/@media\(max-width:520px\)[\s\S]*?\.rb-hero-visual\{height:240px/);
+  assert.match(css,/@media\(max-width:1100px\)[\s\S]*?\.rb-hero-grid\{grid-template-columns:minmax\(0,1fr\) 275px\}/);
+  assert.match(css,/@media\(max-width:1100px\)[\s\S]*?\.rb-hero-story\{grid-template-columns:1fr\}/);
+  assert.match(css,/@media\(max-width:820px\)[\s\S]*?\.rb-hero-grid\{grid-template-columns:1fr;gap:12px\}/);
+  assert.match(css,/@media\(max-width:420px\)[\s\S]*?\.rb-hero-visual,\.rb-hero-media\{min-height:195px;max-height:240px\}/);
 });
