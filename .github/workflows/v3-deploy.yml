@@ -1,0 +1,70 @@
+name: Deploy Nabez Sardo v3 (Next.js)
+
+on:
+  push:
+    branches:
+      - v3-nextjs-cloudflare
+  workflow_dispatch:
+
+concurrency:
+  group: nabzesardo-v3-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout v3 branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: 'file:./db/custom.db'
+
+      - name: Build worker (OpenNext for Cloudflare)
+        run: npx opennextjs-cloudflare build
+        env:
+          DATABASE_URL: 'file:./db/custom.db'
+          NEXT_TELEMETRY_DISABLED: '1'
+          DATA_MODE: 'd1'
+
+      - name: Deploy Worker (v3.nabzesardo.ir)
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Smoke test
+        run: |
+          set -e
+          sleep 25
+          echo "— homepage —"
+          curl -sS -f -m 40 -A "Mozilla/5.0 (compatible; NabzSmoke/1.0)" -o /tmp/home.html https://v3.nabzesardo.ir/ && echo "HOME OK ($(wc -c < /tmp/home.html) bytes)"
+          grep -q "نبض ساردو" /tmp/home.html && echo "TITLE OK"
+          echo "— archive —"
+          curl -sS -f -m 40 -A "Mozilla/5.0 (compatible; NabzSmoke/1.0)" -o /dev/null https://v3.nabzesardo.ir/all-news && echo "ARCHIVE OK"
+          echo "— article —"
+          SLUG=$(python3 - <<'PY'
+import re
+html = open('/tmp/home.html', encoding='utf-8').read()
+m = re.search(r'href="/news/([^"]+)"', html)
+print(m.group(1) if m else '')
+PY
+)
+          if [ -n "$SLUG" ]; then
+            curl -sS -f -m 40 -A "Mozilla/5.0 (compatible; NabzSmoke/1.0)" -o /dev/null "https://v3.nabzesardo.ir/news/$SLUG" && echo "ARTICLE OK"
+          else
+            echo "ARTICLE SKIP (no link found)"
+          fi

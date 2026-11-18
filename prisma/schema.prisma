@@ -1,0 +1,73 @@
+// Nabz Sardo — نبض ساردو
+// Data model mirroring the production site (nabzesardo.ir)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       String    @id
+  name     String
+  order    Int       @default(0)
+  articles Article[]
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  lead        String    @default("")
+  bodyHtml    String    @default("")
+  body        String    @default("")
+  author      String    @default("تحریریه نبض ساردو")
+  location    String    @default("ساردوئیه")
+  status      String    @default("draft") // draft | published
+  featured    Boolean   @default(false)
+  image       String    @default("")
+  views       Int       @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+}
+
+model CitizenReport {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String   @default("")
+  location   String   @default("")
+  headline   String
+  details    String   @default("")
+  rewardCard String   @default("")
+  mediaUrl   String   @default("")
+  mediaType  String   @default("")
+  mediaName  String   @default("")
+  status     String   @default("new") // new | reviewed | archived
+  createdAt  DateTime @default(now())
+
+  @@index([status])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String
+  subject   String   @default("")
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}

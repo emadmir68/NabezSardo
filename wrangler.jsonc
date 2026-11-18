@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nabzesardo-v3",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "DATA_MODE": "d1",
+    "PROD_ORIGIN": "https://nabzesardo.ir",
+    "PUBLIC_BASE_URL": "https://v3.nabzesardo.ir",
+    "NODE_ENV": "production"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nabzesardo-cloudflare-db",
+      "database_id": "75ac406c-ba8d-4cf7-a077-f56c7f974601"
+    }
+  ],
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "v3.nabzesardo.ir",
+      "custom_domain": true
+    }
+  ]
+}
