@@ -56,13 +56,7 @@ jobs:
           echo "— archive —"
           curl -sS -f -m 40 -A "Mozilla/5.0 (compatible; NabzSmoke/1.0)" -o /dev/null https://v3.nabzesardo.ir/all-news && echo "ARCHIVE OK"
           echo "— article —"
-          SLUG=$(python3 - <<'PY'
-import re
-html = open('/tmp/home.html', encoding='utf-8').read()
-m = re.search(r'href="/news/([^"]+)"', html)
-print(m.group(1) if m else '')
-PY
-)
+          SLUG=$(grep -oE 'href="/news/[^"]+"' /tmp/home.html | head -1 | sed 's|href="/news/||; s|"||')
           if [ -n "$SLUG" ]; then
             curl -sS -f -m 40 -A "Mozilla/5.0 (compatible; NabzSmoke/1.0)" -o /dev/null "https://v3.nabzesardo.ir/news/$SLUG" && echo "ARTICLE OK"
           else
