@@ -6,8 +6,11 @@ import type { Category } from "@prisma/client";
 import type { PublishedArticle, CatWithCount, Stats } from "./nabz";
 import { prodOrigin } from "./mode";
 
-/* ——— نقشهٔ تصاویر هوش‌مصنوعی تولیدشده برای ۱۸ خبر منتخب (بر اساس اسلاگ production) ——— */
+/* ——— نقشهٔ تصاویر هوش‌مصنوعی تولیدشده برای خبرهای منتخب (بر اساس اسلاگ production) ——— */
 const AI_COVERS: Record<string, string> = {
+  "شهید-علی-دادگستر-از-شهدای-سرافراز-جیرفت": "/images/news-martyr.png",
+  "سعید-افروز-آکادمی-تخصصی-دوومیدانی-در-جیرفت-راه‌اندازی-می‌کنم": "/images/news-athletics.png",
+  "اجرای-سیستم-آبیاری-قطرهای-در-بلوارهای-جیرفت": "/images/news-irrigation.png",
   "صادق-نیک‌نفس،-شاعر-حمایت-مسئولان-از-هنرمندان-جنوب-کرمان-نیازمند-تقویت-است": "/images/news-poet.png",
   "امام-جمعه‌ای-که-خود-پیش‌قدم-دیدار-با-مردم-می‌شود": "/images/news-mosque.png",
   "اقبال-واحدی-برای-دومین-بار-مردم-ایران-را-به-جشنواره-ملی-خرمای-کلوته-عنبرآباد-دعوت-کرد": "/images/news-dates.png",
@@ -34,6 +37,15 @@ const normKey = (s: string) =>
 
 const AI_COVERS_NORM: Record<string, string> = {};
 for (const [k, v] of Object.entries(AI_COVERS)) AI_COVERS_NORM[normKey(k)] = v;
+
+/* خبرهایی که عکس آپلودی‌شان با متن خبر تناسب ندارد و طبق نظر کارفرما
+   باید کارت اختصاصی هوش مصنوعی جایگزین عکس آپلودی شود. */
+const FORCE_AI_COVERS: string[] = [
+  "امام-جمعه-کرمان-دشمنی-آمریکا-با-ایران-با-تغییر-دولت‌ها-پایان-نمی‌یابد", // کادر پرچم جمهوری اسلامی
+  "نشست-فعالان-اقتصادی-رفسنجان-با-اعضای-کمیسیون-اقتصادی-مجلس-برگزار-شد", // نشست اقتصادی ایرانی
+  "فردا-عزای-عمومی-اعلام-شد", // حال‌وهوای عزای عمومی
+];
+const FORCE_AI_NORM = new Set(FORCE_AI_COVERS.map(normKey));
 
 type ProdDB = {
   settings?: Record<string, unknown>;
@@ -69,8 +81,13 @@ function toDate(v: unknown): Date | null {
 
 function resolveImage(a: Record<string, unknown>): string {
   const own = String(a.image || "").trim();
-  if (own) return absolutizeUrl(own); // عکس واقعی آپلودشده در سایت اصلی — اولویت اول
-  return AI_COVERS_NORM[normKey(String(a.slug || ""))] || ""; // کارت هوش مصنوعی — اولویت دوم
+  const slug = normKey(String(a.slug || ""));
+  /* ۱) کارت اختصاصی هوش مصنوعی برای خبرهایی که عکس آپلودی نامرتبط دارند (تصمیم تحریریه) */
+  if (FORCE_AI_NORM.has(slug) && AI_COVERS_NORM[slug]) return AI_COVERS_NORM[slug];
+  /* ۲) عکس واقعی آپلودشده در سایت اصلی — مگر کاور خودکار قدیمی (SVG ساده) که تصویر واقعی نیست */
+  if (own && !/auto-cover-/i.test(own)) return absolutizeUrl(own);
+  /* ۳) کارت هوش مصنوعی برای خبرهای بدون عکس واقعی؛ در نبود آن، همان کاور خودکار */
+  return AI_COVERS_NORM[slug] || (own ? absolutizeUrl(own) : "");
 }
 
 function makeCat(id: string, name: string, order: number): Category {

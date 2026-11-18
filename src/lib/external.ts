@@ -128,26 +128,133 @@ export async function getWeather(): Promise<Weather | null> {
   return out;
 }
 
+/* ——— اوقات شرعی: منبع اول بادصبا (تقویم رسمی به افق ساردوئیه)، محاسبهٔ محلی پشتیبان ——— */
+const BADESABA_URL = "https://badesaba.ir/owghat/785/%D8%B3%D8%A7%D8%B1%D8%AF%D9%88%D8%A6%DB%8C%D9%87";
+const FA_DIG = "۰۱۲۳۴۵۶۷۸۹";
+const toAscii = (s: string) => s.replace(/[۰-۹]/g, (d) => String(FA_DIG.indexOf(d)));
+const toFa = (s: string) => String(s || "").replace(/\d/g, (d) => FA_DIG[Number(d)]);
+
+type DayTimes = [string, string, string, string, string, string, string, string]; // صبح، طلوع، ظهر، عصر، غروب، مغرب، عشا، نیمه‌شب
+type BadesabaData = Map<string, Map<number, DayTimes>>; // نام ماه → روز → اوقات
+
+/* جدول ماهانهٔ بادصبا: ردیف‌هایی با الگوی «روزِ هفته ۲۸ آبان ۱۴۰۵ | ۰۴:۴۶ | …» */
+function parseBadesaba(html: string): BadesabaData | null {
+  const months: BadesabaData = new Map();
+  let any = false;
+  for (const tr of html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)) {
+    const cells = [...tr[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)].map((c) =>
+      toAscii(c[1].replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").trim())
+    );
+    if (cells.length < 9) continue;
+    const dm = cells[0].match(/(\d{1,2})\s+(\S+?)(?:\s+\d{4})?$/); // «پنج‌شنبه 28 آبان 1405»
+    const times = cells.slice(1, 9);
+    if (!dm || !times.every((t) => /^\d{1,2}:\d{2}$/.test(t))) continue;
+    const month = dm[2];
+    if (!months.has(month)) months.set(month, new Map());
+    months.get(month)!.set(Number(dm[1]), times as DayTimes);
+    any = true;
+  }
+  return any ? months : null;
+}
+
+/* تاریخ امروز به وقت تهران (سرور ممکن است UTC باشد) */
+function tehranNow(): Date {
+  return new Date(Date.now() + 3.5 * 3600 * 1000);
+}
+/* ساخت لحظهٔ «HH:MM امروز/فردا» به وقت تهران از رشتهٔ زمان */
+function tehranAt(hhmm: string, dayOffset = 0): Date {
+  const [h, m] = hhmm.split(":").map(Number);
+  const t = tehranNow();
+  return new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate() + dayOffset, h, m) - 3.5 * 3600 * 1000);
+}
+
+let badesabaCache: { at: number; data: BadesabaData | null } = { at: 0, data: null };
+
+async function loadBadesaba(): Promise<BadesabaData | null> {
+  /* جدول ماهانه است؛ کش ۶ ساعته کافی و سبک است */
+  if (badesabaCache.data && Date.now() - badesabaCache.at < 6 * 3600 * 1000) return badesabaCache.data;
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 8000);
+    const res = await fetch(BADESABA_URL, {
+      signal: ctl.signal,
+      cache: "no-store",
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; NabzeSardo/3.0)" },
+    });
+    clearTimeout(t);
+    if (!res.ok) throw new Error(String(res.status));
+    const data = parseBadesaba(await res.text());
+    badesabaCache = { at: Date.now(), data };
+    return data;
+  } catch {
+    if (!badesabaCache.data) badesabaCache = { at: Date.now(), data: null };
+    return badesabaCache.data;
+  }
+}
+
+/* «امروز» به تقویم شمسی: شمارهٔ روز و نام ماه فارسی (برای تطبیق با ردیف بادصبا) */
+function persianToday(): { day: number; month: string } {
+  const parts = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { day: "numeric", month: "long", timeZone: "Asia/Tehran" }).formatToParts(new Date());
+  const day = Number(toAscii(parts.find((p) => p.type === "day")?.value ?? "0"));
+  const month = (parts.find((p) => p.type === "month")?.value ?? "").replace(/\u200c/g, "");
+  return { day, month };
+}
+
+function nextAdhan(times: DayTimes, tomorrow: DayTimes | null) {
+  const order: [string, number][] = [
+    ["fajr", 0], ["sunrise", 1], ["dhuhr", 2], ["asr", 3], ["maghrib", 5], ["isha", 6],
+  ];
+  const now = Date.now();
+  for (const [k, i] of order) {
+    const at = tehranAt(times[i]);
+    if (at.getTime() > now) return { name: PRAYER_FA[k], time: times[i], at: at.toISOString() };
+  }
+  const t = tomorrow?.[0];
+  const at = tehranAt(t ?? "04:46", 1);
+  return { name: PRAYER_FA.fajr, time: t ?? "04:46", at: at.toISOString() };
+}
+
 export async function getPrayerTimes(): Promise<PrayerTimes | null> {
   const ttl = prayCache.data ? CACHE_MS : MISS_MS;
   if (prayCache.data && Date.now() - prayCache.at < ttl) return prayCache.data;
-  /* محاسبهٔ نجومی محلی با روش مؤسسهٔ ژئوفیزیک دانشگاه تهران — همان روش تقویم رسمی
-     (که سایت تایم هم بر پایهٔ آن اوقات شهرها را منتشر می‌کند) به افقِ خودِ ساردوئیه.
-     صحت‌سنجی‌شده با اوقات رسمی کرمان و جیرفت (اختلاف کمتر از یک دقیقه). */
+
+  /* ۱) منبع اول: جدول رسمی بادصبا به افق ساردوئیه (id=785) */
+  try {
+    const data = await loadBadesaba();
+    const today = persianToday();
+    const monthDays = data?.get(today.month);
+    const times = monthDays?.get(today.day);
+    if (data && monthDays && times) {
+      const tomorrow = monthDays.get(today.day + 1) ?? null;
+      const next = nextAdhan(times, tomorrow);
+      const out: PrayerTimes = {
+        fajr: toFa(times[0]),
+        sunrise: toFa(times[1]),
+        dhuhr: toFa(times[2]),
+        asr: toFa(times[3]),
+        sunset: toFa(times[4]),
+        maghrib: toFa(times[5]),
+        isha: toFa(times[6]),
+        midnight: toFa(times[7]),
+        next: { name: next.name, time: toFa(next.time), at: next.at },
+      };
+      prayCache = { at: Date.now(), data: out };
+      return out;
+    }
+  } catch {
+    /* ادامه به روش محلی */
+  }
+
+  /* ۲) پشتیبان: محاسبهٔ نجومی محلی با روش مؤسسهٔ ژئوفیزیک دانشگاه تهران — همان روش تقویم رسمی */
   try {
     const coords = new adhan.Coordinates(Number(LAT), Number(LON));
     const params = adhan.CalculationMethod.Tehran();
     params.madhab = adhan.Madhab.Shafi;
-    // تاریخ «امروز» به وقت تهران (سرور ممکن است UTC باشد)
-    const now = new Date();
-    const tehranDay = new Date(now.getTime() + 3.5 * 3600 * 1000);
-    const p = new adhan.PrayerTimes(coords, tehranDay, params);
-    const pTomorrow = new adhan.PrayerTimes(coords, new Date(tehranDay.getTime() + 24 * 3600 * 1000), params);
+    const p = new adhan.PrayerTimes(coords, tehranNow(), params);
+    const pTomorrow = new adhan.PrayerTimes(coords, new Date(tehranNow().getTime() + 24 * 3600 * 1000), params);
     const fmt = (d: Date) =>
       new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Tehran" }).format(d);
-    // نیمه‌شب شرعی: میانهٔ فاصلهٔ غروب امروز تا اذان صبح فردا
     const midnight = new Date((p.sunset.getTime() + pTomorrow.fajr.getTime()) / 2);
-    // اذان بعدی
     const seq: [string, Date][] = [
       ["fajr", p.fajr],
       ["sunrise", p.sunrise],
@@ -158,7 +265,7 @@ export async function getPrayerTimes(): Promise<PrayerTimes | null> {
     ];
     let next: PrayerTimes["next"] = { name: "اذان صبح", time: fmt(pTomorrow.fajr), at: pTomorrow.fajr.toISOString() };
     for (const [k, d] of seq) {
-      if (d.getTime() > now.getTime()) {
+      if (d.getTime() > Date.now()) {
         next = { name: PRAYER_FA[k], time: fmt(d), at: d.toISOString() };
         break;
       }

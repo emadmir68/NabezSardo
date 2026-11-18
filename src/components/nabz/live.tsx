@@ -30,10 +30,12 @@ export function LiveClock() {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "Asia/Tehran",
   }).format(now);
   const time = new Intl.DateTimeFormat("fa-IR", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Tehran",
   }).format(now);
 
   return (
