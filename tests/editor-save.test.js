@@ -7,10 +7,10 @@ test('reposting the same editor form saves one draft',async t=>{
  for(let attempt=0;attempt<30;attempt++){try{await fetch(base+'/health');break}catch(err){if(attempt===29)throw err;await new Promise(r=>setTimeout(r,100))}}
  const login=await fetch(base+'/admin/login',{method:'POST',body:new URLSearchParams({username:'test',password:'test'}),redirect:'manual'}),cookie=login.headers.get('set-cookie').split(';')[0];
  const editor=await (await fetch(base+'/admin/articles/new',{headers:{cookie}})).text();
- assert.match(editor,/name="submissionToken"/);
+ assert.match(editor,/name="submissionToken"/);assert.match(editor,/name="correction"/);
  for(let i=0;i<2;i++){
-  const f=new FormData();for(const [k,v] of Object.entries({title:'خبر آزمون',bodyHtml:'<p>متن خبر</p>',status:'draft',submissionToken:'11111111-1111-4111-8111-111111111111'}))f.set(k,v);
+  const f=new FormData();for(const [k,v] of Object.entries({title:'خبر آزمون',bodyHtml:'<p>متن خبر</p>',correction:'اصلاحیه: نام شهرستان اصلاح شد.',status:'draft',submissionToken:'11111111-1111-4111-8111-111111111111'}))f.set(k,v);
   const res=await fetch(base+'/admin/articles/new',{method:'POST',body:f,headers:{cookie},redirect:'manual'});assert.equal(res.status,302);
  }
- assert.equal(JSON.parse(fs.readFileSync(path.join(dir,'db.json'))).articles.length,1);
+ const saved=JSON.parse(fs.readFileSync(path.join(dir,'db.json'))).articles;assert.equal(saved.length,1);assert.equal(saved[0].correction,'اصلاحیه: نام شهرستان اصلاح شد.');assert.ok(saved[0].correctionUpdatedAt);
 });

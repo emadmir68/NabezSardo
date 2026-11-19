@@ -3,6 +3,32 @@
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 
+  const canTilt=typeof window.matchMedia==='function'
+    &&window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    &&!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(canTilt){
+    $$('[data-rb-tilt]').forEach(card=>{
+      const reset=()=>{
+        card.style.setProperty('--rb-card-rx','0deg');
+        card.style.setProperty('--rb-card-ry','0deg');
+      };
+      card.addEventListener('pointermove',event=>{
+        if(event.pointerType!=='mouse'&&event.pointerType!=='pen')return;
+        const rect=card.getBoundingClientRect();
+        if(!rect.width||!rect.height)return;
+        const x=(event.clientX-rect.left)/rect.width;
+        const y=(event.clientY-rect.top)/rect.height;
+        card.style.setProperty('--rb-card-rx',((.5-y)*5).toFixed(2)+'deg');
+        card.style.setProperty('--rb-card-ry',((x-.5)*7).toFixed(2)+'deg');
+      },{passive:true});
+      card.addEventListener('pointerleave',reset,{passive:true});
+      card.addEventListener('pointercancel',reset,{passive:true});
+      card.addEventListener('focusout',event=>{
+        if(!card.contains(event.relatedTarget))reset();
+      });
+    });
+  }
+
   const languageKey='nabez-lang';
   const languageButtons=$$('[data-lang-option]');
   function setLanguage(value){
