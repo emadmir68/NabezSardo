@@ -1,5 +1,5 @@
-/* ============================================================
-   NABZ SARDO — EDITORIAL LUXE REDESIGN (CLOUDFLARE PRODUCTION)
+﻿/* ============================================================
+   NABZ SARDO â€” EDITORIAL LUXE REDESIGN (CLOUDFLARE PRODUCTION)
    Design System: Obsidian Glassmorphism & High Editorial Luxury
    Target: Cloudflare Edge / Modern Mobile & Desktop Newsroom
    ============================================================ */
@@ -7,7 +7,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Estedad:wght@300;400;500;600;700;800;900&family=Vazirmatn:wght@300;400;500;600;700;800;900&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap');
 
 :root {
-  /* Surfaces — Obsidian & Deep Midnight */
+  /* Surfaces â€” Obsidian & Deep Midnight */
   --rb-ink: #05070d;
   --rb-ink-2: #090c16;
   --rb-panel: rgba(14, 18, 29, 0.72);
@@ -239,7 +239,7 @@ img, video {
 }
 
 /* ============================================================
-   HEADER & NAVIGATION — GLASSMORPHISM SUPREME
+   HEADER & NAVIGATION â€” GLASSMORPHISM SUPREME
    ============================================================ */
 .rb-header {
   background: rgba(8, 11, 20, 0.78);
@@ -1202,7 +1202,7 @@ img, video {
 }
 
 /* ============================================================
-   ARTICLE DETAIL PAGE — HIGH LUXURY EDITORIAL
+   ARTICLE DETAIL PAGE â€” HIGH LUXURY EDITORIAL
    ============================================================ */
 .article-progress {
   position: fixed;
@@ -1700,6 +1700,209 @@ img, video {
 
 /* CI Accessibility and Typography strict regression assertions */
 .rb-button, .rb-search button, [data-lang-option], [data-menu-toggle], [data-search-toggle] {
+  min-height:44px;
+}
+.rb-hero-copy h1, .rb-story-copy h3, .rb-article-head h1, .rb-article-body {
+  overflow-wrap:break-word;
+}
+
+/* --------------------------------------------------------------------------
+   THEME TOGGLE BUTTON (LIGHT / DARK SWITCH)
+   -------------------------------------------------------------------------- */
+.rb-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-height:44px;
+  border-radius: 50%;
+  border: 1px solid var(--rb-glass-border-strong);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--rb-text);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  margin-inline-start: 6px;
+}
+.rb-theme-toggle:hover {
+  transform: scale(1.1) rotate(12deg);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--rb-gold);
+  box-shadow: 0 0 16px var(--rb-gold-glow);
+}
+[data-theme="light"] .rb-theme-icon-light { display: none !important; }
+[data-theme="light"] .rb-theme-icon-dark { display: inline-block !important; }
+:not([data-theme="light"]) .rb-theme-icon-light { display: inline-block !important; }
+:not([data-theme="light"]) .rb-theme-icon-dark { display: none !important; }
+
+/* Light Theme Variables & Overrides */
+[data-theme="light"] {
+  --rb-ink: #f8fafc;
+  --rb-ink-2: #ffffff;
+  --rb-panel: rgba(255, 255, 255, 0.90);
+  --rb-panel-solid: #ffffff;
+  --rb-panel-2: rgba(241, 245, 249, 0.95);
+  --rb-glass-border: rgba(15, 23, 42, 0.08);
+  --rb-glass-border-strong: rgba(15, 23, 42, 0.16);
+  --rb-crimson: #dc2626;
+  --rb-crimson-glow: rgba(220, 38, 38, 0.25);
+  --rb-gold: #b45309;
+  --rb-gold-glow: rgba(180, 83, 9, 0.2);
+  --rb-text: #0f172a;
+  --rb-text-muted: #475569;
+  --rb-text-faint: #64748b;
+  --rb-card-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] body {
+  background-color: #f4f6f9 !important;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(220, 38, 38, 0.05) 0px, transparent 40%),
+    radial-gradient(at 90% 20%, rgba(180, 83, 9, 0.06) 0px, transparent 40%),
+    radial-gradient(at 50% 80%, rgba(59, 130, 246, 0.05) 0px, transparent 50%) !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .rb-topline {
+  background: rgba(241, 245, 249, 0.85) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+[data-theme="light"] .rb-header {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .rb-nav {
+  border-top: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+[data-theme="light"] .rb-brand-word {
+  color: #0f172a !important;
+}
+[data-theme="light"] .rb-nav-inner a {
+  color: #475569 !important;
+}
+[data-theme="light"] .rb-nav-inner a:hover,
+[data-theme="light"] .rb-nav-inner a.is-active {
+  color: #dc2626 !important;
+  background: rgba(220, 38, 38, 0.08) !important;
+}
+[data-theme="light"] .rb-hero-story,
+[data-theme="light"] .rb-story,
+[data-theme="light"] .rb-category-tile,
+[data-theme="light"] .rb-hero-sidebar,
+[data-theme="light"] .rb-region-band,
+[data-theme="light"] .rb-popular,
+[data-theme="light"] .rb-briefs,
+[data-theme="light"] .rb-article-body {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.06) !important;
+}
+[data-theme="light"] .rb-story h3 a,
+[data-theme="light"] .rb-hero-copy h1 a,
+[data-theme="light"] .rb-section-title h2 {
+  color: #0f172a !important;
+}
+[data-theme="light"] .rb-footer {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+[data-theme="light"] .rb-footer a {
+  color: #94a3b8 !important;
+}
+[data-theme="light"] .rb-footer a:hover {
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   ENHANCED EDITORIAL LUXE VISUAL IDENTITY
+   -------------------------------------------------------------------------- */
+/* Glowing ambient background in dark mode */
+body {
+  background-color: #07090e;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(229, 9, 20, 0.14) 0px, transparent 48%),
+    radial-gradient(at 85% 25%, rgba(212, 175, 55, 0.12) 0px, transparent 45%),
+    radial-gradient(at 50% 65%, rgba(20, 35, 75, 0.22) 0px, transparent 58%),
+    radial-gradient(at 25% 90%, rgba(139, 92, 246, 0.10) 0px, transparent 52%);
+  background-attachment: fixed;
+}
+
+/* Elevated Floating Island Header */
+.rb-header {
+  margin: 12px auto 20px auto;
+  max-width: 1400px;
+  border-radius: 20px;
+  border: 1px solid var(--rb-glass-border-strong);
+  box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Enhanced 3D Glass Hero Card */
+.rb-hero-story {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
+}
+.rb-hero-story:hover {
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85), 0 0 35px -8px var(--rb-crimson-glow);
+}
+.rb-hero-visual {
+  overflow: hidden;
+}
+.rb-hero-media {
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rb-hero-story:hover .rb-hero-media {
+  transform: scale(1.05);
+}
+.rb-hero-copy h1 {
+  font-size: clamp(1.65rem, 2.5vw, 2.35rem);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+/* Enhanced Story Cards */
+.rb-story {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s, border-color 0.35s;
+}
+.rb-story:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 42, 75, 0.45);
+  box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.75), 0 0 25px -5px var(--rb-crimson-glow);
+}
+.rb-story-image {
+  overflow: hidden;
+  border-radius: 14px;
+}
+.rb-story-image img {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rb-story:hover .rb-story-image img {
+  transform: scale(1.08);
+}
+
+/* Interactive Category Tiles */
+.rb-category-tile {
+  border-radius: 16px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, box-shadow 0.3s;
+}
+.rb-category-tile:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--rb-gold);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6), 0 0 18px -4px var(--rb-gold-glow);
+}
+
+/* Strict regression test guarantees */
+.rb-button, .rb-search button, [data-lang-option], [data-menu-toggle], [data-search-toggle], .rb-theme-toggle {
   min-height:44px;
 }
 .rb-hero-copy h1, .rb-story-copy h3, .rb-article-head h1, .rb-article-body {

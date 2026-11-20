@@ -24,6 +24,39 @@
     let saved='fa';try{saved=localStorage.getItem(languageKey)||'fa';}catch{}
     languageButtons.forEach(button=>button.addEventListener('click',()=>setLanguage(button.dataset.langOption)));
     setLanguage(saved);
+
+  /* -------------------------------------------------------------
+     1.5 Theme Switcher (Obsidian Dark / Pearl Light)
+     ------------------------------------------------------------- */
+  const themeKey = 'nabez-theme';
+  function setTheme(theme) {
+    const active = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = active;
+    if (document.body && document.body.dataset) {
+      document.body.dataset.theme = active;
+    }
+    try { localStorage.setItem(themeKey, active); } catch {}
+    $$('[data-theme-toggle]').forEach(btn => {
+      btn.setAttribute('data-current-theme', active);
+      btn.title = active === 'light' ? 'تغییر به حالت تیره' : 'تغییر به حالت روشن';
+    });
+  }
+  let initialTheme = 'dark';
+  try {
+    const saved = localStorage.getItem(themeKey);
+    if (saved === 'light' || saved === 'dark') {
+      initialTheme = saved;
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      initialTheme = 'light';
+    }
+  } catch {}
+  setTheme(initialTheme);
+  $$('[data-theme-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.dataset.theme || 'dark';
+      setTheme(current === 'light' ? 'dark' : 'light');
+    });
+  });
   }
 
   /* -------------------------------------------------------------
