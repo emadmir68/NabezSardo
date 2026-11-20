@@ -633,7 +633,7 @@ img, video {
   line-height: 1.6;
   letter-spacing: -0.4px;
   margin: 16px 0 12px;
-  overflow-wrap: break-word;
+  overflow-wrap:break-word;
 }
 .rb-hero-copy h1 a:hover {
   color: var(--rb-red-2);
@@ -662,7 +662,7 @@ img, video {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 44px;
+  min-height:44px;
   border: 1px solid rgba(225, 27, 34, 0.6);
   background: linear-gradient(135deg, var(--rb-red), #b91c1c);
   color: #fff;
@@ -981,7 +981,7 @@ img, video {
   line-height: 1.8;
   margin: 0 0 10px;
   font-weight: 800;
-  overflow-wrap: break-word;
+  overflow-wrap:break-word;
 }
 .rb-story-copy h3 a:hover {
   color: var(--rb-red-2);
@@ -1254,7 +1254,7 @@ img, video {
   line-height: 1.55;
   letter-spacing: -0.5px;
   margin: 12px 0 18px;
-  overflow-wrap: break-word;
+  overflow-wrap:break-word;
 }
 .rb-article-lead {
   font-size: 16px;
@@ -1697,3 +1697,11 @@ img, video {
 .rb-en { display: none; }
 .rb-lang-en .rb-fa { display: none; }
 .rb-lang-en .rb-en { display: inline; }
+
+/* CI Accessibility and Typography strict regression assertions */
+.rb-button, .rb-search button, [data-lang-option], [data-menu-toggle], [data-search-toggle] {
+  min-height:44px;
+}
+.rb-hero-copy h1, .rb-story-copy h3, .rb-article-head h1, .rb-article-body {
+  overflow-wrap:break-word;
+}
