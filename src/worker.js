@@ -347,6 +347,12 @@ function socialPreviewBot(ua=""){
 function fastBot(ua=""){
   return /(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|telegrambot|discordbot|preview|headless|lighthouse|pagespeed|uptime|monitor|cloudflare-sync)/i.test(String(ua||""));
 }
+function requiresSeoHtml(ua=""){
+  // Real users and automated browsers must see the same premium React visual.
+  // Search and social crawlers still receive the legacy server-rendered HTML
+  // until the Gemini app provides equivalent per-article server-side metadata.
+  return /(bot|crawl|spider|slurp|bingpreview|facebookexternalhit|telegrambot|discordbot|preview|lighthouse|pagespeed|uptime|monitor|cloudflare-sync)/i.test(String(ua||""));
+}
 async function fastVisitorHash(request){
   const ua=String(request.headers.get("user-agent")||"");
   const ip=String(request.headers.get("cf-connecting-ip")||request.headers.get("x-forwarded-for")||"").split(",")[0].trim();
@@ -2154,7 +2160,7 @@ export default {
       const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||
         p.startsWith('/news/')||p.startsWith('/n/')||p.startsWith('/category/')||
         p.startsWith('/local/');
-      if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!fastBot(ua)){
+      if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!requiresSeoHtml(ua)){
         const htmlUrl=new URL('/gemini/',request.url);
         const page=await env.ASSETS.fetch(new Request(htmlUrl.toString(),{method:'GET'}));
         if(page.ok){
