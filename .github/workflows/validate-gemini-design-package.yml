@@ -1,0 +1,55 @@
+name: Validate Gemini design package (staging only)
+
+on:
+  push:
+    branches:
+      - preview/gemini-design-2026-11-21
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find uploaded original design ZIP
+        id: zip
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)
+          if [ -z "$f" ]; then
+            echo "Design ZIP has not been uploaded to this branch yet."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "SHA256 of original package:"
+            sha256sum "$f"
+            mkdir -p /tmp/nabz-gemini-design
+            unzip -q "$f" -d /tmp/nabz-gemini-design
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.zip.outputs.found == 'true'
+        with:
+          node-version: '22'
+      - name: Build unchanged original design
+        if: steps.zip.outputs.found == 'true'
+        working-directory: /tmp/nabz-gemini-design
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+          test -f dist/index.html
+          test -d dist/src/assets/images
+      - name: Store production static bundle as staging artifact only
+        if: steps.zip.outputs.found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-design-original-static
+          path: /tmp/nabz-gemini-design/dist/
+          if-no-files-found: error
+          retention-days: 14
+
+# This workflow intentionally DOES NOT change cloudflare-migration,
+# production routing, D1 data, or the current public site.
