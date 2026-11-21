@@ -2157,9 +2157,13 @@ export default {
       // canonical metadata, sitemaps and social bot HTML from the old Worker.
       const accept=String(request.headers.get('accept')||'');
       const ua=String(request.headers.get('user-agent')||'');
-      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||p.startsWith('/region/')||
-        p.startsWith('/news/')||p.startsWith('/n/')||p.startsWith('/category/')||
-        p.startsWith('/local/');
+      // Keep unported legacy category and regional pages available via the original Worker.
+      // React handles only the routes its own router supports.
+      const geminiCategory=/^\/category\/(sarduiyeh|agriculture|social|culture|weather|incidents|opinion)$/.test(p);
+      const geminiLocal=/^\/local\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
+      const geminiRegion=/^\/region\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
+      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||geminiRegion||
+        p.startsWith('/news/')||p.startsWith('/n/')||geminiCategory||geminiLocal;
       if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!requiresSeoHtml(ua)){
         const htmlUrl=new URL('/gemini/',request.url);
         const page=await env.ASSETS.fetch(new Request(htmlUrl.toString(),{method:'GET'}));
