@@ -238,105 +238,46 @@ export default function App() {
     });
   };
 
-  const handleSubmitCitizenReport = (
-    reportData: Omit<CitizenReport, 'id' | 'submittedAt' | 'status'>
-  ) => {
-    const newReport: CitizenReport = {
-      ...reportData,
-      id: `cit-${Date.now()}`,
-      submittedAt: new Date().toISOString(),
-      status: 'pending',
-    };
-    setCitizenReports((prev) => [newReport, ...prev]);
-    pushToast(
-      locale === 'fa'
-        ? 'گزارش مردمی ثبت شد و در صف بررسی تحریریه قرار گرفت.'
-        : 'Citizen report submitted to the newsroom queue.',
-      'success'
-    );
+
+  const adminPost=async(payload:Record<string,unknown>)=>{
+    const response=await fetch('/api/gemini/admin/action',{
+      method:'POST',credentials:'same-origin',
+      headers:{'content-type':'application/json','x-nabzesardo-editorial':'1'},
+      body:JSON.stringify(payload)
+    });
+    if(response.status===401||response.status===403){
+      window.location.assign('/admin/login?gemini=1');
+      throw Error('Unauthorized newsroom access');
+    }
+    const data=await response.json().catch(()=>({ok:false,error:'Invalid server response'}));
+    if(!response.ok||!data.ok)throw Error(data.error||'Newsroom operation failed');
+    const snapshot=await fetch('/api/gemini/admin/state',{credentials:'same-origin',cache:'no-store'});
+    if(snapshot.ok){
+      const latest=await snapshot.json() as {articles:Article[],citizenReports:CitizenReport[]};
+      setArticles(latest.articles||[]);
+      setCitizenReports(latest.citizenReports||[]);
+    }
+    return data;
   };
-
-  const handleSaveArticle = (article: Article, isNew: boolean) => {
-    setArticles((prev) =>
-      isNew ? [article, ...prev] : prev.map((a) => (a.id === article.id ? article : a))
-    );
-    pushToast(
-      isNew
-        ? locale === 'fa'
-          ? 'خبر جدید با موفقیت منتشر شد.'
-          : 'New dispatch published.'
-        : locale === 'fa'
-          ? 'تغییرات خبر ذخیره شد.'
-          : 'Article changes saved.',
-      'success'
-    );
+  const handleSubmitCitizenReport = async(reportData:Omit<CitizenReport,'id'|'submittedAt'|'status'>) => {
+    const response=await fetch('/api/gemini/citizen',{
+      method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},
+      body:JSON.stringify(reportData)
+    });
+    if(!response.ok)throw Error('گزارش در تحریریه ذخیره نشد؛ دوباره تلاش کنید.');
+    pushToast('گزارش مردمی در صف بررسی تحریریه ذخیره شد.','success');
   };
-
-  const handleDeleteArticle = (id: string) => {
-    setArticles((prev) => prev.filter((a) => a.id !== id));
-    if (selectedArticleId === id) setSelectedArticleId(null);
-    pushToast(
-      locale === 'fa' ? 'خبر از تحریریه حذف شد.' : 'Article deleted from newsroom.',
-      'warning'
-    );
+  const handleSaveArticle=(article:Article,isNew:boolean)=>{
+    void adminPost({action:'save',article,isNew}).then(()=>pushToast('خبر در پایگاه اصلی ذخیره شد.','success')).catch(()=>pushToast('خطا در ذخیره خبر؛ تغییری در پایگاه اصلی اعمال نشد.','warning'));
   };
-
-  const handleApproveCitizenReport = (report: CitizenReport) => {
-    const promotedArticle: Article = {
-      id: `art-cit-${Date.now()}`,
-      slug: `citizen-report-${Date.now().toString(36)}`,
-      title: { fa: report.title, en: report.title },
-      deck: {
-        fa: report.description.slice(0, 160),
-        en: report.description.slice(0, 160),
-      },
-      body: {
-        fa: report.description
-          .split(/\n+/)
-          .map((p) => p.trim())
-          .filter(Boolean),
-        en: report.description
-          .split(/\n+/)
-          .map((p) => p.trim())
-          .filter(Boolean),
-      },
-      category: report.category,
-      region: report.region,
-      author: { fa: report.reporterName, en: report.reporterName },
-      authorRole: { fa: 'گزارش مردمی تاییدشده', en: 'Verified Citizen Report' },
-      coverImage: report.imageDataUrl || EDITORIAL_IMAGES.sarduiyehHighlands,
-      imageCaption: {
-        fa: `تصویر ارسالی شهروندخبرنگار — ${report.reporterName}`,
-        en: `Citizen photograph submitted by ${report.reporterName}`,
-      },
-      publishedAt: new Date().toISOString(),
-      readTimeMin: 3,
-      views: 1,
-      status: 'published',
-      featuredInHero: true,
-      isBreaking: true,
-    };
-
-    setArticles((prev) => [promotedArticle, ...prev]);
-    setCitizenReports((prev) =>
-      prev.map((r) => (r.id === report.id ? { ...r, status: 'approved' } : r))
-    );
-    pushToast(
-      locale === 'fa'
-        ? 'گزارش مردمی تایید و در صفحه نخست منتشر شد.'
-        : 'Citizen report approved and published on the front page.',
-      'success'
-    );
+  const handleDeleteArticle=(id:string)=>{
+    void adminPost({action:'delete',id}).then(()=>pushToast('خبر از پایگاه اصلی حذف شد.','success')).catch(()=>pushToast('حذف خبر انجام نشد.','warning'));
   };
-
-  const handleArchiveCitizenReport = (id: string) => {
-    setCitizenReports((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: 'archived' } : r))
-    );
-    pushToast(
-      locale === 'fa' ? 'گزارش در بخش بایگانی قرار گرفت.' : 'Report archived.',
-      'info'
-    );
+  const handleApproveCitizenReport=(report:CitizenReport)=>{
+    void adminPost({action:'approve-citizen',id:report.id}).then(()=>pushToast('گزارش مردمی تایید و منتشر شد.','success')).catch(()=>pushToast('تایید گزارش انجام نشد.','warning'));
+  };
+  const handleArchiveCitizenReport=(id:string)=>{
+    void adminPost({action:'archive-citizen',id}).then(()=>pushToast('گزارش در تحریریه بایگانی شد.','success')).catch(()=>pushToast('بایگانی انجام نشد.','warning'));
   };
 
   const handleExportJson = () => {
@@ -362,15 +303,7 @@ export default function App() {
   };
 
   const handleResetDefaults = () => {
-    setArticles(INITIAL_ARTICLES);
-    setCitizenReports(INITIAL_CITIZEN_REPORTS);
-    setBookmarkedIds([]);
-    pushToast(
-      locale === 'fa'
-        ? 'محتوای پایه تحریریه بازیابی شد.'
-        : 'Default curated edition restored.',
-      'info'
-    );
+    pushToast('برای حفاظت از اخبار واقعی، بازنشانی داده‌های نمونه غیرفعال است.','warning');
   };
 
   return (
