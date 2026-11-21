@@ -27,6 +27,7 @@ export interface LocalizedText {
 export interface Article {
   id: string;
   slug: string;
+  shortCode?: string;
   title: LocalizedText;
   deck: LocalizedText;
   body: {
