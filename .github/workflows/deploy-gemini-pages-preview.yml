@@ -1,0 +1,56 @@
+name: Publish Gemini design to isolated Cloudflare Pages preview
+
+on:
+  push:
+    branches:
+      - preview/gemini-design-2026-11-21
+    paths:
+      - ".github/workflows/deploy-gemini-pages-preview.yml"
+      - ".github/workflows/validate-gemini-design-package.yml"
+      - "nabz-sardo-original-gemini-design.zip"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nabzesardo-gemini-pages-staging
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout original design ZIP
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Unpack design without modifying original files
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabz-gemini-design
+          cd /tmp/nabz-gemini-design
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm run build
+          test -f dist/index.html
+          test -d dist/src/assets/images
+      - name: Publish isolated Cloudflare Pages preview (not production domain)
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "::error::Cloudflare token missing"; exit 1; }
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || { echo "::error::Cloudflare account missing"; exit 1; }
+          PROJECT="nabzesardo-gemini-preview-2026"
+          if ! npx --yes wrangler@4.102.0 pages project list 2>&1 | grep -Fq "$PROJECT"; then
+            npx --yes wrangler@4.102.0 pages project create "$PROJECT" --production-branch="gemini-preview"
+          fi
+          npx --yes wrangler@4.102.0 pages deploy /tmp/nabz-gemini-design/dist --project-name="$PROJECT" --branch="gemini-preview" --commit-hash="$GITHUB_SHA"
+          echo "Preview: https://${PROJECT}.pages.dev"
+          echo "This workflow NEVER deploys to nabzesardo.ir or cloudflare-migration."
