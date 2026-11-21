@@ -516,27 +516,13 @@ export default function App() {
   };
 
   const handleExportJson = () => {
-    const payload = {
-      exportedAt: new Date().toISOString(),
-      site: 'nabzesardo.ir',
-      siteSettings,
-      articles,
-      citizenReports,
-      mediaAssets,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `nabzesardo-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    pushToast(
-      locale === 'fa' ? 'فایل پشتیبان JSON دانلود شد.' : 'Newsroom JSON backup downloaded.',
-      'success'
-    );
+    // Production-grade full backup comes from the authenticated D1-backed newsroom.
+    // Never present a browser-side snapshot as a complete database backup.
+    if (!adminToken) {
+      pushToast(locale === 'fa' ? 'برای دریافت بکاپ ابتدا وارد مدیریت شوید.' : 'Sign in to download a backup.', 'warning');
+      return;
+    }
+    window.location.assign('/admin/backup/download');
   };
 
   const handleResetDefaults = () => {
