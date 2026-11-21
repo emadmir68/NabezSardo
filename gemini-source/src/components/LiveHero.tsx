@@ -339,7 +339,7 @@ export function LiveHero({
                       {locale === 'fa' ? 'فهرست جلد شماره زنده' : 'LIVE COVER EDITION'}
                     </span>
                     <span className="font-mono-tabular text-[11px] text-[#A1AAB9]">
-                      {formatEditorialIndex(currentIndex, locale)} / {formatEditorialIndex(safeSlides.length - 1, locale)}
+                      {locale === 'fa' ? 'روایت‌های برگزیده' : 'Featured Stories'}
                     </span>
                   </div>
 
