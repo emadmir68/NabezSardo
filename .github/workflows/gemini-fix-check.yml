@@ -1,0 +1,148 @@
+name: Validate and stage Gemini visual corrections
+on:
+  push:
+    branches: [fix/gemini-live-visual-20261121]
+    paths:
+      - ".github/workflows/gemini-fix-check.yml"
+      - "src/worker.js"
+      - "src/gemini-preview-worker.js"
+      - "lib/gemini-bridge.js"
+      - "lib/content-policy.js"
+      - "lib/store.js"
+      - "lib/news-monitor.js"
+      - "gemini-source/**"
+      - "tests/gemini-bridge.test.js"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nabzesardo-gemini-fixes
+  cancel-in-progress: true
+jobs:
+  validate-and-stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/gemini-live-visual-20261121
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Test live newsroom and content policy
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm test
+          node tests/gemini-bridge.test.js
+          node tests/gemini-admin.integration.test.js
+      - name: Build unchanged Gemini typography with corrected editorial data and hero
+        run: |
+          set -euo pipefail
+          unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/gemini-fix
+          cp -a gemini-source/src/. /tmp/gemini-fix/src/
+          cd /tmp/gemini-fix
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm install --no-save --legacy-peer-deps typescript@5.9.3
+          npx tsc --noEmit --pretty false
+          npm run build
+          cd "$GITHUB_WORKSPACE"
+          unzip -p nabz-sardo-original-gemini-design.zip src/index.css | cmp - gemini-source/src/index.css
+          test -f /tmp/gemini-fix/dist/index.html
+          test -d /tmp/gemini-fix/dist/src/assets/images
+      - name: Check production Worker bundling without deploying
+        run: |
+          set -euo pipefail
+          mkdir -p public/gemini public/assets public/src/assets
+          cp /tmp/gemini-fix/dist/index.html public/gemini/index.html
+          cp -a /tmp/gemini-fix/dist/assets/. public/assets/
+          cp -a /tmp/gemini-fix/dist/src/assets/. public/src/assets/
+          npx wrangler deploy --dry-run --outdir /tmp/nabz-worker-build
+      - name: Publish read-only real-D1 Cloudflare staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          mkdir -p .gemini-fix-dist
+          cp -a /tmp/gemini-fix/dist/. .gemini-fix-dist/
+          rm -f .gemini-fix-dist/_redirects
+          sed -i '1a\\  X-Robots-Tag: noindex, nofollow, noarchive' .gemini-fix-dist/_headers
+          printf 'User-agent: *\\nDisallow: /\\n' > .gemini-fix-dist/robots.txt
+          cat > wrangler.gemini-fix.preview.toml <<'EOF'
+          name = "nabzesardo-gemini-preview-2026"
+          main = "./src/gemini-preview-worker.js"
+          compatibility_date = "2026-11-01"
+          compatibility_flags = ["nodejs_compat"]
+          workers_dev = true
+          [assets]
+          directory = "./.gemini-fix-dist"
+          binding = "ASSETS"
+          run_worker_first = true
+          not_found_handling = "single-page-application"
+          [[d1_databases]]
+          binding = "DB"
+          database_name = "nabzesardo-cloudflare-db"
+          database_id = "75ac406c-ba8d-4cf7-a077-f56c7f974601"
+          EOF
+          npx --yes wrangler@4.102.0 deploy --config wrangler.gemini-fix.preview.toml
+      - name: Browser-verify new hero, fonts, no leakage, no overflow and deep article links
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.57.0
+          npx playwright install --with-deps chromium
+          mkdir -p audit-gemini-fixed
+          node <<'JS'
+          const {chromium}=require('playwright'),fs=require('node:fs');
+          const BASE='https://nabzesardo-gemini-preview-2026.emadmir1368.workers.dev';
+          const UA='Mozilla/5.0 (Linux; Android 16; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
+          (async()=>{
+            const api=await fetch(BASE+'/api/gemini/articles');
+            if(!api.ok)throw Error('Staging API HTTP '+api.status);
+            const j=await api.json();
+            if(j.source!=='cloudflare-d1'||j.articles.length<20)throw Error('D1 data is unavailable');
+            const forbidden=j.articles.filter(a=>/(?:با\s+سلام\s+و\s+احترام|آگهی\s+ترحیم|به\s+خاک\s+سپرده\s+شد|ثبت\s+سفارش)/u.test(a.title.fa));
+            if(forbidden.length)throw Error('Forbidden news leaked: '+JSON.stringify(forbidden.map(a=>a.title.fa).slice(0,5)));
+            if(!j.articles[0].shortCode)throw Error('Canonical compact code missing');
+            const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+            const results={count:j.articles.length,first:j.articles[0].title.fa,firstCategory:j.articles[0].category,firstDeck:j.articles[0].deck.fa,checks:[]};
+            for(const cfg of [{name:'desktop',width:1440,height:900},{name:'mobile',width:390,height:844},{name:'small-mobile',width:320,height:700}]){
+              const ctx=await browser.newContext({viewport:{width:cfg.width,height:cfg.height},deviceScaleFactor:1,userAgent:UA,locale:'fa-IR',isMobile:cfg.width<600,hasTouch:cfg.width<600});
+              const page=await ctx.newPage();
+              const errs=[];page.on('pageerror',e=>errs.push(String(e)));
+              const response=await page.goto(BASE+'/',{waitUntil:'domcontentloaded',timeout:45000});
+              await page.waitForTimeout(2800);
+              const m=await page.evaluate(()=>({
+                viewport:document.documentElement.clientWidth,
+                scrollWidth:document.documentElement.scrollWidth,
+                mainLen:document.querySelector('main')?.textContent?.length||0,
+                h1:document.querySelector('h1')?.textContent?.trim().slice(0,180)||'',
+                font:getComputedStyle(document.body).fontFamily,
+                imageCount:document.querySelectorAll('img').length,
+                badImages:[...document.querySelectorAll('img')].filter(i=>i.complete&&i.naturalWidth===0).slice(0,8).map(i=>i.src)
+              }));
+              await page.screenshot({path:'audit-gemini-fixed/'+cfg.name+'.jpg',type:'jpeg',quality:75});
+              results.checks.push({...cfg,status:response?.status(),...m,errors:errs});
+              if(response?.status()!==200||m.mainLen<1000||m.scrollWidth>m.viewport+2||!m.font.includes('Vazirmatn')||errs.length)throw Error('Broken responsive visual '+JSON.stringify(results.checks.at(-1)));
+              if(cfg.name==='desktop'){
+                const article=await page.goto(BASE+'/news/'+j.articles[0].shortCode,{waitUntil:'domcontentloaded',timeout:30000});
+                await page.waitForTimeout(2500);
+                if(article?.status()!==200||!((await page.locator('main').textContent())||'').includes(j.articles[0].title.fa))throw Error('Direct canonical news route broken');
+                await page.screenshot({path:'audit-gemini-fixed/article.jpg',type:'jpeg',quality:78});
+              }
+              await ctx.close();
+            }
+            await browser.close();
+            fs.writeFileSync('audit-gemini-fixed/results.json',JSON.stringify(results,null,2));
+            console.log(JSON.stringify(results,null,2).slice(0,10000));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Preserve staging review evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audit-gemini-fixed
+          git commit -m "Validate corrected Gemini UI in live D1 read-only staging"
+          git pull --rebase origin fix/gemini-live-visual-20261121
+          git push origin HEAD:fix/gemini-live-visual-20261121
