@@ -5,7 +5,7 @@ import type { CategoryId, CitizenReport, Locale, RegionId } from '../types/news'
 
 interface CitizenReportViewProps {
   locale: Locale;
-  onSubmitReport: (report: Omit<CitizenReport, 'id' | 'submittedAt' | 'status'>) => void;
+  onSubmitReport: (report: Omit<CitizenReport, 'id' | 'submittedAt' | 'status'>) => Promise<void>;
   onGoToStudio: () => void;
 }
 
@@ -46,7 +46,7 @@ export function CitizenReportView({
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim().length < 8) {
       setError(
@@ -65,7 +65,7 @@ export function CitizenReportView({
       return;
     }
 
-    onSubmitReport({
+    try { await onSubmitReport({
       title: title.trim(),
       description: description.trim(),
       region,
@@ -75,7 +75,10 @@ export function CitizenReportView({
         (locale === 'fa' ? 'شهروند خبرنگار ناشناس' : 'Anonymous Citizen Reporter'),
       contact: contact.trim() || undefined,
       imageDataUrl,
-    });
+    }); } catch (error) {
+      setError(error instanceof Error ? error.message : 'ارسال خبر انجام نشد.');
+      return;
+    }
 
     setTitle('');
     setDescription('');
