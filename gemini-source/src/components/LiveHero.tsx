@@ -19,6 +19,7 @@ import {
   getRegionLabel,
 } from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
+import { EDITORIAL_IMAGES } from '../data/initialData';
 
 interface LiveHeroProps {
   slides: Article[];
@@ -30,6 +31,21 @@ interface LiveHeroProps {
 }
 
 const SLIDE_DURATION_MS = 7800;
+
+// Use a clearly labelled regional archive photograph for auto-generated icon
+// covers. Genuine uploaded news photographs are never replaced.
+function heroCover(article: Article): string {
+  const source=article.coverImage||'';
+  if(!/\/uploads\/auto-cover-[^/?]+\.svg(?:\?|$)/i.test(source))return source;
+  if(article.category==='agriculture')return EDITORIAL_IMAGES.jiroftAgriculture;
+  if(article.category==='weather')return EDITORIAL_IMAGES.mountainWeather;
+  if(article.category==='culture')return EDITORIAL_IMAGES.kermanHeritage;
+  if(article.category==='social'||article.category==='opinion')return EDITORIAL_IMAGES.communityCulture;
+  return EDITORIAL_IMAGES.sarduiyehHighlands;
+}
+function hasArchiveCover(article: Article): boolean {
+  return /\/uploads\/auto-cover-[^/?]+\.svg(?:\?|$)/i.test(article.coverImage||'');
+}
 
 export function LiveHero({
   slides,
@@ -118,7 +134,7 @@ export function LiveHero({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative min-h-[78svh] lg:min-h-[88vh] flex flex-col justify-between">
+      <div className="relative min-h-[72svh] lg:min-h-[80vh] flex flex-col justify-between">
         {/* Full-Bleed Animated Editorial Cinema Backdrop */}
         <div className="absolute inset-0 overflow-hidden">
           {safeSlides.map((slide, idx) => {
@@ -135,7 +151,7 @@ export function LiveHero({
                   className={`w-full h-full ${isActive && !isPaused ? 'animate-ken-burns' : ''}`}
                 >
                   <EditorialImage
-                    src={slide.coverImage}
+                    src={heroCover(slide)}
                     alt={slide.title[locale]}
                     fallbackLabel={slide.title[locale]}
                     className="w-full h-full object-cover object-center"
@@ -168,12 +184,17 @@ export function LiveHero({
         <div className="relative z-20 max-w-[1380px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-9 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3.5 text-xs sm:text-[13px] text-[#EDE6D8]/92 min-w-0">
             <span className="font-mono-tabular text-[#F0D496] font-semibold tracking-wider shrink-0">
-              {formatEditorialIndex(currentIndex, locale)} / {formatEditorialIndex(safeSlides.length - 1, locale)}
+              {locale === 'fa' ? 'خبرهای برگزیده' : 'Featured Stories'}
             </span>
             <span aria-hidden="true" className="w-5 sm:w-8 h-[0.75px] bg-[#E8C680]/60 shrink-0" />
             <span className="font-bold text-[#F0D496] truncate">
               {getCategoryLabel(activeSlide.category, locale)}
             </span>
+            {hasArchiveCover(activeSlide)&&(
+              <span className="text-[10px] text-[#F0D496]/65 whitespace-nowrap">
+                {locale==='fa'?'تصویر آرشیوی منطقه':'Regional archive photo'}
+              </span>
+            )}
             <span aria-hidden="true" className="opacity-40 shrink-0">·</span>
             <span className="truncate text-[#EDE6D8]/85">
               {getRegionLabel(activeSlide.region, locale)}
@@ -238,7 +259,7 @@ export function LiveHero({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ duration: 0.44, ease: [0.16, 1, 0.3, 1] }}
-                  className="max-w-3xl"
+                  className="max-w-[48rem]"
                 >
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-[13px] text-[#EDE6D8]/85 mb-4 sm:mb-5">
                     <span className="font-semibold text-[#FDFBF7]">{activeSlide.author[locale]}</span>
@@ -259,7 +280,7 @@ export function LiveHero({
                     style={{
                       fontSize:
                         locale === 'fa'
-                          ? 'clamp(1.78rem, 4.1vw, 3.55rem)'
+                          ? 'clamp(1.5rem, 3vw, 2.8rem)'
                           : 'clamp(2.1rem, 4.8vw, 4.1rem)',
                     }}
                   >
@@ -339,7 +360,7 @@ export function LiveHero({
                         >
                           <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/16">
                             <EditorialImage
-                              src={slide.coverImage}
+                              src={heroCover(slide)}
                               alt={slide.title[locale]}
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
@@ -347,7 +368,7 @@ export function LiveHero({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 text-[11px] mb-1">
                               <span className="font-mono-tabular font-semibold text-[#F0D496]">
-                                {formatEditorialIndex(idx, locale)}
+                                {getRegionLabel(slide.region, locale)}
                               </span>
                               <span aria-hidden="true" className="opacity-35">·</span>
                               <span className="text-[#EDE6D8]/70 truncate">
@@ -402,14 +423,14 @@ export function LiveHero({
                     <div className="flex items-center gap-3 mb-2.5">
                       <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/15">
                         <EditorialImage
-                          src={slide.coverImage}
+                          src={heroCover(slide)}
                           alt={slide.title[locale]}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 text-[10.5px] text-[#F0D496] font-mono-tabular mb-0.5">
-                          <span>{formatEditorialIndex(idx, locale)}</span>
+                          <span>{getRegionLabel(slide.region, locale)}</span>
                           <span aria-hidden="true" className="opacity-40">·</span>
                           <span className="font-sans text-[#EDE6D8]/75 truncate">
                             {getCategoryLabel(slide.category, locale)}
