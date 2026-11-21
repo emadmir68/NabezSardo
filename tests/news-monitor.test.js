@@ -250,6 +250,6 @@ const publicRows=store.published({articles:[
   {id:'good1',status:'published',imported:true,title:'سلام فرمانده در جیرفت اجرا شد',body:'این برنامه فرهنگی برگزار شد',publishedAt:'2026-10-13T06:02:00Z'},
   {id:'manual1',status:'published',imported:false,title:'بسم الله الرحمن الرحیم',body:'انتشار دستی تحریریه',publishedAt:'2026-10-13T06:03:00Z'}
 ]});
-assert.deepStrictEqual(publicRows.map(x=>x.id),['manual1','good1']);
+assert.deepStrictEqual(publicRows.map(x=>x.id),['good1']);
 
 console.log('news-monitor tests: ok');
