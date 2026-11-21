@@ -1,0 +1,50 @@
+name: Restore newsroom functionality and Gemini build
+on:
+  push:
+    branches:
+      - 'design/restore-newsroom-features-20261121'
+  pull_request:
+    branches:
+      - cloudflare-migration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Backend and restored functionality tests
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+      - name: Build Gemini interface with original design assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabz-feature-restore
+          cp -a gemini-source/src/. /tmp/nabz-feature-restore/src/
+          cp gemini-source/index.html /tmp/nabz-feature-restore/index.html
+          cp gemini-source/package.json /tmp/nabz-feature-restore/package.json
+          cp gemini-source/vite.config.ts /tmp/nabz-feature-restore/vite.config.ts
+          cp gemini-source/tsconfig.json /tmp/nabz-feature-restore/tsconfig.json
+          cd /tmp/nabz-feature-restore
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm run build
+          test -f dist/index.html
+          test -d dist/assets
+      - name: Worker dry run without production deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/gemini public/assets public/src/assets
+          cp /tmp/nabz-feature-restore/dist/index.html public/gemini/index.html
+          cp -a /tmp/nabz-feature-restore/dist/assets/. public/assets/
+          if [ -d /tmp/nabz-feature-restore/dist/src/assets ]; then cp -a /tmp/nabz-feature-restore/dist/src/assets/. public/src/assets/; fi
+          npx wrangler deploy --dry-run --outdir /tmp/nabz-feature-restore-worker
