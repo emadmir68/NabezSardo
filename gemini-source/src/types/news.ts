@@ -17,7 +17,18 @@ export type RegionId =
   | 'kahnuj'
   | 'south-kerman';
 
-export type ActiveView = 'home' | 'desks' | 'archive' | 'submit' | 'studio';
+export type ActiveView =
+  | 'home'
+  | 'desks'
+  | 'regions'
+  | 'archive'
+  | 'search'
+  | 'submit'
+  | 'about'
+  | 'contact'
+  | 'admin-login'
+  | 'studio'
+  | 'not-found';
 
 export interface LocalizedText {
   fa: string;
@@ -27,7 +38,6 @@ export interface LocalizedText {
 export interface Article {
   id: string;
   slug: string;
-  shortCode?: string;
   title: LocalizedText;
   deck: LocalizedText;
   body: {
@@ -62,8 +72,52 @@ export interface CitizenReport {
   status: 'pending' | 'approved' | 'archived';
 }
 
+export interface MediaAsset {
+  id: string;
+  title: string;
+  url: string;
+  source: 'editorial' | 'upload' | 'd1';
+  category?: CategoryId;
+  uploadedAt: string;
+  sizeLabel?: string;
+}
+
+export interface SiteSettings {
+  siteNameFa: string;
+  siteNameEn: string;
+  taglineFa: string;
+  taglineEn: string;
+  seoDescriptionFa: string;
+  seoDescriptionEn: string;
+  defaultTheme: ThemeMode;
+  showBreakingWire: boolean;
+  monitoringEnabled: boolean;
+  blockAdsAndAdvertorials: boolean;
+  blockObituaries: boolean;
+  contactEmail: string;
+  editorialPhone: string;
+  newsroomAddressFa: string;
+  newsroomAddressEn: string;
+}
+
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: string;
+}
+
 export interface ToastMessage {
   id: string;
   text: string;
   tone: 'success' | 'info' | 'warning';
+}
+
+export interface PolicyCheckResult {
+  allowed: boolean;
+  reasonCode?: 'advertisement' | 'advertorial' | 'obituary';
+  matchedKeyword?: string;
+  message?: LocalizedText;
 }

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
   Bookmark,
+  ChevronDown,
   LayoutGrid,
   List,
   RotateCcw,
@@ -16,6 +17,7 @@ import {
   formatShortDate,
   getCategoryLabel,
   getRegionLabel,
+  hasRealEditorialPhoto,
 } from '../utils/formatters';
 import {
   MagazineArticleCard,
@@ -59,12 +61,37 @@ export function FrontPageEditorial({
   const [archiveQuery, setArchiveQuery] = useState('');
   const [archiveSort, setArchiveSort] = useState<'latest' | 'popular'>('latest');
   const [archiveLayout, setArchiveLayout] = useState<'grid' | 'list'>('grid');
+  const pageSize = mode === 'home' ? 8 : 12;
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+
+  useEffect(() => {
+    setVisibleCount(mode === 'home' ? 8 : 12);
+  }, [mode, selectedCategory, selectedRegion, savedOnly, archiveQuery, archiveSort]);
 
   const published = articles.filter((a) => a.status === 'published');
 
-  const leadFeature = published[0];
-  const secondaryFeatures = published.slice(1, 4);
-  const visualDossiers = published.slice(2, 5);
+  // Prioritize real photographic stories for flagship visual spreads (prevents SVG placeholders in showcases)
+  const photoStories = published.filter((a) => hasRealEditorialPhoto(a));
+  const visualPool =
+    photoStories.length >= 6
+      ? photoStories
+      : [
+          ...photoStories,
+          ...published.filter((a) => !photoStories.some((p) => p.id === a.id)),
+        ];
+
+  const leadFeature = visualPool[0];
+  const secondaryFeatures = published
+    .filter((a) => a.id !== leadFeature?.id)
+    .slice(0, 3);
+  const usedSpotlightIds = new Set(
+    [leadFeature?.id, ...secondaryFeatures.map((s) => s.id)].filter(Boolean)
+  );
+  const visualDossiers = visualPool
+    .filter((a) => !usedSpotlightIds.has(a.id))
+    .slice(0, 3);
+  const finalVisualDossiers =
+    visualDossiers.length >= 3 ? visualDossiers : visualPool.slice(1, 4);
 
   const filteredArticles = published
     .filter((article) => {
@@ -296,7 +323,7 @@ export function FrontPageEditorial({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 sm:gap-9 lg:gap-10 items-stretch">
             <MagazineLeadCard
               article={leadFeature}
               locale={locale}
@@ -305,7 +332,7 @@ export function FrontPageEditorial({
               onToggleBookmark={onToggleBookmark}
             />
 
-            <div className="lg:col-span-5 flex flex-col justify-between gap-4 sm:gap-6">
+            <div className="lg:col-span-5 flex flex-col justify-between gap-5 sm:gap-6">
               {secondaryFeatures.map((story, idx) => (
                 <MagazineSecondaryCard
                   key={story.id}
@@ -323,8 +350,8 @@ export function FrontPageEditorial({
       )}
 
       {/* Visual Photojournalism Dossiers Strip (Mobile Snap Carousel / Desktop 3-Col Gallery) */}
-      {mode === 'home' && visualDossiers.length > 0 && (
-        <section className="w-full border-y-[0.75px] border-[#D9CEBC] dark:border-[#D4A85B]/18 bg-[#EAE1D2]/60 dark:bg-[#0B0F18]">
+      {mode === 'home' && finalVisualDossiers.length > 0 && (
+        <section className="w-full border-y-[0.5px] border-[#D9CEBC]/80 dark:border-[#D4A85B]/16 bg-[#EAE1D2]/55 dark:bg-[#0B0F18]">
           <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20 lg:py-24">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-8 sm:mb-12">
               <div>
@@ -349,7 +376,7 @@ export function FrontPageEditorial({
             </div>
 
             <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:gap-8 no-scrollbar pb-2 md:pb-0">
-              {visualDossiers.map((dossier, idx) => (
+              {finalVisualDossiers.map((dossier, idx) => (
                 <div
                   key={dossier.id}
                   className="w-[82vw] sm:w-[60vw] md:w-auto shrink-0 snap-center"
@@ -368,9 +395,18 @@ export function FrontPageEditorial({
       )}
 
       {/* Tier 3: High-End Magazine Regional Desk Grid & Side Rail */}
-      <section className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20 lg:py-24">
+      <section className="relative overflow-x-clip">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-75 dark:opacity-55"
+          style={{
+            backgroundImage:
+              'radial-gradient(ellipse 55% 42% at 15% 18%, rgba(212, 168, 91, 0.08), transparent 70%), radial-gradient(ellipse 48% 38% at 85% 62%, rgba(154, 107, 39, 0.065), transparent 70%)',
+          }}
+        />
+        <div className="relative z-10 max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20 lg:py-24">
         {mode === 'home' && (
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-6 sm:pb-8 mb-8 sm:mb-10 border-b-[0.75px] border-[#D9CEBC] dark:border-[#D4A85B]/18">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-6 sm:pb-8 mb-8 sm:mb-10 border-b-[0.5px] border-[#D9CEBC]/85 dark:border-[#D4A85B]/16">
             <div>
               <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680] mb-2">
                 {locale === 'fa' ? '۰۳. میزهای خبری و جغرافیای منطقه' : '03. Regional Desks & Archive'}
@@ -538,8 +574,8 @@ export function FrontPageEditorial({
                 </button>
               </div>
             ) : mode === 'archive' && archiveLayout === 'list' ? (
-              <div className="space-y-5 sm:space-y-6">
-                {filteredArticles.map((article, idx) => (
+              <div className="space-y-6 sm:space-y-7">
+                {filteredArticles.slice(0, visibleCount).map((article, idx) => (
                   <MagazineIndexRowCard
                     key={article.id}
                     article={article}
@@ -552,8 +588,8 @@ export function FrontPageEditorial({
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-9">
-                {filteredArticles.map((article, idx) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 lg:gap-10">
+                {filteredArticles.slice(0, visibleCount).map((article, idx) => (
                   <MagazineArticleCard
                     key={article.id}
                     article={article}
@@ -564,6 +600,23 @@ export function FrontPageEditorial({
                     onToggleBookmark={onToggleBookmark}
                   />
                 ))}
+              </div>
+            )}
+
+            {filteredArticles.length > visibleCount && (
+              <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => prev + pageSize)}
+                  className="btn-luxury-ink w-full sm:w-auto !px-7 text-xs sm:text-sm"
+                >
+                  <span>
+                    {locale === 'fa'
+                      ? `نمایش خبرهای بیشتر (${formatNumber(Math.min(visibleCount, filteredArticles.length), locale)} از ${formatNumber(filteredArticles.length, locale)})`
+                      : `Load More Stories (${Math.min(visibleCount, filteredArticles.length)} of ${filteredArticles.length})`}
+                  </span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>
@@ -691,6 +744,7 @@ export function FrontPageEditorial({
               </div>
             </div>
           </aside>
+        </div>
         </div>
       </section>
     </div>

@@ -3,31 +3,70 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AboutView } from './components/AboutView';
+import { AdminLoginView } from './components/AdminLoginView';
 import { AdminStudio } from './components/AdminStudio';
 import { ArticleReader } from './components/ArticleReader';
 import { CitizenReportView } from './components/CitizenReportView';
+import { ContactView } from './components/ContactView';
 import { Footer } from './components/Footer';
 import { FrontPageEditorial } from './components/FrontPageEditorial';
 import { LiveHero } from './components/LiveHero';
+import { NotFoundView } from './components/NotFoundView';
+import { RegionsView } from './components/RegionsView';
 import { SearchModal } from './components/SearchModal';
+import { SearchPageView } from './components/SearchPageView';
 import { TopBar } from './components/TopBar';
-import { EDITORIAL_IMAGES } from './data/initialData';
+import {
+  CATEGORIES,
+  EDITORIAL_IMAGES,
+  INITIAL_ARTICLES,
+  INITIAL_CITIZEN_REPORTS,
+  REGIONS,
+} from './data/initialData';
+import {
+  DEFAULT_MEDIA_ASSETS,
+  DEFAULT_SITE_SETTINGS,
+  deleteArticleFromApi,
+  fetchAdminAuthStatus,
+  fetchAdminState,
+  approveCitizenFromApi,
+  archiveCitizenFromApi,
+  fetchLiveArticles,
+  logoutAdmin,
+  submitCitizenReportToApi,
+  submitContactToApi,
+  syncArticleToApi,
+  syncMediaToApi,
+  syncSettingsToApi,
+} from './services/api';
 import type {
   ActiveView,
   Article,
   CategoryId,
   CitizenReport,
+  ContactSubmission,
   Locale,
+  MediaAsset,
   RegionId,
+  SiteSettings,
   ThemeMode,
   ToastMessage,
 } from './types/news';
+import { checkEditorialPolicy } from './utils/editorialPolicy';
+import { hasRealEditorialPhoto } from './utils/formatters';
+import { syncPageSeo } from './utils/seo';
 
 const STORAGE_KEYS = {
-  bookmarks: 'nabzesardo_v3_bookmarks',
-  theme: 'nabzesardo_v3_theme',
-  locale: 'nabzesardo_v3_locale',
+  articles: 'nabzesardo_v4_articles',
+  reports: 'nabzesardo_v4_citizen_reports',
+  bookmarks: 'nabzesardo_v4_bookmarks',
+  media: 'nabzesardo_v4_media',
+  settings: 'nabzesardo_v4_settings',
+  contacts: 'nabzesardo_v4_contacts',
+  theme: 'nabzesardo_v4_theme',
+  locale: 'nabzesardo_v4_locale',
 };
 
 function loadJson<T>(key: string, fallback: T): T {
@@ -40,44 +79,58 @@ function loadJson<T>(key: string, fallback: T): T {
   }
 }
 
+interface ParsedRoute {
+  view: ActiveView;
+  articleSlug?: string;
+  category?: CategoryId | 'all';
+  region?: RegionId | 'all';
+  searchQuery?: string;
+}
 
-async function requestTurnstileToken(sitekey:string):Promise<string>{
-  const w=window as any;
-  if(!w.turnstile){
-    await new Promise<void>((resolve,reject)=>{
-      const script=document.createElement('script');
-      script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-      script.async=true;script.onload=()=>resolve();script.onerror=()=>reject(Error('بارگذاری تایید امنیتی انجام نشد.'));
-      document.head.appendChild(script);
-    });
+function parseUrlPath(pathname: string, search: string): ParsedRoute {
+  const clean = pathname.replace(/\/+$/, '') || '/';
+  const params = new URLSearchParams(search);
+
+  if ((clean === '/' || clean === '/gemini') && params.get('studio') === '1') return { view: 'studio' };
+  if ((clean === '/' || clean === '/gemini') && params.get('desks') === '1') return { view: 'desks' };
+  if ((clean === '/' || clean === '/gemini') && params.get('regions') === '1') return { view: 'regions' };
+  if (clean === '/' || clean === '/gemini') return { view: 'home' };
+  if (clean === '/archive' || clean === '/all-news') return { view: 'archive' };
+  if (clean === '/desks' || clean === '/categories') return { view: 'desks', category: 'all' };
+  if (clean.startsWith('/category/')) {
+    const rawCat = decodeURIComponent(clean.slice('/category/'.length)) as CategoryId;
+    if (CATEGORIES.some((c) => c.id === rawCat)) return { view: 'desks', category: rawCat };
+    return { view: 'not-found' };
   }
-  return new Promise<string>((resolve,reject)=>{
-    const backdrop=document.createElement('div');
-    backdrop.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);padding:20px';
-    const panel=document.createElement('div');
-    panel.style.cssText='background:#151923;color:#F6F2EA;border:1px solid #C6964B;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:20px;align-items:center;max-width:420px;width:100%;font-family:inherit';
-    const caption=document.createElement('p');caption.textContent='برای ثبت امن خبر مردمی، تأیید امنیتی را انجام دهید.';
-    const mount=document.createElement('div');
-    const cancel=document.createElement('button');
-    cancel.textContent='انصراف';cancel.type='button';
-    cancel.style.cssText='color:#F6F2EA;border:1px solid #C6964B;padding:8px 28px;border-radius:6px';
-    panel.append(caption,mount,cancel);backdrop.appendChild(panel);document.body.appendChild(backdrop);
-    let settled=false;
-    const finish=(token?:string,error?:Error)=>{
-      if(settled)return;
-      settled=true;backdrop.remove();
-      if(token)resolve(token);else reject(error||Error('تأیید امنیتی لغو شد.'));
-    };
-    cancel.onclick=()=>finish(undefined,Error('ارسال خبر لغو شد.'));
-    try{
-      w.turnstile.render(mount,{
-        sitekey,theme:'dark',
-        callback:(token:string)=>finish(token),
-        'error-callback':()=>finish(undefined,Error('اعتبارسنجی امنیتی موفق نبود.')),
-        'expired-callback':()=>finish(undefined,Error('کد امنیتی منقضی شد.'))
-      });
-    }catch(e){finish(undefined,Error('تأیید امنیتی در دسترس نیست.'));}
-  });
+  if (clean === '/regions' || params.get('regions') === '1') return { view: 'regions', region: 'all' };
+  if (clean.startsWith('/region/') || clean.startsWith('/local/')) {
+    const rawReg = decodeURIComponent(clean.slice(clean.startsWith('/local/') ? '/local/'.length : '/region/'.length)) as RegionId;
+    if (REGIONS.some((r) => r.id === rawReg)) return { view: 'regions', region: rawReg };
+    return { view: 'not-found' };
+  }
+  if (clean === '/search') {
+    return { view: 'search', searchQuery: params.get('q') || '' };
+  }
+  if (clean === '/submit' || clean === '/send-news') return { view: 'submit' };
+  if (clean === '/about') return { view: 'about' };
+  if (clean === '/contact') return { view: 'contact' };
+  if (clean === '/admin/login') return { view: 'admin-login' };
+  if (clean === '/admin' || clean === '/studio') return { view: 'studio' };
+  if (clean.startsWith('/news/')) {
+    const slug = decodeURIComponent(clean.slice('/news/'.length));
+    if (slug) return { view: 'home', articleSlug: slug };
+  }
+  return { view: 'not-found' };
+}
+
+function pushBrowserPath(path: string) {
+  try {
+    if (window.location.pathname + window.location.search !== path) {
+      window.history.pushState({}, '', path);
+    }
+  } catch {
+    // Ignore history API errors inside restricted sandboxes
+  }
 }
 
 export default function App() {
@@ -87,30 +140,124 @@ export default function App() {
   const [locale, setLocale] = useState<Locale>(() =>
     loadJson<Locale>(STORAGE_KEYS.locale, 'fa')
   );
+  // Start empty: never briefly flash fictional sample headlines on the live site.
   const [articles, setArticles] = useState<Article[]>([]);
-  const [citizenReports, setCitizenReports] = useState<CitizenReport[]>([]);
+  const [dataSource, setDataSource] = useState<'worker-d1' | 'fallback'>('fallback');
+  const [citizenReports, setCitizenReports] = useState<CitizenReport[]>(() =>
+    loadJson<CitizenReport[]>(STORAGE_KEYS.reports, INITIAL_CITIZEN_REPORTS)
+  );
+  const [mediaAssets, setMediaAssets] = useState<MediaAsset[]>(() =>
+    loadJson<MediaAsset[]>(STORAGE_KEYS.media, DEFAULT_MEDIA_ASSETS)
+  );
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(() =>
+    loadJson<SiteSettings>(STORAGE_KEYS.settings, DEFAULT_SITE_SETTINGS)
+  );
+  const [contactMessages, setContactMessages] = useState<ContactSubmission[]>(() =>
+    loadJson<ContactSubmission[]>(STORAGE_KEYS.contacts, [])
+  );
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() =>
     loadJson<string[]>(STORAGE_KEYS.bookmarks, [])
   );
 
-  const [activeView, setActiveView] = useState<ActiveView>(() => {
-    const p=window.location.pathname;
-    return p==='/all-news'?'archive':p==='/send-news'?'submit':p.startsWith('/category/')||p.startsWith('/local/')?'desks':new URLSearchParams(window.location.search).has('studio')?'studio':'home';
-  });
+  // Admin auth token lives strictly in React memory (never persisted in localStorage)
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchAdminAuthStatus(null).then(async (status) => {
+      if (!active || !status.authenticated) return;
+      setAdminToken('signed-cookie-session');
+      const state = await fetchAdminState();
+      if (!active || !state) return;
+      setCitizenReports(state.citizenReports);
+      setArticles(state.articles);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const initialRoute = useMemo(
+    () => parseUrlPath(window.location.pathname, window.location.search),
+    []
+  );
+  const [activeView, setActiveView] = useState<ActiveView>(initialRoute.view);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>(() => window.location.pathname.startsWith('/category/') ? window.location.pathname.split('/')[2].replace('sardouiyeh','sarduiyeh') as CategoryId : 'all');
-  const [selectedRegion, setSelectedRegion] = useState<RegionId | 'all'>(() => window.location.pathname.startsWith('/local/') ? window.location.pathname.split('/')[2].replace('sardouiyeh','sarduiyeh') as RegionId : 'all');
+  const [pendingSlug, setPendingSlug] = useState<string | null>(initialRoute.articleSlug ?? null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>(
+    initialRoute.category ?? 'all'
+  );
+  const [selectedRegion, setSelectedRegion] = useState<RegionId | 'all'>(
+    initialRoute.region ?? 'all'
+  );
+  const [searchPageQuery, setSearchPageQuery] = useState<string>(initialRoute.searchQuery ?? '');
   const [savedOnly, setSavedOnly] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
 
-  const pushToast = (text: string, tone: ToastMessage['tone'] = 'info') => {
+  const pushToast = useCallback((text: string, tone: ToastMessage['tone'] = 'info') => {
     const id = `${Date.now()}`;
     setToast({ id, text, tone });
     window.setTimeout(() => {
       setToast((prev) => (prev?.id === id ? null : prev));
-    }, 3200);
-  };
+    }, 3400);
+  }, []);
+
+  // Load real published news from Cloudflare Worker / D1 API on mount
+  useEffect(() => {
+    let active = true;
+    fetchLiveArticles().then((res) => {
+      if (!active) return;
+      // Never display seeded sample stories as if they were live D1 news.
+      const cleanFeed = (res?.articles || []).filter(
+        (item) => checkEditorialPolicy([item.title.fa, item.deck.fa]).allowed
+      );
+      setArticles(cleanFeed);
+      setDataSource('worker-d1');
+      if (!res) pushToast('دریافت اخبار واقعی ممکن نشد؛ اخبار نمونه نمایش داده نمی‌شوند.', 'warning');
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Resolve deep-linked /news/:slug once articles are loaded
+  useEffect(() => {
+    if (!pendingSlug) return;
+    const match = articles.find((a) => a.slug === pendingSlug || a.id === pendingSlug);
+    if (match) {
+      setSelectedArticleId(match.id);
+      setPendingSlug(null);
+    } else if (dataSource === 'worker-d1') {
+      setActiveView('not-found');
+      setPendingSlug(null);
+    }
+  }, [pendingSlug, articles, dataSource]);
+
+  // Listen to browser Back/Forward navigation
+  useEffect(() => {
+    const onPopState = () => {
+      const parsed = parseUrlPath(window.location.pathname, window.location.search);
+      if (parsed.articleSlug) {
+        const match = articles.find(
+          (a) => a.slug === parsed.articleSlug || a.id === parsed.articleSlug
+        );
+        if (match) {
+          setSelectedArticleId(match.id);
+          setActiveView('home');
+        } else {
+          setSelectedArticleId(null);
+          setActiveView('not-found');
+        }
+        return;
+      }
+      setSelectedArticleId(null);
+      setActiveView(parsed.view);
+      if (parsed.category) setSelectedCategory(parsed.category);
+      if (parsed.region) setSelectedRegion(parsed.region);
+      if (parsed.searchQuery !== undefined) setSearchPageQuery(parsed.searchQuery);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [articles]);
 
   // Sync dark/light class on <html>
   useEffect(() => {
@@ -128,64 +275,31 @@ export default function App() {
     const root = document.documentElement;
     root.lang = locale;
     root.dir = locale === 'fa' ? 'rtl' : 'ltr';
-    document.title =
-      locale === 'fa'
-        ? 'نبض ساردو | رسانه مستقل خبری و تحلیلی جنوب کرمان'
-        : 'Nabz Sardo | Independent Regional News & Analysis — South Kerman';
     window.localStorage.setItem(STORAGE_KEYS.locale, JSON.stringify(locale));
   }, [locale]);
 
-  // All published news is read from the real Cloudflare D1 newsroom, never demo/localStorage.
+  // Persist local preview state
   useEffect(() => {
-    let active=true;
-    const reload=async()=>{
-      try{
-        const response=await fetch('/api/gemini/articles',{credentials:'same-origin',cache:'no-store'});
-        if(!response.ok)throw Error('News API: '+response.status);
-        const data=await response.json() as {articles:Article[]};
-        if(active)setArticles(Array.isArray(data.articles)?data.articles:[]);
-      }catch(error){
-        console.error('Live newsroom unavailable:',error);
-        if(active)pushToast('دریافت اخبار زنده با مشکل مواجه شد. لطفاً دوباره تلاش کنید.','warning');
-      }
-    };
-    void reload();
-    const timer=window.setInterval(()=>void reload(),60000);
-    return()=>{active=false;window.clearInterval(timer);};
-  },[]);
+    if (dataSource === 'fallback') {
+      window.localStorage.setItem(STORAGE_KEYS.articles, JSON.stringify(articles));
+    }
+  }, [articles, dataSource]);
 
-  // Support direct article links, refresh, browser back and forward.
-  useEffect(()=>{
-    const sync=()=>{
-      const p=window.location.pathname;
-      if(p.startsWith('/news/')||p.startsWith('/n/')){
-        const key=decodeURIComponent(p.split('/').pop()||'');
-        setSelectedArticleId(articles.find(a=>a.slug===key||a.id===key||a.shortCode===key)?.id||null);
-        return;
-      }
-      setSelectedArticleId(null);
-      setActiveView(new URLSearchParams(window.location.search).has('studio')?'studio':p==='/all-news'?'archive':p==='/send-news'?'submit':p.startsWith('/category/')||p.startsWith('/local/')?'desks':'home');
-    };
-    sync();
-    window.addEventListener('popstate',sync);
-    return()=>window.removeEventListener('popstate',sync);
-  },[articles]);
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(citizenReports));
+  }, [citizenReports]);
 
-  useEffect(()=>{
-    if(activeView!=='studio')return;
-    let active=true;
-    const load=async()=>{
-      try{
-        const response=await fetch('/api/gemini/admin/state',{credentials:'same-origin',cache:'no-store'});
-        if(response.status===401||response.status===403){window.location.assign('/admin/login?gemini=1');return;}
-        if(!response.ok)throw Error('Admin unavailable: '+response.status);
-        const data=await response.json() as {articles:Article[],citizenReports:CitizenReport[]};
-        if(active){setArticles(data.articles||[]);setCitizenReports(data.citizenReports||[]);}
-      }catch(err){console.error('Secure newsroom unavailable',err);pushToast('اتصال امن به تحریریه برقرار نشد.','warning');}
-    };
-    void load();
-    return()=>{active=false;};
-  },[activeView]);
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.media, JSON.stringify(mediaAssets));
+  }, [mediaAssets]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(siteSettings));
+  }, [siteSettings]);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.contacts, JSON.stringify(contactMessages));
+  }, [contactMessages]);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.bookmarks, JSON.stringify(bookmarkedIds));
@@ -211,20 +325,38 @@ export default function App() {
     [articles]
   );
 
+  // Prioritize articles with authentic editorial photography for Live Hero slides
   const heroSlides = useMemo(() => {
     const featured = publishedArticles.filter((a) => a.featuredInHero);
-    return featured.length > 0 ? featured.slice(0, 4) : publishedArticles.slice(0, 4);
+    const featuredWithPhotos = featured.filter((a) => hasRealEditorialPhoto(a));
+    if (featuredWithPhotos.length > 0) return featuredWithPhotos.slice(0, 4);
+    if (featured.length > 0) return featured.slice(0, 4);
+    const photoStories = publishedArticles.filter((a) => hasRealEditorialPhoto(a));
+    return photoStories.length > 0 ? photoStories.slice(0, 4) : publishedArticles.slice(0, 4);
   }, [publishedArticles]);
 
   const breakingArticles = useMemo(() => {
+    if (!siteSettings.showBreakingWire) return [];
     const breaking = publishedArticles.filter((a) => a.isBreaking);
-    return breaking.length > 0 ? breaking : publishedArticles.slice(0, 3);
-  }, [publishedArticles]);
+    return breaking.length > 0 ? breaking : publishedArticles.slice(0, 4);
+  }, [publishedArticles, siteSettings.showBreakingWire]);
 
   const activeArticle = useMemo(
     () => articles.find((a) => a.id === selectedArticleId) ?? null,
     [articles, selectedArticleId]
   );
+
+  // Sync dynamic SEO meta tags, Canonical URL, Open Graph, and Schema.org NewsArticle JSON-LD
+  useEffect(() => {
+    syncPageSeo({
+      activeView: activeView === 'studio' && !adminToken ? 'admin-login' : activeView,
+      activeArticle,
+      selectedCategory,
+      selectedRegion,
+      locale,
+      settings: siteSettings,
+    });
+  }, [activeView, activeArticle, selectedCategory, selectedRegion, locale, siteSettings, adminToken]);
 
   const relatedArticles = useMemo(() => {
     if (!activeArticle) return [];
@@ -244,18 +376,40 @@ export default function App() {
   );
 
   const handleOpenArticle = (article: Article) => {
-    window.history.pushState({},'', '/news/'+encodeURIComponent(article.shortCode||article.slug));
     setSelectedArticleId(article.id);
-    void fetch('/api/gemini/view?slug='+encodeURIComponent(article.slug),{credentials:'same-origin',cache:'no-store'}).catch(()=>{});
+    setArticles((prev) =>
+      prev.map((a) => (a.id === article.id ? { ...a, views: a.views + 1 } : a))
+    );
+    pushBrowserPath(`/news/${encodeURIComponent(article.slug)}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNavigate = (view: ActiveView) => {
-    const url={home:'/',desks:'/category/sardouiyeh',archive:'/all-news',submit:'/send-news',studio:'/?studio=1'}[view];
-    window.history.pushState({},'',url);
     setSelectedArticleId(null);
-    setActiveView(view);
     if (view !== 'archive') setSavedOnly(false);
+
+    if (view === 'studio' && !adminToken) {
+      setActiveView('admin-login');
+      pushBrowserPath('/admin/login');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    setActiveView(view);
+    const pathMap: Record<ActiveView, string> = {
+      home: '/',
+      desks: selectedCategory !== 'all' ? `/category/${selectedCategory}` : '/?desks=1',
+      regions: selectedRegion !== 'all' ? `/local/${selectedRegion}` : '/?regions=1',
+      archive: '/all-news',
+      search: '/search',
+      submit: '/send-news',
+      about: '/about',
+      contact: '/contact',
+      'admin-login': '/admin/login',
+      studio: '/?studio=1',
+      'not-found': '/404',
+    };
+    pushBrowserPath(pathMap[view]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -276,58 +430,99 @@ export default function App() {
     });
   };
 
+  const handleSubmitCitizenReport = async (reportData: Omit<CitizenReport, 'id' | 'submittedAt' | 'status'>) => {
+    const newReport: CitizenReport = {
+      ...reportData,
+      id: `cit-${Date.now()}`,
+      submittedAt: new Date().toISOString(),
+      status: 'pending',
+    };
+    const result = await submitCitizenReportToApi(newReport);
+    if (!result.ok) { pushToast(result.error || 'خبر مردمی ذخیره نشد.', 'warning'); return false; }
+    setCitizenReports((prev) => [newReport, ...prev]);
+    pushToast('خبر مردمی در سامانه تحریریه ثبت شد.', 'success');
+    return true;
+  };
 
-  const adminPost=async(payload:Record<string,unknown>)=>{
-    const response=await fetch('/api/gemini/admin/action',{
-      method:'POST',credentials:'same-origin',
-      headers:{'content-type':'application/json','x-nabzesardo-editorial':'1'},
-      body:JSON.stringify(payload)
-    });
-    if(response.status===401||response.status===403){
-      window.location.assign('/admin/login?gemini=1');
-      throw Error('Unauthorized newsroom access');
+  const handleSaveArticle = async (article: Article, isNew: boolean) => {
+    const result = await syncArticleToApi(article, isNew, adminToken);
+    if (!result.ok) { pushToast(result.error || 'ذخیره خبر انجام نشد.', 'warning'); return; }
+    const state = await fetchAdminState();
+    if (state) { setArticles(state.articles); setCitizenReports(state.citizenReports); }
+    else {
+      const live = await fetchLiveArticles();
+      if (live) setArticles(live.articles);
     }
-    const data=await response.json().catch(()=>({ok:false,error:'Invalid server response'}));
-    if(!response.ok||!data.ok)throw Error(data.error||'Newsroom operation failed');
-    const snapshot=await fetch('/api/gemini/admin/state',{credentials:'same-origin',cache:'no-store'});
-    if(snapshot.ok){
-      const latest=await snapshot.json() as {articles:Article[],citizenReports:CitizenReport[]};
-      setArticles(latest.articles||[]);
-      setCitizenReports(latest.citizenReports||[]);
-    }
-    return data;
+    pushToast(isNew ? 'خبر در سامانه اصلی ثبت شد.' : 'تغییرات خبر در سامانه اصلی ذخیره شد.', 'success');
   };
-  const handleSubmitCitizenReport = async(reportData:Omit<CitizenReport,'id'|'submittedAt'|'status'>) => {
-    const configResponse=await fetch('/api/gemini/config',{credentials:'same-origin',cache:'no-store'});
-    if(!configResponse.ok)throw Error('تنظیمات تأیید امنیتی در دسترس نیست.');
-    const config=await configResponse.json() as {turnstileSiteKey?:string};
-    const turnstileToken=config.turnstileSiteKey?await requestTurnstileToken(config.turnstileSiteKey):'';
-    const response=await fetch('/api/gemini/citizen',{
-      method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},
-      body:JSON.stringify({...reportData,turnstileToken})
-    });
-    if(!response.ok)throw Error('گزارش در تحریریه ذخیره نشد؛ دوباره تلاش کنید.');
-    pushToast('گزارش مردمی در صف بررسی تحریریه ذخیره شد.','success');
+
+  const handleDeleteArticle = async (id: string) => {
+    const result = await deleteArticleFromApi(id, adminToken);
+    if (!result.ok) { pushToast(result.error || 'حذف خبر انجام نشد.', 'warning'); return; }
+    setArticles((prev) => prev.filter((a) => a.id !== id));
+    if (selectedArticleId === id) setSelectedArticleId(null);
+    pushToast('خبر از سامانه اصلی حذف شد.', 'success');
   };
-  const handleSaveArticle=(article:Article,isNew:boolean)=>{
-    void adminPost({action:'save',article,isNew}).then(()=>pushToast('خبر در پایگاه اصلی ذخیره شد.','success')).catch(()=>pushToast('خطا در ذخیره خبر؛ تغییری در پایگاه اصلی اعمال نشد.','warning'));
+
+  const handleApproveCitizenReport = async (report: CitizenReport) => {
+    const policy = checkEditorialPolicy([report.title, report.description]);
+    if (!policy.allowed) { pushToast(policy.message?.[locale] || 'این محتوا مطابق منشور تحریریه قابل انتشار نیست.', 'warning'); return; }
+    const result = await approveCitizenFromApi(report.id, adminToken);
+    if (!result.ok) { pushToast(result.error || 'تأیید خبر مردمی انجام نشد.', 'warning'); return; }
+    const live = await fetchLiveArticles();
+    if (live) setArticles(live.articles);
+    const state = await fetchAdminState();
+    if (state) setCitizenReports(state.citizenReports);
+    pushToast('خبر مردمی در سامانه اصلی تأیید و منتشر شد.', 'success');
   };
-  const handleDeleteArticle=(id:string)=>{
-    void adminPost({action:'delete',id}).then(()=>pushToast('خبر از پایگاه اصلی حذف شد.','success')).catch(()=>pushToast('حذف خبر انجام نشد.','warning'));
+
+  const handleArchiveCitizenReport = async (id: string) => {
+    const result = await archiveCitizenFromApi(id, adminToken);
+    if (!result.ok) { pushToast(result.error || 'بایگانی خبر مردمی انجام نشد.', 'warning'); return; }
+    setCitizenReports((prev) => prev.map((r) => r.id === id ? { ...r, status: 'archived' } : r));
+    pushToast('گزارش در سامانه اصلی بایگانی شد.', 'info');
   };
-  const handleApproveCitizenReport=(report:CitizenReport)=>{
-    void adminPost({action:'approve-citizen',id:report.id}).then(()=>pushToast('گزارش مردمی تایید و منتشر شد.','success')).catch(()=>pushToast('تایید گزارش انجام نشد.','warning'));
+
+  const handleAddMediaAsset = async (_asset: MediaAsset) => {
+    pushToast('کتابخانه رسانه جدید هنوز به ذخیره‌سازی فعلی متصل نیست؛ لطفاً از مدیریت اصلی برای آپلود استفاده کنید.', 'warning');
   };
-  const handleArchiveCitizenReport=(id:string)=>{
-    void adminPost({action:'archive-citizen',id}).then(()=>pushToast('گزارش در تحریریه بایگانی شد.','success')).catch(()=>pushToast('بایگانی انجام نشد.','warning'));
+
+  const handleDeleteMediaAsset = (_id: string) => {
+    pushToast('حذف رسانه فقط از مدیریت اصلی انجام می‌شود.', 'warning');
+  };
+
+  const handleSaveSiteSettings = (_nextSettings: SiteSettings) => {
+    pushToast('این بخش هنوز به تنظیمات سمت سرور متصل نشده است؛ تنظیمات تغییر نکرد.', 'warning');
+  };
+
+  const handleSubmitContact = async (payload: Omit<ContactSubmission, 'id' | 'createdAt'>) => {
+    const submission: ContactSubmission = { ...payload, id: `msg-${Date.now()}`, createdAt: new Date().toISOString() };
+    const result = await submitContactToApi(submission);
+    if (!result.ok) { pushToast(result.error || 'پیام ارسال نشد.', 'warning'); return false; }
+    setContactMessages((prev) => [submission, ...prev]);
+    pushToast('پیام در سامانه اصلی ثبت شد.', 'success');
+    return true;
+  };
+
+  const handleAdminLogout = async () => {
+    await logoutAdmin(adminToken);
+    setAdminToken(null);
+    setActiveView('home');
+    pushBrowserPath('/');
+    pushToast(
+      locale === 'fa' ? 'با موفقیت از پنل مدیریت خارج شدید.' : 'Signed out of Editorial Studio.',
+      'info'
+    );
   };
 
   const handleExportJson = () => {
     const payload = {
       exportedAt: new Date().toISOString(),
       site: 'nabzesardo.ir',
+      siteSettings,
       articles,
       citizenReports,
+      mediaAssets,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: 'application/json',
@@ -345,13 +540,16 @@ export default function App() {
   };
 
   const handleResetDefaults = () => {
-    pushToast('برای حفاظت از اخبار واقعی، بازنشانی داده‌های نمونه غیرفعال است.','warning');
+    pushToast('بازنشانی داده‌های نمونه در نسخه متصل به D1 غیرفعال است.', 'warning');
   };
 
+  const effectiveView: ActiveView =
+    activeView === 'studio' && !adminToken ? 'admin-login' : activeView;
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#F6F2EA] text-[#161412] dark:bg-[#080A0F] dark:text-[#F5F1E8]">
+    <div className="min-h-screen flex flex-col bg-[#F5F0E6] text-[#141210] dark:bg-[#07090E] dark:text-[#F6F2EA]">
       <TopBar
-        activeView={activeView}
+        activeView={effectiveView}
         onNavigate={handleNavigate}
         locale={locale}
         onToggleLocale={() => setLocale((l) => (l === 'fa' ? 'en' : 'fa'))}
@@ -364,6 +562,7 @@ export default function App() {
           setSelectedArticleId(null);
           setActiveView('archive');
           setSavedOnly(true);
+          pushBrowserPath('/all-news');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
@@ -376,32 +575,94 @@ export default function App() {
             locale={locale}
             isBookmarked={bookmarkedIds.includes(activeArticle.id)}
             onToggleBookmark={handleToggleBookmark}
-            onClose={() => { window.history.pushState({},'','/'); setSelectedArticleId(null); }}
+            onClose={() => {
+              setSelectedArticleId(null);
+              pushBrowserPath('/');
+            }}
             onSelectRelated={handleOpenArticle}
             onNotify={(msg) => pushToast(msg, 'success')}
           />
-        ) : activeView === 'submit' ? (
+        ) : effectiveView === 'regions' ? (
+          <RegionsView
+            articles={publishedArticles}
+            locale={locale}
+            selectedRegion={selectedRegion}
+            onSelectRegion={(reg) => {
+              setSelectedRegion(reg);
+              pushBrowserPath(reg === 'all' ? '/?regions=1' : `/local/${reg}`);
+            }}
+            bookmarkedIds={bookmarkedIds}
+            onToggleBookmark={handleToggleBookmark}
+            onOpenArticle={handleOpenArticle}
+          />
+        ) : effectiveView === 'search' ? (
+          <SearchPageView
+            articles={publishedArticles}
+            locale={locale}
+            initialQuery={searchPageQuery}
+            bookmarkedIds={bookmarkedIds}
+            onToggleBookmark={handleToggleBookmark}
+            onOpenArticle={handleOpenArticle}
+          />
+        ) : effectiveView === 'submit' ? (
           <CitizenReportView
             locale={locale}
             onSubmitReport={handleSubmitCitizenReport}
             onGoToStudio={() => handleNavigate('studio')}
           />
-        ) : activeView === 'studio' ? (
+        ) : effectiveView === 'about' ? (
+          <AboutView locale={locale} settings={siteSettings} onNavigate={handleNavigate} />
+        ) : effectiveView === 'contact' ? (
+          <ContactView
+            locale={locale}
+            settings={siteSettings}
+            onSubmitContact={handleSubmitContact}
+          />
+        ) : effectiveView === 'admin-login' ? (
+          <AdminLoginView
+            locale={locale}
+            onAuthenticated={(token) => {
+              setAdminToken(token);
+              setActiveView('studio');
+              pushBrowserPath('/?studio=1');
+              pushToast(
+                locale === 'fa' ? 'به داشبورد تحریریه خوش آمدید.' : 'Welcome to Editorial Studio.',
+                'success'
+              );
+            }}
+            onCancel={() => handleNavigate('home')}
+          />
+        ) : effectiveView === 'studio' ? (
           <AdminStudio
             articles={articles}
             citizenReports={citizenReports}
+            mediaAssets={mediaAssets}
+            siteSettings={siteSettings}
+            contactMessages={contactMessages}
+            dataSource={dataSource}
             locale={locale}
             onSaveArticle={handleSaveArticle}
             onDeleteArticle={handleDeleteArticle}
             onApproveCitizenReport={handleApproveCitizenReport}
             onArchiveCitizenReport={handleArchiveCitizenReport}
+            onAddMediaAsset={handleAddMediaAsset}
+            onDeleteMediaAsset={handleDeleteMediaAsset}
+            onSaveSiteSettings={handleSaveSiteSettings}
             onPreviewArticle={handleOpenArticle}
             onExportJson={handleExportJson}
             onResetDefaults={handleResetDefaults}
+            onLogout={handleAdminLogout}
+            onNotify={pushToast}
+          />
+        ) : effectiveView === 'not-found' ? (
+          <NotFoundView
+            locale={locale}
+            attemptedPath={window.location.pathname}
+            onNavigate={handleNavigate}
           />
         ) : (
           <>
-            {activeView === 'home' && (
+            {effectiveView === 'home' && (
               <LiveHero
                 slides={heroSlides}
                 breakingArticles={breakingArticles}
@@ -416,7 +677,12 @@ export default function App() {
               articles={publishedArticles}
               locale={locale}
               selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
+              onSelectCategory={(cat) => {
+                setSelectedCategory(cat);
+                if (effectiveView === 'desks') {
+                  pushBrowserPath(cat === 'all' ? '/desks' : `/category/${cat}`);
+                }
+              }}
               selectedRegion={selectedRegion}
               onSelectRegion={setSelectedRegion}
               savedOnly={savedOnly}
@@ -425,7 +691,7 @@ export default function App() {
               onToggleBookmark={handleToggleBookmark}
               onOpenArticle={handleOpenArticle}
               onGoToSubmit={() => handleNavigate('submit')}
-              mode={activeView}
+              mode={effectiveView}
             />
           </>
         )}
@@ -438,12 +704,14 @@ export default function App() {
           setSelectedArticleId(null);
           setSelectedCategory(cat);
           setActiveView('desks');
+          pushBrowserPath(`/category/${cat}`);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         onSelectRegion={(reg) => {
           setSelectedArticleId(null);
           setSelectedRegion(reg);
-          setActiveView('desks');
+          setActiveView('regions');
+          pushBrowserPath(`/region/${reg}`);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
@@ -458,6 +726,7 @@ export default function App() {
           setSelectedArticleId(null);
           setSelectedCategory(cat);
           setActiveView('desks');
+          pushBrowserPath(`/category/${cat}`);
         }}
       />
 
@@ -466,7 +735,7 @@ export default function App() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 start-6 z-50 max-w-sm px-4 py-3 border border-[#DDD7CB] dark:border-[#2C364A] bg-[#181614] text-[#F7F4EE] dark:bg-[#F7F4EE] dark:text-[#181614] text-xs sm:text-sm font-medium shadow-xl"
+          className="fixed bottom-6 start-6 z-50 max-w-sm px-4 py-3 rounded-xl border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/30 bg-[#141210] text-[#F6F2EA] dark:bg-[#F6F2EA] dark:text-[#141210] text-xs sm:text-sm font-medium shadow-2xl"
         >
           {toast.text}
         </div>

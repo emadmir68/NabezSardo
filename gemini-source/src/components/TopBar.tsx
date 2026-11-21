@@ -31,17 +31,32 @@ export function TopBar({
 }: TopBarProps) {
   const [now, setNow] = useState(() => new Date());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const navItems: { id: ActiveView; label: { fa: string; en: string } }[] = [
     { id: 'home', label: { fa: 'صفحه نخست', en: 'Front Page' } },
-    { id: 'desks', label: { fa: 'میزهای خبری', en: 'News Desks' } },
+    { id: 'desks', label: { fa: 'میزهای خبری', en: 'Desks' } },
+    { id: 'regions', label: { fa: 'مناطق', en: 'Regions' } },
     { id: 'archive', label: { fa: 'آرشیو', en: 'Archive' } },
     { id: 'studio', label: { fa: 'تحریریه', en: 'Studio' } },
+  ];
+
+  const secondaryMobileLinks: { id: ActiveView; label: { fa: string; en: string } }[] = [
+    { id: 'search', label: { fa: 'جست‌وجوی پیشرفته', en: 'Search' } },
+    { id: 'about', label: { fa: 'درباره نبض ساردو', en: 'About Us' } },
+    { id: 'contact', label: { fa: 'تماس با تحریریه', en: 'Contact' } },
   ];
 
   const handleNav = (view: ActiveView) => {
@@ -55,7 +70,7 @@ export function TopBar({
       <div
         role="region"
         aria-label={locale === 'fa' ? 'نوار زمان و تنظیمات نسخه' : 'Edition and utility bar'}
-        className="w-full border-b-[0.75px] border-[#D9CEBC]/85 dark:border-[#D4A85B]/16 bg-[#EAE1D2] dark:bg-[#05070B] text-[#5A5247] dark:text-[#A1AAB9] text-[11px] sm:text-xs"
+        className="w-full border-b-[0.5px] border-[#D9CEBC]/85 dark:border-[#D4A85B]/16 bg-[#EAE1D2] dark:bg-[#05070B] text-[#5A5247] dark:text-[#A1AAB9] text-[11px] sm:text-xs"
       >
         <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 h-10 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0 truncate">
@@ -138,10 +153,20 @@ export function TopBar({
         </div>
       </div>
 
-      {/* Primary Top Bar — Strict 3-Zone Luxury Contract */}
-      <header className="sticky top-0 z-40 w-full border-b-[0.75px] border-[#D9CEBC] dark:border-[#D4A85B]/18 bg-[#F5F0E6]/92 dark:bg-[#07090E]/90 backdrop-blur-xl shadow-[0_8px_32px_-20px_rgba(0,0,0,0.38)]">
-        <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 h-[66px] sm:h-[74px] flex items-center justify-between gap-4 sm:gap-8">
-          {/* Zone 1: Editorial Serif Masthead Wordmark */}
+      {/* Primary Top Bar — Animated Glass Header (Strict 3-Zone Contract) */}
+      <header
+        className={`sticky top-0 z-40 w-full border-b-[0.5px] transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          scrolled
+            ? 'border-[#C9B99F]/70 dark:border-[#E8C680]/26 bg-[#F5F0E6]/82 dark:bg-[#07090E]/82 backdrop-blur-2xl shadow-[0_14px_38px_-22px_rgba(0,0,0,0.42)]'
+            : 'border-[#D9CEBC]/75 dark:border-[#D4A85B]/16 bg-[#F5F0E6]/92 dark:bg-[#07090E]/90 backdrop-blur-xl'
+        }`}
+      >
+        <div
+          className={`max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4 sm:gap-8 transition-[height] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            scrolled ? 'h-[62px] sm:h-[68px]' : 'h-[66px] sm:h-[74px]'
+          }`}
+        >
+          {/* Zone 1: Editorial Masthead Wordmark */}
           <button
             type="button"
             onClick={() => handleNav('home')}
@@ -149,20 +174,21 @@ export function TopBar({
           >
             <span
               aria-hidden="true"
-              className="w-1.5 h-6 sm:h-7 rounded-full bg-gradient-to-b from-[#E8C680] via-[#C69546] to-[#9A6B27] opacity-90 group-hover:scale-y-110 transition-transform"
+              className="w-1.5 h-6 sm:h-7 rounded-full bg-gradient-to-b from-[#E8C680] via-[#C69546] to-[#9A6B27] opacity-90 group-hover:scale-y-110 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
             />
-            <span className="font-editorial-display text-[24px] sm:text-[31px] font-bold tracking-tight text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors leading-none">
+            <span className="font-editorial-display text-[23px] sm:text-[30px] font-bold tracking-tight text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors leading-none">
               {locale === 'fa' ? 'نبض ساردو' : 'Nabz Sardo'}
             </span>
           </button>
 
-          {/* Zone 2: 4 Clean Single-Line Nav Links */}
+          {/* Zone 2: 5 Clean Single-Line Nav Links */}
           <nav
             aria-label={locale === 'fa' ? 'ناوبری اصلی' : 'Primary navigation'}
-            className="hidden md:flex items-center gap-8 lg:gap-10"
+            className="hidden md:flex items-center gap-7 lg:gap-9"
           >
             {navItems.map((item) => {
-              const isActive = activeView === item.id;
+              const isActive =
+                activeView === item.id || (item.id === 'studio' && activeView === 'admin-login');
               return (
                 <button
                   key={item.id}
@@ -181,7 +207,7 @@ export function TopBar({
                     </span>
                   )}
                   <span
-                    className={`absolute inset-x-0 -bottom-[22px] h-[2px] transition-all duration-300 bg-gradient-to-r from-transparent via-[#9A6B27] dark:via-[#E8C680] to-transparent ${
+                    className={`absolute inset-x-0 -bottom-[20px] h-[1.5px] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] bg-gradient-to-r from-transparent via-[#9A6B27] dark:via-[#E8C680] to-transparent ${
                       isActive ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-50'
                     }`}
                   />
@@ -190,7 +216,7 @@ export function TopBar({
             })}
           </nav>
 
-          {/* Zone 3: Single Sculpted Luxury Action + Precision Mobile Menu Trigger */}
+          {/* Zone 3: Single Sculpted Luxury Action + Mobile Menu Trigger */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <button
               type="button"
@@ -223,12 +249,14 @@ export function TopBar({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="md:hidden overflow-hidden border-t-[0.75px] border-[#D9CEBC] dark:border-[#D4A85B]/18 bg-[#F5F0E6]/98 dark:bg-[#090C14]/98 backdrop-blur-2xl"
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              className="md:hidden overflow-hidden border-t-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/18 bg-[#F5F0E6]/98 dark:bg-[#090C14]/98 backdrop-blur-2xl"
             >
               <div className="px-4 py-4 space-y-1.5">
                 {navItems.map((item) => {
-                  const isActive = activeView === item.id;
+                  const isActive =
+                    activeView === item.id ||
+                    (item.id === 'studio' && activeView === 'admin-login');
                   return (
                     <button
                       key={item.id}
@@ -236,7 +264,7 @@ export function TopBar({
                       onClick={() => handleNav(item.id)}
                       className={`w-full text-start px-4 py-3.5 rounded-xl text-[15px] font-semibold flex items-center justify-between transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-[#9A6B27]/12 text-[#9A6B27] dark:bg-[#E8C680]/12 dark:text-[#E8C680] border-[0.75px] border-[#9A6B27]/30 dark:border-[#E8C680]/28'
+                          ? 'bg-[#9A6B27]/12 text-[#9A6B27] dark:bg-[#E8C680]/12 dark:text-[#E8C680] border-[0.5px] border-[#9A6B27]/30 dark:border-[#E8C680]/28'
                           : 'text-[#141210] dark:text-[#F6F2EA] hover:bg-[#141210]/5 dark:hover:bg-[#F5F1E8]/5'
                       }`}
                     >
@@ -249,6 +277,19 @@ export function TopBar({
                     </button>
                   );
                 })}
+
+                <div className="pt-2.5 mt-2.5 border-t-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/16 grid grid-cols-3 gap-2">
+                  {secondaryMobileLinks.map((sub) => (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => handleNav(sub.id)}
+                      className="px-3 py-2.5 rounded-xl text-xs font-semibold text-center border-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/18 text-[#5A5247] dark:text-[#A1AAB9] hover:text-[#141210] dark:hover:text-[#F6F2EA] cursor-pointer"
+                    >
+                      {sub.label[locale]}
+                    </button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}

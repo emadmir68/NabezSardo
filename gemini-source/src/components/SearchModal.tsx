@@ -3,7 +3,14 @@ import { motion } from 'motion/react';
 import { ArrowUpLeft, ArrowUpRight, Search, X } from 'lucide-react';
 import { CATEGORIES } from '../data/initialData';
 import type { Article, CategoryId, Locale } from '../types/news';
-import { formatNumber, formatShortDate, getCategoryLabel, getRegionLabel } from '../utils/formatters';
+import {
+  cleanEditorialDeck,
+  formatNumber,
+  formatShortDate,
+  getCategoryLabel,
+  getRegionLabel,
+  resolveArticleCoverImage,
+} from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
 
 interface SearchModalProps {
@@ -140,8 +147,8 @@ export function SearchModal({
             <span>
               {query.trim()
                 ? locale === 'fa'
-                  ? `${formatNumber(results.length, locale)} نتیجه یافت شد`
-                  : `${results.length} matching stories`
+                  ? `${formatNumber(results.length, locale)} نتیجه یافت شد${results.length > 12 ? ` (نمایش ${formatNumber(12, locale)} مورد برتر)` : ''}`
+                  : `${results.length} matching stories${results.length > 12 ? ' (showing top 12)' : ''}`
                 : locale === 'fa'
                   ? 'تازه‌ترین خبرهای تحریریه'
                   : 'Recent editorial dispatches'}
@@ -161,7 +168,7 @@ export function SearchModal({
             </div>
           ) : (
             <ul className="space-y-3">
-              {results.map((item, idx) => (
+              {results.slice(0, 12).map((item, idx) => (
                 <motion.li
                   key={item.id}
                   initial={{ opacity: 0, y: 8 }}
@@ -178,7 +185,7 @@ export function SearchModal({
                   >
                     <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#EFE9DD] dark:bg-[#0B0F18] border-[0.75px] border-[#DDD3C2]/70 dark:border-[#F5F1E8]/10">
                       <EditorialImage
-                        src={item.coverImage}
+                        src={resolveArticleCoverImage(item)}
                         alt={item.title[locale]}
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
                       />
@@ -196,9 +203,11 @@ export function SearchModal({
                       <p className="font-editorial-display text-base font-bold text-[#181614] dark:text-[#F2EFE9] group-hover:text-[#9E6F2C] dark:group-hover:text-[#E5C17B] transition-colors duration-300 leading-snug line-clamp-1">
                         {item.title[locale]}
                       </p>
-                      <p className="text-xs text-[#5C564D] dark:text-[#9BA3B4] line-clamp-1">
-                        {item.deck[locale]}
-                      </p>
+                      {cleanEditorialDeck(item.title[locale], item.deck[locale], 120) && (
+                        <p className="text-xs text-[#5C564D] dark:text-[#9BA3B4] line-clamp-1">
+                          {cleanEditorialDeck(item.title[locale], item.deck[locale], 120)}
+                        </p>
+                      )}
                     </div>
                     <span className="shrink-0 w-7 h-7 rounded-full border-[0.75px] border-[#DDD3C2]/80 dark:border-[#F5F1E8]/12 flex items-center justify-center text-[#5C564D] dark:text-[#9BA3B4] group-hover:border-[#9E6F2C]/50 dark:group-hover:border-[#E5C17B]/50 group-hover:text-[#9E6F2C] dark:group-hover:text-[#E5C17B] transition-all duration-300">
                       {locale === 'fa' ? (

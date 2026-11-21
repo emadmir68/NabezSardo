@@ -2,10 +2,11 @@ import { useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, ImagePlus, Trash2 } from 'lucide-react';
 import { CATEGORIES, REGIONS } from '../data/initialData';
 import type { CategoryId, CitizenReport, Locale, RegionId } from '../types/news';
+import { checkEditorialPolicy } from '../utils/editorialPolicy';
 
 interface CitizenReportViewProps {
   locale: Locale;
-  onSubmitReport: (report: Omit<CitizenReport, 'id' | 'submittedAt' | 'status'>) => Promise<void>;
+  onSubmitReport: (report: Omit<CitizenReport, 'id' | 'submittedAt' | 'status'>) => Promise<boolean>;
   onGoToStudio: () => void;
 }
 
@@ -28,6 +29,14 @@ export function CitizenReportView({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!/^image\/(jpeg|png|webp|gif)$/i.test(file.type)) {
+      setError(
+        locale === 'fa'
+          ? 'فقط فرمت‌های استاندارد تصویر (JPG، PNG یا WebP) مجاز است.'
+          : 'Only standard photo formats (JPG, PNG, or WebP) are supported.'
+      );
+      return;
+    }
     if (file.size > 4 * 1024 * 1024) {
       setError(
         locale === 'fa'
@@ -65,7 +74,18 @@ export function CitizenReportView({
       return;
     }
 
-    try { await onSubmitReport({
+    const policy = checkEditorialPolicy([title, description]);
+    if (!policy.allowed) {
+      setError(
+        policy.message?.[locale] ||
+          (locale === 'fa'
+            ? 'انتشار آگهی تبلیغاتی، رپورتاژ و اطلاعیه ترحیم مجاز نیست.'
+            : 'Advertisements, advertorials, and obituary notices are not permitted.')
+      );
+      return;
+    }
+
+    const saved = await onSubmitReport({
       title: title.trim(),
       description: description.trim(),
       region,
@@ -75,10 +95,8 @@ export function CitizenReportView({
         (locale === 'fa' ? 'شهروند خبرنگار ناشناس' : 'Anonymous Citizen Reporter'),
       contact: contact.trim() || undefined,
       imageDataUrl,
-    }); } catch (error) {
-      setError(error instanceof Error ? error.message : 'ارسال خبر انجام نشد.');
-      return;
-    }
+    });
+    if (!saved) { setError(locale === 'fa' ? 'خبر مردمی ذخیره نشد. لطفاً دوباره تلاش کنید.' : 'Report was not saved. Please try again.'); return; }
 
     setTitle('');
     setDescription('');
@@ -135,6 +153,16 @@ export function CitizenReportView({
                   {locale === 'fa'
                     ? 'ذکر نام روستا، محور مواصلاتی یا نهاد مرتبط به بررسی سریع‌تر در تحریریه کمک می‌کند.'
                     : 'Including the specific village, road corridor, or institution speeds up editorial verification.'}
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-[#E5C17B] mb-1">
+                  {locale === 'fa' ? '۰۳. منع آگهی، رپورتاژ و ترحیم' : '03. No Ads or Obituaries'}
+                </p>
+                <p>
+                  {locale === 'fa'
+                    ? 'ارسال هرگونه آگهی تبلیغاتی، رپورتاژ سفارشی و اطلاعیه ترحیم یا مراسم فوت به‌صورت خودکار رد می‌شود.'
+                    : 'Commercial ads, advertorials, and obituary/funeral announcements are automatically filtered out.'}
                 </p>
               </div>
             </div>
@@ -320,7 +348,7 @@ export function CitizenReportView({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   onChange={handleImageChange}
                   className="hidden"
                 />

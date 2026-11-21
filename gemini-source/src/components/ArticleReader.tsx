@@ -12,10 +12,12 @@ import {
 } from 'lucide-react';
 import type { Article, Locale } from '../types/news';
 import {
+  cleanEditorialDeck,
   formatNumber,
   formatShortDate,
   getCategoryLabel,
   getRegionLabel,
+  resolveArticleCoverImage,
 } from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
 
@@ -107,7 +109,7 @@ export function ArticleReader({
       <header className="relative w-full bg-[#07090E] text-[#F5F1E8] overflow-hidden border-b border-[#D4A85B]/25">
         <div className="absolute inset-0 overflow-hidden">
           <EditorialImage
-            src={article.coverImage}
+            src={resolveArticleCoverImage(article)}
             alt={article.title[locale]}
             className="w-full h-full object-cover opacity-55"
           />
@@ -214,9 +216,11 @@ export function ArticleReader({
               {article.title[locale]}
             </h1>
 
-            <p className="text-base sm:text-xl text-[#EDE6D8]/88 leading-relaxed mb-7">
-              {article.deck[locale]}
-            </p>
+            {cleanEditorialDeck(article.title[locale], article.deck[locale], 260) && (
+              <p className="text-base sm:text-xl text-[#EDE6D8]/88 leading-relaxed mb-7">
+                {cleanEditorialDeck(article.title[locale], article.deck[locale], 260)}
+              </p>
+            )}
 
             <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-[#EDE6D8]/80">
               <span className="font-semibold text-[#F5F1E8]">{article.author[locale]}</span>
@@ -238,7 +242,7 @@ export function ArticleReader({
         <div className="luxury-panel rounded-xl overflow-hidden p-2 sm:p-3">
           <div className="aspect-[16/9] w-full overflow-hidden rounded-lg bg-[#EFE9DD] dark:bg-[#0B0F18]">
             <EditorialImage
-              src={article.coverImage}
+              src={resolveArticleCoverImage(article)}
               alt={article.title[locale]}
               fallbackLabel={article.title[locale]}
               className="w-full h-full object-cover"
@@ -319,63 +323,58 @@ export function ArticleReader({
           </div>
 
           {relatedArticles.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="flex items-center justify-between px-1">
-                <h2 className="text-[11px] font-bold tracking-[0.06em] uppercase text-[#9E6F2C] dark:text-[#E5C17B]">
+                <h2 className="text-[11px] font-bold tracking-[0.04em] text-[#9A6B27] dark:text-[#E8C680]">
                   {locale === 'fa' ? 'روایت‌های مرتبط' : 'Related Dispatches'}
                 </h2>
-                <span className="h-[0.75px] flex-1 mx-4 bg-[#DDD3C2]/70 dark:bg-[#D4A85B]/15" />
+                <span className="h-[0.5px] flex-1 mx-4 bg-[#D9CEBC]/80 dark:bg-[#D4A85B]/16" />
               </div>
 
               <div className="space-y-4">
                 {relatedArticles.map((rel, idx) => (
                   <motion.article
                     key={rel.id}
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
                       duration: 0.45,
                       delay: idx * 0.06,
-                      ease: [0.16, 1, 0.3, 1],
+                      ease: [0.22, 1, 0.36, 1],
                     }}
-                    whileHover={{ y: -3 }}
-                    className="magazine-card group relative rounded-2xl overflow-hidden"
+                    className="magazine-card group rounded-[20px] overflow-hidden"
                   >
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-0 top-0 h-[0.75px] bg-gradient-to-r from-transparent via-[#9E6F2C]/60 dark:via-[#E5C17B]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    />
                     <button
                       type="button"
                       onClick={() => onSelectRelated(rel)}
-                      className="w-full text-start p-5 flex items-center gap-4 cursor-pointer"
+                      className="relative z-10 w-full text-start p-5 sm:p-6 flex items-center gap-4 sm:gap-5 cursor-pointer"
                     >
-                      <div className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-[#EFE9DD] dark:bg-[#0B0F18] border-[0.75px] border-[#DDD3C2]/70 dark:border-[#F5F1E8]/10">
+                      <div className="relative w-20 h-20 rounded-[12px] overflow-hidden shrink-0 bg-[#EAE2D3] dark:bg-[#0B0F18] border-[0.5px] border-[#141210]/10 dark:border-[#F5F1E8]/10">
                         <EditorialImage
-                          src={rel.coverImage}
+                          src={resolveArticleCoverImage(rel)}
                           alt={rel.title[locale]}
-                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                          className="magazine-media-img w-full h-full object-cover"
                         />
                       </div>
 
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <p className="text-[11px] text-[#5F584D] dark:text-[#9AA3B5] flex items-center gap-1.5">
-                          <span className="font-semibold text-[#9E6F2C] dark:text-[#E5C17B]">
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <p className="text-[11px] text-[#5A5247] dark:text-[#A1AAB9] flex items-center gap-1.5">
+                          <span className="font-bold text-[#9A6B27] dark:text-[#E8C680]">
                             {getRegionLabel(rel.region, locale)}
                           </span>
-                          <span aria-hidden="true" className="opacity-40">·</span>
+                          <span aria-hidden="true" className="opacity-35">·</span>
                           <span>{formatShortDate(rel.publishedAt, locale)}</span>
                         </p>
-                        <p className="font-editorial-display text-[15px] font-bold text-[#161412] dark:text-[#F5F1E8] group-hover:text-[#9E6F2C] dark:group-hover:text-[#E5C17B] transition-colors duration-300 leading-snug line-clamp-2">
+                        <p className="font-editorial-display text-[15px] font-bold text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] leading-[1.52] line-clamp-2">
                           {rel.title[locale]}
                         </p>
                       </div>
 
-                      <span className="shrink-0 w-7 h-7 rounded-full border-[0.75px] border-[#DDD3C2]/80 dark:border-[#F5F1E8]/12 flex items-center justify-center text-[#5F584D] dark:text-[#9AA3B5] group-hover:border-[#9E6F2C]/50 dark:group-hover:border-[#E5C17B]/50 group-hover:text-[#9E6F2C] dark:group-hover:text-[#E5C17B] group-hover:bg-[#FDFBF7]/70 dark:group-hover:bg-[#171F30]/60 transition-all duration-300">
+                      <span className="magazine-circle-action !w-8 !h-8 shrink-0 group-hover:border-[#9A6B27] dark:group-hover:border-[#E8C680] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680]">
                         {locale === 'fa' ? (
-                          <ArrowUpLeft className="w-3.5 h-3.5 transition-transform duration-300 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
+                          <ArrowUpLeft className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
                         ) : (
-                          <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                         )}
                       </span>
                     </button>
