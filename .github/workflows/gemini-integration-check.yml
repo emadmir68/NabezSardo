@@ -1,0 +1,47 @@
+name: Gemini + Cloudflare D1 integration checks
+on:
+  push:
+    branches: [preview/gemini-design-2026-11-21]
+    paths:
+      - "gemini-source/**"
+      - "lib/gemini-bridge.js"
+      - "app.js"
+      - "src/worker.js"
+      - "tests/gemini-bridge.test.js"
+      - ".github/workflows/gemini-integration-check.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate server and security
+        run: |
+          node --check app.js
+          node --check lib/gemini-bridge.js
+          node tests/gemini-bridge.test.js
+      - name: Compile original Gemini visual markup with live data handlers
+        run: |
+          set -euo pipefail
+          unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabz-gemini-design
+          cp -a gemini-source/src/. /tmp/nabz-gemini-design/src/
+          cd /tmp/nabz-gemini-design
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm run build
+          npm run lint
+          test -f dist/index.html
+          test -d dist/src/assets/images
+          ! grep -q 'nabzesardo_v3_articles' dist/assets/index-*.js
+      - name: Preserve original styles byte-for-byte
+        run: |
+          cmp /tmp/nabz-gemini-design/src/index.css gemini-source/src/index.css
+          unzip -p nabz-sardo-original-gemini-design.zip src/index.css | cmp - gemini-source/src/index.css
+          for f in gemini-source/src/components/*.tsx; do
+            test -s "$f"
+          done
