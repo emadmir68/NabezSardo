@@ -38,3 +38,26 @@ test('Source photos remain untouched and regional images keep trusted paths',()=
  const a={id:'v2',title:'خبر کشاورزی جیرفت',lead:'توضیح خبر',image:'/uploads/real-original.jpg',status:'published'};
  assert.equal(bridge.mapArticle(a).coverImage,'/uploads/real-original.jpg');
 });
+
+test('monitor quarantine v4 removes old forbidden articles and queue items without deleting records',()=>{
+  const monitor=require('../lib/news-monitor');
+  const db={
+    articles:[
+      {id:'g',status:'published',title:'گزارش جدید از توسعه کشاورزی',lead:'آخرین خبر واقعی در جنوب کرمان'},
+      {id:'bad1',status:'published',title:'با سلام و احترام، خدمت یکایک اعضای محترم',lead:'از همه شما تقاضا داریم'},
+      {id:'bad2',status:'published',title:'آیت الله وحید خراسانی به خاک سپرده شد',lead:'آیین خاکسپاری'}
+    ],
+    newsMonitor:{
+      nonNewsPolicyVersion:3,sourceConfigVersion:5,logicVersion:4,
+      queue:[{id:'q1',title:'آگهی ترحیم مرحوم',status:'pending',articleId:'bad2'}],
+      sources:[{id:'custom',name:'local source',url:'https://example.com',enabled:false}],
+      settings:{enabled:false}
+    }
+  };
+  monitor.ensure(db);
+  assert.equal(db.articles[0].status,'published');
+  assert.equal(db.articles[1].status,'draft');
+  assert.equal(db.articles[2].status,'draft');
+  assert.equal(db.newsMonitor.queue.find(q=>q.id==='q1').status,'rejected');
+  assert.equal(db.newsMonitor.nonNewsPolicyVersion,4);
+});
