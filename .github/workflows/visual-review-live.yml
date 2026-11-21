@@ -1,0 +1,95 @@
+name: Capture live Nabz Sardo design for review
+on:
+  push:
+    branches: [preview/gemini-design-2026-11-21]
+    paths:
+      - ".github/workflows/visual-review-live.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: preview/gemini-design-2026-11-21
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Chromium screenshot engine
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Capture real desktop and mobile screen + layout measurements
+        shell: bash
+        run: |
+          mkdir -p audit-screenshots
+          node <<'JS'
+          const fs=require('node:fs');
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+            const result={time:new Date().toISOString(),url:'https://nabzesardo.ir',cases:[]};
+            for(const target of [
+              {name:'desktop',width:1440,height:900,mobile:false},
+              {name:'mobile',width:390,height:844,mobile:true}
+            ]){
+              const page=await browser.newPage({viewport:{width:target.width,height:target.height},deviceScaleFactor:1,isMobile:target.mobile,hasTouch:target.mobile,locale:'fa-IR'});
+              const errors=[];const bad=[];
+              page.on('pageerror',e=>errors.push(String(e).slice(0,500)));
+              page.on('requestfailed',r=>bad.push({url:r.url().slice(0,160),failure:r.failure()}));
+              let status=0;try{
+                const response=await page.goto('https://nabzesardo.ir/',{waitUntil:'domcontentloaded',timeout:45000});status=response?.status()||0;
+                await page.waitForTimeout(5000);
+                const metrics=await page.evaluate(()=>{
+                  const w=document.documentElement.scrollWidth;const c=document.documentElement.clientWidth;
+                  const text=(el)=>el?.textContent?.trim()?.slice(0,250)||'';
+                  return {
+                    title:document.title, width:w, viewport:c, horizontalOverflow:w>c+3,
+                    rootTextLength:document.querySelector('#root')?.textContent?.length||0,
+                    h1:[...document.querySelectorAll('h1')].map(text).slice(0,6),
+                    h2:[...document.querySelectorAll('h2')].map(text).slice(0,14),
+                    buttons:[...document.querySelectorAll('button')].map(text).slice(0,25),
+                    bodyFont:getComputedStyle(document.body).fontFamily,
+                    bodyBackground:getComputedStyle(document.body).backgroundColor,
+                    heroImageCount:[...document.querySelectorAll('img')].length,
+                    failedImages:[...document.querySelectorAll('img')].filter(img=>!img.complete||img.naturalWidth===0).map(img=>img.src.slice(0,180)).slice(0,25),
+                    navigationLinks:[...document.querySelectorAll('a[href]')].slice(0,25).map(a=>({title:text(a).slice(0,40),href:a.getAttribute('href')}))
+                  };
+                });
+                await page.screenshot({path:'audit-screenshots/'+target.name+'-top.jpg',type:'jpeg',quality:85,fullPage:false});
+                await page.screenshot({path:'audit-screenshots/'+target.name+'-full.jpg',type:'jpeg',quality:70,fullPage:true});
+                await page.evaluate(()=>scrollTo(0,1200));
+                await page.waitForTimeout(800);
+                await page.screenshot({path:'audit-screenshots/'+target.name+'-middle.jpg',type:'jpeg',quality:80,fullPage:false});
+                result.cases.push({name:target.name,httpStatus:status,metrics,errors,bad});
+                if(target.name==='desktop'){
+                  const link=await page.locator('a[href^="/news/"]').first().getAttribute('href').catch(()=>null);
+                  if(link){
+                    try{
+                      await page.goto('https://nabzesardo.ir'+link,{waitUntil:'domcontentloaded',timeout:30000});
+                      await page.waitForTimeout(1800);
+                      await page.screenshot({path:'audit-screenshots/article-desktop.jpg',type:'jpeg',quality:80});
+                    }catch(e){result.articleError=String(e);}
+                  }
+                }
+              }catch(e){result.cases.push({name:target.name,httpStatus:status,error:String(e),errors,bad});}
+              await page.close();
+            }
+            fs.writeFileSync('audit-screenshots/metrics.json',JSON.stringify(result,null,2));
+            await browser.close();
+            console.log(JSON.stringify(result,null,2).slice(0,11000));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Save screenshots to review branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add audit-screenshots/
+          if ! git diff --cached --quiet; then
+            git commit -m "Capture real production design on desktop and mobile for audit"
+            git push origin HEAD:preview/gemini-design-2026-11-21
+          fi
