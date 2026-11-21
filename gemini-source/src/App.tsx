@@ -160,7 +160,7 @@ export default function App() {
       const p=window.location.pathname;
       if(p.startsWith('/news/')||p.startsWith('/n/')){
         const key=decodeURIComponent(p.split('/').pop()||'');
-        setSelectedArticleId(articles.find(a=>a.slug===key||a.id===key)?.id||null);
+        setSelectedArticleId(articles.find(a=>a.slug===key||a.id===key||a.shortCode===key)?.id||null);
         return;
       }
       setSelectedArticleId(null);
@@ -244,7 +244,7 @@ export default function App() {
   );
 
   const handleOpenArticle = (article: Article) => {
-    window.history.pushState({},'', '/news/'+encodeURIComponent(article.slug));
+    window.history.pushState({},'', '/news/'+encodeURIComponent(article.shortCode||article.slug));
     setSelectedArticleId(article.id);
     void fetch('/api/gemini/view?slug='+encodeURIComponent(article.slug),{credentials:'same-origin',cache:'no-store'}).catch(()=>{});
     window.scrollTo({ top: 0, behavior: 'smooth' });
