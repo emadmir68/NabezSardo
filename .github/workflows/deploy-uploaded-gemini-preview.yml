@@ -1,0 +1,81 @@
+name: Preview Uploaded Gemini Editorial Design on Cloudflare
+on:
+  push:
+    branches:
+      - preview/gemini-uploaded-design-20261121
+    paths:
+      - "gemini-source/**"
+      - "src/gemini-preview-worker.js"
+      - ".github/workflows/deploy-uploaded-gemini-preview.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nabzesardo-gemini-uploaded-preview
+  cancel-in-progress: true
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Compile uploaded design with original image assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabez-new-design-preview
+          cp -a gemini-source/src/. /tmp/nabez-new-design-preview/src/
+          cp gemini-source/index.html gemini-source/package.json gemini-source/vite.config.ts gemini-source/tsconfig.json /tmp/nabez-new-design-preview/
+          cd /tmp/nabez-new-design-preview
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm run build
+          test -f dist/index.html
+          test -d dist/src/assets/images
+          rm -f dist/_redirects
+          printf 'User-agent: *\nDisallow: /\n' > dist/robots.txt
+          printf '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' > dist/_headers
+      - name: Deploy isolated, read-only D1 preview Worker
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}" || exit 1
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || exit 1
+          mkdir -p .uploaded-design-preview-dist
+          cp -a /tmp/nabez-new-design-preview/dist/. .uploaded-design-preview-dist/
+          cat > wrangler.uploaded.preview.toml <<'TOML'
+          name = "nabzesardo-gemini-uploaded-preview"
+          main = "./src/gemini-preview-worker.js"
+          compatibility_date = "2026-11-01"
+          compatibility_flags = ["nodejs_compat"]
+          workers_dev = true
+          [assets]
+          directory = "./.uploaded-design-preview-dist"
+          binding = "ASSETS"
+          run_worker_first = true
+          not_found_handling = "single-page-application"
+          [[d1_databases]]
+          binding = "DB"
+          database_name = "nabzesardo-cloudflare-db"
+          database_id = "75ac406c-ba8d-4cf7-a077-f56c7f974601"
+          TOML
+          npx --yes wrangler@4.102.0 deploy --config wrangler.uploaded.preview.toml
+          echo "No production zone route configured. Preview code blocks all non-GET Gemini operations."
+      - name: Verify site, images, news API and indexing protection
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE="https://nabzesardo-gemini-uploaded-preview.emadmir1368.workers.dev"
+          curl -fsS --retry 6 --retry-delay 3 "$SITE/" -o /tmp/nabez-preview-home.html
+          grep -q '<div id="root"></div>' /tmp/nabez-preview-home.html
+          curl -fsS --retry 6 --retry-delay 3 "$SITE/api/gemini/articles" -o /tmp/nabez-preview-api.json
+          node -e 'const j=require("/tmp/nabez-preview-api.json");if(j.source!=="cloudflare-d1"||!Array.isArray(j.articles))process.exit(1);console.log("Real D1 published news:",j.articles.length);'
+          curl -fsS --retry 3 "$SITE/robots.txt" | grep -q 'Disallow: /'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$SITE/api/gemini/admin/action")" = "403"
+          curl -fsSI --retry 3 "$SITE/src/assets/images/hero_sarduiyeh_highlands_1795255635485.jpg" | head -n 15
+          echo "Independent Cloudflare preview available: $SITE"
