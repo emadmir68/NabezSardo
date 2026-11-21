@@ -14,7 +14,7 @@ export default {
         .filter(a=>{
           if(a.status!=='published')return false;
           const reason=policy.blockedMonitoredContentReason(a);
-          if(reason==='obituary'||reason==='advertisement')return false;
+          if(reason==='obituary'||reason==='advertisement'||reason==='non-news-message')return false;
           if(a.imported===true&&reason)return false;
           return true;
         }).sort((a,b)=>new Date(b.publishedAt||b.createdAt).getTime()-new Date(a.publishedAt||a.createdAt).getTime())
