@@ -1,0 +1,597 @@
+{
+  "timestamp": "2026-11-21T12:13:00.323Z",
+  "cases": [
+    {
+      "name": "desktop",
+      "httpStatus": 200,
+      "presentation": "gemini-live-d1",
+      "measurements": {
+        "title": "نبض ساردو | رسانه مستقل خبری و تحلیلی جنوب کرمان",
+        "viewport": 1440,
+        "scrollWidth": 1440,
+        "overflow": false,
+        "overflowElements": [
+          {
+            "tag": "DIV",
+            "cls": "w-full h-full animate-ken-burns",
+            "width": 1493,
+            "right": 1461,
+            "text": ""
+          },
+          {
+            "tag": "IMG",
+            "cls": "w-full h-full object-cover object-center",
+            "width": 1493,
+            "right": 1461,
+            "text": ""
+          }
+        ],
+        "rootExists": true,
+        "rootTextLength": 102283,
+        "h1": [
+          "حجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی"
+        ],
+        "h2": [
+          "روایت‌های شاخص جنوب کرمان",
+          "ساردوئیه و جنوب کرمان در قاب تحریریه",
+          "تازه‌ترین روایت‌ها به تفکیک میز خبری"
+        ],
+        "images": [
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-39cdc58f36c9f794.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-39cdc58f36c9f794.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-5159cc110e621358.svg",
+            "ok": true
+          }
+        ],
+        "font": "Vazirmatn, \"Plus Jakarta Sans\", system-ui, -apple-system, sans-serif",
+        "mainText": "۰۱ / ۰۴هواشناسی و اقلیم·جیرفتتحریریه نبض ساردو·۲۹ آبان ۱۴۰۵·۱ دقیقه مطالعهحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی به گزارش پایگاه خبری کنار صندل حجت‌الاسلام دکتر میثم تارم امام جمعه جیرفت در خطبه‌های نماز جمعه امروز با تبیین جایگاه راهبردی بسیج در منظومه انقلاب اسلامی اظهار کرد: بسیج به تدبیر امام خمینی(ره) و در پاسخ به یک ضرورت تاریخی و اجتماعی شکل گرفت و در عرصه‌های امنیتی، اجتماعی، فرهنگی و سیاسی، منشأ خدمات ارزشمندی برای کشور بوده است. وی با تأکید بر اینکه رسالت بسیج به دوران دفاع مقدس و شرایط اضطراری محدود نمی‌شود افزود: بسیج الگویی از حضور آگاهانه و مسئولانه مردم در میدان‌های مختلف نی"
+      },
+      "errors": [],
+      "bad": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+          "error": "csp"
+        }
+      ]
+    },
+    {
+      "name": "mobile",
+      "httpStatus": 200,
+      "presentation": "gemini-live-d1",
+      "measurements": {
+        "title": "نبض ساردو | رسانه مستقل خبری و تحلیلی جنوب کرمان",
+        "viewport": 390,
+        "scrollWidth": 390,
+        "overflow": false,
+        "overflowElements": [
+          {
+            "tag": "DIV",
+            "cls": "w-full h-full animate-ken-burns",
+            "width": 404,
+            "right": 396,
+            "text": ""
+          },
+          {
+            "tag": "IMG",
+            "cls": "w-full h-full object-cover object-center",
+            "width": 404,
+            "right": 396,
+            "text": ""
+          }
+        ],
+        "rootExists": true,
+        "rootTextLength": 102283,
+        "h1": [
+          "حجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی"
+        ],
+        "h2": [
+          "روایت‌های شاخص جنوب کرمان",
+          "ساردوئیه و جنوب کرمان در قاب تحریریه",
+          "تازه‌ترین روایت‌ها به تفکیک میز خبری"
+        ],
+        "images": [
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-39cdc58f36c9f794.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-39cdc58f36c9f794.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-5159cc110e621358.svg",
+            "ok": true
+          }
+        ],
+        "font": "Vazirmatn, \"Plus Jakarta Sans\", system-ui, -apple-system, sans-serif",
+        "mainText": "۰۱ / ۰۴هواشناسی و اقلیم·جیرفتتحریریه نبض ساردو·۲۹ آبان ۱۴۰۵·۱ دقیقه مطالعهحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی به گزارش پایگاه خبری کنار صندل حجت‌الاسلام دکتر میثم تارم امام جمعه جیرفت در خطبه‌های نماز جمعه امروز با تبیین جایگاه راهبردی بسیج در منظومه انقلاب اسلامی اظهار کرد: بسیج به تدبیر امام خمینی(ره) و در پاسخ به یک ضرورت تاریخی و اجتماعی شکل گرفت و در عرصه‌های امنیتی، اجتماعی، فرهنگی و سیاسی، منشأ خدمات ارزشمندی برای کشور بوده است. وی با تأکید بر اینکه رسالت بسیج به دوران دفاع مقدس و شرایط اضطراری محدود نمی‌شود افزود: بسیج الگویی از حضور آگاهانه و مسئولانه مردم در میدان‌های مختلف نی"
+      },
+      "errors": [],
+      "bad": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+          "error": "csp"
+        }
+      ]
+    },
+    {
+      "name": "small-mobile",
+      "httpStatus": 200,
+      "presentation": "gemini-live-d1",
+      "measurements": {
+        "title": "نبض ساردو | رسانه مستقل خبری و تحلیلی جنوب کرمان",
+        "viewport": 320,
+        "scrollWidth": 320,
+        "overflow": false,
+        "overflowElements": [
+          {
+            "tag": "DIV",
+            "cls": "w-full h-full animate-ken-burns",
+            "width": 330,
+            "right": 324,
+            "text": ""
+          },
+          {
+            "tag": "IMG",
+            "cls": "w-full h-full object-cover object-center",
+            "width": 330,
+            "right": 324,
+            "text": ""
+          }
+        ],
+        "rootExists": true,
+        "rootTextLength": 102283,
+        "h1": [
+          "حجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی"
+        ],
+        "h2": [
+          "روایت‌های شاخص جنوب کرمان",
+          "ساردوئیه و جنوب کرمان در قاب تحریریه",
+          "تازه‌ترین روایت‌ها به تفکیک میز خبری"
+        ],
+        "images": [
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-39cdc58f36c9f794.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-9abadbb5cd7e38c2.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-629a787bc48d73bb.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-926e0b747ccc4e9c.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-753a2c02613aa1dc.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-39cdc58f36c9f794.svg",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/auto-cover-5159cc110e621358.svg",
+            "ok": true
+          }
+        ],
+        "font": "Vazirmatn, \"Plus Jakarta Sans\", system-ui, -apple-system, sans-serif",
+        "mainText": "۰۱ / ۰۴هواشناسی و اقلیم·جیرفتتحریریه نبض ساردو·۲۹ آبان ۱۴۰۵·۱ دقیقه مطالعهحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی به گزارش پایگاه خبری کنار صندل حجت‌الاسلام دکتر میثم تارم امام جمعه جیرفت در خطبه‌های نماز جمعه امروز با تبیین جایگاه راهبردی بسیج در منظومه انقلاب اسلامی اظهار کرد: بسیج به تدبیر امام خمینی(ره) و در پاسخ به یک ضرورت تاریخی و اجتماعی شکل گرفت و در عرصه‌های امنیتی، اجتماعی، فرهنگی و سیاسی، منشأ خدمات ارزشمندی برای کشور بوده است. وی با تأکید بر اینکه رسالت بسیج به دوران دفاع مقدس و شرایط اضطراری محدود نمی‌شود افزود: بسیج الگویی از حضور آگاهانه و مسئولانه مردم در میدان‌های مختلف نی"
+      },
+      "errors": [],
+      "bad": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+          "error": "csp"
+        }
+      ]
+    },
+    {
+      "name": "headless-check",
+      "httpStatus": 200,
+      "presentation": "",
+      "measurements": {
+        "title": "نبض ساردو | رسانه مستقل خبری و تحلیلی جنوب کرمان",
+        "viewport": 390,
+        "scrollWidth": 462,
+        "overflow": true,
+        "overflowElements": [
+          {
+            "tag": "DIV",
+            "cls": "rb-topline",
+            "width": 390,
+            "right": 461,
+            "text": "ط±ط³ط§ظ†ظ‡ ظ…ط³طھظ‚ظ„ ط®ط¨ط±غŒ ظˆ طھط­ظ„غŒظ„غŒ ط¬ظ†ظˆط¨ ع©ط±ظ…ط§ظ†Inde"
+          },
+          {
+            "tag": "DIV",
+            "cls": "rb-shell rb-topline-inner",
+            "width": 362,
+            "right": 447,
+            "text": "ط±ط³ط§ظ†ظ‡ ظ…ط³طھظ‚ظ„ ط®ط¨ط±غŒ ظˆ طھط­ظ„غŒظ„غŒ ط¬ظ†ظˆط¨ ع©ط±ظ…ط§ظ†Inde"
+          },
+          {
+            "tag": "SPAN",
+            "cls": "",
+            "width": 362,
+            "right": 447,
+            "text": "ط±ط³ط§ظ†ظ‡ ظ…ط³طھظ‚ظ„ ط®ط¨ط±غŒ ظˆ طھط­ظ„غŒظ„غŒ ط¬ظ†ظˆط¨ ع©ط±ظ…ط§ظ†Inde"
+          },
+          {
+            "tag": "SPAN",
+            "cls": "rb-fa",
+            "width": 350,
+            "right": 447,
+            "text": "ط±ط³ط§ظ†ظ‡ ظ…ط³طھظ‚ظ„ ط®ط¨ط±غŒ ظˆ طھط­ظ„غŒظ„غŒ ط¬ظ†ظˆط¨ ع©ط±ظ…ط§ظ†"
+          },
+          {
+            "tag": "SPAN",
+            "cls": "",
+            "width": 91,
+            "right": 447,
+            "text": "۳۰ آبان ۱۴۰۵ آ· ۱۵:۴۳"
+          },
+          {
+            "tag": "SPAN",
+            "cls": "",
+            "width": 54,
+            "right": 447,
+            "text": "۳۰ آبان ۱۴۰۵"
+          },
+          {
+            "tag": "A",
+            "cls": "",
+            "width": 221,
+            "right": 447,
+            "text": "ط§ط±ط³ط§ظ„ ط®ط¨ط± ظ…ط±ط¯ظ…غŒSend a story â†—"
+          },
+          {
+            "tag": "SPAN",
+            "cls": "rb-fa",
+            "width": 196,
+            "right": 447,
+            "text": "ط§ط±ط³ط§ظ„ ط®ط¨ط± ظ…ط±ط¯ظ…غŒ"
+          },
+          {
+            "tag": "HEADER",
+            "cls": "rb-header",
+            "width": 390,
+            "right": 461,
+            "text": "ظ†ط¨ط¶ط³ط§ط±ط¯ظˆNABZ SARDO / SOUTH KERMANâŒ•ط¢ط±ط´غŒظˆ ط§ط®ط¨ط§ط±News "
+          },
+          {
+            "tag": "DIV",
+            "cls": "rb-shell rb-header-main",
+            "width": 360,
+            "right": 446,
+            "text": "ظ†ط¨ط¶ط³ط§ط±ط¯ظˆNABZ SARDO / SOUTH KERMANâŒ•ط¢ط±ط´غŒظˆ ط§ط®ط¨ط§ط±News "
+          },
+          {
+            "tag": "BUTTON",
+            "cls": "rb-menu-toggle",
+            "width": 18,
+            "right": 446,
+            "text": ""
+          },
+          {
+            "tag": "A",
+            "cls": "rb-brand",
+            "width": 243,
+            "right": 404,
+            "text": "ظ†ط¨ط¶ط³ط§ط±ط¯ظˆNABZ SARDO / SOUTH KERMAN"
+          }
+        ],
+        "rootExists": false,
+        "rootTextLength": 0,
+        "h1": [
+          "حجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی"
+        ],
+        "h2": [
+          "میزهای خبریمیزهای خبری",
+          "تازه‌ترین روایت‌هاتازه‌ترین روایت‌ها",
+          "از دل منطقه،برای آینده منطقه.",
+          "پربازدیدترین‌هاMost read",
+          "خبرهای کوتاهQuick news"
+        ],
+        "images": [
+          {
+            "url": "https://nabzesardo.ir/assets/news-cover-weather-indigo.svg?v=topics-20260930",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/assets/news-cover-social-green.svg?v=topics-20260930",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/assets/news-cover-culture-indigo.svg?v=topics-20260930",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/assets/news-cover-culture-indigo.svg?v=topics-20260930",
+            "ok": true
+          },
+          {
+            "url": "https://nabzesardo.ir/assets/news-cover-city-village-burgundy.svg?v=topics-20260930",
+            "ok": false
+          },
+          {
+            "url": "https://nabzesardo.ir/assets/news-cover-incidents-burgundy.svg?v=topics-20260930",
+            "ok": false
+          },
+          {
+            "url": "https://nabzesardo.ir/uploads/featured-mwguxfkm-b6d1099d69e1.jpg",
+            "ok": false
+          }
+        ],
+        "font": "Vazirmatn, Estedad, system-ui, -apple-system, sans-serif",
+        "mainText": "نبض فوریهفتم مهر ماه روز آتش نشانی و ایمنی گرامی بادهمه خبرها ↙01THE LEAD STORY01SOUTH KERMAN / FIELD REPORTآب‌وهوا / روایت اصلیWeather / LEAD STORYحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی به گزارش پایگاه خبری کنار صندل حجت‌الاسلام دکتر میثم تارم امام جمعه جیرفت در خطبه‌های نماز جمعه اâ€¦حجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی به گزارش پایگاه خبری کنار صندل حجت‌الاسلام دکتر میثم تارم امام جمع"
+      },
+      "errors": [],
+      "bad": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+          "error": "csp"
+        }
+      ]
+    }
+  ]
+}
