@@ -96,6 +96,14 @@ export function Footer({
               </button>
             </li>
             <li>
+              <a
+                href="/follow-up"
+                className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
+              >
+                {locale === 'fa' ? 'پیگیری تا نتیجه' : 'Public Follow-ups'}
+              </a>
+            </li>
+            <li>
               <button
                 type="button"
                 onClick={() => onNavigate('about')}
@@ -112,6 +120,14 @@ export function Footer({
               >
                 {locale === 'fa' ? 'تماس با ما' : 'Contact Us'}
               </button>
+            </li>
+            <li>
+              <a
+                href="/admin"
+                className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
+              >
+                {locale === 'fa' ? 'مدیریت کامل سایت' : 'Full Admin Console'}
+              </a>
             </li>
             <li>
               <button
@@ -142,7 +158,7 @@ export function Footer({
             </a>
             <span aria-hidden="true" className="opacity-35">·</span>
             <a
-              href="/rss.xml"
+              href="/feed.xml"
               className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
             >
               RSS
