@@ -1,0 +1,302 @@
+{
+  "time": "2026-11-21T12:07:25.268Z",
+  "url": "https://nabzesardo.ir",
+  "cases": [
+    {
+      "name": "desktop",
+      "httpStatus": 200,
+      "metrics": {
+        "title": "نبض ساردو | رسانه مستقل خبری و تحلیلی جنوب کرمان",
+        "width": 1440,
+        "viewport": 1440,
+        "horizontalOverflow": false,
+        "rootTextLength": 0,
+        "h1": [
+          "حجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی"
+        ],
+        "h2": [
+          "میزهای خبریمیزهای خبری",
+          "تازه‌ترین روایت‌هاتازه‌ترین روایت‌ها",
+          "از دل منطقه،برای آینده منطقه.",
+          "پربازدیدترین‌هاMost read",
+          "خبرهای کوتاهQuick news"
+        ],
+        "buttons": [
+          "",
+          "âŒ•",
+          "FA",
+          "EN",
+          "🌙☀️"
+        ],
+        "bodyFont": "Vazirmatn, Estedad, system-ui, -apple-system, sans-serif",
+        "bodyBackground": "rgb(244, 246, 249)",
+        "heroImageCount": 7,
+        "failedImages": [],
+        "navigationLinks": [
+          {
+            "title": "ط§ط±ط³ط§ظ„ ط®ط¨ط± ظ…ط±ط¯ظ…غŒSend a story",
+            "href": "/send-news"
+          },
+          {
+            "title": "ظ†ط¨ط¶ط³ط§ط±ط¯ظˆNABZ SARDO / SOUTH KERMA",
+            "href": "/"
+          },
+          {
+            "title": "ط¢ط±ط´غŒظˆ ط§ط®ط¨ط§ط±News archive â†™",
+            "href": "/all-news"
+          },
+          {
+            "title": "ط®ط§ظ†ظ‡Home",
+            "href": "/"
+          },
+          {
+            "title": "ط¢ط®ط±غŒظ† ط§ط®ط¨ط§ط±Latest News",
+            "href": "/all-news"
+          },
+          {
+            "title": "حوادثIncidents",
+            "href": "/category/incidents"
+          },
+          {
+            "title": "آب‌وهواWeather",
+            "href": "/category/weather"
+          },
+          {
+            "title": "یادداشت و مطالبهیادداشت و مطالبه",
+            "href": "/category/opinion"
+          },
+          {
+            "title": "ساردوئیهSardouiyeh",
+            "href": "/category/sardouiyeh"
+          },
+          {
+            "title": "سیاسیPolitics",
+            "href": "/category/city-village"
+          },
+          {
+            "title": "اجتماعیSociety",
+            "href": "/category/social"
+          },
+          {
+            "title": "فرهنگیفرهنگی",
+            "href": "/category/culture"
+          },
+          {
+            "title": "ورزشSports",
+            "href": "/category/sports"
+          },
+          {
+            "title": "همه خبرها ↙",
+            "href": "/all-news"
+          },
+          {
+            "title": "01SOUTH KERMAN / FIELD REPORT",
+            "href": "/news/%D8%AD%D8%AC%D8%AA%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85-%D8%AF%DA%A9%D8%AA%D8%B1-%D9%85%DB%8C%D8%AB%D9%85-%D8%AA%D8%A7%D8%B1%D9%85-%D8%AF%D8%B1-%D8%AE%D8%B7%D8%A8%D9%87%D9%87%D8%A7%DB%8C-%D9%86%D9%85%D8%A7%D8%B2-%D8%AC%D9%85%D8%B9%D9%87-%D8%AC%DB%8C%D8%B1%D9%81%D8%AA-%D8%AA%D8%A3%DA%A9%DB%8C%D8%AF-%DA%A9%D8%B1%D8%AF-%D8%A8%D8%B3%DB%8C%D8%AC-%D8%B3%D8%B1%D9%85%D8%A7%DB%8C%D9%87-%D8%B1%D8%A7%D9%87%D8%A8%D8%B1%D8%AF%DB%8C-%D8%A7%D9%86%D9%82%D9%84%D8%A7%D8%A8-%D9%88-%D9%86%D9%85%D8%A7%D8%AF-%D9%85%D8%B3%D8%A6%D9%88%D9%84%DB%8C%D8%AA%D9%BE%D8%B0%DB%8C%D8%B1%DB%8C-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C"
+          },
+          {
+            "title": "حجت‌الاسلام دکتر میثم تارم در خطبه‌های ن",
+            "href": "/news/%D8%AD%D8%AC%D8%AA%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85-%D8%AF%DA%A9%D8%AA%D8%B1-%D9%85%DB%8C%D8%AB%D9%85-%D8%AA%D8%A7%D8%B1%D9%85-%D8%AF%D8%B1-%D8%AE%D8%B7%D8%A8%D9%87%D9%87%D8%A7%DB%8C-%D9%86%D9%85%D8%A7%D8%B2-%D8%AC%D9%85%D8%B9%D9%87-%D8%AC%DB%8C%D8%B1%D9%81%D8%AA-%D8%AA%D8%A3%DA%A9%DB%8C%D8%AF-%DA%A9%D8%B1%D8%AF-%D8%A8%D8%B3%DB%8C%D8%AC-%D8%B3%D8%B1%D9%85%D8%A7%DB%8C%D9%87-%D8%B1%D8%A7%D9%87%D8%A8%D8%B1%D8%AF%DB%8C-%D8%A7%D9%86%D9%82%D9%84%D8%A7%D8%A8-%D9%88-%D9%86%D9%85%D8%A7%D8%AF-%D9%85%D8%B3%D8%A6%D9%88%D9%84%DB%8C%D8%AA%D9%BE%D8%B0%DB%8C%D8%B1%DB%8C-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C"
+          },
+          {
+            "title": "خواندن گزارشRead the report ←",
+            "href": "/news/%D8%AD%D8%AC%D8%AA%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85-%D8%AF%DA%A9%D8%AA%D8%B1-%D9%85%DB%8C%D8%AB%D9%85-%D8%AA%D8%A7%D8%B1%D9%85-%D8%AF%D8%B1-%D8%AE%D8%B7%D8%A8%D9%87%D9%87%D8%A7%DB%8C-%D9%86%D9%85%D8%A7%D8%B2-%D8%AC%D9%85%D8%B9%D9%87-%D8%AC%DB%8C%D8%B1%D9%81%D8%AA-%D8%AA%D8%A3%DA%A9%DB%8C%D8%AF-%DA%A9%D8%B1%D8%AF-%D8%A8%D8%B3%DB%8C%D8%AC-%D8%B3%D8%B1%D9%85%D8%A7%DB%8C%D9%87-%D8%B1%D8%A7%D9%87%D8%A8%D8%B1%D8%AF%DB%8C-%D8%A7%D9%86%D9%82%D9%84%D8%A7%D8%A8-%D9%88-%D9%86%D9%85%D8%A7%D8%AF-%D9%85%D8%B3%D8%A6%D9%88%D9%84%DB%8C%D8%AA%D9%BE%D8%B0%DB%8C%D8%B1%DB%8C-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C"
+          },
+          {
+            "title": "02سیاسیPoliticsبا سلام و احترام، خدمت یک",
+            "href": "/news/با-سلام-و-احترام،-خدمت-یکایک-اعضای-محترم-سردخانه-داران-و-سورتینگ-داران-شهرستان-جیرفت"
+          },
+          {
+            "title": "03اجتماعیSocietyآیت الله وحید خراسانی زی",
+            "href": "/news/آیت-الله-وحید-خراسانی-زیر-پای-زوار-امام-رضا-علیه-السلام-به-خاک-سپرده-شد"
+          },
+          {
+            "title": "04سیاسیPoliticsکلیپ نشست بخشداران و دهیا",
+            "href": "/news/کلیپ-نشست-بخشداران-و-دهیاران-جنوب-کرمان-با-مدیرکل-امور-روستایی-و-شوراهای-استانداری"
+          },
+          {
+            "title": "آرشیو کاملآرشیو کامل â†™",
+            "href": "/all-news"
+          },
+          {
+            "title": "01حوادثIncidents↙",
+            "href": "/category/incidents"
+          },
+          {
+            "title": "02آب‌وهواWeather↙",
+            "href": "/category/weather"
+          },
+          {
+            "title": "03یادداشت و مطالبهیادداشت و مطالبه↙",
+            "href": "/category/opinion"
+          },
+          {
+            "title": "04ساردوئیهSardouiyeh↙",
+            "href": "/category/sardouiyeh"
+          }
+        ]
+      },
+      "errors": [],
+      "bad": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+          "failure": {
+            "errorText": "csp"
+          }
+        },
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+          "failure": {
+            "errorText": "csp"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mobile",
+      "httpStatus": 200,
+      "metrics": {
+        "title": "نبض ساردو | رسانه مستقل خبری و تحلیلی جنوب کرمان",
+        "width": 462,
+        "viewport": 390,
+        "horizontalOverflow": true,
+        "rootTextLength": 0,
+        "h1": [
+          "حجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعیحجت‌الاسلام دکتر میثم تارم در خطبه‌های نماز جمعه جیرفت تأکید کرد: بسیج سرمایه راهبردی انقلاب و نماد مسئولیت‌پذیری اجتماعی"
+        ],
+        "h2": [
+          "میزهای خبریمیزهای خبری",
+          "تازه‌ترین روایت‌هاتازه‌ترین روایت‌ها",
+          "از دل منطقه،برای آینده منطقه.",
+          "پربازدیدترین‌هاMost read",
+          "خبرهای کوتاهQuick news"
+        ],
+        "buttons": [
+          "",
+          "âŒ•",
+          "FA",
+          "EN",
+          "🌙☀️"
+        ],
+        "bodyFont": "Vazirmatn, Estedad, system-ui, -apple-system, sans-serif",
+        "bodyBackground": "rgb(244, 246, 249)",
+        "heroImageCount": 7,
+        "failedImages": [
+          "https://nabzesardo.ir/assets/news-cover-city-village-burgundy.svg?v=topics-20260930",
+          "https://nabzesardo.ir/assets/news-cover-incidents-burgundy.svg?v=topics-20260930",
+          "https://nabzesardo.ir/uploads/featured-mwguxfkm-b6d1099d69e1.jpg"
+        ],
+        "navigationLinks": [
+          {
+            "title": "ط§ط±ط³ط§ظ„ ط®ط¨ط± ظ…ط±ط¯ظ…غŒSend a story",
+            "href": "/send-news"
+          },
+          {
+            "title": "ظ†ط¨ط¶ط³ط§ط±ط¯ظˆNABZ SARDO / SOUTH KERMA",
+            "href": "/"
+          },
+          {
+            "title": "ط¢ط±ط´غŒظˆ ط§ط®ط¨ط§ط±News archive â†™",
+            "href": "/all-news"
+          },
+          {
+            "title": "ط®ط§ظ†ظ‡Home",
+            "href": "/"
+          },
+          {
+            "title": "ط¢ط®ط±غŒظ† ط§ط®ط¨ط§ط±Latest News",
+            "href": "/all-news"
+          },
+          {
+            "title": "حوادثIncidents",
+            "href": "/category/incidents"
+          },
+          {
+            "title": "آب‌وهواWeather",
+            "href": "/category/weather"
+          },
+          {
+            "title": "یادداشت و مطالبهیادداشت و مطالبه",
+            "href": "/category/opinion"
+          },
+          {
+            "title": "ساردوئیهSardouiyeh",
+            "href": "/category/sardouiyeh"
+          },
+          {
+            "title": "سیاسیPolitics",
+            "href": "/category/city-village"
+          },
+          {
+            "title": "اجتماعیSociety",
+            "href": "/category/social"
+          },
+          {
+            "title": "فرهنگیفرهنگی",
+            "href": "/category/culture"
+          },
+          {
+            "title": "ورزشSports",
+            "href": "/category/sports"
+          },
+          {
+            "title": "همه خبرها ↙",
+            "href": "/all-news"
+          },
+          {
+            "title": "01SOUTH KERMAN / FIELD REPORT",
+            "href": "/news/%D8%AD%D8%AC%D8%AA%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85-%D8%AF%DA%A9%D8%AA%D8%B1-%D9%85%DB%8C%D8%AB%D9%85-%D8%AA%D8%A7%D8%B1%D9%85-%D8%AF%D8%B1-%D8%AE%D8%B7%D8%A8%D9%87%D9%87%D8%A7%DB%8C-%D9%86%D9%85%D8%A7%D8%B2-%D8%AC%D9%85%D8%B9%D9%87-%D8%AC%DB%8C%D8%B1%D9%81%D8%AA-%D8%AA%D8%A3%DA%A9%DB%8C%D8%AF-%DA%A9%D8%B1%D8%AF-%D8%A8%D8%B3%DB%8C%D8%AC-%D8%B3%D8%B1%D9%85%D8%A7%DB%8C%D9%87-%D8%B1%D8%A7%D9%87%D8%A8%D8%B1%D8%AF%DB%8C-%D8%A7%D9%86%D9%82%D9%84%D8%A7%D8%A8-%D9%88-%D9%86%D9%85%D8%A7%D8%AF-%D9%85%D8%B3%D8%A6%D9%88%D9%84%DB%8C%D8%AA%D9%BE%D8%B0%DB%8C%D8%B1%DB%8C-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C"
+          },
+          {
+            "title": "حجت‌الاسلام دکتر میثم تارم در خطبه‌های ن",
+            "href": "/news/%D8%AD%D8%AC%D8%AA%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85-%D8%AF%DA%A9%D8%AA%D8%B1-%D9%85%DB%8C%D8%AB%D9%85-%D8%AA%D8%A7%D8%B1%D9%85-%D8%AF%D8%B1-%D8%AE%D8%B7%D8%A8%D9%87%D9%87%D8%A7%DB%8C-%D9%86%D9%85%D8%A7%D8%B2-%D8%AC%D9%85%D8%B9%D9%87-%D8%AC%DB%8C%D8%B1%D9%81%D8%AA-%D8%AA%D8%A3%DA%A9%DB%8C%D8%AF-%DA%A9%D8%B1%D8%AF-%D8%A8%D8%B3%DB%8C%D8%AC-%D8%B3%D8%B1%D9%85%D8%A7%DB%8C%D9%87-%D8%B1%D8%A7%D9%87%D8%A8%D8%B1%D8%AF%DB%8C-%D8%A7%D9%86%D9%82%D9%84%D8%A7%D8%A8-%D9%88-%D9%86%D9%85%D8%A7%D8%AF-%D9%85%D8%B3%D8%A6%D9%88%D9%84%DB%8C%D8%AA%D9%BE%D8%B0%DB%8C%D8%B1%DB%8C-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C"
+          },
+          {
+            "title": "خواندن گزارشRead the report ←",
+            "href": "/news/%D8%AD%D8%AC%D8%AA%D8%A7%D9%84%D8%A7%D8%B3%D9%84%D8%A7%D9%85-%D8%AF%DA%A9%D8%AA%D8%B1-%D9%85%DB%8C%D8%AB%D9%85-%D8%AA%D8%A7%D8%B1%D9%85-%D8%AF%D8%B1-%D8%AE%D8%B7%D8%A8%D9%87%D9%87%D8%A7%DB%8C-%D9%86%D9%85%D8%A7%D8%B2-%D8%AC%D9%85%D8%B9%D9%87-%D8%AC%DB%8C%D8%B1%D9%81%D8%AA-%D8%AA%D8%A3%DA%A9%DB%8C%D8%AF-%DA%A9%D8%B1%D8%AF-%D8%A8%D8%B3%DB%8C%D8%AC-%D8%B3%D8%B1%D9%85%D8%A7%DB%8C%D9%87-%D8%B1%D8%A7%D9%87%D8%A8%D8%B1%D8%AF%DB%8C-%D8%A7%D9%86%D9%82%D9%84%D8%A7%D8%A8-%D9%88-%D9%86%D9%85%D8%A7%D8%AF-%D9%85%D8%B3%D8%A6%D9%88%D9%84%DB%8C%D8%AA%D9%BE%D8%B0%DB%8C%D8%B1%DB%8C-%D8%A7%D8%AC%D8%AA%D9%85%D8%A7%D8%B9%DB%8C"
+          },
+          {
+            "title": "02سیاسیPoliticsبا سلام و احترام، خدمت یک",
+            "href": "/news/با-سلام-و-احترام،-خدمت-یکایک-اعضای-محترم-سردخانه-داران-و-سورتینگ-داران-شهرستان-جیرفت"
+          },
+          {
+            "title": "03اجتماعیSocietyآیت الله وحید خراسانی زی",
+            "href": "/news/آیت-الله-وحید-خراسانی-زیر-پای-زوار-امام-رضا-علیه-السلام-به-خاک-سپرده-شد"
+          },
+          {
+            "title": "04سیاسیPoliticsکلیپ نشست بخشداران و دهیا",
+            "href": "/news/کلیپ-نشست-بخشداران-و-دهیاران-جنوب-کرمان-با-مدیرکل-امور-روستایی-و-شوراهای-استانداری"
+          },
+          {
+            "title": "آرشیو کاملآرشیو کامل â†™",
+            "href": "/all-news"
+          },
+          {
+            "title": "01حوادثIncidents↙",
+            "href": "/category/incidents"
+          },
+          {
+            "title": "02آب‌وهواWeather↙",
+            "href": "/category/weather"
+          },
+          {
+            "title": "03یادداشت و مطالبهیادداشت و مطالبه↙",
+            "href": "/category/opinion"
+          },
+          {
+            "title": "04ساردوئیهSardouiyeh↙",
+            "href": "/category/sardouiyeh"
+          }
+        ]
+      },
+      "errors": [],
+      "bad": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+          "failure": {
+            "errorText": "csp"
+          }
+        }
+      ]
+    }
+  ]
+}
