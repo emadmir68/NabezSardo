@@ -101,8 +101,11 @@ jobs:
           curl -fsS --retry 5 --retry-delay 3 -H 'Accept: text/html' -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/129.0 Safari/537.36' "$SITE/" -o /tmp/gemini-browser.html
           grep -q '<div id="root"></div>' /tmp/gemini-browser.html
           grep -q '/assets/index-' /tmp/gemini-browser.html
+          # Headless Chromium is a visual-testing browser, not a crawler.
+          curl -fsS --retry 5 --retry-delay 3 -H 'Accept: text/html' -A 'Mozilla/5.0 HeadlessChrome/130.0.0.0 Safari/537.36' "$SITE/" -o /tmp/gemini-headless.html
+          grep -q '<div id="root"></div>' /tmp/gemini-headless.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/api/gemini/articles" -o /tmp/gemini-live-news.json
-          node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("/tmp/gemini-live-news.json"));if(j.source!=="cloudflare-d1"||!Array.isArray(j.articles))process.exit(1);console.log("Live D1 stories presented by Gemini:",j.articles.length);'
+          node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("/tmp/gemini-live-news.json"));if(j.source!=="cloudflare-d1"||!Array.isArray(j.articles))process.exit(1);const forbidden=j.articles.filter(a=>/با\\s+سلام\\s+و\\s+احترام|آگهی\\s+ترحیم|به\\s+خاک\\s+سپرده\\s+شد|ثبت\\s+سفارش/u.test(a.title.fa));if(forbidden.length)throw Error("Forbidden public story: "+forbidden.map(a=>a.title.fa).slice(0,4).join("|"));console.log("Live D1 stories presented by Gemini:",j.articles.length);'
           curl -fsS --retry 5 --retry-delay 3 "$SITE/all-news" -o /tmp/archive.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/category/incidents" -o /tmp/incidents.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/category/weather" -o /tmp/weather.html
