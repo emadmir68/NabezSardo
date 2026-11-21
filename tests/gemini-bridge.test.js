@@ -15,7 +15,9 @@ test('Gemini never exposes adverts, funeral announcements or drafts',()=>{
   {id:'a',status:'published',title:'گزارش واقعی برداشت محصولات',body:'اخبار واقعی کشاورزی'},
   {id:'b',status:'published',title:'آگهی ترحیم مرحوم',body:'مراسم ختم'},
   {id:'c',status:'published',title:'ثبت سفارش فروش ویژه',body:'رزرو خدمات'},
-  {id:'d',status:'draft',title:'خبر در حال نگارش',body:'متن'}
+  {id:'d',status:'draft',title:'خبر در حال نگارش',body:'متن'},
+  {id:'e',status:'published',title:'با سلام و احترام، خدمت یکایک اعضای محترم سردخانه داران',body:'درود دوستان و همراهان'},
+  {id:'f',status:'published',title:'آیت الله وحید خراسانی به خاک سپرده شد',body:'اطلاعیه خاکسپاری'}
  ];
  assert.deepEqual(store.published({articles:a}).map(x=>x.id),['a']);
 });
