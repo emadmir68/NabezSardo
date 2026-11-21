@@ -54,7 +54,7 @@ test('policy migration quarantines previously published funeral notices and adve
     }
   };
   monitor.ensure(db);
-  assert.equal(db.newsMonitor.nonNewsPolicyVersion,3);
+  assert.equal(db.newsMonitor.nonNewsPolicyVersion,4);
   assert.equal(db.newsMonitor.nonNewsPolicyQuarantinedCount,3);
   for(const id of ['legacy-funeral-1','legacy-funeral-2','legacy-ad-1']){
     const item=db.articles.find(a=>a.id===id);
