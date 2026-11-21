@@ -25,3 +25,16 @@ test('Gemini editor field adapter escapes rich text and refuses arbitrary catego
  const a=bridge.articleChanges({title:{fa:'خبر جدید'},body:{fa:['سلام <script>alert(1)</script>']},category:'invalid',status:'published'});
  assert.match(a.bodyHtml,/&lt;script&gt;/);assert.equal(a.categoryId,'sardouiyeh');
 });
+
+test('Gemini deduplicates live headline and deck without rewriting the story',()=>{
+ const title='حجت‌الاسلام در خطبه‌های نماز جمعه سخن گفت';
+ const a={id:'550e8400-e29b-41d4-a716-446655440000',slug:'test',title,lead:title+'؛ جزئیات این خبر از سوی تحریریه پیگیری شد.',body:'گزارش تکمیلی',categoryId:'weather',status:'published'};
+ const v=bridge.mapArticle(a);
+ assert.equal(v.category,'social');
+ assert.equal(v.deck.fa,'جزئیات این خبر از سوی تحریریه پیگیری شد.');
+ assert.equal(v.shortCode,BigInt('0x550e8400e29b41d4a716446655440000').toString(36).padStart(25,'0'));
+});
+test('Source photos remain untouched and regional images keep trusted paths',()=>{
+ const a={id:'v2',title:'خبر کشاورزی جیرفت',lead:'توضیح خبر',image:'/uploads/real-original.jpg',status:'published'};
+ assert.equal(bridge.mapArticle(a).coverImage,'/uploads/real-original.jpg');
+});
