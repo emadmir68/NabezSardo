@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import type { Article, Locale } from '../types/news';
 import {
-  formatEditorialIndex,
   formatNumber,
   formatShortDate,
   getCategoryLabel,
@@ -191,7 +190,7 @@ export function LiveHero({
               {getCategoryLabel(activeSlide.category, locale)}
             </span>
             {hasArchiveCover(activeSlide)&&(
-              <span className="text-[10px] text-[#F0D496]/65 whitespace-nowrap">
+              <span className="hidden sm:inline text-[10px] text-[#F0D496]/65 whitespace-nowrap">
                 {locale==='fa'?'تصویر آرشیوی منطقه':'Regional archive photo'}
               </span>
             )}
