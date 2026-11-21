@@ -25,8 +25,6 @@ import type {
 } from './types/news';
 
 const STORAGE_KEYS = {
-  articles: 'nabzesardo_v3_articles',
-  reports: 'nabzesardo_v3_citizen_reports',
   bookmarks: 'nabzesardo_v3_bookmarks',
   theme: 'nabzesardo_v3_theme',
   locale: 'nabzesardo_v3_locale',
@@ -40,6 +38,46 @@ function loadJson<T>(key: string, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+
+async function requestTurnstileToken(sitekey:string):Promise<string>{
+  const w=window as any;
+  if(!w.turnstile){
+    await new Promise<void>((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async=true;script.onload=()=>resolve();script.onerror=()=>reject(Error('بارگذاری تایید امنیتی انجام نشد.'));
+      document.head.appendChild(script);
+    });
+  }
+  return new Promise<string>((resolve,reject)=>{
+    const backdrop=document.createElement('div');
+    backdrop.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);padding:20px';
+    const panel=document.createElement('div');
+    panel.style.cssText='background:#151923;color:#F6F2EA;border:1px solid #C6964B;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:20px;align-items:center;max-width:420px;width:100%;font-family:inherit';
+    const caption=document.createElement('p');caption.textContent='برای ثبت امن خبر مردمی، تأیید امنیتی را انجام دهید.';
+    const mount=document.createElement('div');
+    const cancel=document.createElement('button');
+    cancel.textContent='انصراف';cancel.type='button';
+    cancel.style.cssText='color:#F6F2EA;border:1px solid #C6964B;padding:8px 28px;border-radius:6px';
+    panel.append(caption,mount,cancel);backdrop.appendChild(panel);document.body.appendChild(backdrop);
+    let settled=false;
+    const finish=(token?:string,error?:Error)=>{
+      if(settled)return;
+      settled=true;backdrop.remove();
+      if(token)resolve(token);else reject(error||Error('تأیید امنیتی لغو شد.'));
+    };
+    cancel.onclick=()=>finish(undefined,Error('ارسال خبر لغو شد.'));
+    try{
+      w.turnstile.render(mount,{
+        sitekey,theme:'dark',
+        callback:(token:string)=>finish(token),
+        'error-callback':()=>finish(undefined,Error('اعتبارسنجی امنیتی موفق نبود.')),
+        'expired-callback':()=>finish(undefined,Error('کد امنیتی منقضی شد.'))
+      });
+    }catch(e){finish(undefined,Error('تأیید امنیتی در دسترس نیست.'));}
+  });
 }
 
 export default function App() {
@@ -260,9 +298,13 @@ export default function App() {
     return data;
   };
   const handleSubmitCitizenReport = async(reportData:Omit<CitizenReport,'id'|'submittedAt'|'status'>) => {
+    const configResponse=await fetch('/api/gemini/config',{credentials:'same-origin',cache:'no-store'});
+    if(!configResponse.ok)throw Error('تنظیمات تأیید امنیتی در دسترس نیست.');
+    const config=await configResponse.json() as {turnstileSiteKey?:string};
+    const turnstileToken=config.turnstileSiteKey?await requestTurnstileToken(config.turnstileSiteKey):'';
     const response=await fetch('/api/gemini/citizen',{
       method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},
-      body:JSON.stringify(reportData)
+      body:JSON.stringify({...reportData,turnstileToken})
     });
     if(!response.ok)throw Error('گزارش در تحریریه ذخیره نشد؛ دوباره تلاش کنید.');
     pushToast('گزارش مردمی در صف بررسی تحریریه ذخیره شد.','success');
