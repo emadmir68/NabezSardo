@@ -25,7 +25,9 @@ jobs:
         run: |
           node --check app.js
           node --check lib/gemini-bridge.js
+          npm install --no-audit --no-fund
           node tests/gemini-bridge.test.js
+          node tests/gemini-admin.integration.test.js
       - name: Compile original Gemini visual markup with live data handlers
         run: |
           set -euo pipefail
