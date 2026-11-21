@@ -41,6 +41,10 @@ jobs:
           unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabz-gemini-production
           # Copy ONLY data and route integration changes; original JSX markup, images and CSS remain intact.
           cp -a gemini-source/src/. /tmp/nabz-gemini-production/src/
+          cp gemini-source/index.html /tmp/nabz-gemini-production/index.html
+          cp gemini-source/package.json /tmp/nabz-gemini-production/package.json
+          cp gemini-source/vite.config.ts /tmp/nabz-gemini-production/vite.config.ts
+          cp gemini-source/tsconfig.json /tmp/nabz-gemini-production/tsconfig.json
           cd /tmp/nabz-gemini-production
           npm install --legacy-peer-deps --no-audit --no-fund
           npm run build

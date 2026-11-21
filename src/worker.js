@@ -2157,7 +2157,7 @@ export default {
       // canonical metadata, sitemaps and social bot HTML from the old Worker.
       const accept=String(request.headers.get('accept')||'');
       const ua=String(request.headers.get('user-agent')||'');
-      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||
+      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||p.startsWith('/region/')||
         p.startsWith('/news/')||p.startsWith('/n/')||p.startsWith('/category/')||
         p.startsWith('/local/');
       if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!requiresSeoHtml(ua)){

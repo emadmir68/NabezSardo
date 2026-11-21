@@ -1,11 +1,11 @@
 import type { Article, CategoryId, CitizenReport, LocalizedText, RegionId } from '../types/news';
 
 export const EDITORIAL_IMAGES = {
-  sarduiyehHighlands: '/src/assets/images/hero_sarduiyeh_highlands_1795255635485.jpg',
-  jiroftAgriculture: '/src/assets/images/hero_jiroft_agriculture_1795255634454.jpg',
-  kermanHeritage: '/src/assets/images/hero_kerman_heritage_1795255635186.jpg',
-  mountainWeather: '/src/assets/images/desk_mountain_weather_1795255634692.jpg',
-  communityCulture: '/src/assets/images/desk_community_culture_1795255635560.jpg',
+  sarduiyehHighlands: '/assets/gemini-design/hero_sarduiyeh_highlands_1795255635485.jpg',
+  jiroftAgriculture: '/assets/gemini-design/hero_jiroft_agriculture_1795255634454.jpg',
+  kermanHeritage: '/assets/gemini-design/hero_kerman_heritage_1795255635186.jpg',
+  mountainWeather: '/assets/gemini-design/desk_mountain_weather_1795255634692.jpg',
+  communityCulture: '/assets/gemini-design/desk_community_culture_1795255635560.jpg',
 } as const;
 
 export const CATEGORIES: { id: CategoryId; label: LocalizedText; code: string }[] = [

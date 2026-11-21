@@ -1,0 +1,40 @@
+name: Validate Uploaded Gemini Design
+on:
+  push:
+    branches:
+      - preview/gemini-uploaded-design-20261121
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Existing newsroom regression tests
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+      - name: Worker compilation without deployment
+        run: npx wrangler deploy --dry-run --outdir /tmp/nabez-worker-check
+      - name: Build new UI from real submitted design
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/nabez-new-design
+          unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabez-new-design
+          cp -a gemini-source/src/. /tmp/nabez-new-design/src/
+          cp gemini-source/index.html gemini-source/package.json gemini-source/vite.config.ts gemini-source/tsconfig.json /tmp/nabez-new-design/
+          cd /tmp/nabez-new-design
+          npm install --legacy-peer-deps --no-audit --no-fund
+          npm run lint
+          npm run build
+          test -f dist/index.html
+          test -d dist/src/assets/images
+          grep -q 'assets/index-' dist/index.html
+      - name: No production publish from staging
+        run: echo "This is an isolated source/build check. No production deployment or D1 mutation."
