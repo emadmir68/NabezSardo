@@ -529,7 +529,10 @@ async function fastArticleCachePut(pathname,body){
   try{
     await caches.default.put(fastArticleCacheKey(pathname),new Response(body,{headers:{
       "content-type":"text/html; charset=utf-8",
-      "cache-control":"public, max-age=0, must-revalidate",
+      // Cache API requires a positive TTL. max-age=0 made every crawler
+      // request re-render the expensive article HTML, triggering sporadic 503s.
+      // Publication policy is still checked against the D1-backed index on hits.
+      "cache-control":"public, max-age=120",
       "x-nabzesardo-article-cache":"1",
       "x-nabzesardo-article-cache-age":String(Date.now())
     }}));
