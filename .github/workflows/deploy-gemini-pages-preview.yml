@@ -38,6 +38,8 @@ jobs:
           npm run build
           test -f dist/index.html
           test -d dist/src/assets/images
+          # Cloudflare Workers SPA fallback handles client routing; Pages redirects loop in Workers.
+          rm -f dist/_redirects
       - name: Deploy independent static-assets Worker (no production routes)
         shell: bash
         env:
