@@ -6,6 +6,7 @@ import http from "node:http";
 import { env } from "cloudflare:workers";
 import articleTools from "../lib/article-tools.js";
 import store from "../lib/store.js";
+import geminiBridge from "../lib/gemini-bridge.js";
 import views from "../lib/views-v2.js";
 import { ensureSmartCover, isFallbackSourceImage } from "./smart-cover.js";
 import { cleanMonitoredImage, cleanMonitoredVideo } from "./monitored-media-cleaner.js";
@@ -2074,8 +2075,8 @@ export default {
       catch (err) { return Response.json({ ok: false, error: String(err?.message || err) }, { status: 502 }); }
     }
 
-    if (isPrimary() && request.method === "POST" && ["/admin/login","/contact","/send-news"].includes(p)) {
-      const limited=await enforcePublicRateLimit(request,p);
+    if (isPrimary() && request.method === "POST" && ["/admin/login","/contact","/send-news","/api/gemini/citizen"].includes(p)) {
+      const limited=await enforcePublicRateLimit(request,p==="/api/gemini/citizen"?"/send-news":p);
       if(limited)return limited;
     }
 
@@ -2122,10 +2123,48 @@ export default {
       return serveAsset(request, p);
     }
 
+
+    // The premium Gemini presentation reads only published, vetted Cloudflare D1 news.
+    // The admin JSON mutation endpoints fall through to the signed-cookie Node newsroom.
+    if(isPrimary()&&p==='/api/gemini/articles'&&request.method==='GET'){
+      const db=await loadPublicDbFast();
+      const articles=store.published(db).map(geminiBridge.mapArticle);
+      return Response.json({ok:true,articles,source:'cloudflare-d1'},{
+        headers:{'cache-control':'private,no-store','x-nabzesardo-editorial':'verified-live-d1'}
+      });
+    }
+    if(isPrimary()&&p==='/api/gemini/view'&&request.method==='GET'){
+      const key=String(url.searchParams.get('slug')||'').slice(0,200);
+      const db=await loadPublicDbFast();
+      const article=store.published(db).find(a=>a.slug===key);
+      if(!article)return new Response(null,{status:404});
+      if(ctx)ctx.waitUntil(recordFastVisit(request,'/news/'+encodeURIComponent(key),String(article.id)).catch(()=>{}));
+      return new Response(null,{status:204,headers:{'cache-control':'no-store'}});
+    }
+
     if (isPrimary()) {
       await ensureCutoverBackup();
       await ensurePrivacyCleanup();
       await ensureLiveNonNewsCleanup();
+
+      // Serve the untouched Gemini React markup to browsers, while preserving SSR,
+      // canonical metadata, sitemaps and social bot HTML from the old Worker.
+      const accept=String(request.headers.get('accept')||'');
+      const ua=String(request.headers.get('user-agent')||'');
+      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||
+        p.startsWith('/news/')||p.startsWith('/n/')||p.startsWith('/category/')||
+        p.startsWith('/local/');
+      if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!fastBot(ua)){
+        const htmlUrl=new URL('/gemini/index.html',request.url);
+        const page=await env.ASSETS.fetch(new Request(htmlUrl.toString(),{method:'GET'}));
+        if(page.ok){
+          return new Response(page.body,{status:200,headers:{
+            ...securityHeaders(),
+            'content-type':'text/html; charset=utf-8','cache-control':'no-store',
+            'x-nabzesardo-presentation':'gemini-live-d1'
+          }});
+        }
+      }
       const fastPublic=await handleFastPublic(request,url,p,ctx);
       if(fastPublic)return fastPublic;
       return handleApp(request);
