@@ -456,7 +456,10 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&p==='/editorial-policy'){analytics.track(req,p);return send(res,200,views.editorialPolicy(db));}
   if(req.method==='GET'&&p==='/send-news'){analytics.track(req,p);return send(res,200,views.simple(db,'send-news',u.searchParams.get('ok')==='1',u.searchParams.get('uploadError')||''));}
   if(req.method==='GET'&&p==='/follow-up'){analytics.track(req,p);return send(res,200,views.followup(db));}
-  if(req.method==='GET'&&p==='/admin/login')return send(res,200,views.login(u.searchParams.get('error')==='1'));
+  if(req.method==='GET'&&p==='/admin/login'){
+    const loginHtml=views.login(u.searchParams.get('error')==='1');
+    return send(res,200,u.searchParams.get('gemini')==='1'?loginHtml.replace('action="/admin/login"','action="/admin/login?gemini=1"'):loginHtml);
+  }
   if(req.method==='GET'&&p==='/admin/logout')return redirect(res,'/admin/login','nabez_admin=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
 
   let m=p.match(/^\/local\/(sardouiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/);
