@@ -2155,7 +2155,7 @@ export default {
         p.startsWith('/news/')||p.startsWith('/n/')||p.startsWith('/category/')||
         p.startsWith('/local/');
       if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!fastBot(ua)){
-        const htmlUrl=new URL('/gemini/index.html',request.url);
+        const htmlUrl=new URL('/gemini/',request.url);
         const page=await env.ASSETS.fetch(new Request(htmlUrl.toString(),{method:'GET'}));
         if(page.ok){
           return new Response(page.body,{status:200,headers:{
