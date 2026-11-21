@@ -34,7 +34,8 @@ jobs:
           cd /tmp/nabz-gemini-design
           npm install --legacy-peer-deps --no-audit --no-fund
           npm run build
-          npm run lint
+          npm install --no-save --legacy-peer-deps typescript@5.9.3
+          npx tsc --noEmit --pretty false
           test -f dist/index.html
           test -d dist/src/assets/images
           ! grep -q 'nabzesardo_v3_articles' dist/assets/index-*.js
