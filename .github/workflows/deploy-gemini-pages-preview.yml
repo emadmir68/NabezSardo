@@ -1,4 +1,4 @@
-name: Publish Gemini design to isolated Cloudflare Pages preview
+name: Publish Gemini design to isolated Cloudflare Worker preview
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: nabzesardo-gemini-pages-staging
+  group: nabzesardo-gemini-worker-staging
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Unpack design without modifying original files
+      - name: Unpack and compile exact original design
         shell: bash
         run: |
           set -euo pipefail
@@ -38,7 +38,7 @@ jobs:
           npm run build
           test -f dist/index.html
           test -d dist/src/assets/images
-      - name: Publish isolated Cloudflare Pages preview (not production domain)
+      - name: Deploy independent static-assets Worker (no production routes)
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -47,10 +47,14 @@ jobs:
           set -euo pipefail
           test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "::error::Cloudflare token missing"; exit 1; }
           test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || { echo "::error::Cloudflare account missing"; exit 1; }
-          PROJECT="nabzesardo-gemini-preview-2026"
-          if ! npx --yes wrangler@4.102.0 pages project list 2>&1 | grep -Fq "$PROJECT"; then
-            npx --yes wrangler@4.102.0 pages project create "$PROJECT" --production-branch="gemini-preview"
-          fi
-          npx --yes wrangler@4.102.0 pages deploy /tmp/nabz-gemini-design/dist --project-name="$PROJECT" --branch="gemini-preview" --commit-hash="$GITHUB_SHA"
-          echo "Preview: https://${PROJECT}.pages.dev"
-          echo "This workflow NEVER deploys to nabzesardo.ir or cloudflare-migration."
+          cat > /tmp/nabz-gemini-design/wrangler.preview.toml <<'EOF'
+          name = "nabzesardo-gemini-preview-2026"
+          compatibility_date = "2026-11-01"
+          workers_dev = true
+          [assets]
+          directory = "./dist"
+          not_found_handling = "single-page-application"
+          EOF
+          cd /tmp/nabz-gemini-design
+          npx --yes wrangler@4.102.0 deploy --config wrangler.preview.toml
+          echo "IMPORTANT: no Cloudflare zone route or production domain is configured in this preview Worker."
