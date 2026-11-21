@@ -40,6 +40,9 @@ jobs:
           test -d dist/src/assets/images
           # Cloudflare Workers SPA fallback handles client routing; Pages redirects loop in Workers.
           rm -f dist/_redirects
+          # Staging-only: prevent search engines from indexing example stories.
+          sed -i '1a\\  X-Robots-Tag: noindex, nofollow, noarchive' dist/_headers
+          printf 'User-agent: *\\nDisallow: /\\n' > dist/robots.txt
       - name: Deploy independent static-assets Worker (no production routes)
         shell: bash
         env:
@@ -60,3 +63,14 @@ jobs:
           cd /tmp/nabz-gemini-design
           npx --yes wrangler@4.102.0 deploy --config wrangler.preview.toml
           echo "IMPORTANT: no Cloudflare zone route or production domain is configured in this preview Worker."
+      - name: Probe published preview page, styles, image, and indexing protection
+        shell: bash
+        run: |
+          set -euo pipefail
+          SITE="https://nabzesardo-gemini-preview-2026.emadmir1368.workers.dev"
+          curl -fsS --retry 6 --retry-delay 2 "$SITE/" -o /tmp/gemini-preview.html
+          grep -q "نبض ساردو" /tmp/gemini-preview.html
+          curl -fsSI --retry 6 --retry-delay 2 "$SITE/assets/index-DlIa8MfU.css"
+          curl -fsSI --retry 6 --retry-delay 2 "$SITE/src/assets/images/hero_sarduiyeh_highlands_1795255635485.jpg"
+          curl -fsS --retry 4 --retry-delay 2 "$SITE/robots.txt" | grep -q 'Disallow: /'
+          echo "Preview site, CSS, image and robots.txt are online."
