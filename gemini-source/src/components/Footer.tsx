@@ -97,10 +97,26 @@ export function Footer({
             </li>
             <li>
               <a
+                href="/category/short-news"
+                className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
+              >
+                {locale === 'fa' ? 'خبرهای کوتاه' : 'News Briefs'}
+              </a>
+            </li>
+            <li>
+              <a
                 href="/follow-up"
                 className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
               >
                 {locale === 'fa' ? 'پیگیری تا نتیجه' : 'Public Follow-ups'}
+              </a>
+            </li>
+            <li>
+              <a
+                href="/editorial-policy"
+                className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
+              >
+                {locale === 'fa' ? 'منشور و سیاست تحریریه' : 'Editorial Policy'}
               </a>
             </li>
             <li>
