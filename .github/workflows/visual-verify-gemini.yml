@@ -1,0 +1,89 @@
+name: Verify REAL Gemini browser experience and responsive layout
+on:
+  push:
+    branches: [fix/gemini-live-visual-20261121]
+    paths: [".github/workflows/visual-verify-gemini.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/gemini-live-visual-20261121
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Audit real customer browser (never HeadlessChrome user agent)
+        run: |
+          mkdir -p audit-gemini
+          node <<'JS'
+          const fs=require('node:fs');
+          const {chromium}=require('playwright');
+          const UA='Mozilla/5.0 (Linux; Android 16; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
+          const DESKTOP='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+          (async()=>{
+            const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+            const data={timestamp:new Date().toISOString(),cases:[]};
+            for(const cfg of [
+              {name:'desktop',width:1440,height:900,agent:DESKTOP,mobile:false},
+              {name:'mobile',width:390,height:844,agent:UA,mobile:true},
+              {name:'small-mobile',width:320,height:700,agent:UA,mobile:true},
+              {name:'headless-check',width:390,height:844,agent:undefined,mobile:true}
+            ]){
+              const ctx=await browser.newContext({
+                viewport:{width:cfg.width,height:cfg.height},
+                deviceScaleFactor:1,isMobile:cfg.mobile,hasTouch:cfg.mobile,locale:'fa-IR',...(cfg.agent?{userAgent:cfg.agent}:{})
+              });
+              const page=await ctx.newPage(),errors=[],bad=[];
+              page.on('pageerror',e=>errors.push(String(e).slice(0,300)));
+              page.on('requestfailed',req=>bad.push({url:req.url().slice(0,180),error:req.failure()?.errorText}));
+              const res=await page.goto('https://nabzesardo.ir/',{waitUntil:'domcontentloaded',timeout:40000});
+              await page.waitForTimeout(5000);
+              const measurements=await page.evaluate(()=>{
+                const root=document.querySelector('#root');
+                const els=[...document.querySelectorAll('body *')];
+                const vw=document.documentElement.clientWidth;
+                const overflow=els.filter(el=>{
+                  const b=el.getBoundingClientRect();
+                  const st=getComputedStyle(el);
+                  return b.width>0&&b.right>vw+3&&st.position!=='fixed'&&st.visibility!=='hidden';
+                }).slice(0,12).map(el=>({tag:el.tagName,cls:String(el.className).slice(0,110),width:Math.round(el.getBoundingClientRect().width),right:Math.round(el.getBoundingClientRect().right),text:el.textContent?.trim().slice(0,70)}));
+                return {
+                  title:document.title,viewport:vw,scrollWidth:document.documentElement.scrollWidth,
+                  overflow:document.documentElement.scrollWidth>vw+2,overflowElements:overflow,
+                  rootExists:!!root,rootTextLength:root?.textContent?.length||0,
+                  h1:[...document.querySelectorAll('h1')].map(e=>e.textContent?.trim()).slice(0,5),
+                  h2:[...document.querySelectorAll('h2')].map(e=>e.textContent?.trim()).slice(0,12),
+                  images:[...document.querySelectorAll('img')].slice(0,25).map(e=>({url:e.currentSrc||e.src,ok:e.complete&&e.naturalWidth>0})),
+                  font:getComputedStyle(document.body).fontFamily,
+                  mainText:document.querySelector('main')?.textContent?.trim().slice(0,800),
+                };
+              });
+              await page.screenshot({path:'audit-gemini/'+cfg.name+'-top.jpg',type:'jpeg',quality:82});
+              if(cfg.name!=='headless-check'){
+                await page.screenshot({path:'audit-gemini/'+cfg.name+'-full.jpg',type:'jpeg',quality:64,fullPage:true});
+                await page.evaluate(()=>scrollTo(0,1000));
+                await page.screenshot({path:'audit-gemini/'+cfg.name+'-middle.jpg',type:'jpeg',quality:76});
+              }
+              data.cases.push({name:cfg.name,httpStatus:res?.status(),presentation:res?.headers()['x-nabzesardo-presentation']||'',measurements,errors,bad});
+              await ctx.close();
+            }
+            fs.writeFileSync('audit-gemini/results.json',JSON.stringify(data,null,2));
+            console.log(JSON.stringify(data,null,2).slice(0,18000));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Save audit evidence to fix branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add audit-gemini/
+          git commit -m 'Audit real Chrome desktop and Android mobile Gemini rendering'
+          git push origin HEAD:fix/gemini-live-visual-20261121
