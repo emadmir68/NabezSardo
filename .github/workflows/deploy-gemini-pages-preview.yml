@@ -8,6 +8,9 @@ on:
       - ".github/workflows/deploy-gemini-pages-preview.yml"
       - ".github/workflows/validate-gemini-design-package.yml"
       - "nabz-sardo-original-gemini-design.zip"
+      - "src/gemini-preview-worker.js"
+      - "gemini-source/**"
+      - "lib/gemini-bridge.js"
   workflow_dispatch:
 
 permissions:
@@ -33,6 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabz-gemini-design
+          cp -a gemini-source/src/. /tmp/nabz-gemini-design/src/
           cd /tmp/nabz-gemini-design
           npm install --legacy-peer-deps --no-audit --no-fund
           npm run build
@@ -52,16 +56,25 @@ jobs:
           set -euo pipefail
           test -n "${CLOUDFLARE_API_TOKEN:-}" || { echo "::error::Cloudflare token missing"; exit 1; }
           test -n "${CLOUDFLARE_ACCOUNT_ID:-}" || { echo "::error::Cloudflare account missing"; exit 1; }
-          cat > /tmp/nabz-gemini-design/wrangler.preview.toml <<'EOF'
+          mkdir -p .gemini-preview-dist
+          cp -a /tmp/nabz-gemini-design/dist/. .gemini-preview-dist/
+          cat > wrangler.gemini.preview.toml <<'EOF'
           name = "nabzesardo-gemini-preview-2026"
+          main = "./src/gemini-preview-worker.js"
           compatibility_date = "2026-11-01"
+          compatibility_flags = ["nodejs_compat"]
           workers_dev = true
           [assets]
-          directory = "./dist"
+          directory = "./.gemini-preview-dist"
+          binding = "ASSETS"
+          run_worker_first = true
           not_found_handling = "single-page-application"
+          [[d1_databases]]
+          binding = "DB"
+          database_name = "nabzesardo-cloudflare-db"
+          database_id = "75ac406c-ba8d-4cf7-a077-f56c7f974601"
           EOF
-          cd /tmp/nabz-gemini-design
-          npx --yes wrangler@4.102.0 deploy --config wrangler.preview.toml
+          npx --yes wrangler@4.102.0 deploy --config wrangler.gemini.preview.toml
           echo "IMPORTANT: no Cloudflare zone route or production domain is configured in this preview Worker."
       - name: Probe published preview page, styles, image, and indexing protection
         shell: bash
@@ -73,4 +86,6 @@ jobs:
           curl -fsSI --retry 6 --retry-delay 2 "$SITE/assets/index-DlIa8MfU.css"
           curl -fsSI --retry 6 --retry-delay 2 "$SITE/src/assets/images/hero_sarduiyeh_highlands_1795255635485.jpg"
           curl -fsS --retry 4 --retry-delay 2 "$SITE/robots.txt" | grep -q 'Disallow: /'
-          echo "Preview site, CSS, image and robots.txt are online."
+          curl -fsS --retry 4 --retry-delay 2 "$SITE/api/gemini/articles" -o /tmp/gemini-articles.json
+          node -e 'const x=require("/tmp/gemini-articles.json");if(x.source!=="cloudflare-d1"||!Array.isArray(x.articles))process.exit(1);console.log("Real D1 articles:",x.articles.length);'
+          echo "Preview site, CSS, image and live D1 API are online."
