@@ -67,7 +67,7 @@ interface AdminStudioProps {
   onNotify: (msg: string, tone?: 'success' | 'info' | 'warning') => void;
 }
 
-type StudioTab = 'dashboard' | 'articles' | 'citizen' | 'media' | 'settings';
+type StudioTab = 'dashboard' | 'articles' | 'citizen' | 'media' | 'settings' | 'operations';
 
 export function AdminStudio({
   articles,
@@ -395,6 +395,7 @@ export function AdminStudio({
       icon: ImageIcon,
     },
     { id: 'settings', labelFa: 'تنظیمات سایت', labelEn: 'Site Settings', icon: Settings },
+    { id: 'operations', labelFa: 'ابزارهای پیشرفته', labelEn: 'Advanced Tools', icon: Database },
   ];
 
   return (
@@ -433,6 +434,14 @@ export function AdminStudio({
             <span>{locale === 'fa' ? 'پشتیبان JSON' : 'Export JSON'}</span>
           </button>
 
+          <a
+            href="/admin"
+            className="inline-flex items-center gap-2 min-h-[42px] px-4 py-2 text-xs sm:text-sm font-semibold border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/25 text-[#141210] dark:text-[#EDE6D8] hover:border-[#9A6B27] dark:hover:border-[#E8C680] rounded-[10px] transition-colors"
+          >
+            <Database className="w-4 h-4" />
+            <span>{locale === 'fa' ? 'پنل مدیریت کامل' : 'Full Admin Console'}</span>
+          </a>
+
           <button
             type="button"
             onClick={onLogout}
@@ -466,6 +475,46 @@ export function AdminStudio({
           );
         })}
       </div>
+
+
+      {/* Existing production operations stay in the original authenticated Node newsroom.
+          These links expose, rather than reimplement, the server-backed tools. */}
+      {activeTab === 'operations' && (
+        <section className="space-y-5" aria-label={locale === 'fa' ? 'ابزارهای عملیاتی سایت' : 'Newsroom operations'}>
+          <div className="magazine-card rounded-[22px] p-5 sm:p-7">
+            <h2 className="font-editorial-display text-xl sm:text-2xl font-bold text-[#141210] dark:text-[#F6F2EA]">
+              {locale === 'fa' ? 'امکانات عملیاتی و مدیریت پیشرفته' : 'Operations & advanced management'}
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-[#5A5247] dark:text-[#A1AAB9]">
+              {locale === 'fa'
+                ? 'این قابلیت‌ها همچنان در پنل اصلی و پایگاه داده فعال هستند. برای مدیریت عملیاتی، از مسیرهای امن همان سامانه استفاده کنید.'
+                : 'These server-backed tools remain in the full newsroom. Open the protected management pages for operational work.'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-6">
+              {[
+                { href: '/admin#monitor', fa: 'رصد هوشمند و صف اخبار', en: 'News monitoring & queue' },
+                { href: '/admin#followups', fa: 'پیگیری تا نتیجه', en: 'Follow-up cases' },
+                { href: '/admin#social', fa: 'انتشار شبکه‌های اجتماعی', en: 'Social distribution' },
+                { href: '/admin#live', fa: 'میز خبر فوری', en: 'Live news desk' },
+                { href: '/admin#news', fa: 'مدیریت کامل اخبار و رسانه', en: 'Full publishing & media' },
+                { href: '/admin#citizens', fa: 'گزارش‌های مردمی', en: 'Citizen submissions' },
+                { href: '/admin#backup', fa: 'پشتیبان‌گیری و بازیابی', en: 'Backups & recovery' },
+                { href: '/admin#overview', fa: 'آمار و داشبورد اصلی', en: 'Original dashboard & statistics' },
+                { href: '/admin', fa: 'تمام امکانات پنل اصلی', en: 'Full administration console' },
+              ].map((tool) => (
+                <a
+                  key={tool.href}
+                  href={tool.href}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-[#D9CEBC] dark:border-[#D4A85B]/30 px-4 py-4 text-sm font-semibold text-[#141210] dark:text-[#F6F2EA] hover:border-[#9A6B27] dark:hover:border-[#E8C680] hover:bg-[#D9CEBC]/20 dark:hover:bg-[#D4A85B]/10 transition-colors"
+                >
+                  <span>{locale === 'fa' ? tool.fa : tool.en}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* TAB 1: DASHBOARD OVERVIEW */}
       {activeTab === 'dashboard' && (
