@@ -313,6 +313,8 @@ const server=http.createServer(async(req,res)=>{
 
   const db=load();
 
+  if(req.method==='GET'&&p==='/api/gemini/config')
+    return send(res,200,JSON.stringify({ok:true,turnstileSiteKey:String(process.env.TURNSTILE_SITE_KEY||'').slice(0,256)}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
   // Authenticated Gemini studio uses the SAME signed HttpOnly session and editorial D1 store.
   if(req.method==='GET'&&p==='/api/gemini/admin/state'){
     if(!authed(req))return send(res,401,JSON.stringify({ok:false,error:'auth-required'}),'application/json; charset=utf-8');
