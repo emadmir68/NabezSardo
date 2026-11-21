@@ -12,7 +12,7 @@ import { FrontPageEditorial } from './components/FrontPageEditorial';
 import { LiveHero } from './components/LiveHero';
 import { SearchModal } from './components/SearchModal';
 import { TopBar } from './components/TopBar';
-import { EDITORIAL_IMAGES, INITIAL_ARTICLES, INITIAL_CITIZEN_REPORTS } from './data/initialData';
+import { EDITORIAL_IMAGES } from './data/initialData';
 import type {
   ActiveView,
   Article,
@@ -49,20 +49,19 @@ export default function App() {
   const [locale, setLocale] = useState<Locale>(() =>
     loadJson<Locale>(STORAGE_KEYS.locale, 'fa')
   );
-  const [articles, setArticles] = useState<Article[]>(() =>
-    loadJson<Article[]>(STORAGE_KEYS.articles, INITIAL_ARTICLES)
-  );
-  const [citizenReports, setCitizenReports] = useState<CitizenReport[]>(() =>
-    loadJson<CitizenReport[]>(STORAGE_KEYS.reports, INITIAL_CITIZEN_REPORTS)
-  );
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [citizenReports, setCitizenReports] = useState<CitizenReport[]>([]);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() =>
     loadJson<string[]>(STORAGE_KEYS.bookmarks, [])
   );
 
-  const [activeView, setActiveView] = useState<ActiveView>('home');
+  const [activeView, setActiveView] = useState<ActiveView>(() => {
+    const p=window.location.pathname;
+    return p==='/all-news'?'archive':p==='/send-news'?'submit':p.startsWith('/category/')||p.startsWith('/local/')?'desks':new URLSearchParams(window.location.search).has('studio')?'studio':'home';
+  });
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>('all');
-  const [selectedRegion, setSelectedRegion] = useState<RegionId | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>(() => window.location.pathname.startsWith('/category/') ? window.location.pathname.split('/')[2].replace('sardouiyeh','sarduiyeh') as CategoryId : 'all');
+  const [selectedRegion, setSelectedRegion] = useState<RegionId | 'all'>(() => window.location.pathname.startsWith('/local/') ? window.location.pathname.split('/')[2].replace('sardouiyeh','sarduiyeh') as RegionId : 'all');
   const [savedOnly, setSavedOnly] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -98,14 +97,57 @@ export default function App() {
     window.localStorage.setItem(STORAGE_KEYS.locale, JSON.stringify(locale));
   }, [locale]);
 
-  // Persist editorial data
+  // All published news is read from the real Cloudflare D1 newsroom, never demo/localStorage.
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.articles, JSON.stringify(articles));
-  }, [articles]);
+    let active=true;
+    const reload=async()=>{
+      try{
+        const response=await fetch('/api/gemini/articles',{credentials:'same-origin',cache:'no-store'});
+        if(!response.ok)throw Error('News API: '+response.status);
+        const data=await response.json() as {articles:Article[]};
+        if(active)setArticles(Array.isArray(data.articles)?data.articles:[]);
+      }catch(error){
+        console.error('Live newsroom unavailable:',error);
+        if(active)pushToast('دریافت اخبار زنده با مشکل مواجه شد. لطفاً دوباره تلاش کنید.','warning');
+      }
+    };
+    void reload();
+    const timer=window.setInterval(()=>void reload(),60000);
+    return()=>{active=false;window.clearInterval(timer);};
+  },[]);
 
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEYS.reports, JSON.stringify(citizenReports));
-  }, [citizenReports]);
+  // Support direct article links, refresh, browser back and forward.
+  useEffect(()=>{
+    const sync=()=>{
+      const p=window.location.pathname;
+      if(p.startsWith('/news/')||p.startsWith('/n/')){
+        const key=decodeURIComponent(p.split('/').pop()||'');
+        setSelectedArticleId(articles.find(a=>a.slug===key||a.id===key)?.id||null);
+        return;
+      }
+      setSelectedArticleId(null);
+      setActiveView(new URLSearchParams(window.location.search).has('studio')?'studio':p==='/all-news'?'archive':p==='/send-news'?'submit':p.startsWith('/category/')||p.startsWith('/local/')?'desks':'home');
+    };
+    sync();
+    window.addEventListener('popstate',sync);
+    return()=>window.removeEventListener('popstate',sync);
+  },[articles]);
+
+  useEffect(()=>{
+    if(activeView!=='studio')return;
+    let active=true;
+    const load=async()=>{
+      try{
+        const response=await fetch('/api/gemini/admin/state',{credentials:'same-origin',cache:'no-store'});
+        if(response.status===401||response.status===403){window.location.assign('/admin/login?gemini=1');return;}
+        if(!response.ok)throw Error('Admin unavailable: '+response.status);
+        const data=await response.json() as {articles:Article[],citizenReports:CitizenReport[]};
+        if(active){setArticles(data.articles||[]);setCitizenReports(data.citizenReports||[]);}
+      }catch(err){console.error('Secure newsroom unavailable',err);pushToast('اتصال امن به تحریریه برقرار نشد.','warning');}
+    };
+    void load();
+    return()=>{active=false;};
+  },[activeView]);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEYS.bookmarks, JSON.stringify(bookmarkedIds));
@@ -164,14 +206,15 @@ export default function App() {
   );
 
   const handleOpenArticle = (article: Article) => {
+    window.history.pushState({},'', '/news/'+encodeURIComponent(article.slug));
     setSelectedArticleId(article.id);
-    setArticles((prev) =>
-      prev.map((a) => (a.id === article.id ? { ...a, views: a.views + 1 } : a))
-    );
+    void fetch('/api/gemini/view?slug='+encodeURIComponent(article.slug),{credentials:'same-origin',cache:'no-store'}).catch(()=>{});
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNavigate = (view: ActiveView) => {
+    const url={home:'/',desks:'/category/sardouiyeh',archive:'/all-news',submit:'/send-news',studio:'/?studio=1'}[view];
+    window.history.pushState({},'',url);
     setSelectedArticleId(null);
     setActiveView(view);
     if (view !== 'archive') setSavedOnly(false);
@@ -358,7 +401,7 @@ export default function App() {
             locale={locale}
             isBookmarked={bookmarkedIds.includes(activeArticle.id)}
             onToggleBookmark={handleToggleBookmark}
-            onClose={() => setSelectedArticleId(null)}
+            onClose={() => { window.history.pushState({},'','/'); setSelectedArticleId(null); }}
             onSelectRelated={handleOpenArticle}
             onNotify={(msg) => pushToast(msg, 'success')}
           />
