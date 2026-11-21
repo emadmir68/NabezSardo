@@ -38,7 +38,7 @@ jobs:
         if: steps.zip.outputs.found == 'true'
         working-directory: /tmp/nabz-gemini-design
         run: |
-          npm install --no-audit --no-fund
+          npm install --legacy-peer-deps --no-audit --no-fund
           npm run build
           test -f dist/index.html
           test -d dist/src/assets/images
