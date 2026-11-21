@@ -3,6 +3,7 @@ const fs=require('fs');
 const path=require('path');
 const crypto=require('crypto');
 const store=require('./lib/store');
+const geminiBridge=require('./lib/gemini-bridge');
 const {load,save,id,now,slug,published,UPLOAD_DIR,createBackup,listBackups,fullBackup,restoreFullBackup}=store;
 const views=require('./lib/views-v2');
 const articleTools=require('./lib/article-tools');
@@ -311,6 +312,136 @@ const server=http.createServer(async(req,res)=>{
   }
 
   const db=load();
+
+  // Authenticated Gemini studio uses the SAME signed HttpOnly session and editorial D1 store.
+  if(req.method==='GET'&&p==='/api/gemini/admin/state'){
+    if(!authed(req))return send(res,401,JSON.stringify({ok:false,error:'auth-required'}),'application/json; charset=utf-8');
+    return send(res,200,JSON.stringify({
+      ok:true,
+      articles:(db.articles||[]).map(geminiBridge.mapArticle),
+      citizenReports:(db.citizens||[]).map(geminiBridge.mapCitizen)
+    }),'application/json; charset=utf-8',{'Cache-Control':'private,no-store'});
+  }
+  if(req.method==='POST'&&(p==='/api/gemini/admin/action'||p==='/api/gemini/citizen')){
+    const isAdmin=p==='/api/gemini/admin/action';
+    if(isAdmin&&!authed(req))return send(res,401,JSON.stringify({ok:false,error:'auth-required'}),'application/json; charset=utf-8');
+    if(crossSiteMutation(req))return send(res,403,JSON.stringify({ok:false,error:'cross-site-request'}),'application/json; charset=utf-8');
+    const origin=String(req.headers.origin||'');
+    let validOrigin=false;
+    try{validOrigin=origin&&new URL(origin).host===String(req.headers.host||'');}catch{}
+    if(!validOrigin)return send(res,403,JSON.stringify({ok:false,error:'origin-required'}),'application/json; charset=utf-8');
+    if(isAdmin&&req.headers['x-nabzesardo-editorial']!=='1')
+      return send(res,403,JSON.stringify({ok:false,error:'editorial-header-required'}),'application/json; charset=utf-8');
+    let input;
+    try{input=JSON.parse((await readRaw(req,7*1024*1024)).toString('utf8'));}
+    catch{return send(res,400,JSON.stringify({ok:false,error:'invalid-payload'}),'application/json; charset=utf-8');}
+    if(!input||typeof input!=='object'||Array.isArray(input))return send(res,400,JSON.stringify({ok:false,error:'invalid-payload'}),'application/json; charset=utf-8');
+    const done=(status,data)=>send(res,status,JSON.stringify(data),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
+    const dataImage=(value,filename='gemini-cover')=>{
+      const m=String(value||'').match(/^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/);
+      if(!m)return null;
+      const data=Buffer.from(m[2],'base64');
+      if(!data.length||data.length>4*1024*1024)throw Error('image-size');
+      return {filename,type:m[1],data};
+    };
+    if(!isAdmin){
+      const name=String(input.reporterName||'').trim().slice(0,120);
+      const title=String(input.title||'').trim().slice(0,160);
+      const description=String(input.description||'').trim().slice(0,8000);
+      const contact=String(input.contact||'').trim().slice(0,160);
+      if(title.length<8||description.length<24)return done(422,{ok:false,error:'report-too-short'});
+      if(String(input.website||'').trim())return done(422,{ok:false,error:'invalid-submission'});
+      const ip=String(req.headers['cf-connecting-ip']||'');
+      if(!(await verifyTurnstile(input.turnstileToken||'',ip)))return done(403,{ok:false,error:'turnstile-required'});
+      let media={url:'',type:'',name:''};
+      try{const file=dataImage(input.imageDataUrl,'citizen-image');if(file)media=saveCitizenMedia(file);}
+      catch{return done(413,{ok:false,error:'image-too-large'});}
+      db.citizens=db.citizens||[];
+      db.citizens.unshift({
+        id:id(),createdAt:now(),name:name||'شهروندخبرنگار',
+        phone:contact,location:String(input.region||'sarduiyeh').slice(0,64),
+        categoryId:String(input.category||'social').slice(0,32),
+        headline:title,details:description,mediaUrl:media.url,
+        mediaType:media.type,mediaName:media.name,geminiStatus:'pending'
+      });
+      save(db);
+      return done(200,{ok:true});
+    }
+    const action=String(input.action||'');
+    if(action==='save'){
+      const article=input.article;
+      if(!article||typeof article!=='object'||Array.isArray(article))return done(400,{ok:false,error:'missing-article'});
+      const isNew=input.isNew===true;
+      const existing=isNew?null:(db.articles||[]).find(a=>a.id===String(article.id));
+      if(!isNew&&!existing)return done(404,{ok:false,error:'article-not-found'});
+      const changes=geminiBridge.articleChanges(article);
+      if(changes.title.length<5||(!changes.body&&changes.lead.length<12))return done(422,{ok:false,error:'incomplete-article'});
+      let cover=String(article.coverImage||'').trim();
+      try{
+        const file=dataImage(cover,'gemini-cover');
+        if(file)cover=saveImage(file);
+        else if(!/^(\/(uploads\/|src\/assets\/images\/|news-cover|header-|hero-|assets\/)|https:\/\/)/i.test(cover))cover='';
+      }catch{return done(413,{ok:false,error:'invalid-cover'});}
+      if(cover&&cover.length>2100)return done(422,{ok:false,error:'cover-url-too-long'});
+      const updated={
+        ...(existing||{}),...changes,
+        id:existing?existing.id:id(),
+        slug:existing?existing.slug:uniqueSlug(db,article.slug||changes.title,undefined),
+        image:cover||existing?.image||'',
+        createdAt:existing?.createdAt||now(),
+        updatedAt:now(),
+        publishedAt:existing?.publishedAt||null
+      };
+      if(updated.status==='published'&&!store.publiclyVisibleArticle(updated))
+        return done(422,{ok:false,error:'blocked-obituary-or-advertisement'});
+      const becamePublished=updated.status==='published'&&existing?.status!=='published';
+      if(becamePublished)updated.publishedAt=now();
+      if(isNew)db.articles.unshift(updated);
+      else Object.assign(existing,updated);
+      save(db);
+      if(becamePublished){
+        try{await articleTools.dispatchAndPersist(updated.id);}catch(e){console.error('gemini-publish-distribution',e);}
+      }
+      return done(200,{ok:true,id:updated.id});
+    }
+    if(action==='delete'){
+      const key=String(input.id||'');
+      const existing=(db.articles||[]).find(a=>a.id===key);
+      if(!existing)return done(404,{ok:false,error:'article-not-found'});
+      if(existing.image)deleteUpload(existing.image);
+      db.articles=db.articles.filter(a=>a.id!==key);
+      save(db);return done(200,{ok:true});
+    }
+    if(action==='archive-citizen'){
+      const c=(db.citizens||[]).find(x=>x.id===String(input.id||''));
+      if(!c)return done(404,{ok:false,error:'report-not-found'});
+      if(c.geminiStatus==='approved')return done(409,{ok:false,error:'already-published'});
+      c.geminiStatus='archived';save(db);return done(200,{ok:true});
+    }
+    if(action==='approve-citizen'){
+      const c=(db.citizens||[]).find(x=>x.id===String(input.id||''));
+      if(!c)return done(404,{ok:false,error:'report-not-found'});
+      if(c.geminiStatus==='approved'||c.geminiPublishedArticleId)return done(409,{ok:false,error:'already-published'});
+      const rawTitle=String(c.headline||'').trim().slice(0,160);
+      const rawBody=String(c.details||'').trim().slice(0,8000);
+      const rawLead=rawBody.slice(0,350);
+      const a={id:id(),title:rawTitle,lead:rawLead,
+        body:rawBody,bodyHtml:rawBody.split(/\n+/).filter(Boolean).map(x=>'<p>'+geminiBridge.articleChanges({body:{fa:[x]}}).bodyHtml.slice(3,-4)+'</p>').join(''),
+        categoryId:'social',location:String(c.location||'ساردوئیه').slice(0,160),
+        author:String(c.name||'شهروندخبرنگار').slice(0,120),
+        image:String(c.mediaUrl||''),createdAt:now(),publishedAt:now(),
+        status:'published',featured:false,sourceCitizenId:c.id};
+      a.slug=uniqueSlug(db,rawTitle,a.id);
+      if(!store.publiclyVisibleArticle(a))return done(422,{ok:false,error:'blocked-obituary-or-advertisement'});
+      db.articles.unshift(a);
+      c.geminiStatus='approved';c.geminiPublishedArticleId=a.id;
+      save(db);
+      try{await articleTools.dispatchAndPersist(a.id);}catch(e){console.error('gemini-citizen-distribution',e);}
+      return done(200,{ok:true,id:a.id});
+    }
+    return done(400,{ok:false,error:'unsupported-action'});
+  }
+
   if(req.method==='GET'&&p==='/robots.txt')return send(res,200,robotsTxt(),'text/plain; charset=utf-8',{'Cache-Control':'no-cache, max-age=0, must-revalidate'});
   if(req.method==='GET'&&p==='/sitemap.xml')return send(res,200,sitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=900'});
   if(req.method==='GET'&&p==='/news-sitemap.xml')return send(res,200,newsSitemapXml(db),'application/xml; charset=utf-8',{'Cache-Control':'public,max-age=300'});
@@ -377,7 +508,7 @@ const server=http.createServer(async(req,res)=>{
     if(p==='/admin/login'){
       if(f.username===ADMIN_USER&&f.password===ADMIN_PASS){
         const secure=process.env.NODE_ENV==='production'?'; Secure':'';
-        return redirect(res,'/admin','nabez_admin='+token()+'; HttpOnly; SameSite=Lax; Path=/; Max-Age=43200'+secure);
+        return redirect(res,(u.searchParams.get('gemini')==='1'?'/?studio=1':'/admin'),'nabez_admin='+token()+'; HttpOnly; SameSite=Lax; Path=/; Max-Age=43200'+secure);
       }
       return redirect(res,'/admin/login?error=1');
     }
