@@ -71,9 +71,11 @@ jobs:
         run: |
           set -euo pipefail
           SITE="https://nabzesardo-gemini-uploaded-preview.emadmir1368.workers.dev"
-          curl -fsS --retry 6 --retry-delay 3 "$SITE/" -o /tmp/nabez-preview-home.html
+          # Fresh workers.dev hostnames may briefly 404 while global routing propagates.
+          sleep 15
+          curl -fsS --retry-all-errors --retry 10 --retry-delay 5 "$SITE/" -o /tmp/nabez-preview-home.html
           grep -q '<div id="root"></div>' /tmp/nabez-preview-home.html
-          curl -fsS --retry 6 --retry-delay 3 "$SITE/api/gemini/articles" -o /tmp/nabez-preview-api.json
+          curl -fsS --retry-all-errors --retry 8 --retry-delay 3 "$SITE/api/gemini/articles" -o /tmp/nabez-preview-api.json
           node -e 'const j=require("/tmp/nabez-preview-api.json");if(j.source!=="cloudflare-d1"||!Array.isArray(j.articles))process.exit(1);console.log("Real D1 published news:",j.articles.length);'
           curl -fsS --retry 3 "$SITE/robots.txt" | grep -q 'Disallow: /'
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$SITE/api/gemini/admin/action")" = "403"
