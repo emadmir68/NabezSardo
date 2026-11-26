@@ -39,7 +39,7 @@ test('Source photos remain untouched and regional images keep trusted paths',()=
  assert.equal(bridge.mapArticle(a).coverImage,'/uploads/real-original.jpg');
 });
 
-test('monitor quarantine v4 removes old forbidden articles and queue items without deleting records',()=>{
+test('monitor quarantine v5 removes old forbidden articles and queue items without deleting records',()=>{
   const monitor=require('../lib/news-monitor');
   const db={
     articles:[
@@ -59,5 +59,5 @@ test('monitor quarantine v4 removes old forbidden articles and queue items witho
   assert.equal(db.articles[1].status,'draft');
   assert.equal(db.articles[2].status,'draft');
   assert.equal(db.newsMonitor.queue.find(q=>q.id==='q1').status,'rejected');
-  assert.equal(db.newsMonitor.nonNewsPolicyVersion,4);
+  assert.equal(db.newsMonitor.nonNewsPolicyVersion,5);
 });

@@ -1,5 +1,6 @@
 const assert=require('assert');
-const monitor=require('../lib/news-monitor')._test;
+const newsMonitor=require('../lib/news-monitor');
+const monitor=newsMonitor._test;
 
 const clean=monitor.canonicalUrl('https://example.com/news/123/?utm_source=x&ref=y#top');
 assert.strictEqual(clean,'https://example.com/news/123');
@@ -269,14 +270,14 @@ const publicRows=store.published({articles:[
 assert.deepStrictEqual(publicRows.map(x=>x.id),['good1']);
 
 const sourceMigrationDb={articles:[],newsMonitor:{settings:{},sources:[{id:'custom-local',name:'Custom local',url:'https://example.com',type:'html',scope:'kerman',topic:'local',enabled:true}],queue:[],logs:[],seenUrls:[],sourceConfigVersion:5,logicVersion:99,categoryClassifierVersion:3,textCleanupVersion:2,mixConfigVersion:1,fourHourCadenceVersion:1,subrequestConfigVersion:1,telegramAutoPublishVersion:1,telegramCurrentBatchReleaseVersion:1,latestOnlyPolicyVersion:1,nonNewsPolicyVersion:5}};
-monitor.ensure(sourceMigrationDb);
+newsMonitor.ensure(sourceMigrationDb);
 const halilSource=sourceMigrationDb.newsMonitor.sources.find(s=>s.id==='telegram-jiroft-halil');
 assert.ok(halilSource&&halilSource.enabled);
 assert.strictEqual(halilSource.manualReviewRequired,true);
 assert.strictEqual(monitor.manualReviewRequiredForSource(halilSource),true);
 
 const categoryMigrationDb={articles:[{id:'misclassified-politics',imported:true,sourceId:'local-source',categoryId:'weather',title:'هشدار صریح صنعا به ریاض: جده در تیررس ارتش یمن است',lead:'ارتش یمن درباره تحولات منطقه هشدار داد.'}],newsMonitor:{settings:{},sources:[{id:'local-source',type:'html',scope:'jiroft',topic:'local',enabled:true}],queue:[],logs:[],seenUrls:[],sourceConfigVersion:6,logicVersion:99,categoryClassifierVersion:2,textCleanupVersion:2,mixConfigVersion:1,fourHourCadenceVersion:1,subrequestConfigVersion:1,telegramAutoPublishVersion:1,telegramCurrentBatchReleaseVersion:1,latestOnlyPolicyVersion:1,nonNewsPolicyVersion:5}};
-monitor.ensure(categoryMigrationDb);
+newsMonitor.ensure(categoryMigrationDb);
 assert.strictEqual(categoryMigrationDb.articles[0].categoryId,'city-village');
 assert.strictEqual(categoryMigrationDb.newsMonitor.categoryClassifierVersion,3);
 
