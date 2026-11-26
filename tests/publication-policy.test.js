@@ -4,6 +4,7 @@ const store=require('../lib/store');
 const monitor=require('../lib/news-monitor');
 const rebirthPublic=require('../lib/rebirth-public');
 const geminiBridge=require('../lib/gemini-bridge');
+const articleTools=require('../lib/article-tools');
 
 const funeralNotice={
   id:'legacy-funeral-1',slug:'legacy-funeral-1',status:'published',imported:false,
@@ -84,6 +85,9 @@ test('public feeds hide funeral notices and advertisements regardless of import 
   assert.equal(store.publiclyVisibleArticle(fatalAccident),true);
   assert.equal(store.publiclyVisibleArticle(ordinaryNews),true);
   assert.equal(store.publiclyVisibleArticle(communityMemorial),true);
+  assert.equal(articleTools._test.publicationPolicyReason(poem),'non-news-poetry');
+  assert.equal(articleTools._test.publicationPolicyReason(clinicAdvertisement),'advertisement');
+  assert.equal(articleTools._test.publicationPolicyReason(ordinaryNews),'');
   const db={articles:[funeralNotice,martyrFuneral,advertisement,funeralTraffic,clinicAdvertisement,bakeryAdvertisement,poem,congratulatoryMessage,fatalAccident,ordinaryNews,communityMemorial]};
   assert.deepEqual(store.published(db).map(a=>a.id).sort(),['real-incident-1','real-memorial-news','real-news-1']);
 });
@@ -113,7 +117,8 @@ test('policy migration quarantines previously published funeral notices and adve
 });
 
 test('v5 hard-exclusion migration quarantines new ad, poetry, PR and quoted funeral patterns',()=>{
-  const blocked=[funeralTraffic,clinicAdvertisement,bakeryAdvertisement,poem,congratulatoryMessage].map(x=>({...x}));
+  const scheduledPoem={...poem,id:'scheduled-poem',slug:'scheduled-poem',status:'scheduled'};
+  const blocked=[funeralTraffic,clinicAdvertisement,bakeryAdvertisement,poem,congratulatoryMessage,scheduledPoem].map(x=>({...x}));
   const valid=[{...fatalAccident},{...communityMemorial}];
   const db={articles:[...blocked,...valid],newsMonitor:{
     settings:{},sources:[{id:'source-1',scope:'jiroft',topic:'local',enabled:true}],
@@ -126,7 +131,7 @@ test('v5 hard-exclusion migration quarantines new ad, poetry, PR and quoted fune
   }};
   monitor.ensure(db);
   assert.equal(db.newsMonitor.nonNewsPolicyVersion,5);
-  assert.equal(db.newsMonitor.nonNewsPolicyQuarantinedCount,5);
+  assert.equal(db.newsMonitor.nonNewsPolicyQuarantinedCount,6);
   for(const item of blocked){
     const quarantined=db.articles.find(a=>a.id===item.id);
     assert.ok(quarantined,'quarantined record remains available for audit');
