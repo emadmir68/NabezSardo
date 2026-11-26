@@ -327,18 +327,29 @@ export default function App() {
 
   // Prioritize articles with authentic editorial photography for Live Hero slides
   const heroSlides = useMemo(() => {
-    const featured = publishedArticles.filter((a) => a.featuredInHero);
+    const now = Date.now();
+    const recent = publishedArticles.filter((article) => {
+      const stamp = Date.parse(article.publishedAt);
+      return Number.isFinite(stamp) && stamp <= now + 5 * 60 * 1000 && now - stamp <= 7 * 24 * 60 * 60 * 1000;
+    });
+    const pool = recent.length > 0 ? recent : publishedArticles;
+    const featured = pool.filter((a) => a.featuredInHero);
     const featuredWithPhotos = featured.filter((a) => hasRealEditorialPhoto(a));
     if (featuredWithPhotos.length > 0) return featuredWithPhotos.slice(0, 4);
     if (featured.length > 0) return featured.slice(0, 4);
-    const photoStories = publishedArticles.filter((a) => hasRealEditorialPhoto(a));
-    return photoStories.length > 0 ? photoStories.slice(0, 4) : publishedArticles.slice(0, 4);
+    const photoStories = pool.filter((a) => hasRealEditorialPhoto(a));
+    return photoStories.length > 0 ? photoStories.slice(0, 4) : pool.slice(0, 4);
   }, [publishedArticles]);
 
   const breakingArticles = useMemo(() => {
     if (!siteSettings.showBreakingWire) return [];
-    const breaking = publishedArticles.filter((a) => a.isBreaking);
-    return breaking.length > 0 ? breaking : publishedArticles.slice(0, 4);
+    const now = Date.now();
+    const recent = publishedArticles.filter((article) => {
+      const stamp = Date.parse(article.publishedAt);
+      return Number.isFinite(stamp) && stamp <= now + 5 * 60 * 1000 && now - stamp <= 72 * 60 * 60 * 1000;
+    });
+    const breaking = recent.filter((a) => a.isBreaking);
+    return (breaking.length > 0 ? breaking : recent).slice(0, 4);
   }, [publishedArticles, siteSettings.showBreakingWire]);
 
   const activeArticle = useMemo(

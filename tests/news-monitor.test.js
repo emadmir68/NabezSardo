@@ -26,6 +26,13 @@ assert.strictEqual(telegramRows[0].publishedAt,'2026-10-11T11:30:00+00:00');
 assert.strictEqual(monitor.telegramLooksLikeAd('فروشگاه نمونه آدرس: جیرفت تماس: 09131234567'),true);
 assert.strictEqual(monitor.telegramLooksLikeAd('فرماندار جیرفت از افتتاح پروژه آب‌رسانی خبر داد'),false);
 
+assert.strictEqual(monitor.telegramLooksLikeAd('دکتر متخصص کلینیک؛ تلفن رزرو نوبت 09020571007 و آدرس جیرفت'),true);
+const halilTelegramHtml='<div class="tgme_widget_message_wrap"><div class="tgme_widget_message js-widget_message" data-post="Jirofthalill/150003"><div class="tgme_widget_message_text js-message_text" dir="auto">⭕️ پیگیری تکمیل بیمارستان امام سجاد (ع) عنبرآباد<br>روند ساخت این پروژه درمانی با حضور مسئولان مورد بررسی قرار گرفت و برای تکمیل آن برنامه‌ریزی شد.<br>@Jirofthalill</div><time datetime="2026-11-26T08:30:00+03:30"></time></div></div>';
+const halilRows=monitor.parseTelegramPage(halilTelegramHtml,'https://t.me/s/Jirofthalill');
+assert.strictEqual(halilRows.length,1);
+assert.strictEqual(halilRows[0].url,'https://t.me/Jirofthalill/150003');
+assert.ok(!halilRows[0].description.includes('@Jirofthalill'));
+
 const article='<!doctype html><html><head><meta property="og:title" content="بارش در جیرفت"><meta property="og:image" content="/img/a.jpg"><meta property="article:published_time" content="2026-10-09T08:00:00+03:30"></head><body><article><h1>بارش در جیرفت</h1><p>هواشناسی از آغاز بارش در شهرستان جیرفت خبر داد و از شهروندان خواست نکات ایمنی را رعایت کنند.</p><p>این سامانه بارشی تا پایان روز در جنوب استان کرمان فعال خواهد بود و احتمال آبگرفتگی وجود دارد.</p></article></body></html>';
 const parsed=monitor.extractArticle(article,'https://example.com/news/123',{});
 assert.strictEqual(parsed.title,'بارش در جیرفت');
@@ -222,7 +229,7 @@ assert.strictEqual(
     lead:'راهداری از توسعه زیرساخت جاده‌ای خبر داد',
     body:''
   }),
-  'city-village'
+  'social'
 );
 
 assert.strictEqual(monitor.blockedMonitoredContentReason({
@@ -242,6 +249,15 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({
   body:'این برنامه فرهنگی با حضور دانش‌آموزان برگزار شد'
 }),'');
 
+assert.strictEqual(monitor.categoryFromText('هشدار صریح صنعا به ریاض: جده در تیررس ارتش یمن است'),'city-village');
+assert.strictEqual(monitor.categoryFromText('تیم فوتبال جیرفت قهرمان لیگ شد'),'sports');
+assert.strictEqual(monitor.categoryFromText('فرماندار جیرفت از اجرای طرح آسفالت راه روستایی خبر داد'),'social');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'اعلام محدودیت های ترافیکی برگزاری مراسم " تشییع شهید" صادق قدرتی" در جیرفت',lead:'در راستای برگزاری مراسم تشییع محدودیت ترافیکی اعلام شد'}),'obituary');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'دکتر سینا سیدی پور',lead:'متخصص جراحی عمومی؛ تلفن رزرو نوبت: ۰۹۰۲۰۵۷۱۰۰۷؛ آدرس: جیرفت'}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'کلوچه‌سرای محبوب؛ طعم اصیل شیرینی‌های سنتی جنوب کرمان',lead:'معرفی محصولات و طعم اصیل شیرینی‌های محلی'}),'advertisement');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'امشب تو را به خوبی نسبت به ماه کردم',lead:'شب و شعر امشب تو را به خوبی نسبت به ماه کردم'}),'non-news-poetry');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سرکار خانم نادری عزیز',lead:'موفقیت درخشان دانش‌آموزان مجموعه شما را تبریک می‌گوییم'}),'non-news-message');
+
 const store=require('../lib/store');
 const publicRows=store.published({articles:[
   {id:'bad1',status:'published',imported:true,title:'بسم الله الرحمن الرحیم',body:'متن غیرخبری',publishedAt:'2026-10-13T06:00:00Z'},
@@ -251,5 +267,17 @@ const publicRows=store.published({articles:[
   {id:'manual1',status:'published',imported:false,title:'بسم الله الرحمن الرحیم',body:'انتشار دستی تحریریه',publishedAt:'2026-10-13T06:03:00Z'}
 ]});
 assert.deepStrictEqual(publicRows.map(x=>x.id),['good1']);
+
+const sourceMigrationDb={articles:[],newsMonitor:{settings:{},sources:[{id:'custom-local',name:'Custom local',url:'https://example.com',type:'html',scope:'kerman',topic:'local',enabled:true}],queue:[],logs:[],seenUrls:[],sourceConfigVersion:5,logicVersion:99,categoryClassifierVersion:3,textCleanupVersion:2,mixConfigVersion:1,fourHourCadenceVersion:1,subrequestConfigVersion:1,telegramAutoPublishVersion:1,telegramCurrentBatchReleaseVersion:1,latestOnlyPolicyVersion:1,nonNewsPolicyVersion:5}};
+monitor.ensure(sourceMigrationDb);
+const halilSource=sourceMigrationDb.newsMonitor.sources.find(s=>s.id==='telegram-jiroft-halil');
+assert.ok(halilSource&&halilSource.enabled);
+assert.strictEqual(halilSource.manualReviewRequired,true);
+assert.strictEqual(monitor.manualReviewRequiredForSource(halilSource),true);
+
+const categoryMigrationDb={articles:[{id:'misclassified-politics',imported:true,sourceId:'local-source',categoryId:'weather',title:'هشدار صریح صنعا به ریاض: جده در تیررس ارتش یمن است',lead:'ارتش یمن درباره تحولات منطقه هشدار داد.'}],newsMonitor:{settings:{},sources:[{id:'local-source',type:'html',scope:'jiroft',topic:'local',enabled:true}],queue:[],logs:[],seenUrls:[],sourceConfigVersion:6,logicVersion:99,categoryClassifierVersion:2,textCleanupVersion:2,mixConfigVersion:1,fourHourCadenceVersion:1,subrequestConfigVersion:1,telegramAutoPublishVersion:1,telegramCurrentBatchReleaseVersion:1,latestOnlyPolicyVersion:1,nonNewsPolicyVersion:5}};
+monitor.ensure(categoryMigrationDb);
+assert.strictEqual(categoryMigrationDb.articles[0].categoryId,'city-village');
+assert.strictEqual(categoryMigrationDb.newsMonitor.categoryClassifierVersion,3);
 
 console.log('news-monitor tests: ok');

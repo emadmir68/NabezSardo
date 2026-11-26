@@ -16,6 +16,8 @@ export const CATEGORIES: { id: CategoryId; label: LocalizedText; code: string }[
   { id: 'weather', label: { fa: 'هواشناسی و اقلیم', en: 'Climate & Weather' }, code: '05' },
   { id: 'incidents', label: { fa: 'حوادث و راه‌ها', en: 'Roads & Safety' }, code: '06' },
   { id: 'opinion', label: { fa: 'یادداشت و تحلیل', en: 'Opinion & Analysis' }, code: '07' },
+  { id: 'politics', label: { fa: 'سیاسی و بین‌الملل', en: 'Politics & World' }, code: '08' },
+  { id: 'sports', label: { fa: 'ورزش', en: 'Sports' }, code: '09' },
 ];
 
 export const REGIONS: { id: RegionId; label: LocalizedText }[] = [

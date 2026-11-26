@@ -113,7 +113,11 @@ export function FrontPageEditorial({
     });
 
   const mostRead = [...published].sort((a, b) => b.views - a.views).slice(0, 5);
-  const quickDispatches = published.slice(0, 4);
+  const now = Date.now();
+  const quickDispatches = published.filter((article) => {
+    const stamp = Date.parse(article.publishedAt);
+    return Number.isFinite(stamp) && stamp <= now + 5 * 60 * 1000 && now - stamp <= 7 * 24 * 60 * 60 * 1000;
+  }).slice(0, 4);
 
   const hasActiveFilters =
     selectedCategory !== 'all' ||
@@ -677,7 +681,7 @@ export function FrontPageEditorial({
               </h3>
 
               <ul className="space-y-4 sm:space-y-5">
-                {quickDispatches.map((brief) => (
+                {quickDispatches.length > 0 ? quickDispatches.map((brief) => (
                   <li
                     key={brief.id}
                     className="pb-4 sm:pb-5 last:pb-0 border-b-[0.75px] last:border-b-0 border-[#D9CEBC]/55 dark:border-[#D4A85B]/10"
@@ -699,7 +703,13 @@ export function FrontPageEditorial({
                       </p>
                     </button>
                   </li>
-                ))}
+                )) : (
+                  <li className="pb-4 sm:pb-5 last:pb-0">
+                    <p className="text-sm leading-7 text-[#5A5247] dark:text-[#A1AAB9]">
+                      {locale === 'fa' ? 'در هفت روز اخیر خبر کوتاه تازه‌ای ثبت نشده است.' : 'No new regional briefs have been published in the last seven days.'}
+                    </p>
+                  </li>
+                )}
               </ul>
             </div>
 

@@ -85,6 +85,8 @@ const VALID_CATEGORIES = new Set<CategoryId>([
   'weather',
   'incidents',
   'opinion',
+  'politics',
+  'sports',
 ]);
 
 const VALID_REGIONS = new Set<RegionId>([

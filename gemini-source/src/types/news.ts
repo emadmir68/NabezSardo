@@ -8,7 +8,9 @@ export type CategoryId =
   | 'culture'
   | 'weather'
   | 'incidents'
-  | 'opinion';
+  | 'opinion'
+  | 'politics'
+  | 'sports';
 
 export type RegionId =
   | 'sarduiyeh'

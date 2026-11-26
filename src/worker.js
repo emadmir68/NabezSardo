@@ -1915,7 +1915,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v5");
+  const marker=await getState("live_nonnews_cleanup_v6");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1929,9 +1929,9 @@ async function ensureLiveNonNewsCleanup(){
     try{invalidateFastArticleCache();}catch{}
     publicDbCache={at:0,db:null};
   }
-  await putState("live_nonnews_cleanup_v5","1");
+  await putState("live_nonnews_cleanup_v6","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v5","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v6","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 
@@ -2136,6 +2136,9 @@ export default {
     // The premium Gemini presentation reads only published, vetted Cloudflare D1 news.
     // The admin JSON mutation endpoints fall through to the signed-cookie Node newsroom.
     if(isPrimary()&&p==='/api/gemini/articles'&&request.method==='GET'){
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
       const db=await loadPublicDbFast();
       const articles=store.published(db).map(geminiBridge.mapArticle);
       return Response.json({ok:true,articles,source:'cloudflare-d1'},{
@@ -2143,6 +2146,9 @@ export default {
       });
     }
     if(isPrimary()&&p==='/api/gemini/view'&&request.method==='GET'){
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
       const key=String(url.searchParams.get('slug')||'').slice(0,200);
       const db=await loadPublicDbFast();
       const article=store.published(db).find(a=>a.slug===key);
@@ -2162,7 +2168,7 @@ export default {
       const ua=String(request.headers.get('user-agent')||'');
       // Keep unported legacy category and regional pages available via the original Worker.
       // React handles only the routes its own router supports.
-      const geminiCategory=/^\/category\/(sarduiyeh|agriculture|social|culture|weather|incidents|opinion)$/.test(p);
+      const geminiCategory=/^\/category\/(sarduiyeh|agriculture|social|culture|weather|incidents|opinion|politics|sports)$/.test(p);
       const geminiLocal=/^\/local\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
       const geminiRegion=/^\/region\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
       const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||geminiRegion||
