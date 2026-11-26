@@ -671,6 +671,7 @@ const server=http.createServer(async(req,res)=>{
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
       if(a.status!=='published')return send(res,400,'فقط خبر منتشرشده قابل ارسال است.');
+       if(!store.publiclyVisibleArticle(a))return send(res,422,'این محتوا با سیاست تحریریه نبض ساردو مغایرت دارد و قابل ارسال نیست.');
       try{await articleTools.dispatchAndPersist(a.id,{retry:true,manual:true});}
       catch(err){console.error('social redistribution',err);}
       return redirect(res,'/admin/articles/'+a.id+'/share-kit?resent=1');
@@ -680,7 +681,8 @@ const server=http.createServer(async(req,res)=>{
       if(submissionToken&&db.articles.some(a=>a.id===submissionToken))return redirect(res,'/admin?saved=1');
       const payload=await articleTools.articlePayload(db,f,files,{},uniqueSlug);
       const a={id:submissionToken||id(),createdAt:now(),...payload,publishedAt:payload.status==='published'?now():null};
-      db.articles.unshift(a);save(db);
+      if((a.status==='published'||a.status==='scheduled')&&!store.publiclyVisibleArticle({...a,status:'published'}))return send(res,422,'این محتوا با سیاست تحریریه نبض ساردو مغایرت دارد و قابل انتشار یا زمان‌بندی نیست.');
+       db.articles.unshift(a);save(db);
       if(a.status==='published'){
         try{await articleTools.dispatchAndPersist(a.id);}
         catch(err){console.error('social distribution',err);}
@@ -690,7 +692,9 @@ const server=http.createServer(async(req,res)=>{
     m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
-      const was=a.status==='published',payload=await articleTools.articlePayload(db,f,files,a,uniqueSlug);Object.assign(a,payload);
+      const was=a.status==='published',payload=await articleTools.articlePayload(db,f,files,a,uniqueSlug),updated={...a,...payload};
+       if((updated.status==='published'||updated.status==='scheduled')&&!store.publiclyVisibleArticle({...updated,status:'published'}))return send(res,422,'این محتوا با سیاست تحریریه نبض ساردو مغایرت دارد و قابل انتشار یا زمان‌بندی نیست.');
+       Object.assign(a,payload);
       if(!was&&a.status==='published')a.publishedAt=now();
       save(db);
       if(!was&&a.status==='published'){
