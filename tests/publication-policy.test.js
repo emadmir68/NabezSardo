@@ -158,6 +158,12 @@ test('public archive filters blocked records and homepage expires stale ticker a
   assert.doesNotMatch(homeHtml,/خبر کوتاه قدیمی مهر/);
 });
 
+test('about page exposes the newsroom responsibility text required by the public editorial policy',()=>{
+  const html=rebirthPublic.simple({settings:{},categories:[],articles:[]},'about');
+  assert.match(html,/تحریریه و مسئولیت انتشار/);
+  assert.match(html,/راستی‌آزمایی اطلاعات/);
+});
+
 test('high-confidence political category correction reaches Gemini without misclassifying sports',()=>{
   const title='هشدار صریح صنعا به ریاض: جده در تیررس ارتش یمن است';
   const db={settings:{},categories:[{id:'weather',name:'آب‌وهوا'},{id:'city-village',name:'سیاسی'}],articles:[{id:'political-story',slug:'political-story',title,lead:'ارتش یمن درباره تحولات منطقه هشدار داد.',categoryId:'weather',status:'published'}]};
