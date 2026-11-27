@@ -348,7 +348,7 @@
     button.addEventListener('click',()=>{
       const form=button.closest('.rb-search'),input=form&&form.querySelector('input[name="q"]');
       if(!form||!input)return;
-      const mobile=window.matchMedia('(max-width:760px)').matches;
+      const mobile=window.matchMedia('(max-width:820px)').matches;
       if(mobile&&!form.classList.contains('is-open')){
         form.classList.add('is-open');input.focus();return;
       }
