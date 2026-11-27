@@ -41,13 +41,16 @@ import {
   fetchLiveArticles,
   fetchPublicConfig,
   logoutAdmin,
+  runNewsMonitorFromApi,
   submitCitizenReportToApi,
   submitContactToApi,
   syncArticleToApi,
   syncMediaToApi,
   syncSettingsToApi,
+  toggleNewsMonitorFromApi,
   trackArticleView,
 } from './services/api';
+import type { MonitorSnapshot } from './services/api';
 import type {
   ActiveView,
   Article,
@@ -178,6 +181,8 @@ export default function App() {
 
   // Admin auth token lives strictly in React memory (never persisted in localStorage)
   const [adminToken, setAdminToken] = useState<string | null>(null);
+  const [monitorSnapshot, setMonitorSnapshot] = useState<MonitorSnapshot | null>(null);
+  const [monitorBusy, setMonitorBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -189,6 +194,7 @@ export default function App() {
       setCitizenReports(state.citizenReports);
       setContactMessages(state.contactMessages);
       setArticles(state.articles);
+      if (state.monitor) setMonitorSnapshot(state.monitor);
       if (state.siteSettings) {
         setSiteSettings((prev) => ({ ...prev, ...state.siteSettings }));
       }
@@ -584,7 +590,49 @@ export default function App() {
       return;
     }
     setSiteSettings(nextSettings);
-    pushToast('تنظیمات عمومی سایت در سرور کلودفلر ذخیره شد.', 'success');
+    if (result.monitor) setMonitorSnapshot(result.monitor);
+    pushToast('تنظیمات عمومی سایت و پایش در سرور کلودفلر ذخیره شد.', 'success');
+  };
+
+  const handleRunMonitor = async () => {
+    setMonitorBusy(true);
+    try {
+      const res = await runNewsMonitorFromApi(adminToken);
+      if (!res.ok) {
+        pushToast(res.error || 'اجرای رصد انجام نشد.', 'warning');
+        return;
+      }
+      if (res.monitor) setMonitorSnapshot(res.monitor);
+      const runRes = res.result || {};
+      if (runRes.ok === false && runRes.reason === 'disabled') {
+        pushToast('رصد هوشمند در وضعیت توقف است؛ ابتدا آن را فعال کنید.', 'warning');
+        return;
+      }
+      if (Number(runRes.errors || 0) > 0) {
+        pushToast(`رصد با ${runRes.errors} خطای منبع انجام شد (${runRes.discovered || 0} دریافتی).`, 'warning');
+        return;
+      }
+      const state = await fetchAdminState();
+      if (state) {
+        setArticles(state.articles);
+        if (state.monitor) setMonitorSnapshot(state.monitor);
+      }
+      pushToast(`چرخه رصد کامل شد: ${runRes.discovered || 0} دریافتی، ${runRes.queued || 0} پذیرفته‌شده، ${runRes.filtered || 0} ردشده.`, 'success');
+    } finally {
+      setMonitorBusy(false);
+    }
+  };
+
+  const handleToggleMonitor = async () => {
+    const next = !(monitorSnapshot?.settings?.enabled !== false);
+    const res = await toggleNewsMonitorFromApi(next, adminToken);
+    if (!res.ok) {
+      pushToast(res.error || 'تغییر وضعیت رصد انجام نشد.', 'warning');
+      return;
+    }
+    if (res.monitor) setMonitorSnapshot(res.monitor);
+    setSiteSettings((prev) => ({ ...prev, monitoringEnabled: next }));
+    pushToast(next ? 'سامانه رصد هوشمند فعال شد.' : 'سامانه رصد هوشمند متوقف شد.', 'info');
   };
 
   const handleSubmitContact = async (payload: Omit<ContactSubmission, 'id' | 'createdAt'>) => {
@@ -738,6 +786,8 @@ export default function App() {
             mediaAssets={mediaAssets}
             siteSettings={siteSettings}
             contactMessages={contactMessages}
+            monitorSnapshot={monitorSnapshot}
+            monitorBusy={monitorBusy}
             dataSource={dataSource}
             locale={locale}
             onSaveArticle={handleSaveArticle}
@@ -749,6 +799,8 @@ export default function App() {
             onAddMediaAsset={handleAddMediaAsset}
             onDeleteMediaAsset={handleDeleteMediaAsset}
             onSaveSiteSettings={handleSaveSiteSettings}
+            onRunMonitor={handleRunMonitor}
+            onToggleMonitor={handleToggleMonitor}
             onPreviewArticle={handleOpenArticle}
             onExportJson={handleExportJson}
             onResetDefaults={handleResetDefaults}

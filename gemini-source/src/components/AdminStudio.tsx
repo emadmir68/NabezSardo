@@ -47,12 +47,16 @@ import {
 } from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
 
+import type { MonitorSnapshot } from '../services/api';
+
 interface AdminStudioProps {
   articles: Article[];
   citizenReports: CitizenReport[];
   mediaAssets: MediaAsset[];
   siteSettings: SiteSettings;
   contactMessages: ContactSubmission[];
+  monitorSnapshot?: MonitorSnapshot | null;
+  monitorBusy?: boolean;
   dataSource: 'worker-d1' | 'fallback';
   locale: Locale;
   onSaveArticle: (article: Article, isNew: boolean) => void;
@@ -64,6 +68,8 @@ interface AdminStudioProps {
   onAddMediaAsset: (asset: MediaAsset) => void;
   onDeleteMediaAsset: (id: string) => void;
   onSaveSiteSettings: (settings: SiteSettings) => void;
+  onRunMonitor?: () => void;
+  onToggleMonitor?: () => void;
   onPreviewArticle: (article: Article) => void;
   onExportJson: () => void;
   onResetDefaults: () => void;
@@ -79,6 +85,8 @@ export function AdminStudio({
   mediaAssets,
   siteSettings,
   contactMessages,
+  monitorSnapshot,
+  monitorBusy = false,
   dataSource,
   locale,
   onSaveArticle,
@@ -90,6 +98,8 @@ export function AdminStudio({
   onAddMediaAsset,
   onDeleteMediaAsset,
   onSaveSiteSettings,
+  onRunMonitor,
+  onToggleMonitor,
   onPreviewArticle,
   onExportJson,
   onResetDefaults,
@@ -635,38 +645,149 @@ export function AdminStudio({
 
             <div className="lg:col-span-5 space-y-6">
               <div className="luxury-panel rounded-[24px] p-6 sm:p-8 space-y-4">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="w-5 h-5 text-[#9A6B27] dark:text-[#E8C680]" />
-                  <h2 className="font-editorial-display text-xl font-bold text-[#141210] dark:text-[#F6F2EA]">
-                    {locale === 'fa' ? 'پایش اخبار و فیلتر منشور' : 'Monitoring & Charter Guard'}
-                  </h2>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-5 h-5 text-[#9A6B27] dark:text-[#E8C680]" />
+                    <h2 className="font-editorial-display text-xl font-bold text-[#141210] dark:text-[#F6F2EA]">
+                      {locale === 'fa' ? 'پایش هوشمند و صف رصد' : 'Smart News Monitor'}
+                    </h2>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                      monitorSnapshot?.settings?.enabled !== false
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-red-500/15 text-red-700 dark:text-red-300'
+                    }`}
+                  >
+                    {monitorSnapshot?.settings?.enabled !== false
+                      ? locale === 'fa'
+                        ? 'رصد فعال'
+                        : 'Active'
+                      : locale === 'fa'
+                        ? 'متوقف‌شده'
+                        : 'Paused'}
+                  </span>
                 </div>
-                <p className="text-xs sm:text-sm text-[#5A5247] dark:text-[#A1AAB9] leading-[1.85]">
-                  {locale === 'fa'
-                    ? 'سامانه پایش به‌صورت مستقل از رابط کاربری فعال است و ورود هرگونه آگهی تبلیغاتی، رپورتاژ تجاری و اطلاعیه ترحیم یا مراسم فوت به صف انتشار را مسدود می‌کند.'
-                    : 'Independent monitoring remains active while strictly blocking commercial ads, advertorials, and obituary announcements.'}
-                </p>
-                <div className="pt-3 border-t-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/14 space-y-2 text-xs">
-                  <div className="flex justify-between">
+
+                <div className="grid grid-cols-2 gap-2.5 text-xs">
+                  <div className="rounded-xl bg-[#F5F0E6]/75 dark:bg-[#0D111C] p-3 border-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/14">
+                    <span className="block text-[#5A5247] dark:text-[#A1AAB9] mb-1">
+                      {locale === 'fa' ? 'دریافتی / پذیرفته‌شده' : 'Discovered / Accepted'}
+                    </span>
+                    <strong className="font-mono-tabular text-sm text-[#141210] dark:text-[#F6F2EA]">
+                      {formatNumber(Number(monitorSnapshot?.stats?.totalDiscovered ?? monitorSnapshot?.lastRunResult?.discovered ?? 0), locale)}{' '}
+                      /{' '}
+                      {formatNumber(Number(monitorSnapshot?.stats?.totalAccepted ?? monitorSnapshot?.counts?.accepted ?? 0), locale)}
+                    </strong>
+                  </div>
+                  <div className="rounded-xl bg-[#F5F0E6]/75 dark:bg-[#0D111C] p-3 border-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/14">
+                    <span className="block text-[#5A5247] dark:text-[#A1AAB9] mb-1">
+                      {locale === 'fa' ? 'ردشده / منتشرشده' : 'Rejected / Published'}
+                    </span>
+                    <strong className="font-mono-tabular text-sm text-[#141210] dark:text-[#F6F2EA]">
+                      {formatNumber(Number(monitorSnapshot?.counts?.rejected ?? monitorSnapshot?.stats?.totalRejected ?? 0), locale)}{' '}
+                      /{' '}
+                      {formatNumber(Number(monitorSnapshot?.counts?.published ?? 0), locale)}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/14 space-y-2 text-xs">
+                  <div className="flex justify-between gap-2">
                     <span className="text-[#5A5247] dark:text-[#A1AAB9]">
-                      {locale === 'fa' ? 'منبع داده فعلی:' : 'Active Data Source:'}
+                      {locale === 'fa' ? 'آخرین اجرای موفق:' : 'Last Successful Run:'}
+                    </span>
+                    <span className="font-mono-tabular font-semibold">
+                      {monitorSnapshot?.lastSuccessAt
+                        ? formatShortDate(monitorSnapshot.lastSuccessAt, locale)
+                        : locale === 'fa'
+                          ? 'ثبت نشده'
+                          : 'None'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-[#5A5247] dark:text-[#A1AAB9]">
+                      {locale === 'fa' ? 'وضعیت منابع:' : 'Sources Health:'}
+                    </span>
+                    <span className="font-mono-tabular font-semibold">
+                      {locale === 'fa'
+                        ? `${formatNumber(monitorSnapshot?.counts?.sourcesOn || 0, locale)} فعال · ${formatNumber(monitorSnapshot?.counts?.sourcesOff || 0, locale)} خاموش · ${formatNumber(monitorSnapshot?.counts?.sourcesError || 0, locale)} خطا`
+                        : `${monitorSnapshot?.counts?.sourcesOn || 0} on · ${monitorSnapshot?.counts?.sourcesOff || 0} off · ${monitorSnapshot?.counts?.sourcesError || 0} err`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-[#5A5247] dark:text-[#A1AAB9]">
+                      {locale === 'fa' ? 'صف بررسی:' : 'Pending Queue:'}
                     </span>
                     <span className="font-mono-tabular font-bold text-[#9A6B27] dark:text-[#E8C680]">
-                      {dataSource === 'worker-d1' ? 'Cloudflare D1 API' : 'Local Preview API'}
+                      {formatNumber(monitorSnapshot?.counts?.pending || 0, locale)}{' '}
+                      {locale === 'fa' ? 'مورد' : 'items'}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#5A5247] dark:text-[#A1AAB9]">
-                      {locale === 'fa' ? 'دیتابیس D1:' : 'D1 Database:'}
-                    </span>
-                    <span className="font-mono-tabular font-semibold">nabzesardo-cloudflare-db (DB)</span>
+                </div>
+
+                {(onRunMonitor || onToggleMonitor) && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {onToggleMonitor && (
+                      <button
+                        type="button"
+                        onClick={onToggleMonitor}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/25 hover:border-[#9A6B27] dark:hover:border-[#E8C680] cursor-pointer"
+                      >
+                        {monitorSnapshot?.settings?.enabled !== false
+                          ? locale === 'fa'
+                            ? 'توقف رصد'
+                            : 'Pause Monitor'
+                          : locale === 'fa'
+                            ? 'شروع مجدد رصد'
+                            : 'Resume Monitor'}
+                      </button>
+                    )}
+                    {onRunMonitor && (
+                      <button
+                        type="button"
+                        disabled={monitorBusy}
+                        onClick={onRunMonitor}
+                        className="btn-luxury-ink text-xs disabled:opacity-60"
+                      >
+                        {monitorBusy
+                          ? locale === 'fa'
+                            ? 'در حال رصد...'
+                            : 'Running...'
+                          : locale === 'fa'
+                            ? 'اجرای رصد اکنون'
+                            : 'Run Monitor Now'}
+                      </button>
+                    )}
+                    <a
+                      href="/admin#monitor"
+                      className="inline-flex items-center px-3 py-2 text-xs font-semibold text-[#8F6321] dark:text-[#ECC983] hover:underline"
+                    >
+                      {locale === 'fa' ? 'گزارش خطاها و منابع ↗' : 'Sources & Logs ↗'}
+                    </a>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#5A5247] dark:text-[#A1AAB9]">
-                      {locale === 'fa' ? 'شاخه استقرار:' : 'Production Branch:'}
-                    </span>
-                    <span className="font-mono-tabular font-semibold">cloudflare-migration</span>
+                )}
+
+                {monitorSnapshot?.logs && monitorSnapshot.logs.length > 0 && (
+                  <div className="pt-2 border-t-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/14 space-y-1.5 text-[11px]">
+                    <p className="font-bold text-[#5A5247] dark:text-[#A1AAB9]">
+                      {locale === 'fa' ? 'آخرین رویدادها / دلایل رد:' : 'Recent Monitor Events:'}
+                    </p>
+                    {monitorSnapshot.logs.slice(0, 3).map((ev, i) => (
+                      <p key={ev.id || i} className="truncate text-[#5A5247] dark:text-[#A1AAB9]">
+                        • {ev.message}
+                        {ev.blockedReason ? ` (${ev.blockedReason})` : ''}
+                        {ev.error ? ` — ${ev.error}` : ''}
+                      </p>
+                    ))}
                   </div>
+                )}
+
+                <div className="pt-2 border-t-[0.5px] border-[#D9CEBC]/70 dark:border-[#D4A85B]/14 flex justify-between text-[11px] text-[#5A5247] dark:text-[#A1AAB9]">
+                  <span>{locale === 'fa' ? 'منبع داده:' : 'Data Source:'}</span>
+                  <span className="font-mono-tabular font-semibold">
+                    {dataSource === 'worker-d1' ? 'Cloudflare D1' : 'Local Preview'} · cloudflare-migration
+                  </span>
                 </div>
               </div>
             </div>
@@ -1487,14 +1608,16 @@ export function AdminStudio({
                   <Download className="w-3.5 h-3.5" />
                   <span>{locale === 'fa' ? 'دانلود پشتیبان کامل JSON' : 'Download Full JSON'}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={onResetDefaults}
-                  className="w-full inline-flex items-center justify-center gap-2 min-h-[42px] px-4 py-2 text-xs font-semibold border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/20 text-[#5A5247] dark:text-[#A1AAB9] hover:text-[#141210] dark:hover:text-[#F6F2EA] rounded-[10px] cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>{locale === 'fa' ? 'بازنشانی داده‌های نمونه پیش‌نمایش' : 'Reset Preview Data'}</span>
-                </button>
+                {dataSource !== 'worker-d1' && (
+                  <button
+                    type="button"
+                    onClick={onResetDefaults}
+                    className="w-full inline-flex items-center justify-center gap-2 min-h-[42px] px-4 py-2 text-xs font-semibold border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/20 text-[#5A5247] dark:text-[#A1AAB9] hover:text-[#141210] dark:hover:text-[#F6F2EA] rounded-[10px] cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>{locale === 'fa' ? 'بازنشانی داده‌های نمونه پیش‌نمایش' : 'Reset Preview Data'}</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

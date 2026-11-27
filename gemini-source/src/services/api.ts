@@ -311,16 +311,78 @@ export async function fetchAdminAuthStatus(_token: string | null): Promise<Admin
   }
 }
 
+export interface MonitorSourceSnapshot {
+  id: string;
+  name: string;
+  url: string;
+  scope?: string;
+  topic?: string;
+  enabled: boolean;
+  lastCheckedAt?: string | null;
+  lastSuccessAt?: string | null;
+  lastError?: string;
+}
+
+export interface MonitorLogEntry {
+  id?: string;
+  at?: string;
+  type?: string;
+  message?: string;
+  sourceId?: string;
+  blockedReason?: string;
+  error?: string;
+  url?: string;
+}
+
+export interface MonitorSnapshot {
+  settings: {
+    enabled: boolean;
+    autoPublish?: boolean;
+    intervalMinutes?: number;
+    maxPerHour?: number;
+    maxAgeHours?: number;
+  };
+  sources: MonitorSourceSnapshot[];
+  logs: MonitorLogEntry[];
+  lastRunAt: string | null;
+  lastSuccessAt: string | null;
+  lastRunResult?: {
+    ok?: boolean;
+    discovered?: number;
+    queued?: number;
+    filtered?: number;
+    errors?: number;
+  } | null;
+  stats?: {
+    totalDiscovered?: number;
+    totalAccepted?: number;
+    totalRejected?: number;
+    totalPublished?: number;
+  };
+  counts: {
+    pending?: number;
+    accepted?: number;
+    published?: number;
+    rejected?: number;
+    sourcesOn?: number;
+    sourcesOff?: number;
+    sourcesError?: number;
+    sources?: number;
+  };
+}
+
 export async function fetchAdminState(): Promise<{
   articles: Article[];
   citizenReports: CitizenReport[];
   contactMessages: ContactSubmission[];
   siteSettings?: Partial<SiteSettings>;
+  monitor?: MonitorSnapshot;
 } | null> {
   try {
     const res = await fetch('/api/gemini/admin/state', { credentials: 'same-origin', cache: 'no-store' });
     if (!res.ok) return null;
     const json = await toJson(res);
+    const monitor = json.monitor && typeof json.monitor === 'object' ? (json.monitor as MonitorSnapshot) : undefined;
     return {
       articles: (Array.isArray(json.articles) ? json.articles : [])
         .map((x: Record<string, unknown>, i: number) => normalizeArticle(x, i))
@@ -336,15 +398,17 @@ export async function fetchAdminState(): Promise<{
             contactEmail: json.settings.contactEmail || DEFAULT_SITE_SETTINGS.contactEmail,
             editorialPhone: json.settings.editorialPhone || DEFAULT_SITE_SETTINGS.editorialPhone,
             showBreakingWire: json.settings.liveDeskEnabled !== false,
+            monitoringEnabled: monitor?.settings?.enabled !== false,
           }
         : undefined,
+      monitor,
     };
   } catch {
     return null;
   }
 }
 
-async function adminAction(payload: Record<string, unknown>): Promise<{ ok: boolean; id?: string; url?: string; error?: string }> {
+async function adminAction(payload: Record<string, unknown>): Promise<{ ok: boolean; id?: string; url?: string; error?: string; result?: Record<string, any>; monitor?: MonitorSnapshot }> {
   try {
     const res = await fetch('/api/gemini/admin/action', {
       method: 'POST',
@@ -354,7 +418,13 @@ async function adminAction(payload: Record<string, unknown>): Promise<{ ok: bool
     });
     const data = await toJson(res);
     return res.ok && data.ok === true
-      ? { ok: true, id: String(data.id ?? ''), url: data.url ? String(data.url) : undefined }
+      ? {
+          ok: true,
+          id: String(data.id ?? ''),
+          url: data.url ? String(data.url) : undefined,
+          result: data.result as Record<string, any> | undefined,
+          monitor: data.monitor as MonitorSnapshot | undefined,
+        }
       : { ok: false, error: String(data.error || `HTTP ${res.status}`) };
   } catch {
     return { ok: false, error: FAILURE };
@@ -492,7 +562,7 @@ export async function submitContactToApi(submission: ContactSubmission): Promise
   }
 }
 
-export async function syncSettingsToApi(settings: SiteSettings, token: string | null): Promise<{ ok: boolean; error?: string }> {
+export async function syncSettingsToApi(settings: SiteSettings, token: string | null): Promise<{ ok: boolean; error?: string; monitor?: MonitorSnapshot }> {
   if (!token) return { ok: false, error: 'ورود به مدیریت لازم است.' };
   return adminAction({
     action: 'save-settings',
@@ -502,8 +572,19 @@ export async function syncSettingsToApi(settings: SiteSettings, token: string | 
       contactEmail: settings.contactEmail,
       editorialPhone: settings.editorialPhone,
       liveDeskEnabled: settings.showBreakingWire,
+      monitoringEnabled: settings.monitoringEnabled,
     },
   });
+}
+
+export async function runNewsMonitorFromApi(token: string | null) {
+  if (!token) return { ok: false, error: 'ورود به مدیریت لازم است.' };
+  return adminAction({ action: 'monitor-run' });
+}
+
+export async function toggleNewsMonitorFromApi(enabled: boolean, token: string | null) {
+  if (!token) return { ok: false, error: 'ورود به مدیریت لازم است.' };
+  return adminAction({ action: 'monitor-toggle', enabled });
 }
 
 export async function syncMediaToApi(media: MediaAsset, token: string | null): Promise<{ ok: boolean; url?: string; error?: string }> {

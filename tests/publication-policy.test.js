@@ -207,3 +207,47 @@ test('regional focus and SSR cleanup quarantine bereavement notices, foreign wir
   const mapped=geminiBridge.mapArticle(localFresh);
   assert.equal(mapped.deck.fa,'مسیر ارتباطی سه روستا به شبکه اصلی پیوست.');
 });
+
+test('smart taxonomy, channel cleanup, queue redaction, and admin monitor UI stay consistent',()=>{
+  const rebirthAdmin=require('../lib/rebirth-admin');
+  const miscatTurkey={id:'miscat-weather',slug:'miscat-weather',title:'ترکیه دسترسی کودکان زیر ۱۵ سال به شبکه‌های اجتماعی را ممنوع کرد',lead:'دولت این تصمیم را اعلام کرد.',categoryId:'weather',status:'published'};
+  const miscatKonkoor={id:'miscat-sports',slug:'miscat-sports',title:'اختصاص بورس نخبگان دانشگاه تهران به رتبه‌های زیر ۱۰۰ در کنکور',lead:'دانشگاه تهران جزییات بورس را اعلام کرد.',categoryId:'sports',status:'published'};
+  const miscatDatePalm={id:'miscat-palm',slug:'miscat-palm',title:'برگزاری کارگاه آموزشی مبارزه با آفت خرما در روستای کنارصندل',lead:'جهاد کشاورزی دوره آموزش مبارزه با آفت خرما برگزار کرد.',body:'این دوره در جنوب کرمان برگزار شد.\nلینک روبیکا',categoryId:'culture',status:'published'};
+  const miscatPaving={id:'miscat-paving',slug:'miscat-paving',title:'نهضت آسفالت به محله کهوروئیه جیرفت رسید',lead:'شهرداری عملیات آسفالت معابر را اجرا کرد.',categoryId:'city-village',status:'published'};
+  const blockedQueueAd={id:'q-ad',status:'pending',sourceId:'src-1',url:'https://t.me/s/test/1',title:'کلوچه سرای محبوب با طعم اصیل',lead:'بهترین کلوچه با شماره تماس 09131234567',body:'فروش ویژه کلوچه 09131234567'};
+
+  const db={
+    settings:{},
+    categories:[{id:'weather',name:'آب‌وهوا'},{id:'sports',name:'ورزش'},{id:'culture',name:'فرهنگی'},{id:'agriculture',name:'کشاورزی'},{id:'city-village',name:'سیاسی'},{id:'social',name:'اجتماعی'}],
+    articles:[miscatTurkey,miscatKonkoor,miscatDatePalm,miscatPaving].map(x=>({...x})),
+    newsMonitor:{settings:{enabled:false},sources:[{id:'src-1',name:'منبع آزمون',url:'https://example.com',enabled:true,lastError:'HTTP 503'}],queue:[blockedQueueAd],logs:[{id:'l1',at:new Date().toISOString(),type:'filtered',sourceId:'src-1',blockedReason:'advertisement',message:'محتوای غیرخبری مسدود شد'}],seenUrls:[],nonNewsPolicyVersion:6,regionalFocusVersion:0}
+  };
+
+  monitor.ensure(db);
+  store.normalizeEditorialDb(db);
+
+  // Foreign Turkey non-local item is quarantined; local palm & paving stories stay published with corrected categories and no Rubika link
+  assert.equal(db.articles.find(a=>a.id==='miscat-weather').status,'draft');
+  assert.equal(db.articles.find(a=>a.id==='miscat-sports').categoryId,'social');
+  assert.equal(db.articles.find(a=>a.id==='miscat-palm').categoryId,'agriculture');
+  assert.doesNotMatch(db.articles.find(a=>a.id==='miscat-palm').body,/لینک\s+روبیکا/);
+  assert.equal(db.articles.find(a=>a.id==='miscat-paving').categoryId,'social');
+
+  // Blocked queue item is rejected and redacted (reason saved without retaining raw ad body)
+  const redactedQ=db.newsMonitor.queue.find(q=>q.id==='q-ad');
+  assert.equal(redactedQ.status,'rejected');
+  assert.equal(redactedQ.rejectionReason,'advertisement');
+  assert.equal(redactedQ.body,'');
+  assert.equal(redactedQ.lead,'');
+
+  // Admin panel renders pause/resume toggle, honest warning when monitorRun=0/paused, source error badge, discovered/accepted/rejected counts, and monitor logs
+  db.newsMonitor.sources.find(s=>s.id==='src-1').lastError='HTTP 503';
+  const snap=monitor.snapshot(db);
+  const adminHtml=rebirthAdmin.admin(db,[],new URLSearchParams('monitorPaused=1'),{telegram:false,rubika:false,whatsapp:false,baseUrl:true},{totalPageViews:100,today:{pageViews:10}},snap);
+  assert.match(adminHtml,/رصد هوشمند متوقف است/);
+  assert.match(adminHtml,/شروع مجدد رصد/);
+  assert.match(adminHtml,/آخرین اجرای موفق رصد/);
+  assert.match(adminHtml,/دارای خطا/);
+  assert.match(adminHtml,/HTTP 503/);
+  assert.match(adminHtml,/دلایل رد اخبار و خطاهای پردازش/);
+});

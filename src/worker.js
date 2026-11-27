@@ -1936,13 +1936,14 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v10");
+  const marker=await getState("live_nonnews_cleanup_v11");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
   const before=safeJson(raw,{settings:{},categories:[],articles:[],contacts:[],citizens:[]});
   const after=structuredClone(before);
   newsMonitor.ensure(after);
+  store.normalizeEditorialDb(after);
   const beforeCount=Array.isArray(before.articles)?before.articles.length:0;
   const afterCount=Array.isArray(after.articles)?after.articles.length:0;
   if(JSON.stringify(before)!==JSON.stringify(after)){
@@ -1950,9 +1951,9 @@ async function ensureLiveNonNewsCleanup(){
     try{invalidateFastArticleCache();}catch{}
     publicDbCache={at:0,db:null};
   }
-  await putState("live_nonnews_cleanup_v10","1");
+  await putState("live_nonnews_cleanup_v11","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v10","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v11","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 

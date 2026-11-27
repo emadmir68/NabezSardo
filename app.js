@@ -338,7 +338,8 @@ const server=http.createServer(async(req,res)=>{
       citizenReports:(db.citizens||[]).map(geminiBridge.mapCitizen),
       contacts:(db.contacts||[]).map(x=>({id:String(x.id||''),name:String(x.name||''),email:String(x.contact||''),subject:String(x.subject||''),message:String(x.message||''),createdAt:String(x.createdAt||'')})),
       followups:[...(db.followups||[])],
-      settings:geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||'')
+      settings:geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||''),
+      monitor:newsMonitor.snapshot(db)
     }),'application/json; charset=utf-8',{'Cache-Control':'private,no-store'});
   }
   if(req.method==='POST'&&(p==='/api/gemini/admin/action'||p==='/api/gemini/citizen'||p==='/api/gemini/contact')){
@@ -511,8 +512,37 @@ const server=http.createServer(async(req,res)=>{
         if(s.liveDeskEnabled!==undefined)db.settings.liveDeskEnabled=Boolean(s.liveDeskEnabled);
         db.settings.breakingUpdatedAt=now();
       }
+      if(s.monitoringEnabled!==undefined){
+        newsMonitor.ensure(db);
+        db.newsMonitor.settings.enabled=Boolean(s.monitoringEnabled);
+      }
       save(db);
-      return done(200,{ok:true,settings:geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||'')});
+      return done(200,{ok:true,settings:geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||''),monitor:newsMonitor.snapshot(db)});
+    }
+    if(action==='monitor-run'){
+      try{
+        const result=await newsMonitor.run();
+        const latestDb=load();
+        return done(200,{ok:true,result,monitor:newsMonitor.snapshot(latestDb)});
+      }catch(err){
+        return done(500,{ok:false,error:String(err?.message||'monitor-run-failed')});
+      }
+    }
+    if(action==='monitor-toggle'){
+      const enabled=newsMonitor.toggleMonitorEnabled(typeof input.enabled==='boolean'?input.enabled:undefined);
+      return done(200,{ok:true,enabled,monitor:newsMonitor.snapshot(load())});
+    }
+    if(action==='monitor-publish-candidate'){
+      const result=await newsMonitor.publishCandidate(String(input.id||''));
+      return done(result.ok?200:422,{ok:result.ok,reason:result.reason||'',articleId:result.articleId||'',monitor:newsMonitor.snapshot(load())});
+    }
+    if(action==='monitor-reject-candidate'){
+      const ok=newsMonitor.rejectCandidate(String(input.id||''),'rejected-by-editor');
+      return done(ok?200:404,{ok,monitor:newsMonitor.snapshot(load())});
+    }
+    if(action==='monitor-toggle-source'){
+      const ok=newsMonitor.toggleSource(String(input.id||''));
+      return done(200,{ok:true,enabled:ok,monitor:newsMonitor.snapshot(load())});
     }
     return done(400,{ok:false,error:'unsupported-action'});
   }
@@ -649,8 +679,19 @@ const server=http.createServer(async(req,res)=>{
     if(p==='/admin/news-monitor/run'){
       try{
         const result=await newsMonitor.run();
-        return redirect(res,'/admin?monitorRun='+(result&&result.ok?'1':'0')+'#monitor');
+        if(!result||!result.ok){
+          const qs=result?.reason==='disabled'?'monitorPaused=1':'monitorBusy=1';
+          return redirect(res,'/admin?'+qs+'#monitor');
+        }
+        if(Number(result.errors||0)>0){
+          return redirect(res,'/admin?monitorPartial=1&errors='+Number(result.errors||0)+'&discovered='+Number(result.discovered||0)+'&queued='+Number(result.queued||0)+'#monitor');
+        }
+        return redirect(res,'/admin?monitorRun=1&discovered='+Number(result.discovered||0)+'&queued='+Number(result.queued||0)+'&filtered='+Number(result.filtered||0)+'#monitor');
       }catch(err){console.error('news monitor run',err);return redirect(res,'/admin?monitorError=1#monitor');}
+    }
+    if(p==='/admin/news-monitor/toggle'){
+      newsMonitor.toggleMonitorEnabled();
+      return redirect(res,'/admin?monitorSaved=1#monitor');
     }
     m=p.match(/^\/admin\/news-monitor\/source\/([^/]+)\/toggle$/);
     if(m){newsMonitor.toggleSource(m[1]);return redirect(res,'/admin#monitor');}
@@ -757,10 +798,17 @@ const server=http.createServer(async(req,res)=>{
       if((a.status==='published'||a.status==='scheduled')&&!store.publiclyVisibleArticle({...a,status:'published'}))return send(res,422,'این محتوا با سیاست تحریریه نبض ساردو مغایرت دارد و قابل انتشار یا زمان‌بندی نیست.');
       db.articles.unshift(a);save(db);
       if(a.status==='published'){
-        try{await articleTools.dispatchAndPersist(a.id);}
-        catch(err){console.error('social distribution',err);}
+        let distSummary='skipped';
+        try{
+          const resDist=await articleTools.dispatchAndPersist(a.id);
+          const dist=resDist?.distribution||{};
+          const statuses=['telegram','rubika','whatsapp'].map(k=>dist[k]?.status).filter(Boolean);
+          if(statuses.some(s=>s==='sent'))distSummary=statuses.some(s=>s==='failed')?'partial':'sent';
+          else if(statuses.some(s=>s==='failed'))distSummary='failed';
+        }catch(err){console.error('social distribution',err);distSummary='failed';}
+        return redirect(res,'/admin?saved=1&social='+distSummary);
       }
-      return redirect(res,'/admin?saved=1');
+      return redirect(res,a.status==='scheduled'?'/admin?savedScheduled=1':'/admin?savedDraft=1');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
     if(m){
@@ -771,10 +819,17 @@ const server=http.createServer(async(req,res)=>{
       if(!was&&a.status==='published')a.publishedAt=now();
       save(db);
       if(!was&&a.status==='published'){
-        try{await articleTools.dispatchAndPersist(a.id,{retry:true});}
-        catch(err){console.error('social distribution',err);}
+        let distSummary='skipped';
+        try{
+          const resDist=await articleTools.dispatchAndPersist(a.id,{retry:true});
+          const dist=resDist?.distribution||{};
+          const statuses=['telegram','rubika','whatsapp'].map(k=>dist[k]?.status).filter(Boolean);
+          if(statuses.some(s=>s==='sent'))distSummary=statuses.some(s=>s==='failed')?'partial':'sent';
+          else if(statuses.some(s=>s==='failed'))distSummary='failed';
+        }catch(err){console.error('social distribution',err);distSummary='failed';}
+        return redirect(res,'/admin?saved=1&social='+distSummary);
       }
-      return redirect(res,'/admin');
+      return redirect(res,a.status==='scheduled'?'/admin?savedScheduled=1':a.status==='published'?'/admin?updated=1':'/admin?savedDraft=1');
     }
     m=p.match(/^\/admin\/articles\/([^/]+)\/delete$/);
     if(m){const a=db.articles.find(x=>x.id===m[1]);if(a){deleteUpload(a.image);deleteUpload(a.videoUrl);}db.articles=db.articles.filter(x=>x.id!==m[1]);save(db);return redirect(res,'/admin');}
