@@ -1908,3 +1908,25 @@ body {
 .rb-hero-copy h1, .rb-story-copy h3, .rb-article-head h1, .rb-article-body {
   overflow-wrap:break-word;
 }
+
+/* Article body alignment only — no changes to cards, spacing, colors or page layout. */
+.rb-article-prose-fa p {
+  direction: rtl;
+  text-align: justify;
+  text-align-last: start;
+  text-justify: inter-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.rb-article-prose-fa blockquote,
+.rb-article-prose-fa blockquote p {
+  text-align: center;
+  text-align-last: center;
+}
+.rb-article-prose-en p {
+  direction: ltr;
+  text-align: left;
+  text-align-last: left;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
