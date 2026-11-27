@@ -12,10 +12,13 @@ export const CATEGORIES: { id: CategoryId; label: LocalizedText; code: string }[
   { id: 'sarduiyeh', label: { fa: 'ساردوئیه', en: 'Sarduiyeh' }, code: '01' },
   { id: 'agriculture', label: { fa: 'کشاورزی و اقتصاد', en: 'Agriculture & Economy' }, code: '02' },
   { id: 'social', label: { fa: 'اجتماعی و شهر', en: 'Society & Civic' }, code: '03' },
-  { id: 'culture', label: { fa: 'فرهنگ و میراث', en: 'Culture & Heritage' }, code: '04' },
-  { id: 'weather', label: { fa: 'هواشناسی و اقلیم', en: 'Climate & Weather' }, code: '05' },
-  { id: 'incidents', label: { fa: 'حوادث و راه‌ها', en: 'Roads & Safety' }, code: '06' },
-  { id: 'opinion', label: { fa: 'یادداشت و تحلیل', en: 'Opinion & Analysis' }, code: '07' },
+  { id: 'politics', label: { fa: 'سیاسی و ملی', en: 'Politics & Policy' }, code: '04' },
+  { id: 'culture', label: { fa: 'فرهنگ و میراث', en: 'Culture & Heritage' }, code: '05' },
+  { id: 'weather', label: { fa: 'هواشناسی و اقلیم', en: 'Climate & Weather' }, code: '06' },
+  { id: 'incidents', label: { fa: 'حوادث و راه‌ها', en: 'Roads & Safety' }, code: '07' },
+  { id: 'sports', label: { fa: 'ورزش', en: 'Sports' }, code: '08' },
+  { id: 'opinion', label: { fa: 'یادداشت و تحلیل', en: 'Opinion & Analysis' }, code: '09' },
+  { id: 'short-news', label: { fa: 'خبرهای کوتاه', en: 'Quick Dispatches' }, code: '10' },
 ];
 
 export const REGIONS: { id: RegionId; label: LocalizedText }[] = [

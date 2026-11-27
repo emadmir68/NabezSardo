@@ -1,20 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, Mail, MapPin, Phone, Send } from 'lucide-react';
 import type { ContactSubmission, Locale, SiteSettings } from '../types/news';
 
 interface ContactViewProps {
   locale: Locale;
   settings: SiteSettings;
+  prefilledSubject?: string;
+  prefilledMessage?: string;
   onSubmitContact: (payload: Omit<ContactSubmission, 'id' | 'createdAt'>) => Promise<boolean>;
 }
 
-export function ContactView({ locale, settings, onSubmitContact }: ContactViewProps) {
+export function ContactView({
+  locale,
+  settings,
+  prefilledSubject = '',
+  prefilledMessage = '',
+  onSubmitContact,
+}: ContactViewProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
+  const [subject, setSubject] = useState(prefilledSubject);
+  const [message, setMessage] = useState(prefilledMessage);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    if (prefilledSubject) setSubject(prefilledSubject);
+    if (prefilledMessage) setMessage(prefilledMessage);
+  }, [prefilledSubject, prefilledMessage]);
+
+  const contactEmail = settings.contactEmail || 'info@nabzesardo.ir';
+  const editorialPhone = settings.editorialPhone || '034-43210000';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,9 +93,13 @@ export function ContactView({ locale, settings, onSubmitContact }: ContactViewPr
                   <p className="text-xs text-[#5A5247] dark:text-[#A1AAB9] mb-1">
                     {locale === 'fa' ? 'پست الکترونیک تحریریه' : 'Editorial Email'}
                   </p>
-                  <p className="font-mono-tabular font-semibold text-[#141210] dark:text-[#F6F2EA]" dir="ltr">
-                    {settings.contactEmail}
-                  </p>
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="font-mono-tabular font-semibold text-[#141210] dark:text-[#F6F2EA] hover:text-[#8F6321] dark:hover:text-[#ECC983] transition-colors"
+                    dir="ltr"
+                  >
+                    {contactEmail}
+                  </a>
                 </div>
               </div>
 
@@ -89,9 +109,13 @@ export function ContactView({ locale, settings, onSubmitContact }: ContactViewPr
                   <p className="text-xs text-[#5A5247] dark:text-[#A1AAB9] mb-1">
                     {locale === 'fa' ? 'خط مستقیم سردبیری' : 'Editorial Desk Line'}
                   </p>
-                  <p className="font-mono-tabular font-semibold text-[#141210] dark:text-[#F6F2EA]">
-                    {settings.editorialPhone}
-                  </p>
+                  <a
+                    href={`tel:${editorialPhone.replace(/[^+\d]/g, '')}`}
+                    className="font-mono-tabular font-semibold text-[#141210] dark:text-[#F6F2EA] hover:text-[#8F6321] dark:hover:text-[#ECC983] transition-colors"
+                    dir="ltr"
+                  >
+                    {editorialPhone}
+                  </a>
                 </div>
               </div>
 

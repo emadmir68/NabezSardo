@@ -1371,7 +1371,16 @@ export function AdminStudio({
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="text-[#5A5247] dark:text-[#A1AAB9]">SEO Feeds</dt>
-                  <dd className="font-mono-tabular font-semibold">/sitemap.xml · /rss.xml</dd>
+                  <dd className="font-mono-tabular font-semibold">/sitemap.xml · /feed.xml</dd>
+                </div>
+                <div className="pt-2 flex flex-wrap gap-2">
+                  <a href="/admin#monitor" className="text-[11px] font-bold text-[#8F6321] dark:text-[#ECC983] hover:underline">
+                    {locale === 'fa' ? 'مدیریت رصد هوشمند ↗' : 'Monitor Console ↗'}
+                  </a>
+                  <span aria-hidden="true" className="opacity-35">·</span>
+                  <a href="/admin#followups" className="text-[11px] font-bold text-[#8F6321] dark:text-[#ECC983] hover:underline">
+                    {locale === 'fa' ? 'مدیریت پیگیری‌ها ↗' : 'Follow-up Desk ↗'}
+                  </a>
                 </div>
               </dl>
             </div>

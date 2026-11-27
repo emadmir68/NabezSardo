@@ -8,7 +8,10 @@ export type CategoryId =
   | 'culture'
   | 'weather'
   | 'incidents'
-  | 'opinion';
+  | 'opinion'
+  | 'politics'
+  | 'sports'
+  | 'short-news';
 
 export type RegionId =
   | 'sarduiyeh'
@@ -26,6 +29,8 @@ export type ActiveView =
   | 'submit'
   | 'about'
   | 'contact'
+  | 'editorial-policy'
+  | 'follow-up'
   | 'admin-login'
   | 'studio'
   | 'not-found';
@@ -38,6 +43,8 @@ export interface LocalizedText {
 export interface Article {
   id: string;
   slug: string;
+  shortCode?: string;
+  kicker?: string;
   title: LocalizedText;
   deck: LocalizedText;
   body: {
@@ -47,16 +54,47 @@ export interface Article {
   pullQuote?: LocalizedText;
   category: CategoryId;
   region: RegionId;
+  locationLabel?: string;
   author: LocalizedText;
   authorRole: LocalizedText;
   coverImage: string;
+  videoUrl?: string;
+  videoType?: string;
+  gallery?: string[];
   imageCaption: LocalizedText;
   publishedAt: string; // ISO date string
+  updatedAt?: string;
   readTimeMin: number;
   views: number;
   status: 'published' | 'draft';
   featuredInHero: boolean;
   isBreaking?: boolean;
+  _summaryOnly?: boolean;
+}
+
+export interface FollowUpCase {
+  id: string;
+  title: string;
+  promise?: string;
+  promisor?: string;
+  location?: string;
+  deadline?: string;
+  status?: 'announced' | 'started' | 'progress' | 'completed' | 'paused' | 'closed' | string;
+  note?: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BreakingWireConfig {
+  enabled: boolean;
+  kind: 'breaking' | 'announcement' | 'desk' | 'off';
+  label: string;
+  textFa: string;
+  textEn: string;
+  marker: string;
+  updatedAt?: string;
 }
 
 export interface CitizenReport {

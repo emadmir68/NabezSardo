@@ -1,257 +1,387 @@
-import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck } from 'lucide-react';
-import type { Article, Locale } from '../types/news';
+import { ArrowLeft, ArrowRight, Bookmark, BookmarkCheck, Play } from 'lucide-react';
+import type { Article, CategoryId, Locale } from '../types/news';
 import {
   cleanEditorialDeck,
   formatEditorialIndex,
   formatNumber,
-  formatShortDate,
+  formatRelativeTime,
   getCategoryLabel,
   getRegionLabel,
-  resolveArticleCoverImage,
+  hasRealEditorialPhoto,
 } from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
 
-interface CardBaseProps {
+export interface MagazineCardProps {
   article: Article;
   locale: Locale;
+  isBookmarked?: boolean;
+  isSaved?: boolean;
+  onToggleBookmark?: (id: string) => void;
+  onOpenArticle?: (article: Article) => void;
+  onOpen?: (article: Article) => void;
   index?: number;
-  isSaved: boolean;
-  onOpen: (article: Article) => void;
-  onToggleBookmark: (id: string) => void;
 }
 
-/**
- * 1. Flagship Magazine Cover Plate (7-col Editorial Spotlight)
- * Full-bleed photograph, 0.5px recessed gallery hairline, ultra-subtle frosted glass plaque,
- * pure unboxed typography, layered elevation shadows, and cubic-bezier hover choreography.
- */
-export function MagazineLeadCard({
+function resolveOpen(props: MagazineCardProps) {
+  return props.onOpenArticle ?? props.onOpen ?? (() => {});
+}
+
+function resolveBookmarked(props: MagazineCardProps) {
+  return Boolean(props.isBookmarked ?? props.isSaved);
+}
+
+interface DeskStyle {
+  code: string;
+  accentHex: string;
+  accentBgClass: string;
+  accentTextClass: string;
+  stripClass: string;
+}
+
+const DESK_STYLES: Record<CategoryId, DeskStyle> = {
+  sarduiyeh: {
+    code: '01',
+    accentHex: '#C69546',
+    accentBgClass: 'bg-[#8F6321]/10 dark:bg-[#D4A85B]/15',
+    accentTextClass: 'text-[#8F6321] dark:text-[#ECC983]',
+    stripClass: 'from-[#D4A85B] via-[#BA8433] to-transparent',
+  },
+  agriculture: {
+    code: '02',
+    accentHex: '#3B825E',
+    accentBgClass: 'bg-[#2C6B4B]/10 dark:bg-[#4FA678]/15',
+    accentTextClass: 'text-[#265E42] dark:text-[#7CD1A2]',
+    stripClass: 'from-[#4FA678] via-[#2C6B4B] to-transparent',
+  },
+  social: {
+    code: '03',
+    accentHex: '#3A6EA5',
+    accentBgClass: 'bg-[#285382]/10 dark:bg-[#5E97D1]/15',
+    accentTextClass: 'text-[#234A75] dark:text-[#8BBCED]',
+    stripClass: 'from-[#5E97D1] via-[#285382] to-transparent',
+  },
+  politics: {
+    code: '04',
+    accentHex: '#A63A4B',
+    accentBgClass: 'bg-[#8C2B3B]/10 dark:bg-[#D96B7D]/15',
+    accentTextClass: 'text-[#872434] dark:text-[#F099A7]',
+    stripClass: 'from-[#D96B7D] via-[#8C2B3B] to-transparent',
+  },
+  culture: {
+    code: '05',
+    accentHex: '#8E5A9E',
+    accentBgClass: 'bg-[#6F3F7D]/10 dark:bg-[#B883C9]/15',
+    accentTextClass: 'text-[#6A3B78] dark:text-[#D4A6E3]',
+    stripClass: 'from-[#B883C9] via-[#6F3F7D] to-transparent',
+  },
+  weather: {
+    code: '06',
+    accentHex: '#2E7D8F',
+    accentBgClass: 'bg-[#226270]/10 dark:bg-[#57B1C4]/15',
+    accentTextClass: 'text-[#1E5966] dark:text-[#86CFE0]',
+    stripClass: 'from-[#57B1C4] via-[#226270] to-transparent',
+  },
+  incidents: {
+    code: '07',
+    accentHex: '#C45335',
+    accentBgClass: 'bg-[#A63F24]/10 dark:bg-[#E07A5F]/15',
+    accentTextClass: 'text-[#9B3920] dark:text-[#F29E88]',
+    stripClass: 'from-[#E07A5F] via-[#A63F24] to-transparent',
+  },
+  sports: {
+    code: '08',
+    accentHex: '#1F8A70',
+    accentBgClass: 'bg-[#176E59]/10 dark:bg-[#49B89C]/15',
+    accentTextClass: 'text-[#156451] dark:text-[#78D9C0]',
+    stripClass: 'from-[#49B89C] via-[#176E59] to-transparent',
+  },
+  opinion: {
+    code: '09',
+    accentHex: '#9C7A3C',
+    accentBgClass: 'bg-[#7A5D28]/10 dark:bg-[#D1AF71]/15',
+    accentTextClass: 'text-[#735622] dark:text-[#E5CA95]',
+    stripClass: 'from-[#D1AF71] via-[#7A5D28] to-transparent',
+  },
+  'short-news': {
+    code: '10',
+    accentHex: '#B06A2E',
+    accentBgClass: 'bg-[#8F521E]/10 dark:bg-[#DC9252]/15',
+    accentTextClass: 'text-[#844B1A] dark:text-[#EEB37E]',
+    stripClass: 'from-[#DC9252] via-[#8F521E] to-transparent',
+  },
+};
+
+function deskFor(category: CategoryId): DeskStyle {
+  return DESK_STYLES[category] ?? DESK_STYLES.social;
+}
+
+/** Fine-line topographic & contour plate texture for text-first editorial cards */
+function TopographicPlateWatermark({ color }: { color: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 360 140"
+      fill="none"
+      className="pointer-events-none select-none w-full h-full opacity-[0.075] dark:opacity-[0.095]"
+    >
+      <path
+        d="M-10 110C48 74 96 92 146 66C196 40 242 52 296 24C326 8 348 16 372 6"
+        stroke={color}
+        strokeWidth="1"
+      />
+      <path
+        d="M-10 128C56 96 108 112 162 84C216 56 266 68 320 40C342 29 358 32 372 24"
+        stroke={color}
+        strokeWidth="0.9"
+      />
+      <path
+        d="M12 140C72 114 128 128 184 98C236 70 284 82 346 52"
+        stroke={color}
+        strokeWidth="0.8"
+      />
+      <circle cx="298" cy="24" r="3" stroke={color} strokeWidth="1" />
+    </svg>
+  );
+}
+
+function DeskBadge({ article, locale }: { article: Article; locale: Locale }) {
+  const desk = deskFor(article.category);
+  const locationText = article.locationLabel || getRegionLabel(article.region, locale);
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${desk.accentBgClass} ${desk.accentTextClass}`}
+      >
+        <span
+          className="w-1.5 h-1.5 rounded-full shrink-0"
+          style={{ backgroundColor: desk.accentHex }}
+        />
+        <span>{getCategoryLabel(article.category, locale)}</span>
+      </span>
+      <span className="text-[#5B5246] dark:text-[#A3ADBF] font-medium truncate">
+        {locationText}
+      </span>
+    </div>
+  );
+}
+
+function MetaFooter({
   article,
   locale,
-  isSaved,
-  onOpen,
+  isBookmarked,
   onToggleBookmark,
-}: CardBaseProps) {
-  const cleanDeck = cleanEditorialDeck(article.title[locale], article.deck[locale], 185);
-
+}: {
+  article: Article;
+  locale: Locale;
+  isBookmarked: boolean;
+  onToggleBookmark?: (id: string) => void;
+}) {
+  const ReadArrow = locale === 'fa' ? ArrowLeft : ArrowRight;
   return (
-    <article className="magazine-plate lg:col-span-7 group rounded-[26px] overflow-hidden bg-[#070A10] min-h-[500px] sm:min-h-[580px] lg:min-h-[650px] flex flex-col justify-between">
-      {/* Full-Bleed Editorial Photograph */}
-      <div className="absolute inset-0 overflow-hidden">
-        <EditorialImage
-          src={resolveArticleCoverImage(article)}
-          alt={article.title[locale]}
-          fallbackLabel={article.title[locale]}
-          className="magazine-media-img w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#05070C]/92 via-[#05070C]/42 to-[#05070C]/28 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
-        {/* Recessed 0.5px Gallery Inner Frame */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-4 sm:inset-5 rounded-[18px] border-[0.5px] border-[#F5F1E8]/12 group-hover:border-[#F0D496]/36 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] pointer-events-none"
-        />
-      </div>
-
-      {/* Top Editorial Line (Unboxed Typography + Tactile Hairline Bookmark) */}
-      <div className="relative z-10 px-7 pt-7 sm:px-10 sm:pt-9 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5 text-xs text-[#F6F2EA]/90 tracking-[0.01em]">
-          <span className="font-bold text-[#F0D496]">
-            {getCategoryLabel(article.category, locale)}
-          </span>
-          <span aria-hidden="true" className="opacity-45">
-            ·
-          </span>
-          <span className="font-medium text-[#EDE6D8]/85">
-            {getRegionLabel(article.region, locale)}
+    <div className="pt-3.5 mt-auto">
+      <div className="magazine-hairline mb-3" />
+      <div className="flex items-center justify-between gap-2 text-[11.5px] text-[#5B5246] dark:text-[#A3ADBF]">
+        <div className="flex items-center gap-2 min-w-0 truncate">
+          <time dateTime={article.publishedAt} className="truncate font-medium">
+            {formatRelativeTime(article.publishedAt, locale)}
+          </time>
+          <span aria-hidden="true" className="opacity-35">·</span>
+          <span className="tabular-nums shrink-0">
+            {locale === 'fa'
+              ? `${formatNumber(article.readTimeMin, 'fa')} دقیقه`
+              : `${article.readTimeMin} min`}
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onToggleBookmark(article.id)}
-          aria-label={locale === 'fa' ? 'ذخیره خبر' : 'Save story'}
-          className="magazine-circle-action !w-10 !h-10 !bg-[#080B12]/48 !border-[#F5F1E8]/22 !text-[#F6F2EA] hover:!border-[#F0D496]/70 hover:!text-[#F0D496] hover:!bg-[#0D1320]/76"
-        >
-          {isSaved ? (
-            <BookmarkCheck className="w-4 h-4 text-[#F0D496]" />
-          ) : (
-            <Bookmark className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-
-      {/* Bottom Ultra-Subtle Glassmorphism Editorial Plaque */}
-      <div className="relative z-10 mt-auto p-5 sm:p-8 lg:p-9">
-        <div className="magazine-glass-plaque rounded-[20px] p-6 sm:p-8 lg:p-9">
-          <div className="flex flex-wrap items-center gap-2.5 text-xs text-[#EDE6D8]/78 mb-4">
-            <span className="font-medium text-[#FDFBF7]">{article.author[locale]}</span>
-            <span aria-hidden="true" className="opacity-40">
-              ·
-            </span>
-            <span>{formatShortDate(article.publishedAt, locale)}</span>
-            <span aria-hidden="true" className="opacity-40">
-              ·
-            </span>
-            <span className="tabular-nums">
-              {locale === 'fa'
-                ? `${formatNumber(article.readTimeMin, locale)} دقیقه مطالعه`
-                : `${article.readTimeMin} min read`}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onOpen(article)}
-            className="text-start block w-full cursor-pointer"
-          >
-            <h3
-              className={`font-editorial-display text-[22px] sm:text-[30px] lg:text-[33px] font-bold text-[#FDFBF7] group-hover:text-[#F0D496] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] mb-4 line-clamp-3 ${
-                locale === 'fa' ? 'leading-[1.46] sm:leading-[1.38]' : 'leading-[1.16]'
-              }`}
-            >
-              {article.title[locale]}
-            </h3>
-
-            {cleanDeck && (
-              <p className="text-[13.5px] sm:text-[15px] text-[#EDE6D8]/82 leading-[1.9] max-w-2xl mb-7 line-clamp-2">
-                {cleanDeck}
-              </p>
-            )}
-          </button>
-
-          <div className="magazine-hairline !bg-[#F5F1E8]/14 mb-5" />
-
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-xs text-[#EDE6D8]/70 font-mono-tabular">
-              {locale === 'fa'
-                ? `${formatNumber(article.views, locale)} بازدید`
-                : `${formatNumber(article.views, locale)} reads`}
-            </span>
-
+        <div className="flex items-center gap-1.5 shrink-0">
+          {onToggleBookmark && (
             <button
               type="button"
-              onClick={() => onOpen(article)}
-              className="group/cta inline-flex items-center gap-2.5 text-xs sm:text-[13px] font-bold text-[#F0D496] hover:text-[#FDFBF7] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer py-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleBookmark(article.id);
+              }}
+              className={`magazine-circle-action !w-9 !h-9 !min-w-[36px] !min-h-[36px] ${
+                isBookmarked ? '!border-[#8F6321] dark:!border-[#ECC983] !text-[#8F6321] dark:!text-[#ECC983]' : ''
+              }`}
+              aria-label={
+                isBookmarked
+                  ? locale === 'fa'
+                    ? 'حذف از نشان‌شده‌ها'
+                    : 'Remove bookmark'
+                  : locale === 'fa'
+                    ? 'ذخیره خبر'
+                    : 'Save story'
+              }
             >
-              <span>{locale === 'fa' ? 'مطالعه پرونده کامل' : 'Read Full Story'}</span>
-              <span className="w-8 h-8 rounded-full border-[0.5px] border-[#F0D496]/45 bg-[#F0D496]/10 inline-flex items-center justify-center transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-[#F0D496] group-hover:text-[#080A0F] group-hover:border-[#F0D496]">
-                {locale === 'fa' ? (
-                  <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5" />
-                ) : (
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5" />
-                )}
-              </span>
+              {isBookmarked ? (
+                <BookmarkCheck className="w-4 h-4" strokeWidth={2} />
+              ) : (
+                <Bookmark className="w-4 h-4" strokeWidth={1.8} />
+              )}
             </button>
-          </div>
+          )}
+
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11.5px] font-bold text-[#8F6321] dark:text-[#ECC983] group-hover:bg-[#8F6321]/10 dark:group-hover:bg-[#ECC983]/12 transition-colors"
+          >
+            <span>{locale === 'fa' ? 'مطالعه' : 'Read'}</span>
+            <ReadArrow className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5 rtl:group-hover:-translate-x-0.5 ltr:group-hover:translate-x-0.5" />
+          </span>
         </div>
       </div>
-    </article>
+    </div>
   );
 }
 
 /**
- * 2. Secondary Editorial Stack Card (5-col Companion Column)
- * Generous outer glass padding, nested-radius framed photograph, unboxed typographic index,
- * 0.5px hairline divider, and velvety cubic-bezier hover lift.
+ * 1. Flagship Lead Card (Designed from scratch):
+ *    Split editorial sheet on desktop; adapts cleanly between genuine photography
+ *    and a monumental topographic typographic plate when no photo exists.
  */
-export function MagazineSecondaryCard({
-  article,
-  locale,
-  index = 0,
-  isSaved,
-  onOpen,
-  onToggleBookmark,
-}: CardBaseProps) {
-  const cleanDeck = cleanEditorialDeck(article.title[locale], article.deck[locale], 130);
+export function MagazineLeadCard(props: MagazineCardProps) {
+  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const openArticle = resolveOpen(props);
+  const isBookmarked = resolveBookmarked(props);
+  const hasPhoto = hasRealEditorialPhoto(article);
+  const desk = deskFor(article.category);
+  const deck = cleanEditorialDeck(article.title[locale], article.deck[locale], 230);
+  const ReadArrow = locale === 'fa' ? ArrowLeft : ArrowRight;
 
   return (
-    <article className="magazine-card group rounded-[22px] p-5 sm:p-6 lg:p-7 flex gap-5 sm:gap-6 items-stretch flex-1 overflow-hidden">
-      {/* Framed Gallery Thumbnail (Nested Radius: 22px - ~10px = 12px/14px) */}
-      <button
-        type="button"
-        onClick={() => onOpen(article)}
-        className="relative w-24 h-28 sm:w-36 sm:h-auto shrink-0 rounded-[14px] overflow-hidden bg-[#EAE2D3] dark:bg-[#0B0F18] border-[0.5px] border-[#141210]/10 dark:border-[#F5F1E8]/10 cursor-pointer self-center sm:self-stretch"
-      >
-        <EditorialImage
-          src={resolveArticleCoverImage(article)}
-          alt={article.title[locale]}
-          fallbackLabel={article.title[locale]}
-          className="magazine-media-img w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F]/28 via-transparent to-transparent opacity-45 group-hover:opacity-20 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
-      </button>
-
-      <div className="relative z-10 flex-1 min-w-0 flex flex-col justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-[#5A5247] dark:text-[#A1AAB9] mb-2.5">
-            <span className="font-mono-tabular font-semibold text-[#9A6B27]/85 dark:text-[#E8C680]/85">
-              {formatEditorialIndex(index, locale)}
+    <article
+      onClick={() => openArticle(article)}
+      className="group magazine-plate rounded-[22px] overflow-hidden cursor-pointer bg-[#FFFDF8] dark:bg-[#0D111C]"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
+        {/* Visual or Topographic Editorial Plate Column */}
+        {hasPhoto ? (
+          <div className="lg:col-span-7 relative min-h-[250px] sm:min-h-[340px] lg:min-h-[430px] overflow-hidden bg-[#0E131F]">
+            <EditorialImage
+              src={article.coverImage}
+              alt={article.title[locale]}
+              className="magazine-media-img w-full h-full object-cover"
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(8,10,16,0.12) 0%, rgba(8,10,16,0.04) 55%, rgba(8,10,16,0.48) 100%)',
+              }}
+            />
+            {article.videoUrl && (
+              <span className="absolute top-4 end-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 text-[#F5F1E8] text-xs font-bold border border-white/20 backdrop-blur-md">
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>{locale === 'fa' ? 'گزارش ویدئویی' : 'Video'}</span>
+              </span>
+            )}
+            <span className="font-mono-tabular absolute bottom-4 start-4 px-3 py-1 rounded-full bg-black/65 text-[#F1D79A] text-xs font-bold border border-[#D4A85B]/35 backdrop-blur-md">
+              {formatEditorialIndex(index, locale)} / LEAD
             </span>
-            <span aria-hidden="true" className="opacity-35">
-              /
-            </span>
-            <span className="font-bold text-[#9A6B27] dark:text-[#E8C680]">
-              {getCategoryLabel(article.category, locale)}
-            </span>
-            <span aria-hidden="true" className="opacity-35">
-              ·
-            </span>
-            <span>{getRegionLabel(article.region, locale)}</span>
           </div>
+        ) : (
+          <div className="lg:col-span-5 relative min-h-[200px] lg:min-h-[410px] p-7 sm:p-9 flex flex-col justify-between bg-gradient-to-br from-[#EFE6D6] via-[#F7F1E6] to-[#E6DAC4] dark:from-[#121828] dark:via-[#0D121E] dark:to-[#182034] border-b lg:border-b-0 lg:border-e border-[#D9CEBA] dark:border-[#252E42] overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+              <TopographicPlateWatermark color={desk.accentHex} />
+            </div>
+            <div className="relative flex items-center justify-between">
+              <span className="text-[11px] font-bold tracking-wider uppercase text-[#8F6321] dark:text-[#ECC983]">
+                {locale === 'fa' ? 'پرونده اصلی تحریریه' : 'LEAD DISPATCH'}
+              </span>
+              <span className="font-mono-tabular text-3xl sm:text-4xl font-black text-[#161310]/15 dark:text-[#F5F1E8]/15">
+                {formatEditorialIndex(index, locale)}
+              </span>
+            </div>
+            <div className="relative space-y-3 my-auto py-4">
+              {article.kicker && (
+                <p className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
+                  {article.kicker}
+                </p>
+              )}
+              <div className="w-12 h-0.5 rounded-full" style={{ backgroundColor: desk.accentHex }} />
+              <p className="text-xs sm:text-sm text-[#5B5246] dark:text-[#A3ADBF] leading-relaxed">
+                {article.author[locale]} · {article.locationLabel || getRegionLabel(article.region, locale)}
+              </p>
+            </div>
+            <div className="relative flex items-center justify-between text-[11px] font-mono-tabular text-[#5B5246] dark:text-[#A3ADBF]">
+              <span>SOUTH KERMAN DESK</span>
+              <span>28° 40′ N · 57° 44′ E</span>
+            </div>
+          </div>
+        )}
 
-          <button
-            type="button"
-            onClick={() => onOpen(article)}
-            className="text-start cursor-pointer block w-full"
-          >
+        {/* Editorial Typography & Actions Column */}
+        <div
+          className={`${
+            hasPhoto ? 'lg:col-span-5' : 'lg:col-span-7'
+          } p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-6`}
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <DeskBadge article={article} locale={locale} />
+              {onToggleBookmark && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleBookmark(article.id);
+                  }}
+                  className="magazine-circle-action shrink-0"
+                  aria-label={isBookmarked ? 'Remove bookmark' : 'Save story'}
+                >
+                  {isBookmarked ? (
+                    <BookmarkCheck className="w-4.5 h-4.5 text-[#8F6321] dark:text-[#ECC983]" />
+                  ) : (
+                    <Bookmark className="w-4.5 h-4.5" />
+                  )}
+                </button>
+              )}
+            </div>
+
+            {hasPhoto && article.kicker && (
+              <p className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
+                {article.kicker}
+              </p>
+            )}
+
             <h3
-              className={`font-editorial-display text-[16px] sm:text-[18.5px] font-bold text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] mb-2 line-clamp-2 ${
-                locale === 'fa' ? 'leading-[1.54]' : 'leading-[1.28]'
+              className={`font-editorial-display text-2xl sm:text-3xl lg:text-[2.15rem] font-extrabold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors ${
+                locale === 'fa' ? 'leading-[1.42]' : 'leading-[1.15]'
               }`}
             >
               {article.title[locale]}
             </h3>
-          </button>
 
-          {cleanDeck && (
-            <p className="hidden sm:line-clamp-2 text-[13px] text-[#5A5247]/90 dark:text-[#A1AAB9]/90 leading-[1.82]">
-              {cleanDeck}
-            </p>
-          )}
-        </div>
+            {deck && (
+              <p className="text-sm sm:text-[15.5px] text-[#5B5246] dark:text-[#A3ADBF] leading-[1.9] line-clamp-3">
+                {deck}
+              </p>
+            )}
+          </div>
 
-        <div className="space-y-3">
-          <div className="magazine-hairline" />
+          <div className="space-y-4">
+            <div className="magazine-hairline" />
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5B5246] dark:text-[#A3ADBF]">
+                <span className="font-semibold text-[#161310] dark:text-[#E7E0D3]">
+                  {article.author[locale]}
+                </span>
+                <span aria-hidden="true" className="opacity-35">·</span>
+                <time dateTime={article.publishedAt}>
+                  {formatRelativeTime(article.publishedAt, locale)}
+                </time>
+                <span aria-hidden="true" className="opacity-35">·</span>
+                <span className="tabular-nums">
+                  {locale === 'fa'
+                    ? `${formatNumber(article.readTimeMin, 'fa')} دقیقه مطالعه`
+                    : `${article.readTimeMin} min read`}
+                </span>
+              </div>
 
-          <div className="flex items-center justify-between gap-3 text-[11px] sm:text-xs text-[#5A5247] dark:text-[#A1AAB9]">
-            <span className="truncate">{formatShortDate(article.publishedAt, locale)}</span>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => onToggleBookmark(article.id)}
-                aria-label={locale === 'fa' ? 'ذخیره خبر' : 'Save story'}
-                className="magazine-circle-action !w-8 !h-8"
-              >
-                {isSaved ? (
-                  <BookmarkCheck className="w-3.5 h-3.5 text-[#9A6B27] dark:text-[#E8C680]" />
-                ) : (
-                  <Bookmark className="w-3.5 h-3.5" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onOpen(article)}
-                aria-label={locale === 'fa' ? 'مطالعه خبر' : 'Open story'}
-                className="magazine-circle-action !w-8 !h-8 text-[#9A6B27] dark:text-[#E8C680] group-hover:border-[#9A6B27] dark:group-hover:border-[#E8C680] group-hover:bg-[#141210] group-hover:text-[#F6F2EA] dark:group-hover:bg-[#E8C680] dark:group-hover:text-[#080A0F]"
-              >
-                {locale === 'fa' ? (
-                  <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5" />
-                ) : (
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5" />
-                )}
-              </button>
+              <span className="btn-luxury-ink !text-xs sm:!text-sm !px-5 !min-h-[44px]">
+                <span>{locale === 'fa' ? 'خواندن گزارش کامل' : 'Read full dispatch'}</span>
+                <ReadArrow className="w-4 h-4" />
+              </span>
             </div>
           </div>
         </div>
@@ -261,334 +391,342 @@ export function MagazineSecondaryCard({
 }
 
 /**
- * 3. Tall Art-Monograph Portrait Dossier Card (Photojournalism Gallery)
- * Dramatic vertical plate, recessed 0.5px frame, unboxed folio metadata over gentle scrim,
- * and floating frosted glass caption chamber that elevates smoothly on hover.
+ * 2. Secondary Split Card: Crisp horizontal brief/feature slot next to or below the Lead.
  */
-export function MagazinePortraitDossierCard({
-  article,
-  locale,
-  index = 0,
-  onOpen,
-}: Omit<CardBaseProps, 'isSaved' | 'onToggleBookmark'>) {
+export function MagazineSecondaryCard(props: MagazineCardProps) {
+  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const openArticle = resolveOpen(props);
+  const isBookmarked = resolveBookmarked(props);
+  const hasPhoto = hasRealEditorialPhoto(article);
+  const desk = deskFor(article.category);
+  const deck = cleanEditorialDeck(article.title[locale], article.deck[locale], 125);
+
   return (
     <article
-      onClick={() => onOpen(article)}
-      className="magazine-plate group rounded-[26px] overflow-hidden min-h-[430px] sm:min-h-[490px] flex flex-col justify-between bg-[#070A10] cursor-pointer"
+      onClick={() => openArticle(article)}
+      className="group magazine-card rounded-2xl p-4 sm:p-5 cursor-pointer flex flex-col justify-between h-full overflow-hidden"
     >
-      <div className="absolute inset-0 overflow-hidden">
-        <EditorialImage
-          src={resolveArticleCoverImage(article)}
-          alt={article.title[locale]}
-          className="magazine-media-img w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#05070C]/92 via-[#05070C]/32 to-[#05070C]/34" />
-        {/* Recessed 0.5px Inner Gallery Border */}
+      <div
+        className={`h-[2px] w-full bg-gradient-to-r ${desk.stripClass} opacity-75 rounded-full mb-3.5`}
+      />
+
+      <div className="flex items-start gap-4">
+        {hasPhoto ? (
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shrink-0 bg-[#10141F] border border-[#D9CEBA]/60 dark:border-[#252E42]">
+            <EditorialImage
+              src={article.coverImage}
+              alt={article.title[locale]}
+              className="magazine-media-img w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl shrink-0 flex flex-col items-center justify-center bg-[#EFE7D8] dark:bg-[#171E30] border border-[#D9CEBA] dark:border-[#252E42]">
+            <span className="font-mono-tabular text-base font-extrabold text-[#8F6321] dark:text-[#ECC983]">
+              {formatEditorialIndex(index, locale)}
+            </span>
+            <span className="text-[9px] uppercase tracking-wider text-[#5B5246] dark:text-[#A3ADBF]">
+              {desk.code}
+            </span>
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0 space-y-2">
+          <DeskBadge article={article} locale={locale} />
+          <h3
+            className={`font-editorial-display text-base sm:text-[17px] font-bold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors line-clamp-2 ${
+              locale === 'fa' ? 'leading-[1.55]' : 'leading-[1.3]'
+            }`}
+          >
+            {article.title[locale]}
+          </h3>
+          {deck && (
+            <p className="text-xs text-[#5B5246] dark:text-[#A3ADBF] line-clamp-2 leading-[1.75]">
+              {deck}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <MetaFooter
+        article={article}
+        locale={locale}
+        isBookmarked={isBookmarked}
+        onToggleBookmark={onToggleBookmark}
+      />
+    </article>
+  );
+}
+
+/**
+ * 3. Spotlight Dossier Card: Tall editorial plate card for highlighted regional stories.
+ */
+export function MagazinePortraitDossierCard(props: MagazineCardProps) {
+  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const openArticle = resolveOpen(props);
+  const isBookmarked = resolveBookmarked(props);
+  const hasPhoto = hasRealEditorialPhoto(article);
+  const desk = deskFor(article.category);
+  const deck = cleanEditorialDeck(article.title[locale], article.deck[locale], 150);
+
+  if (!hasPhoto) {
+    return (
+      <article
+        onClick={() => openArticle(article)}
+        className="group magazine-card rounded-2xl p-6 cursor-pointer flex flex-col justify-between min-h-[340px] overflow-hidden"
+      >
         <div
-          aria-hidden="true"
-          className="absolute inset-4 rounded-[18px] border-[0.5px] border-[#F5F1E8]/12 group-hover:border-[#F0D496]/38 transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] pointer-events-none"
+          className="absolute inset-x-0 top-0 h-1"
+          style={{ backgroundColor: desk.accentHex }}
         />
-      </div>
+        <div className="absolute inset-x-0 top-0 h-32 pointer-events-none">
+          <TopographicPlateWatermark color={desk.accentHex} />
+        </div>
 
-      {/* Top Unboxed Editorial Folio */}
-      <div className="relative z-10 px-7 pt-7 flex items-center justify-between text-xs">
-        <span className="font-mono-tabular font-semibold tracking-[0.06em] text-[#F0D496]">
-          {formatEditorialIndex(index, locale)}
-        </span>
-        <span className="font-medium text-[#F6F2EA]/85">
-          {getRegionLabel(article.region, locale)}
-        </span>
-      </div>
+        <div className="relative space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <DeskBadge article={article} locale={locale} />
+            <span className="font-mono-tabular text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
+              #{formatEditorialIndex(index, locale)}
+            </span>
+          </div>
 
-      {/* Bottom Frosted Glass Caption Chamber */}
-      <div className="relative z-10 p-5 sm:p-6">
-        <div className="magazine-glass-plaque rounded-[18px] p-6 sm:p-7">
-          <p className="text-xs font-bold text-[#F0D496] mb-2.5">
-            {getCategoryLabel(article.category, locale)}
-          </p>
+          {article.kicker && (
+            <p className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
+              {article.kicker}
+            </p>
+          )}
 
           <h3
-            className={`font-editorial-display text-[19px] sm:text-[21px] font-bold text-[#FDFBF7] group-hover:text-[#F0D496] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] mb-5 line-clamp-3 ${
-              locale === 'fa' ? 'leading-[1.48]' : 'leading-[1.24]'
+            className={`font-editorial-display text-xl sm:text-[22px] font-bold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors line-clamp-3 ${
+              locale === 'fa' ? 'leading-[1.52]' : 'leading-[1.25]'
             }`}
           >
             {article.title[locale]}
           </h3>
 
-          <div className="magazine-hairline !bg-[#F5F1E8]/14 mb-4" />
-
-          <div className="flex items-center justify-between gap-3 text-xs text-[#EDE6D8]/78">
-            <span className="truncate">{article.author[locale]}</span>
-            <span className="inline-flex items-center gap-1.5 text-[#F0D496] font-bold shrink-0">
-              <span>{locale === 'fa' ? 'مشاهده' : 'Open'}</span>
-              {locale === 'fa' ? (
-                <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-1" />
-              ) : (
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1" />
-              )}
-            </span>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-/**
- * 4. Primary High-End Magazine Grid Card (Home Desks & Archive Grid)
- * Completely rewritten from scratch:
- * - Ultra-subtle frosted glass surface with 0.5px hairline border & 4-layer shadow depth
- * - Generous outer breathing padding (p-4 sm:p-5) framing a clean, zero-clutter photograph (nested radius math)
- * - Spacious editorial typography chamber (px-2.5 sm:px-3.5 pt-6 sm:pt-7 pb-2) with pure unboxed metadata
- * - Center-expanding 0.5px gold hairline + silky cubic-bezier hover micro-interactions
- */
-export function MagazineArticleCard({
-  article,
-  locale,
-  index = 0,
-  isSaved,
-  onOpen,
-  onToggleBookmark,
-}: CardBaseProps) {
-  const cleanDeck = cleanEditorialDeck(article.title[locale], article.deck[locale], 160);
-
-  return (
-    <article className="magazine-card group rounded-[24px] p-4 sm:p-5 flex flex-col justify-between overflow-hidden">
-      <div className="relative z-10">
-        <button
-          type="button"
-          onClick={() => onOpen(article)}
-          className="block w-full text-start cursor-pointer"
-        >
-          {/* Clean, Uncluttered Framed Editorial Plate (Zero Floating Pills) */}
-          <div className="relative aspect-[16/10] w-full rounded-[14px] overflow-hidden bg-[#EAE2D3] dark:bg-[#0B0F18] border-[0.5px] border-[#141210]/10 dark:border-[#F5F1E8]/10">
-            <EditorialImage
-              src={resolveArticleCoverImage(article)}
-              alt={article.title[locale]}
-              fallbackLabel={article.title[locale]}
-              className="magazine-media-img w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F]/24 via-transparent to-transparent opacity-55 group-hover:opacity-25 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
-          </div>
-
-          {/* Spacious Editorial Typography Chamber */}
-          <div className="px-2.5 sm:px-3.5 pt-6 sm:pt-7 pb-5 sm:pb-6">
-            {/* Pure Unboxed Typographic Metadata Line */}
-            <div className="flex flex-wrap items-center gap-2 text-[11.5px] sm:text-xs text-[#5A5247] dark:text-[#A1AAB9] mb-3.5">
-              <span className="font-mono-tabular font-semibold text-[#9A6B27]/80 dark:text-[#E8C680]/80">
-                {formatEditorialIndex(index, locale)}
-              </span>
-              <span aria-hidden="true" className="opacity-35">
-                /
-              </span>
-              <span className="font-bold text-[#9A6B27] dark:text-[#E8C680]">
-                {getCategoryLabel(article.category, locale)}
-              </span>
-              <span aria-hidden="true" className="opacity-35">
-                ·
-              </span>
-              <span>{getRegionLabel(article.region, locale)}</span>
-              <span aria-hidden="true" className="opacity-35">
-                ·
-              </span>
-              <span className="tabular-nums">
-                {locale === 'fa'
-                  ? `${formatNumber(article.readTimeMin, locale)} دقیقه`
-                  : `${article.readTimeMin} min`}
-              </span>
-            </div>
-
-            <h3
-              className={`font-editorial-display text-[19px] sm:text-[21.5px] font-bold text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] mb-3.5 line-clamp-3 ${
-                locale === 'fa' ? 'leading-[1.52]' : 'leading-[1.24]'
-              }`}
-            >
-              {article.title[locale]}
-            </h3>
-
-            {cleanDeck && (
-              <p className="text-[13.5px] sm:text-[14.5px] text-[#5A5247]/92 dark:text-[#A1AAB9]/90 line-clamp-2 leading-[1.9]">
-                {cleanDeck}
-              </p>
-            )}
-          </div>
-        </button>
-      </div>
-
-      {/* Breathing Footer with Center-Expanding 0.5px Gold Hairline */}
-      <div className="relative z-10 px-2.5 sm:px-3.5 pb-2 pt-1">
-        <div className="magazine-hairline mb-4 sm:mb-5" />
-
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex items-center gap-2 text-[11.5px] sm:text-xs text-[#5A5247] dark:text-[#A1AAB9]">
-            <span className="truncate font-medium text-[#141210]/85 dark:text-[#EDE6D8]/85">
-              {article.author[locale]}
-            </span>
-            <span aria-hidden="true" className="opacity-35 shrink-0">
-              ·
-            </span>
-            <span className="shrink-0 tabular-nums">
-              {formatShortDate(article.publishedAt, locale)}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => onToggleBookmark(article.id)}
-              aria-label={locale === 'fa' ? 'ذخیره خبر' : 'Toggle bookmark'}
-              className="magazine-circle-action"
-            >
-              {isSaved ? (
-                <BookmarkCheck className="w-4 h-4 text-[#9A6B27] dark:text-[#E8C680]" />
-              ) : (
-                <Bookmark className="w-4 h-4" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onOpen(article)}
-              aria-label={locale === 'fa' ? 'مطالعه روایت' : 'Read story'}
-              className="magazine-circle-action text-[#9A6B27] dark:text-[#E8C680] group-hover:border-[#9A6B27] dark:group-hover:border-[#E8C680] group-hover:bg-[#141210] group-hover:text-[#F6F2EA] dark:group-hover:bg-[#E8C680] dark:group-hover:text-[#080A0F]"
-            >
-              {locale === 'fa' ? (
-                <ArrowLeft className="w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5" />
-              ) : (
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-/**
- * 5. Archive Broadsheet Index Row Card (List View)
- * Framed horizontal plate, generous inner breathing margins, unboxed typography,
- * 0.5px expanding hairline, and synchronized hover glide.
- */
-export function MagazineIndexRowCard({
-  article,
-  locale,
-  index = 0,
-  isSaved,
-  onOpen,
-  onToggleBookmark,
-}: CardBaseProps) {
-  const cleanDeck = cleanEditorialDeck(article.title[locale], article.deck[locale], 165);
-
-  return (
-    <article className="magazine-card group rounded-[22px] p-4 sm:p-5 lg:p-6 flex flex-col sm:flex-row sm:items-stretch gap-5 sm:gap-7 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => onOpen(article)}
-        className="relative w-full sm:w-56 aspect-[16/10] sm:aspect-auto shrink-0 rounded-[14px] overflow-hidden bg-[#EAE2D3] dark:bg-[#0B0F18] border-[0.5px] border-[#141210]/10 dark:border-[#F5F1E8]/10 cursor-pointer"
-      >
-        <EditorialImage
-          src={resolveArticleCoverImage(article)}
-          alt={article.title[locale]}
-          className="magazine-media-img w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F]/24 via-transparent to-transparent opacity-50 group-hover:opacity-20 transition-opacity duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" />
-      </button>
-
-      <div className="relative z-10 flex-1 min-w-0 py-1 sm:py-1.5 flex flex-col justify-between gap-5">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-[#5A5247] dark:text-[#A1AAB9] mb-3">
-            <span className="font-mono-tabular font-semibold text-[#9A6B27]/85 dark:text-[#E8C680]/85">
-              {formatEditorialIndex(index, locale)}
-            </span>
-            <span aria-hidden="true" className="opacity-35">
-              /
-            </span>
-            <span className="font-bold text-[#9A6B27] dark:text-[#E8C680]">
-              {getCategoryLabel(article.category, locale)}
-            </span>
-            <span aria-hidden="true" className="opacity-35">
-              ·
-            </span>
-            <span>{getRegionLabel(article.region, locale)}</span>
-            <span aria-hidden="true" className="opacity-35">
-              ·
-            </span>
-            <span>{formatShortDate(article.publishedAt, locale)}</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onOpen(article)}
-            className="text-start block w-full cursor-pointer"
-          >
-            <h3
-              className={`font-editorial-display text-[19px] sm:text-[21px] font-bold text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] mb-2.5 line-clamp-2 ${
-                locale === 'fa' ? 'leading-[1.5]' : 'leading-[1.24]'
-              }`}
-            >
-              {article.title[locale]}
-            </h3>
-          </button>
-
-          {cleanDeck && (
-            <p className="text-[13.5px] sm:text-sm text-[#5A5247]/92 dark:text-[#A1AAB9]/90 line-clamp-2 leading-[1.88]">
-              {cleanDeck}
+          {deck && (
+            <p className="text-sm text-[#5B5246] dark:text-[#A3ADBF] leading-[1.85] line-clamp-4">
+              {deck}
             </p>
           )}
         </div>
 
-        <div className="space-y-3.5">
-          <div className="magazine-hairline" />
+        <MetaFooter
+          article={article}
+          locale={locale}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={onToggleBookmark}
+        />
+      </article>
+    );
+  }
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-[#5A5247] dark:text-[#A1AAB9] font-mono-tabular">
-              <span>
-                {locale === 'fa'
-                  ? `${formatNumber(article.views, locale)} بازدید`
-                  : `${formatNumber(article.views, locale)} views`}
-              </span>
-              <span aria-hidden="true" className="opacity-35">
-                ·
-              </span>
-              <span>
-                {locale === 'fa'
-                  ? `${formatNumber(article.readTimeMin, locale)} دقیقه`
-                  : `${article.readTimeMin} min`}
-              </span>
-            </div>
+  return (
+    <article
+      onClick={() => openArticle(article)}
+      className="group magazine-plate rounded-2xl overflow-hidden cursor-pointer flex flex-col h-full bg-[#FFFDF8] dark:bg-[#0D111C]"
+    >
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0E131F]">
+        <EditorialImage
+          src={article.coverImage}
+          alt={article.title[locale]}
+          className="magazine-media-img w-full h-full object-cover"
+        />
+        {article.videoUrl && (
+          <span className="absolute top-3 end-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/70 text-[#F5F1E8] text-[11px] font-bold">
+            <Play className="w-3 h-3 fill-current" />
+            <span>{locale === 'fa' ? 'ویدیو' : 'Video'}</span>
+          </span>
+        )}
+      </div>
 
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => onToggleBookmark(article.id)}
-                aria-label={locale === 'fa' ? 'ذخیره خبر' : 'Save story'}
-                className="magazine-circle-action"
-              >
-                {isSaved ? (
-                  <BookmarkCheck className="w-4 h-4 text-[#9A6B27] dark:text-[#E8C680]" />
-                ) : (
-                  <Bookmark className="w-4 h-4" />
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onOpen(article)}
-                className="inline-flex items-center gap-2 text-xs font-bold text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] cursor-pointer ps-1"
-              >
-                <span>{locale === 'fa' ? 'مطالعه روایت' : 'Read Story'}</span>
-                <span className="magazine-circle-action !w-9 !h-9 text-[#9A6B27] dark:text-[#E8C680] group-hover:border-[#9A6B27] dark:group-hover:border-[#E8C680] group-hover:bg-[#141210] group-hover:text-[#F6F2EA] dark:group-hover:bg-[#E8C680] dark:group-hover:text-[#080A0F]">
-                  {locale === 'fa' ? (
-                    <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5" />
-                  ) : (
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5" />
-                  )}
-                </span>
-              </button>
-            </div>
-          </div>
+      <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 gap-3">
+        <div className="space-y-2.5">
+          <DeskBadge article={article} locale={locale} />
+          <h3
+            className={`font-editorial-display text-lg sm:text-xl font-bold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors line-clamp-2 ${
+              locale === 'fa' ? 'leading-[1.52]' : 'leading-[1.28]'
+            }`}
+          >
+            {article.title[locale]}
+          </h3>
+          {deck && (
+            <p className="text-xs sm:text-[13.5px] text-[#5B5246] dark:text-[#A3ADBF] leading-[1.8] line-clamp-2">
+              {deck}
+            </p>
+          )}
         </div>
+
+        <MetaFooter
+          article={article}
+          locale={locale}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={onToggleBookmark}
+        />
+      </div>
+    </article>
+  );
+}
+
+/**
+ * 4. Standard Editorial Card (Built from scratch):
+ *    Displays sharp photography when an authentic image exists, or switches cleanly
+ *    into a structured Broadsheet Typographic Plate with desk accent bar & contours.
+ */
+export function MagazineArticleCard(props: MagazineCardProps) {
+  const { article, locale, onToggleBookmark, index } = props;
+  const openArticle = resolveOpen(props);
+  const isBookmarked = resolveBookmarked(props);
+  const hasPhoto = hasRealEditorialPhoto(article);
+  const desk = deskFor(article.category);
+  const deck = cleanEditorialDeck(article.title[locale], article.deck[locale], hasPhoto ? 130 : 185);
+
+  return (
+    <article
+      onClick={() => openArticle(article)}
+      className="group magazine-card rounded-2xl overflow-hidden cursor-pointer flex flex-col justify-between h-full"
+    >
+      {hasPhoto ? (
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#10141F] shrink-0">
+          <EditorialImage
+            src={article.coverImage}
+            alt={article.title[locale]}
+            className="magazine-media-img w-full h-full object-cover"
+          />
+          {article.videoUrl && (
+            <span className="absolute top-3 end-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/75 text-[#F5F1E8] text-[11px] font-bold border border-white/15">
+              <Play className="w-3 h-3 fill-current" />
+              <span>{locale === 'fa' ? 'ویدئو' : 'Video'}</span>
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className="relative h-2 overflow-hidden">
+          <div
+            className="h-1 w-full"
+            style={{ backgroundColor: desk.accentHex }}
+          />
+        </div>
+      )}
+
+      <div className="relative p-5 sm:p-6 flex flex-col justify-between flex-1">
+        {!hasPhoto && (
+          <div className="absolute inset-x-0 top-0 h-28 pointer-events-none">
+            <TopographicPlateWatermark color={desk.accentHex} />
+          </div>
+        )}
+
+        <div className="relative space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <DeskBadge article={article} locale={locale} />
+            {typeof index === 'number' && !hasPhoto && (
+              <span className="font-mono-tabular text-[11px] font-bold text-[#5B5246]/70 dark:text-[#A3ADBF]/70">
+                {formatEditorialIndex(index, locale)}
+              </span>
+            )}
+          </div>
+
+          {article.kicker && (
+            <p className="text-[11.5px] font-bold text-[#8F6321] dark:text-[#ECC983]">
+              {article.kicker}
+            </p>
+          )}
+
+          <h3
+            className={`font-editorial-display font-bold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors ${
+              hasPhoto
+                ? 'text-[17px] sm:text-[18.5px] line-clamp-2'
+                : 'text-[18.5px] sm:text-[20px] line-clamp-3'
+            } ${locale === 'fa' ? 'leading-[1.52]' : 'leading-[1.28]'}`}
+          >
+            {article.title[locale]}
+          </h3>
+
+          {deck && (
+            <p
+              className={`text-xs sm:text-[13.5px] text-[#5B5246] dark:text-[#A3ADBF] leading-[1.85] ${
+                hasPhoto ? 'line-clamp-2' : 'line-clamp-3'
+              }`}
+            >
+              {deck}
+            </p>
+          )}
+        </div>
+
+        <MetaFooter
+          article={article}
+          locale={locale}
+          isBookmarked={isBookmarked}
+          onToggleBookmark={onToggleBookmark}
+        />
+      </div>
+    </article>
+  );
+}
+
+/**
+ * 5. Ranked / Wire Index Row Card: Dense numbered list item for Most Read & Quick Dispatches.
+ */
+export function MagazineIndexRowCard(props: MagazineCardProps) {
+  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const openArticle = resolveOpen(props);
+  const isBookmarked = resolveBookmarked(props);
+  const desk = deskFor(article.category);
+  const ReadArrow = locale === 'fa' ? ArrowLeft : ArrowRight;
+
+  return (
+    <article
+      onClick={() => openArticle(article)}
+      className="group magazine-card rounded-2xl p-4 sm:p-5 cursor-pointer flex items-start gap-4"
+    >
+      <div
+        className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center font-mono-tabular text-sm font-extrabold border border-[#D9CEBA] dark:border-[#252E42] bg-[#F1E9DA] dark:bg-[#151C2C]"
+        style={{ color: desk.accentHex }}
+      >
+        {formatEditorialIndex(index, locale)}
+      </div>
+
+      <div className="flex-1 min-w-0 space-y-1.5">
+        <DeskBadge article={article} locale={locale} />
+        <h3
+          className={`font-editorial-display text-base sm:text-[17px] font-bold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors line-clamp-2 ${
+            locale === 'fa' ? 'leading-[1.52]' : 'leading-[1.3]'
+          }`}
+        >
+          {article.title[locale]}
+        </h3>
+        <div className="flex items-center gap-2 text-[11px] text-[#5B5246] dark:text-[#A3ADBF]">
+          <time dateTime={article.publishedAt}>
+            {formatRelativeTime(article.publishedAt, locale)}
+          </time>
+          <span aria-hidden="true" className="opacity-35">·</span>
+          <span className="tabular-nums">
+            {formatNumber(article.views, locale)} {locale === 'fa' ? 'بازدید' : 'views'}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1 shrink-0 self-center">
+        {onToggleBookmark && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBookmark(article.id);
+            }}
+            className="magazine-circle-action !w-10 !h-10 !min-w-[40px] !min-h-[40px]"
+            aria-label={isBookmarked ? 'Remove bookmark' : 'Save story'}
+          >
+            {isBookmarked ? (
+              <BookmarkCheck className="w-4 h-4 text-[#8F6321] dark:text-[#ECC983]" />
+            ) : (
+              <Bookmark className="w-4 h-4" />
+            )}
+          </button>
+        )}
+        <span className="w-9 h-9 rounded-full inline-flex items-center justify-center text-[#8F6321] dark:text-[#ECC983] opacity-75 group-hover:opacity-100">
+          <ReadArrow className="w-4 h-4" />
+        </span>
       </div>
     </article>
   );

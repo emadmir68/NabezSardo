@@ -314,17 +314,33 @@ const server=http.createServer(async(req,res)=>{
   const db=load();
 
   if(req.method==='GET'&&p==='/api/gemini/config')
-    return send(res,200,JSON.stringify({ok:true,turnstileSiteKey:String(process.env.TURNSTILE_SITE_KEY||'').slice(0,256)}),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
+    return send(res,200,JSON.stringify(geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||'')),'application/json; charset=utf-8',{'Cache-Control':'no-store'});
+  if(req.method==='GET'&&p==='/api/gemini/articles'){
+    const summary=u.searchParams.get('summary')==='1';
+    return send(res,200,JSON.stringify({ok:true,articles:store.published(db).map(a=>geminiBridge.mapArticle(a,{summary})),source:'node-store'}),'application/json; charset=utf-8',{'Cache-Control':'private,no-store'});
+  }
+  if(req.method==='GET'&&p==='/api/gemini/article'){
+    const key=String(u.searchParams.get('slug')||u.searchParams.get('key')||u.searchParams.get('id')||'').trim().slice(0,200);
+    const found=store.published(db).find(a=>a.slug===key||a.id===key||geminiBridge.compactStoryCode(a.id)===key);
+    if(!found)return send(res,404,JSON.stringify({ok:false,error:'not-found'}),'application/json; charset=utf-8');
+    return send(res,200,JSON.stringify({ok:true,article:geminiBridge.mapArticle(found)}),'application/json; charset=utf-8',{'Cache-Control':'private,no-store'});
+  }
+  if(req.method==='GET'&&p==='/api/gemini/followups'){
+    const followups=[...(db.followups||[])].sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
+    return send(res,200,JSON.stringify({ok:true,followups}),'application/json; charset=utf-8',{'Cache-Control':'private,no-store'});
+  }
   // Authenticated Gemini studio uses the SAME signed HttpOnly session and editorial D1 store.
   if(req.method==='GET'&&p==='/api/gemini/admin/state'){
     if(!authed(req))return send(res,401,JSON.stringify({ok:false,error:'auth-required'}),'application/json; charset=utf-8');
     return send(res,200,JSON.stringify({
       ok:true,
       articles:(db.articles||[]).map(geminiBridge.mapArticle),
-      citizenReports:(db.citizens||[]).map(geminiBridge.mapCitizen)
+      citizenReports:(db.citizens||[]).map(geminiBridge.mapCitizen),
+      followups:[...(db.followups||[])],
+      settings:geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||'')
     }),'application/json; charset=utf-8',{'Cache-Control':'private,no-store'});
   }
-  if(req.method==='POST'&&(p==='/api/gemini/admin/action'||p==='/api/gemini/citizen')){
+  if(req.method==='POST'&&(p==='/api/gemini/admin/action'||p==='/api/gemini/citizen'||p==='/api/gemini/contact')){
     const isAdmin=p==='/api/gemini/admin/action';
     if(isAdmin&&!authed(req))return send(res,401,JSON.stringify({ok:false,error:'auth-required'}),'application/json; charset=utf-8');
     if(crossSiteMutation(req))return send(res,403,JSON.stringify({ok:false,error:'cross-site-request'}),'application/json; charset=utf-8');
@@ -346,6 +362,20 @@ const server=http.createServer(async(req,res)=>{
       if(!data.length||data.length>4*1024*1024)throw Error('image-size');
       return {filename,type:m[1],data};
     };
+    if(p==='/api/gemini/contact'){
+      if(String(input.website||'').trim())return done(200,{ok:true});
+      const name=String(input.name||'').trim().slice(0,120);
+      const contact=String(input.contact||'').trim().slice(0,160);
+      const subject=String(input.subject||'').trim().slice(0,180);
+      const message=String(input.message||'').trim().slice(0,5000);
+      if(name.length<2||contact.length<3||subject.length<3||message.length<10)return done(422,{ok:false,error:'message-too-short'});
+      const ip=String(req.headers['cf-connecting-ip']||'');
+      if(!(await verifyTurnstile(input.turnstileToken||'',ip)))return done(403,{ok:false,error:'turnstile-required'});
+      db.contacts=db.contacts||[];
+      db.contacts.unshift({id:id(),createdAt:now(),name,contact,subject,message});
+      save(db);
+      return done(200,{ok:true});
+    }
     if(!isAdmin){
       const name=String(input.reporterName||'').trim().slice(0,120);
       const title=String(input.title||'').trim().slice(0,160);
@@ -440,6 +470,33 @@ const server=http.createServer(async(req,res)=>{
       save(db);
       try{await articleTools.dispatchAndPersist(a.id);}catch(e){console.error('gemini-citizen-distribution',e);}
       return done(200,{ok:true,id:a.id});
+    }
+    if(action==='upload-image'){
+      try{
+        const file=dataImage(input.imageDataUrl,'studio-media');
+        if(!file)return done(400,{ok:false,error:'invalid-image'});
+        const url=saveImage(file);
+        return done(200,{ok:true,url});
+      }catch{return done(413,{ok:false,error:'image-too-large'});}
+    }
+    if(action==='save-settings'){
+      const s=input.settings;
+      if(!s||typeof s!=='object')return done(400,{ok:false,error:'missing-settings'});
+      db.settings=db.settings||{};
+      if(s.siteName?.fa!==undefined)db.settings.siteName=String(s.siteName.fa).trim().slice(0,120)||'نبض ساردو';
+      if(s.siteName?.en!==undefined)db.settings.siteNameEn=String(s.siteName.en).trim().slice(0,120)||'Nabz Sardo';
+      if(s.tagline?.fa!==undefined)db.settings.tagline=String(s.tagline.fa).trim().slice(0,200);
+      if(s.tagline?.en!==undefined)db.settings.taglineEn=String(s.tagline.en).trim().slice(0,200);
+      if(s.contactEmail!==undefined)db.settings.contactEmail=String(s.contactEmail).trim().slice(0,180);
+      if(s.editorialPhone!==undefined)db.settings.editorialPhone=String(s.editorialPhone).trim().slice(0,80);
+      if(s.breakingText!==undefined||s.breakingTextEn!==undefined||s.liveDeskEnabled!==undefined){
+        if(s.breakingText!==undefined)db.settings.breakingText=String(s.breakingText).trim().slice(0,500);
+        if(s.breakingTextEn!==undefined)db.settings.breakingTextEn=String(s.breakingTextEn).trim().slice(0,500);
+        if(s.liveDeskEnabled!==undefined)db.settings.liveDeskEnabled=Boolean(s.liveDeskEnabled);
+        db.settings.breakingUpdatedAt=now();
+      }
+      save(db);
+      return done(200,{ok:true,settings:geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||'')});
     }
     return done(400,{ok:false,error:'unsupported-action'});
   }
@@ -671,6 +728,7 @@ const server=http.createServer(async(req,res)=>{
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
       if(a.status!=='published')return send(res,400,'فقط خبر منتشرشده قابل ارسال است.');
+      if(!store.publiclyVisibleArticle(a))return send(res,422,'این محتوا با سیاست تحریریه نبض ساردو مغایرت دارد و قابل ارسال نیست.');
       try{await articleTools.dispatchAndPersist(a.id,{retry:true,manual:true});}
       catch(err){console.error('social redistribution',err);}
       return redirect(res,'/admin/articles/'+a.id+'/share-kit?resent=1');
@@ -680,6 +738,7 @@ const server=http.createServer(async(req,res)=>{
       if(submissionToken&&db.articles.some(a=>a.id===submissionToken))return redirect(res,'/admin?saved=1');
       const payload=await articleTools.articlePayload(db,f,files,{},uniqueSlug);
       const a={id:submissionToken||id(),createdAt:now(),...payload,publishedAt:payload.status==='published'?now():null};
+      if((a.status==='published'||a.status==='scheduled')&&!store.publiclyVisibleArticle({...a,status:'published'}))return send(res,422,'این محتوا با سیاست تحریریه نبض ساردو مغایرت دارد و قابل انتشار یا زمان‌بندی نیست.');
       db.articles.unshift(a);save(db);
       if(a.status==='published'){
         try{await articleTools.dispatchAndPersist(a.id);}
@@ -690,7 +749,9 @@ const server=http.createServer(async(req,res)=>{
     m=p.match(/^\/admin\/articles\/([^/]+)\/edit$/);
     if(m){
       const a=db.articles.find(x=>x.id===m[1]);if(!a)return send(res,404,'یافت نشد');
-      const was=a.status==='published',payload=await articleTools.articlePayload(db,f,files,a,uniqueSlug);Object.assign(a,payload);
+      const was=a.status==='published',payload=await articleTools.articlePayload(db,f,files,a,uniqueSlug),updated={...a,...payload};
+      if((updated.status==='published'||updated.status==='scheduled')&&!store.publiclyVisibleArticle({...updated,status:'published'}))return send(res,422,'این محتوا با سیاست تحریریه نبض ساردو مغایرت دارد و قابل انتشار یا زمان‌بندی نیست.');
+      Object.assign(a,payload);
       if(!was&&a.status==='published')a.publishedAt=now();
       save(db);
       if(!was&&a.status==='published'){

@@ -111,9 +111,12 @@ export function resolveArticleCoverImage(
     case 'agriculture':
       return EDITORIAL_IMAGES.jiroftAgriculture;
     case 'culture':
+    case 'politics':
       return EDITORIAL_IMAGES.kermanHeritage;
     case 'social':
     case 'opinion':
+    case 'sports':
+    case 'short-news':
       return article.region === 'sarduiyeh'
         ? EDITORIAL_IMAGES.sarduiyehHighlands
         : EDITORIAL_IMAGES.communityCulture;
@@ -123,6 +126,21 @@ export function resolveArticleCoverImage(
         ? EDITORIAL_IMAGES.jiroftAgriculture
         : EDITORIAL_IMAGES.sarduiyehHighlands;
   }
+}
+
+export function formatRelativeTime(iso: string, locale: Locale): string {
+  const stamp = Date.parse(iso);
+  if (!Number.isFinite(stamp)) return '';
+  const diffMin = Math.max(0, Math.floor((Date.now() - stamp) / 60000));
+  if (diffMin < 1) return locale === 'fa' ? 'لحظاتی پیش' : 'Just now';
+  if (diffMin < 60) {
+    return locale === 'fa' ? `${formatNumber(diffMin, 'fa')} دقیقه پیش` : `${diffMin}m ago`;
+  }
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) {
+    return locale === 'fa' ? `${formatNumber(diffHours, 'fa')} ساعت پیش` : `${diffHours}h ago`;
+  }
+  return formatShortDate(iso, locale);
 }
 
 function normalizePersianForCompare(input: string): string {

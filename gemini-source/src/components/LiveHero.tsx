@@ -10,7 +10,7 @@ import {
   Pause,
   Play,
 } from 'lucide-react';
-import type { Article, Locale } from '../types/news';
+import type { Article, BreakingWireConfig, Locale } from '../types/news';
 import {
   cleanEditorialDeck,
   formatEditorialIndex,
@@ -18,6 +18,7 @@ import {
   formatShortDate,
   getCategoryLabel,
   getRegionLabel,
+  hasRealEditorialPhoto,
   resolveArticleCoverImage,
 } from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
@@ -25,6 +26,7 @@ import { EditorialImage } from './EditorialImage';
 interface LiveHeroProps {
   slides: Article[];
   breakingArticles: Article[];
+  breakingWire?: BreakingWireConfig | null;
   locale: Locale;
   bookmarkedIds: string[];
   onOpenArticle: (article: Article) => void;
@@ -36,6 +38,7 @@ const SLIDE_DURATION_MS = 7800;
 export function LiveHero({
   slides,
   breakingArticles,
+  breakingWire,
   locale,
   bookmarkedIds,
   onOpenArticle,
@@ -120,7 +123,7 @@ export function LiveHero({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative min-h-[78svh] lg:min-h-[88vh] flex flex-col justify-between">
+      <div className="relative min-h-[60svh] sm:min-h-[66svh] lg:min-h-[72vh] flex flex-col justify-between">
         {/* Full-Bleed Animated Editorial Cinema Backdrop */}
         <div className="absolute inset-0 overflow-hidden">
           {safeSlides.map((slide, idx) => {
@@ -139,7 +142,6 @@ export function LiveHero({
                   <EditorialImage
                     src={resolveArticleCoverImage(slide)}
                     alt={slide.title[locale]}
-                    fallbackLabel={slide.title[locale]}
                     className="w-full h-full object-cover object-center"
                   />
                 </div>
@@ -187,7 +189,7 @@ export function LiveHero({
               <button
                 type="button"
                 onClick={() => setIsPaused((p) => !p)}
-                className="btn-icon-luxury !w-9 !h-9 sm:!w-10 sm:!h-10 !bg-[#080B12]/55 !border-[#F5F1E8]/20 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
+                className="btn-icon-luxury !w-11 !h-11 !bg-[#080B12]/65 !border-[#F5F1E8]/22 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
                 aria-label={
                   isPaused
                     ? locale === 'fa'
@@ -203,7 +205,7 @@ export function LiveHero({
               <button
                 type="button"
                 onClick={handlePrev}
-                className="btn-icon-luxury !w-9 !h-9 sm:!w-10 sm:!h-10 !bg-[#080B12]/55 !border-[#F5F1E8]/20 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
+                className="btn-icon-luxury !w-11 !h-11 !bg-[#080B12]/65 !border-[#F5F1E8]/22 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
                 aria-label={locale === 'fa' ? 'خبر ویژه قبلی' : 'Previous featured story'}
               >
                 {locale === 'fa' ? (
@@ -215,7 +217,7 @@ export function LiveHero({
               <button
                 type="button"
                 onClick={handleNext}
-                className="btn-icon-luxury !w-9 !h-9 sm:!w-10 sm:!h-10 !bg-[#080B12]/55 !border-[#F5F1E8]/20 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
+                className="btn-icon-luxury !w-11 !h-11 !bg-[#080B12]/65 !border-[#F5F1E8]/22 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
                 aria-label={locale === 'fa' ? 'خبر ویژه بعدی' : 'Next featured story'}
               >
                 {locale === 'fa' ? (
@@ -341,13 +343,19 @@ export function LiveHero({
                               : 'hover:bg-[#131929]/55'
                           }`}
                         >
-                          <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/16">
-                            <EditorialImage
-                              src={resolveArticleCoverImage(slide)}
-                              alt={slide.title[locale]}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                          </div>
+                          {hasRealEditorialPhoto(slide) ? (
+                            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/16">
+                              <EditorialImage
+                                src={slide.coverImage}
+                                alt={slide.title[locale]}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-14 h-14 rounded-xl shrink-0 border-[0.75px] border-[#D4A85B]/28 bg-[#121828] flex items-center justify-center font-mono-tabular text-sm font-bold text-[#F0D496]">
+                              {formatEditorialIndex(idx, locale)}
+                            </div>
+                          )}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 text-[11px] mb-1">
                               <span className="font-mono-tabular font-semibold text-[#F0D496]">
@@ -404,13 +412,19 @@ export function LiveHero({
                     }`}
                   >
                     <div className="flex items-center gap-3 mb-2.5">
-                      <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/15">
-                        <EditorialImage
-                          src={resolveArticleCoverImage(slide)}
-                          alt={slide.title[locale]}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      {hasRealEditorialPhoto(slide) ? (
+                        <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/15">
+                          <EditorialImage
+                            src={slide.coverImage}
+                            alt={slide.title[locale]}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-11 h-11 rounded-lg shrink-0 border-[0.75px] border-[#D4A85B]/28 bg-[#121828] flex items-center justify-center font-mono-tabular text-xs font-bold text-[#F0D496]">
+                          {formatEditorialIndex(idx, locale)}
+                        </div>
+                      )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 text-[10.5px] text-[#F0D496] font-mono-tabular mb-0.5">
                           <span>{formatEditorialIndex(idx, locale)}</span>
@@ -441,34 +455,55 @@ export function LiveHero({
         </div>
 
         {/* Sleek Animated Live Editorial Dispatch Wire */}
-        {currentWire && (
+        {(currentWire || breakingWire) && (
           <div className="relative z-20 border-t-[0.75px] border-[#D4A85B]/22 bg-[#04060A]/94 backdrop-blur-2xl">
-            <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-3.5 flex items-center justify-between gap-3 sm:gap-4">
+            <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
-                <span className="text-[11px] sm:text-xs font-bold text-[#F0D496] whitespace-nowrap shrink-0">
-                  {locale === 'fa' ? 'خط فوری تحریریه' : 'Live Desk Wire'}
+                <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-[#F0D496] whitespace-nowrap shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ECC983] animate-pulse" />
+                  <span>
+                    {breakingWire?.kind === 'announcement'
+                      ? locale === 'fa'
+                        ? 'اطلاعیه تحریریه'
+                        : 'Notice'
+                      : locale === 'fa'
+                        ? breakingWire?.label || 'خط فوری تحریریه'
+                        : 'Live Desk Wire'}
+                  </span>
                 </span>
                 <span aria-hidden="true" className="h-3.5 w-[0.75px] bg-[#D4A85B]/40 shrink-0" />
                 <div className="min-w-0 flex-1 overflow-hidden">
-                  <AnimatePresence mode="wait">
-                    <motion.button
-                      key={currentWire.id}
-                      type="button"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.25 }}
-                      onClick={() => onOpenArticle(currentWire)}
-                      className="block w-full text-xs sm:text-[13.5px] font-medium text-[#F6F2EA]/94 hover:text-[#F0D496] truncate transition-colors text-start cursor-pointer"
-                    >
-                      {currentWire.title[locale]}
-                    </motion.button>
-                  </AnimatePresence>
+                  {breakingWire?.kind === 'breaking' || breakingWire?.kind === 'announcement' ? (
+                    <p className="text-xs sm:text-[13.5px] font-medium text-[#F6F2EA]/94 truncate">
+                      {locale === 'fa' ? breakingWire.textFa : breakingWire.textEn}
+                    </p>
+                  ) : currentWire ? (
+                    <AnimatePresence mode="wait">
+                      <motion.button
+                        key={currentWire.id}
+                        type="button"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.25 }}
+                        onClick={() => onOpenArticle(currentWire)}
+                        className="block w-full text-xs sm:text-[13.5px] font-medium text-[#F6F2EA]/94 hover:text-[#F0D496] truncate transition-colors text-start cursor-pointer"
+                      >
+                        {currentWire.title[locale]}
+                      </motion.button>
+                    </AnimatePresence>
+                  ) : (
+                    <p className="text-xs sm:text-[13.5px] font-medium text-[#F6F2EA]/80 truncate">
+                      {locale === 'fa' ? breakingWire?.textFa : breakingWire?.textEn}
+                    </p>
+                  )}
                 </div>
               </div>
-              <span className="hidden md:inline text-xs text-[#A1AAB9] whitespace-nowrap shrink-0">
-                {getRegionLabel(currentWire.region, locale)}
-              </span>
+              {currentWire && (
+                <span className="hidden md:inline text-xs text-[#A1AAB9] whitespace-nowrap shrink-0">
+                  {getRegionLabel(currentWire.region, locale)}
+                </span>
+              )}
             </div>
           </div>
         )}

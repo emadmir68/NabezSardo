@@ -39,7 +39,7 @@ test('Source photos remain untouched and regional images keep trusted paths',()=
  assert.equal(bridge.mapArticle(a).coverImage,'/uploads/real-original.jpg');
 });
 
-test('monitor quarantine v4 removes old forbidden articles and queue items without deleting records',()=>{
+test('monitor quarantine v5 removes old forbidden articles and queue items without deleting records',()=>{
   const monitor=require('../lib/news-monitor');
   const db={
     articles:[
@@ -59,5 +59,20 @@ test('monitor quarantine v4 removes old forbidden articles and queue items witho
   assert.equal(db.articles[1].status,'draft');
   assert.equal(db.articles[2].status,'draft');
   assert.equal(db.newsMonitor.queue.find(q=>q.id==='q1').status,'rejected');
-  assert.equal(db.newsMonitor.nonNewsPolicyVersion,4);
+  assert.equal(db.newsMonitor.nonNewsPolicyVersion,5);
+});
+
+test('Gemini bridge cleans imported source attribution, promotes designations, and defaults unknown region to south-kerman',()=>{
+  const imported=bridge.mapArticle({
+    id:'imp-1',imported:true,sourceName:'کنارصندل',
+    title:'مدیرکل مدیریت بحران استان کرمان',
+    lead:'به گزارش پایگاه خبری کنارصندل، هشدار بارندگی در مناطق جنوبی صادر شد.',
+    body:'به گزارش پایگاه خبری کنارصندل، نیروهای امدادی آماده باش هستند.',
+    categoryId:'short-news',location:'ایران',status:'published'
+  });
+  assert.equal(imported.title.fa,'هشدار بارندگی در مناطق جنوبی صادر شد.');
+  assert.equal(imported.kicker,'مدیرکل مدیریت بحران استان کرمان');
+  assert.equal(imported.category,'short-news');
+  assert.equal(imported.region,'south-kerman');
+  assert.doesNotMatch(imported.body.fa.join(' '),/پایگاه خبری کنارصندل/);
 });

@@ -116,8 +116,9 @@ test('fallback covers contain distinct category artwork and preserve the branded
  for(const [category,topic] of Object.entries(TOPICS)){
   symbols.add(topic.art);
   for(const color of COVER_PALETTES[category]){
-   const base=fs.readFileSync(path.join(__dirname,'../public/news-cover'+(color==='gold'?'':'-'+color)+'.svg'),'utf8');
-   const asset=fs.readFileSync(path.join(__dirname,'../public/news-cover-'+category+'-'+color+'.svg'),'utf8');
+   const norm=s=>String(s||'').replace(/\r\n/g,'\n');
+   const base=norm(fs.readFileSync(path.join(__dirname,'../public/news-cover'+(color==='gold'?'':'-'+color)+'.svg'),'utf8'));
+   const asset=norm(fs.readFileSync(path.join(__dirname,'../public/news-cover-'+category+'-'+color+'.svg'),'utf8'));
    assert.equal(asset,decorateCover(base,category));
    assert.ok(asset.includes(topic.label));
    assert.match(asset,/width="1200" height="675"/);

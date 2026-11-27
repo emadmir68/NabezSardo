@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   ArrowUpLeft,
@@ -8,16 +9,18 @@ import {
   Bookmark,
   BookmarkCheck,
   Check,
+  Copy,
   Share2,
 } from 'lucide-react';
 import type { Article, Locale } from '../types/news';
 import {
   cleanEditorialDeck,
+  formatEditorialIndex,
   formatNumber,
   formatShortDate,
   getCategoryLabel,
   getRegionLabel,
-  resolveArticleCoverImage,
+  hasRealEditorialPhoto,
 } from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
 
@@ -29,6 +32,7 @@ interface ArticleReaderProps {
   onToggleBookmark: (id: string) => void;
   onClose: () => void;
   onSelectRelated: (article: Article) => void;
+  onReportCorrection?: (article: Article) => void;
   onNotify: (text: string) => void;
 }
 
@@ -42,11 +46,16 @@ export function ArticleReader({
   onToggleBookmark,
   onClose,
   onSelectRelated,
+  onReportCorrection,
   onNotify,
 }: ArticleReaderProps) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [fontScale, setFontScale] = useState<FontScale>('md');
-  const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedText, setCopiedText] = useState(false);
+
+  const hasPhoto = hasRealEditorialPhoto(article);
+  const hasVideo = Boolean(article.videoUrl);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -68,23 +77,42 @@ export function ArticleReader({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const shareUrl = `${window.location.origin}/news/${
+    article.shortCode ? encodeURIComponent(article.shortCode) : encodeURIComponent(article.slug)
+  }`;
+
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/#news/${article.slug}`;
+    const title = article.title[locale];
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title, text: cleanEditorialDeck(title, article.deck[locale], 180) || title, url: shareUrl });
+        return;
+      } catch {
+        // User dismissed or share unavailable; fall back to copying link
+      }
+    }
     try {
       await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      onNotify(
-        locale === 'fa'
-          ? 'پیوند خبر در حافظه کپی شد.'
-          : 'Story link copied to clipboard.'
-      );
-      window.setTimeout(() => setCopied(false), 2000);
+      setCopiedLink(true);
+      onNotify(locale === 'fa' ? 'پیوند کوتاه خبر در حافظه کپی شد.' : 'Story short link copied.');
+      window.setTimeout(() => setCopiedLink(false), 2200);
     } catch {
-      onNotify(
-        locale === 'fa'
-          ? 'آدرس خبر آماده اشتراک‌گذاری است.'
-          : 'Story link ready to share.'
-      );
+      onNotify(locale === 'fa' ? 'آدرس خبر آماده اشتراک‌گذاری است.' : 'Story link ready to share.');
+    }
+  };
+
+  const handleCopyPreparedMessage = async () => {
+    const headline = article.title[locale];
+    const lead = cleanEditorialDeck(headline, article.deck[locale], 220);
+    const bodyText = article.body[locale].slice(0, 2).join('\n\n');
+    const message = [headline, lead, bodyText, `${shareUrl}`].filter(Boolean).join('\n\n');
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopiedText(true);
+      onNotify(locale === 'fa' ? 'متن آماده اشتراک‌گذاری کپی شد.' : 'Formatted story text copied.');
+      window.setTimeout(() => setCopiedText(false), 2200);
+    } catch {
+      onNotify(locale === 'fa' ? 'کپی متن انجام نشد.' : 'Could not copy formatted text.');
     }
   };
 
@@ -95,33 +123,45 @@ export function ArticleReader({
         ? 'text-[19px] leading-[1.98]'
         : 'text-[17px] leading-[1.95]';
 
+  const captionText = article.imageCaption?.[locale]?.trim() || '';
+
   return (
     <article className="relative w-full pb-24">
-      {/* Sticky Gold Reading Depth Bar */}
-      <div className="fixed top-[68px] inset-x-0 z-30 h-[2px] bg-[#DDD3C2]/40 dark:bg-[#232B3D]/60">
+      {/* Top Viewport Gold Reading Depth Bar */}
+      <div className="fixed top-0 inset-x-0 z-50 h-[3px] bg-transparent pointer-events-none">
         <div
-          className="h-full bg-gradient-to-r from-[#9E6F2C] via-[#E5C17B] to-[#C6964B] transition-[width] duration-75"
+          className="h-full bg-gradient-to-r from-[#8F6321] via-[#ECC983] to-[#BA8433] transition-[width] duration-75"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
 
-      {/* Full-Bleed Luxury Magazine Article Masthead */}
-      <header className="relative w-full bg-[#07090E] text-[#F5F1E8] overflow-hidden border-b border-[#D4A85B]/25">
-        <div className="absolute inset-0 overflow-hidden">
-          <EditorialImage
-            src={resolveArticleCoverImage(article)}
-            alt={article.title[locale]}
-            className="w-full h-full object-cover opacity-55"
+      {/* Editorial Article Masthead (Real photo atmospheric plate OR clean Obsidian geometric header — zero text ghosts) */}
+      <header className="relative w-full bg-[#080A10] text-[#F5F1E8] overflow-hidden border-b border-[#D4A85B]/25">
+        {hasPhoto ? (
+          <div className="absolute inset-0 overflow-hidden">
+            <EditorialImage
+              src={article.coverImage}
+              alt=""
+              className="w-full h-full object-cover opacity-35 scale-105 blur-[2px]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#080A10] via-[#080A10]/80 to-[#080A10]/55" />
+          </div>
+        ) : (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 82% 18%, rgba(212, 168, 91, 0.16), transparent 52%), radial-gradient(circle at 12% 88%, rgba(29, 43, 69, 0.45), transparent 55%)',
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07090E] via-[#07090E]/72 to-[#07090E]/45" />
-        </div>
+        )}
 
-        <div className="relative z-10 max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-10 pt-8 pb-12 sm:pb-16">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-8 mb-10 border-b border-[#F5F1E8]/15">
+        <div className="relative z-10 max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-10 pt-7 pb-12 sm:pb-16">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-7 mb-9 border-b border-[#F5F1E8]/15">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-[#EDE6D8]/85 hover:text-[#E5C17B] transition-colors cursor-pointer"
+              className="btn-luxury-glass !min-h-[44px] !px-4 text-xs sm:text-sm"
             >
               {locale === 'fa' ? (
                 <ArrowRight className="w-4 h-4" />
@@ -131,9 +171,9 @@ export function ArticleReader({
               <span>{locale === 'fa' ? 'بازگشت به صفحه اخبار' : 'Back to Front Page'}</span>
             </button>
 
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               <div
-                className="inline-flex items-center rounded-xl border-[0.75px] border-[#F5F1E8]/20 bg-[#080A10]/60 backdrop-blur-md p-0.5"
+                className="inline-flex items-center rounded-xl border border-[#F5F1E8]/20 bg-[#0D121E]/80 backdrop-blur-md p-1"
                 role="group"
                 aria-label={locale === 'fa' ? 'تنظیم اندازه متن' : 'Adjust reading font size'}
               >
@@ -142,9 +182,9 @@ export function ArticleReader({
                     key={size}
                     type="button"
                     onClick={() => setFontScale(size)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                    className={`min-w-[36px] min-h-[34px] px-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                       fontScale === size
-                        ? 'bg-gradient-to-b from-[#F0D496] to-[#C69546] text-[#080A0F]'
+                        ? 'bg-gradient-to-b from-[#F1D79A] to-[#BA8433] text-[#080A10]'
                         : 'text-[#EDE6D8]/80 hover:text-[#F5F1E8]'
                     }`}
                   >
@@ -156,12 +196,12 @@ export function ArticleReader({
               <button
                 type="button"
                 onClick={() => onToggleBookmark(article.id)}
-                className="btn-luxury-glass !min-h-[38px] !px-3.5 !py-1.5 text-xs"
+                className="btn-luxury-glass !min-h-[44px] !px-4 text-xs"
               >
                 {isBookmarked ? (
-                  <BookmarkCheck className="w-3.5 h-3.5 text-[#F0D496]" />
+                  <BookmarkCheck className="w-4 h-4 text-[#F1D79A]" />
                 ) : (
-                  <Bookmark className="w-3.5 h-3.5" />
+                  <Bookmark className="w-4 h-4" />
                 )}
                 <span>
                   {isBookmarked
@@ -177,9 +217,13 @@ export function ArticleReader({
               <button
                 type="button"
                 onClick={handleShare}
-                className="btn-luxury-glass !min-h-[38px] !px-3.5 !py-1.5 text-xs"
+                className="btn-luxury-glass !min-h-[44px] !px-4 text-xs"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-[#F0D496]" /> : <Share2 className="w-3.5 h-3.5" />}
+                {copiedLink ? (
+                  <Check className="w-4 h-4 text-[#F1D79A]" />
+                ) : (
+                  <Share2 className="w-4 h-4" />
+                )}
                 <span>{locale === 'fa' ? 'اشتراک' : 'Share'}</span>
               </button>
             </div>
@@ -187,11 +231,19 @@ export function ArticleReader({
 
           <div className="max-w-4xl">
             <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm text-[#EDE6D8]/85 mb-4">
-              <span className="font-bold text-[#E5C17B]">
+              {article.kicker && (
+                <>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#D4A85B]/18 border border-[#D4A85B]/35 text-[#F1D79A] font-semibold">
+                    {article.kicker}
+                  </span>
+                  <span aria-hidden="true" className="opacity-45">·</span>
+                </>
+              )}
+              <span className="font-bold text-[#ECC983]">
                 {getCategoryLabel(article.category, locale)}
               </span>
               <span aria-hidden="true" className="opacity-45">·</span>
-              <span>{getRegionLabel(article.region, locale)}</span>
+              <span>{article.locationLabel || getRegionLabel(article.region, locale)}</span>
               <span aria-hidden="true" className="opacity-45">·</span>
               <span>{formatShortDate(article.publishedAt, locale)}</span>
               <span aria-hidden="true" className="opacity-45">·</span>
@@ -204,29 +256,29 @@ export function ArticleReader({
 
             <h1
               className={`font-editorial-display font-bold text-[#FDFBF7] mb-5 ${
-                locale === 'fa' ? 'leading-[1.42]' : 'leading-[1.18]'
+                locale === 'fa' ? 'leading-[1.4]' : 'leading-[1.16]'
               }`}
               style={{
                 fontSize:
                   locale === 'fa'
-                    ? 'clamp(1.75rem, 3.6vw, 3.2rem)'
-                    : 'clamp(1.95rem, 4vw, 3.45rem)',
+                    ? 'clamp(1.75rem, 3.6vw, 3.15rem)'
+                    : 'clamp(1.95rem, 4vw, 3.4rem)',
               }}
             >
               {article.title[locale]}
             </h1>
 
-            {cleanEditorialDeck(article.title[locale], article.deck[locale], 260) && (
+            {cleanEditorialDeck(article.title[locale], article.deck[locale], 280) && (
               <p className="text-base sm:text-xl text-[#EDE6D8]/88 leading-relaxed mb-7">
-                {cleanEditorialDeck(article.title[locale], article.deck[locale], 260)}
+                {cleanEditorialDeck(article.title[locale], article.deck[locale], 280)}
               </p>
             )}
 
             <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-[#EDE6D8]/80">
               <span className="font-semibold text-[#F5F1E8]">{article.author[locale]}</span>
-              <span aria-hidden="true" className="text-[#E5C17B]/60">·</span>
+              <span aria-hidden="true" className="text-[#ECC983]/60">·</span>
               <span>{article.authorRole[locale]}</span>
-              <span aria-hidden="true" className="text-[#E5C17B]/60">·</span>
+              <span aria-hidden="true" className="text-[#ECC983]/60">·</span>
               <span className="tabular-nums">
                 {locale === 'fa'
                   ? `${formatNumber(article.views, locale)} بازدید`
@@ -237,82 +289,172 @@ export function ArticleReader({
         </div>
       </header>
 
-      {/* Framed Documentary Feature Plate */}
-      <figure className="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-10 -mt-8 relative z-20 mb-14">
-        <div className="luxury-panel rounded-xl overflow-hidden p-2 sm:p-3">
-          <div className="aspect-[16/9] w-full overflow-hidden rounded-lg bg-[#EFE9DD] dark:bg-[#0B0F18]">
-            <EditorialImage
-              src={resolveArticleCoverImage(article)}
-              alt={article.title[locale]}
-              fallbackLabel={article.title[locale]}
-              className="w-full h-full object-cover"
-            />
+      {/* Media Frame: Rendered ONLY when genuine editorial photograph or video exists */}
+      {(hasVideo || hasPhoto) && (
+        <figure className="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-10 -mt-8 relative z-20 mb-12">
+          <div className="luxury-panel rounded-2xl overflow-hidden p-2 sm:p-3">
+            <div className="aspect-[16/9] w-full overflow-hidden rounded-xl bg-[#0B0F18]">
+              {hasVideo ? (
+                <video
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster={hasPhoto ? article.coverImage : undefined}
+                  className="w-full h-full object-contain bg-black"
+                >
+                  <source src={article.videoUrl} type={article.videoType || 'video/mp4'} />
+                </video>
+              ) : (
+                <EditorialImage
+                  src={article.coverImage}
+                  alt={article.title[locale]}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            {captionText && (
+              <figcaption className="px-3 pt-3 pb-1 text-xs sm:text-sm text-[#5B5246] dark:text-[#A3ADBF]">
+                {captionText}
+              </figcaption>
+            )}
           </div>
-          <figcaption className="px-3 pt-3 pb-1 text-xs sm:text-sm italic text-[#5F584D] dark:text-[#9AA3B5]">
-            {article.imageCaption[locale]}
-          </figcaption>
-        </div>
-      </figure>
+        </figure>
+      )}
 
-      {/* Asymmetric Reading Canvas (8-Col Prose / 4-Col Luxury Dossier Rail) */}
-      <div className="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-        <div className="lg:col-span-8">
-          <div className={`max-w-[68ch] space-y-7 text-[#161412] dark:text-[#EAE5DC] ${proseSizeClass}`}>
+      {/* Asymmetric Reading Canvas */}
+      <div
+        className={`max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start ${
+          !hasVideo && !hasPhoto ? 'pt-12' : ''
+        }`}
+      >
+        <div className="lg:col-span-8 space-y-10">
+          <div className={`max-w-[68ch] space-y-6 text-[#161310] dark:text-[#EAE5DC] ${proseSizeClass}`}>
             {article.body[locale].map((paragraph, index) => (
-              <div key={index} className="space-y-7">
+              <div key={index} className="space-y-6">
                 <p>{paragraph}</p>
 
                 {index === 0 && article.pullQuote && (
-                  <blockquote className="my-10 luxury-panel rounded-xl p-7 sm:p-8 text-center">
-                    <div className="w-12 h-[1px] mx-auto mb-5 bg-[#9E6F2C] dark:bg-[#E5C17B]" />
-                    <p className="font-editorial-display text-xl sm:text-2xl italic font-medium text-[#161412] dark:text-[#F5F1E8] leading-relaxed">
+                  <blockquote className="my-8 luxury-panel rounded-2xl p-6 sm:p-8 text-center">
+                    <div className="w-12 h-[1px] mx-auto mb-5 bg-[#8F6321] dark:bg-[#ECC983]" />
+                    <p className="font-editorial-display text-xl sm:text-2xl italic font-medium text-[#161310] dark:text-[#F5F1E8] leading-relaxed">
                       {article.pullQuote[locale]}
                     </p>
-                    <div className="w-12 h-[1px] mx-auto mt-5 bg-[#9E6F2C] dark:bg-[#E5C17B]" />
+                    <div className="w-12 h-[1px] mx-auto mt-5 bg-[#8F6321] dark:bg-[#ECC983]" />
                   </blockquote>
                 )}
               </div>
             ))}
           </div>
+
+          {/* Photo Gallery Grid if present */}
+          {article.gallery && article.gallery.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold text-[#8F6321] dark:text-[#ECC983]">
+                {locale === 'fa' ? 'گزارش تصویری' : 'Photo Gallery'}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {article.gallery.map((src, i) => (
+                  <div
+                    key={i}
+                    className="aspect-[16/10] rounded-xl overflow-hidden border border-[#D9CEBA] dark:border-[#252E42] bg-[#0B0F18]"
+                  >
+                    <EditorialImage
+                      src={src}
+                      alt={`${article.title[locale]} - ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Share & Correction Responsibility Bar */}
+          <div className="luxury-panel rounded-2xl p-6 space-y-5 max-w-[68ch]">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-bold text-[#161310] dark:text-[#F5F1E8]">
+                  {locale === 'fa' ? 'اشتراک‌گذاری و مسئولیت تحریریه' : 'Share & Editorial Integrity'}
+                </h2>
+                <p className="text-xs text-[#5B5246] dark:text-[#A3ADBF] mt-0.5">
+                  {locale === 'fa'
+                    ? 'پیوند کوتاه یا متن آماده انتشار در پیام‌رسان‌ها را کپی کنید.'
+                    : 'Copy the short story URL or formatted message.'}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button type="button" onClick={handleShare} className="btn-luxury-ink !text-xs">
+                  {copiedLink ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                  <span>{locale === 'fa' ? 'کپی لینک کوتاه' : 'Copy Short Link'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyPreparedMessage}
+                  className="btn-editorial-outline !text-xs"
+                >
+                  {copiedText ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span>{locale === 'fa' ? 'کپی متن آماده' : 'Copy Full Post'}</span>
+                </button>
+              </div>
+            </div>
+
+            {onReportCorrection && (
+              <div className="pt-4 border-t border-[#D9CEBA]/70 dark:border-[#252E42] flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs text-[#5B5246] dark:text-[#A3ADBF]">
+                  {locale === 'fa'
+                    ? 'متوجه خطای اطلاعاتی یا نکته تکمیلی شده‌اید؟'
+                    : 'Spotted an error or have an update?'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onReportCorrection(article)}
+                  className="inline-flex items-center gap-1.5 min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-bold text-[#8F6321] dark:text-[#ECC983] hover:bg-[#8F6321]/10 dark:hover:bg-[#ECC983]/12 transition-colors cursor-pointer"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <span>{locale === 'fa' ? 'گزارش خطا / درخواست اصلاح' : 'Request Correction'}</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <aside className="lg:col-span-4 space-y-6">
-          <div className="luxury-panel rounded-xl overflow-hidden">
-            <div className="h-[1px] w-full gold-hairline" />
+          <div className="luxury-panel rounded-2xl overflow-hidden">
+            <div className="h-[2px] w-full gold-hairline" />
             <div className="p-6">
-              <h2 className="text-xs font-bold text-[#9E6F2C] dark:text-[#E5C17B] mb-4">
+              <h2 className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983] mb-4">
                 {locale === 'fa' ? 'شناسنامه روایت' : 'Dispatch Dossier'}
               </h2>
-              <dl className="divide-y divide-[#DDD3C2]/70 dark:divide-[#D4A85B]/12 text-xs sm:text-sm">
+              <dl className="divide-y divide-[#D9CEBA]/70 dark:divide-[#252E42] text-xs sm:text-sm">
                 <div className="py-3 flex justify-between gap-4">
-                  <dt className="text-[#5F584D] dark:text-[#9AA3B5]">
+                  <dt className="text-[#5B5246] dark:text-[#A3ADBF]">
                     {locale === 'fa' ? 'میز خبری' : 'Desk'}
                   </dt>
-                  <dd className="font-semibold text-[#161412] dark:text-[#F5F1E8]">
+                  <dd className="font-semibold text-[#161310] dark:text-[#F5F1E8]">
                     {getCategoryLabel(article.category, locale)}
                   </dd>
                 </div>
                 <div className="py-3 flex justify-between gap-4">
-                  <dt className="text-[#5F584D] dark:text-[#9AA3B5]">
+                  <dt className="text-[#5B5246] dark:text-[#A3ADBF]">
                     {locale === 'fa' ? 'حوزه جغرافیایی' : 'Region'}
                   </dt>
-                  <dd className="font-semibold text-[#161412] dark:text-[#F5F1E8]">
-                    {getRegionLabel(article.region, locale)}
+                  <dd className="font-semibold text-[#161310] dark:text-[#F5F1E8]">
+                    {article.locationLabel || getRegionLabel(article.region, locale)}
                   </dd>
                 </div>
                 <div className="py-3 flex justify-between gap-4">
-                  <dt className="text-[#5F584D] dark:text-[#9AA3B5]">
+                  <dt className="text-[#5B5246] dark:text-[#A3ADBF]">
                     {locale === 'fa' ? 'تاریخ انتشار' : 'Published'}
                   </dt>
-                  <dd className="font-semibold text-[#161412] dark:text-[#F5F1E8]">
+                  <dd className="font-semibold text-[#161310] dark:text-[#F5F1E8]">
                     {formatShortDate(article.publishedAt, locale)}
                   </dd>
                 </div>
                 <div className="py-3 flex justify-between gap-4">
-                  <dt className="text-[#5F584D] dark:text-[#9AA3B5]">
+                  <dt className="text-[#5B5246] dark:text-[#A3ADBF]">
                     {locale === 'fa' ? 'زمان خوانش' : 'Read Time'}
                   </dt>
-                  <dd className="font-semibold text-[#161412] dark:text-[#F5F1E8] tabular-nums">
+                  <dd className="font-semibold text-[#161310] dark:text-[#F5F1E8] tabular-nums">
                     {locale === 'fa'
                       ? `${formatNumber(article.readTimeMin, locale)} دقیقه`
                       : `${article.readTimeMin} min`}
@@ -323,58 +465,64 @@ export function ArticleReader({
           </div>
 
           {relatedArticles.length > 0 && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div className="flex items-center justify-between px-1">
-                <h2 className="text-[11px] font-bold tracking-[0.04em] text-[#9A6B27] dark:text-[#E8C680]">
+                <h2 className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
                   {locale === 'fa' ? 'روایت‌های مرتبط' : 'Related Dispatches'}
                 </h2>
-                <span className="h-[0.5px] flex-1 mx-4 bg-[#D9CEBC]/80 dark:bg-[#D4A85B]/16" />
+                <span className="h-[1px] flex-1 mx-4 bg-[#D9CEBA]/80 dark:bg-[#252E42]" />
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 {relatedArticles.map((rel, idx) => (
                   <motion.article
                     key={rel.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
-                      duration: 0.45,
-                      delay: idx * 0.06,
+                      duration: 0.35,
+                      delay: idx * 0.05,
                       ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="magazine-card group rounded-[20px] overflow-hidden"
+                    className="magazine-card group rounded-2xl overflow-hidden"
                   >
                     <button
                       type="button"
                       onClick={() => onSelectRelated(rel)}
-                      className="relative z-10 w-full text-start p-5 sm:p-6 flex items-center gap-4 sm:gap-5 cursor-pointer"
+                      className="relative z-10 w-full text-start p-4 sm:p-5 flex items-center gap-4 cursor-pointer"
                     >
-                      <div className="relative w-20 h-20 rounded-[12px] overflow-hidden shrink-0 bg-[#EAE2D3] dark:bg-[#0B0F18] border-[0.5px] border-[#141210]/10 dark:border-[#F5F1E8]/10">
-                        <EditorialImage
-                          src={resolveArticleCoverImage(rel)}
-                          alt={rel.title[locale]}
-                          className="magazine-media-img w-full h-full object-cover"
-                        />
-                      </div>
+                      {hasRealEditorialPhoto(rel) ? (
+                        <div className="relative w-18 h-18 rounded-xl overflow-hidden shrink-0 bg-[#0B0F18] border border-[#D9CEBA]/50 dark:border-[#252E42]">
+                          <EditorialImage
+                            src={rel.coverImage}
+                            alt={rel.title[locale]}
+                            className="magazine-media-img w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl shrink-0 bg-[#EFE7D8] dark:bg-[#171E30] border border-[#D9CEBA] dark:border-[#252E42] flex items-center justify-center font-mono-tabular text-sm font-extrabold text-[#8F6321] dark:text-[#ECC983]">
+                          {formatEditorialIndex(idx, locale)}
+                        </div>
+                      )}
 
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <p className="text-[11px] text-[#5A5247] dark:text-[#A1AAB9] flex items-center gap-1.5">
-                          <span className="font-bold text-[#9A6B27] dark:text-[#E8C680]">
-                            {getRegionLabel(rel.region, locale)}
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <p className="text-[11px] text-[#5B5246] dark:text-[#A3ADBF] flex items-center gap-1.5">
+                          <span className="font-bold text-[#8F6321] dark:text-[#ECC983]">
+                            {rel.locationLabel || getRegionLabel(rel.region, locale)}
                           </span>
                           <span aria-hidden="true" className="opacity-35">·</span>
                           <span>{formatShortDate(rel.publishedAt, locale)}</span>
                         </p>
-                        <p className="font-editorial-display text-[15px] font-bold text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] leading-[1.52] line-clamp-2">
+                        <p className="font-editorial-display text-[14.5px] font-bold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors leading-[1.5] line-clamp-2">
                           {rel.title[locale]}
                         </p>
                       </div>
 
-                      <span className="magazine-circle-action !w-8 !h-8 shrink-0 group-hover:border-[#9A6B27] dark:group-hover:border-[#E8C680] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680]">
+                      <span className="magazine-circle-action !w-9 !h-9 !min-w-[36px] !min-h-[36px] shrink-0">
                         {locale === 'fa' ? (
-                          <ArrowUpLeft className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
+                          <ArrowUpLeft className="w-3.5 h-3.5" />
                         ) : (
-                          <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          <ArrowUpRight className="w-3.5 h-3.5" />
                         )}
                       </span>
                     </button>

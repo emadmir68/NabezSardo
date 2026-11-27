@@ -184,7 +184,7 @@ export function TopBar({
           {/* Zone 2: 5 Clean Single-Line Nav Links */}
           <nav
             aria-label={locale === 'fa' ? 'ناوبری اصلی' : 'Primary navigation'}
-            className="hidden md:flex items-center gap-7 lg:gap-9"
+            className="hidden md:flex items-center gap-6 lg:gap-8 h-full"
           >
             {navItems.map((item) => {
               const isActive =
@@ -194,20 +194,20 @@ export function TopBar({
                   key={item.id}
                   type="button"
                   onClick={() => handleNav(item.id)}
-                  className={`relative py-2 text-[14px] font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`relative h-full inline-flex items-center px-1 text-[14px] font-semibold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     isActive
-                      ? 'text-[#141210] dark:text-[#F6F2EA]'
-                      : 'text-[#5A5247] dark:text-[#A1AAB9] hover:text-[#141210] dark:hover:text-[#F6F2EA]'
+                      ? 'text-[#161310] dark:text-[#F5F1E8]'
+                      : 'text-[#5B5246] dark:text-[#A3ADBF] hover:text-[#161310] dark:hover:text-[#F5F1E8]'
                   }`}
                 >
                   <span>{item.label[locale]}</span>
                   {item.id === 'studio' && pendingReportsCount > 0 && (
-                    <span className="ms-1.5 text-xs font-mono-tabular text-[#9A6B27] dark:text-[#E8C680]">
+                    <span className="ms-1.5 text-xs font-mono-tabular text-[#8F6321] dark:text-[#ECC983]">
                       ({formatNumber(pendingReportsCount, locale)})
                     </span>
                   )}
                   <span
-                    className={`absolute inset-x-0 -bottom-[20px] h-[1.5px] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] bg-gradient-to-r from-transparent via-[#9A6B27] dark:via-[#E8C680] to-transparent ${
+                    className={`absolute inset-x-0 bottom-0 h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] bg-gradient-to-r from-transparent via-[#8F6321] dark:via-[#ECC983] to-transparent ${
                       isActive ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-50'
                     }`}
                   />
@@ -221,7 +221,7 @@ export function TopBar({
             <button
               type="button"
               onClick={() => handleNav('submit')}
-              className="btn-luxury-ink !min-h-[40px] sm:!min-h-[42px] !px-3.5 sm:!px-5 text-xs sm:text-[13px] whitespace-nowrap shrink-0"
+              className="btn-luxury-ink !min-h-[44px] !px-3.5 sm:!px-5 text-xs sm:text-[13px] whitespace-nowrap shrink-0"
             >
               <PenSquare className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
               <span className="sm:hidden">{locale === 'fa' ? 'ارسال خبر' : 'Submit'}</span>
@@ -233,7 +233,7 @@ export function TopBar({
             <button
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
-              className="md:hidden btn-icon-luxury !w-10 !h-10"
+              className="md:hidden btn-icon-luxury !w-11 !h-11"
               aria-label={locale === 'fa' ? 'باز کردن منو' : 'Toggle navigation menu'}
               aria-expanded={mobileMenuOpen}
             >

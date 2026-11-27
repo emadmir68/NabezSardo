@@ -98,7 +98,13 @@ export function Footer({
             <li>
               <a
                 href="/category/short-news"
-                className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
+                onClick={(e) => {
+                  if (!e.metaKey && !e.ctrlKey && !e.shiftKey) {
+                    e.preventDefault();
+                    onSelectCategory('short-news');
+                  }
+                }}
+                className="hover:text-[#8F6321] dark:hover:text-[#ECC983] transition-colors cursor-pointer"
               >
                 {locale === 'fa' ? 'خبرهای کوتاه' : 'News Briefs'}
               </a>
@@ -106,7 +112,13 @@ export function Footer({
             <li>
               <a
                 href="/follow-up"
-                className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
+                onClick={(e) => {
+                  if (!e.metaKey && !e.ctrlKey && !e.shiftKey) {
+                    e.preventDefault();
+                    onNavigate('follow-up');
+                  }
+                }}
+                className="hover:text-[#8F6321] dark:hover:text-[#ECC983] transition-colors cursor-pointer"
               >
                 {locale === 'fa' ? 'پیگیری تا نتیجه' : 'Public Follow-ups'}
               </a>
@@ -114,7 +126,13 @@ export function Footer({
             <li>
               <a
                 href="/editorial-policy"
-                className="hover:text-[#9A6B27] dark:hover:text-[#E8C680] transition-colors"
+                onClick={(e) => {
+                  if (!e.metaKey && !e.ctrlKey && !e.shiftKey) {
+                    e.preventDefault();
+                    onNavigate('editorial-policy');
+                  }
+                }}
+                className="hover:text-[#8F6321] dark:hover:text-[#ECC983] transition-colors cursor-pointer"
               >
                 {locale === 'fa' ? 'منشور و سیاست تحریریه' : 'Editorial Policy'}
               </a>

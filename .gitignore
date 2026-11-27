@@ -1,0 +1,10 @@
+node_modules/
+gemini-source/node_modules/
+gemini-source/dist/
+.wrangler-dist/
+public/gemini/
+public/src/
+public/assets/gemini-design/
+public/assets/index-*
+public/assets/*.woff
+public/assets/*.woff2

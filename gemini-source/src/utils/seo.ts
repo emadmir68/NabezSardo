@@ -147,6 +147,14 @@ export function syncPageSeo({
       pageTitle = locale === 'fa' ? `تماس با تحریریه | ${brand}` : `Contact Newsroom | ${brand}`;
       pagePath = '/contact';
       break;
+    case 'editorial-policy':
+      pageTitle = locale === 'fa' ? `سیاست تحریریه و اصلاحات | ${brand}` : `Editorial Policy | ${brand}`;
+      pagePath = '/editorial-policy';
+      break;
+    case 'follow-up':
+      pageTitle = locale === 'fa' ? `پیگیری تا نتیجه | ${brand}` : `Public Follow-ups | ${brand}`;
+      pagePath = '/follow-up';
+      break;
     case 'admin-login':
       pageTitle = locale === 'fa' ? `ورود مدیریت تحریریه | ${brand}` : `Editorial Login | ${brand}`;
       pagePath = '/admin/login';

@@ -703,6 +703,9 @@ function mimeFor(name = "") {
     ".jpeg": "image/jpeg",
     ".webp": "image/webp",
     ".gif": "image/gif",
+    ".woff2": "font/woff2",
+    ".woff": "font/woff",
+    ".ttf": "font/ttf",
     ".mp4": "video/mp4",
     ".webm": "video/webm",
     ".mov": "video/quicktime",
@@ -1494,17 +1497,22 @@ async function serveAsset(request, pathname) {
   const u = new URL(request.url);
   let assetResponse;
   if (pathname.startsWith("/assets/")) {
-    // New rebirth assets live in public/assets; legacy assets remain at public root.
     assetResponse = await env.ASSETS.fetch(new Request(u, request));
     if (!assetResponse.ok) {
       u.pathname = pathname.slice("/assets".length);
+      assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    }
+  } else if (pathname.startsWith("/src/assets/")) {
+    assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    if (!assetResponse.ok) {
+      u.pathname = "/assets/gemini-design/" + path.basename(pathname);
       assetResponse = await env.ASSETS.fetch(new Request(u, request));
     }
   } else {
     if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
     assetResponse = await env.ASSETS.fetch(new Request(u, request));
   }
-  if (request.method !== "GET" || !assetResponse.ok) return assetResponse;
+  if ((request.method !== "GET" && request.method !== "HEAD") || !assetResponse.ok) return assetResponse;
   const headers = new Headers(assetResponse.headers);
   if (u.searchParams.has("v")) {
     headers.set("cache-control", "public, max-age=31536000, immutable");
@@ -1915,7 +1923,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v5");
+  const marker=await getState("live_nonnews_cleanup_v6");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1929,9 +1937,9 @@ async function ensureLiveNonNewsCleanup(){
     try{invalidateFastArticleCache();}catch{}
     publicDbCache={at:0,db:null};
   }
-  await putState("live_nonnews_cleanup_v5","1");
+  await putState("live_nonnews_cleanup_v6","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v5","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v6","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 
@@ -2128,26 +2136,63 @@ export default {
       return serveUpload(path.basename(p),request);
     }
 
-    if ((p.startsWith("/assets/") || p === "/hero-mosque.jpg" || p.startsWith("/demo/")) && request.method === "GET") {
+    if ((p.startsWith("/assets/") || p.startsWith("/fonts/") || p.startsWith("/src/assets/") || p === "/hero-mosque.jpg" || p.startsWith("/demo/")) && (request.method === "GET" || request.method === "HEAD")) {
       return serveAsset(request, p);
     }
 
 
-    // The premium Gemini presentation reads only published, vetted Cloudflare D1 news.
+    // Editorial React presentation reads only published, vetted Cloudflare D1 news.
     // The admin JSON mutation endpoints fall through to the signed-cookie Node newsroom.
     if(isPrimary()&&p==='/api/gemini/articles'&&request.method==='GET'){
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
       const db=await loadPublicDbFast();
-      const articles=store.published(db).map(geminiBridge.mapArticle);
+      const summary=url.searchParams.get('summary')==='1';
+      const articles=store.published(db).map(a=>geminiBridge.mapArticle(a,{summary}));
       return Response.json({ok:true,articles,source:'cloudflare-d1'},{
         headers:{'cache-control':'private,no-store','x-nabzesardo-editorial':'verified-live-d1'}
       });
     }
+    if(isPrimary()&&p==='/api/gemini/article'&&request.method==='GET'){
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
+      const key=String(url.searchParams.get('slug')||url.searchParams.get('key')||url.searchParams.get('id')||'').trim().slice(0,200);
+      const db=await loadPublicDbFast();
+      const publishedList=store.published(db);
+      const found=publishedList.find(a=>a.slug===key||a.id===key||geminiBridge.compactStoryCode(a.id)===key);
+      if(!found)return Response.json({ok:false,error:'not-found'},{status:404,headers:{'cache-control':'no-store'}});
+      return Response.json({ok:true,article:geminiBridge.mapArticle(found),source:'cloudflare-d1'},{
+        headers:{'cache-control':'private,no-store','x-nabzesardo-editorial':'verified-live-d1'}
+      });
+    }
+    if(isPrimary()&&p==='/api/gemini/followups'&&request.method==='GET'){
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
+      const db=await loadPublicDbFast();
+      const followups=[...(db.followups||[])].sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
+      return Response.json({ok:true,followups},{headers:{'cache-control':'private,no-store'}});
+    }
+    if(isPrimary()&&p==='/api/gemini/config'&&request.method==='GET'){
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
+      const db=await loadPublicDbFast();
+      return Response.json(geminiBridge.siteConfig(db,env.TURNSTILE_SITE_KEY||''),{
+        headers:{'cache-control':'private,no-store'}
+      });
+    }
     if(isPrimary()&&p==='/api/gemini/view'&&request.method==='GET'){
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
       const key=String(url.searchParams.get('slug')||'').slice(0,200);
       const db=await loadPublicDbFast();
-      const article=store.published(db).find(a=>a.slug===key);
+      const article=store.published(db).find(a=>a.slug===key||a.id===key||geminiBridge.compactStoryCode(a.id)===key);
       if(!article)return new Response(null,{status:404});
-      if(ctx)ctx.waitUntil(recordFastVisit(request,'/news/'+encodeURIComponent(key),String(article.id)).catch(()=>{}));
+      if(ctx)ctx.waitUntil(recordFastVisit(request,'/news/'+encodeURIComponent(article.slug||key),String(article.id)).catch(()=>{}));
       return new Response(null,{status:204,headers:{'cache-control':'no-store'}});
     }
 
@@ -2156,16 +2201,14 @@ export default {
       await ensurePrivacyCleanup();
       await ensureLiveNonNewsCleanup();
 
-      // Serve the untouched Gemini React markup to browsers, while preserving SSR,
-      // canonical metadata, sitemaps and social bot HTML from the old Worker.
+      // Serve the React SPA to real browsers, while preserving SSR,
+      // canonical metadata, sitemaps and social bot HTML from the Worker.
       const accept=String(request.headers.get('accept')||'');
       const ua=String(request.headers.get('user-agent')||'');
-      // Keep unported legacy category and regional pages available via the original Worker.
-      // React handles only the routes its own router supports.
-      const geminiCategory=/^\/category\/(sarduiyeh|agriculture|social|culture|weather|incidents|opinion)$/.test(p);
+      const geminiCategory=/^\/category\/(sarduiyeh|agriculture|social|culture|weather|incidents|opinion|politics|sports|short-news)$/.test(p);
       const geminiLocal=/^\/local\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
       const geminiRegion=/^\/region\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
-      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||geminiRegion||
+      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/editorial-policy'||p==='/follow-up'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||geminiRegion||
         p.startsWith('/news/')||p.startsWith('/n/')||geminiCategory||geminiLocal;
       if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!requiresSeoHtml(ua)){
         const htmlUrl=new URL('/gemini/',request.url);

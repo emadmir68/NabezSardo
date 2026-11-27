@@ -43,6 +43,28 @@ test('Gemini routes enforce signed editorial session and persist real news and c
   assert.equal(saved.status,200,await saved.text());
   const database=JSON.parse(fs.readFileSync(path.join(temp,'db.json'),'utf8'));
   assert.equal(database.articles.length,1);assert.equal(database.articles[0].title,article.title.fa);
+
+  const summaryFeed=await fetch(base+'/api/gemini/articles?summary=1');
+  assert.equal(summaryFeed.status,200);
+  const summaryJson=await summaryFeed.json();
+  assert.equal(summaryJson.articles.length,1);
+  assert.deepEqual(summaryJson.articles[0].body.fa,[]);
+
+  const singleRes=await fetch(base+'/api/gemini/article?key='+encodeURIComponent(database.articles[0].slug));
+  assert.equal(singleRes.status,200);
+  const singleJson=await singleRes.json();
+  assert.equal(singleJson.article.title.fa,article.title.fa);
+  assert.ok(singleJson.article.body.fa.length>=1);
+
+  const contactRes=await fetch(base+'/api/gemini/contact',{method:'POST',headers:{Origin:base,'Content-Type':'application/json'},body:JSON.stringify({name:'مخاطب',contact:'09130000000',subject:'اصلاح خبر',message:'متن پیام آزمایشی برای تحریریه نبض ساردو',website:''})});
+  assert.equal(contactRes.status,200);
+
+  const settingsRes=await fetch(base+'/api/gemini/admin/action',{method:'POST',headers:{Origin:base,Cookie:cookie,'Content-Type':'application/json','x-nabzesardo-editorial':'1'},body:JSON.stringify({action:'save-settings',settings:{contactEmail:'desk@nabzesardo.ir',editorialPhone:'034-43219999',liveDeskEnabled:true}})});
+  assert.equal(settingsRes.status,200);
+
+  const cfgAfter=await (await fetch(base+'/api/gemini/config')).json();
+  assert.equal(cfgAfter.contactEmail,'desk@nabzesardo.ir');
+
   const forbidden={...article,title:{fa:'آگهی ترحیم مرحوم',en:'Funeral notice'}};
   const blocked=await fetch(base+'/api/gemini/admin/action',{method:'POST',headers:{Origin:base,Cookie:cookie,'Content-Type':'application/json','x-nabzesardo-editorial':'1'},body:JSON.stringify({action:'save',isNew:true,article:forbidden})});
   assert.equal(blocked.status,422);

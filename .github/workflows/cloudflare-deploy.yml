@@ -34,26 +34,23 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build original Gemini appearance with live D1 adapters
+      - name: Build editorial React SPA and sync static assets
         shell: bash
         run: |
           set -euo pipefail
-          unzip -q nabz-sardo-original-gemini-design.zip -d /tmp/nabz-gemini-production
-          # Copy ONLY data and route integration changes; original JSX markup, images and CSS remain intact.
-          cp -a gemini-source/src/. /tmp/nabz-gemini-production/src/
-          cp gemini-source/index.html /tmp/nabz-gemini-production/index.html
-          cp gemini-source/package.json /tmp/nabz-gemini-production/package.json
-          cp gemini-source/vite.config.ts /tmp/nabz-gemini-production/vite.config.ts
-          cp gemini-source/tsconfig.json /tmp/nabz-gemini-production/tsconfig.json
-          cd /tmp/nabz-gemini-production
+          cd gemini-source
           npm install --legacy-peer-deps --no-audit --no-fund
+          npx tsc --noEmit
           npm run build
           cd "$GITHUB_WORKSPACE"
-          mkdir -p public/gemini public/assets public/src/assets
-          cp /tmp/nabz-gemini-production/dist/index.html public/gemini/index.html
-          cp -a /tmp/nabz-gemini-production/dist/assets/. public/assets/
-          cp -a /tmp/nabz-gemini-production/dist/src/assets/. public/src/assets/
+          rm -f public/assets/index-*.js public/assets/index-*.css public/assets/*.woff public/assets/*.woff2
+          mkdir -p public/gemini public/assets public/assets/gemini-design public/src/assets/images
+          cp gemini-source/dist/index.html public/gemini/index.html
+          cp -a gemini-source/dist/assets/. public/assets/
+          cp -a gemini-source/src/assets/images/. public/assets/gemini-design/
+          cp -a gemini-source/src/assets/images/. public/src/assets/images/
           test -f public/gemini/index.html
+          test -f public/assets/gemini-design/hero_sarduiyeh_highlands_1795255635485.jpg
           grep -q '/assets/index-' public/gemini/index.html
 
       - name: Publication regression tests
@@ -109,7 +106,14 @@ jobs:
           curl -fsS --retry 5 --retry-delay 3 -H 'Accept: text/html' -A 'Mozilla/5.0 HeadlessChrome/130.0.0.0 Safari/537.36' "$SITE/" -o /tmp/gemini-headless.html
           grep -q '<div id="root"></div>' /tmp/gemini-headless.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/api/gemini/articles" -o /tmp/gemini-live-news.json
-          node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("/tmp/gemini-live-news.json"));if(j.source!=="cloudflare-d1"||!Array.isArray(j.articles))process.exit(1);const forbidden=j.articles.filter(a=>/با\\s+سلام\\s+و\\s+احترام|آگهی\\s+ترحیم|به\\s+خاک\\s+سپرده\\s+شد|ثبت\\s+سفارش/u.test(a.title.fa));if(forbidden.length)throw Error("Forbidden public story: "+forbidden.map(a=>a.title.fa).slice(0,4).join("|"));console.log("Live D1 stories presented by Gemini:",j.articles.length);'
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/api/gemini/articles?summary=1" -o /tmp/gemini-live-summary.json
+          curl -fsS --retry 5 --retry-delay 3 "$SITE/api/gemini/config" -o /tmp/gemini-config.json
+          curl -fsSI --retry 3 --retry-delay 3 "$SITE/assets/gemini-design/hero_sarduiyeh_highlands_1795255635485.jpg" >/dev/null
+          node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync("/tmp/gemini-live-news.json"));const s=JSON.parse(fs.readFileSync("/tmp/gemini-live-summary.json"));const c=JSON.parse(fs.readFileSync("/tmp/gemini-config.json"));if(j.source!=="cloudflare-d1"||!Array.isArray(j.articles)||!Array.isArray(s.articles)||!c.ok)process.exit(1);const forbidden=j.articles.filter(a=>/با\s+سلام\s+و\s+احترام|آگهی\s+ترحیم|به\s+خاک\s+سپرده\s+شد|ثبت\s+سفارش|شب\s+و\s+شعر/u.test(a.title.fa+" "+a.deck.fa));if(forbidden.length)throw Error("Forbidden public story: "+forbidden.map(a=>a.title.fa).slice(0,4).join("|"));const html=fs.readFileSync("/tmp/gemini-browser.html","utf8");const assets=[...html.matchAll(/\/assets\/[^"\x27> ]+/g)].map(m=>m[0]);console.log("Live D1 stories:",j.articles.length,"Built assets:",assets.length);'
+          if grep -q 'ظ†ط¨ط¶' /tmp/home.html; then
+            echo "Mojibake detected in SSR output"
+            exit 1
+          fi
           curl -fsS --retry 5 --retry-delay 3 "$SITE/all-news" -o /tmp/archive.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/category/incidents" -o /tmp/incidents.html
           curl -fsS --retry 5 --retry-delay 3 "$SITE/category/weather" -o /tmp/weather.html

@@ -10,6 +10,8 @@ import { AdminStudio } from './components/AdminStudio';
 import { ArticleReader } from './components/ArticleReader';
 import { CitizenReportView } from './components/CitizenReportView';
 import { ContactView } from './components/ContactView';
+import { EditorialPolicyView } from './components/EditorialPolicyView';
+import { FollowUpView } from './components/FollowUpView';
 import { Footer } from './components/Footer';
 import { FrontPageEditorial } from './components/FrontPageEditorial';
 import { LiveHero } from './components/LiveHero';
@@ -20,7 +22,6 @@ import { SearchPageView } from './components/SearchPageView';
 import { TopBar } from './components/TopBar';
 import {
   CATEGORIES,
-  EDITORIAL_IMAGES,
   INITIAL_ARTICLES,
   INITIAL_CITIZEN_REPORTS,
   REGIONS,
@@ -28,25 +29,31 @@ import {
 import {
   DEFAULT_MEDIA_ASSETS,
   DEFAULT_SITE_SETTINGS,
+  approveCitizenFromApi,
+  archiveCitizenFromApi,
   deleteArticleFromApi,
   fetchAdminAuthStatus,
   fetchAdminState,
-  approveCitizenFromApi,
-  archiveCitizenFromApi,
+  fetchFollowUps,
+  fetchLiveArticleByKey,
   fetchLiveArticles,
+  fetchPublicConfig,
   logoutAdmin,
   submitCitizenReportToApi,
   submitContactToApi,
   syncArticleToApi,
   syncMediaToApi,
   syncSettingsToApi,
+  trackArticleView,
 } from './services/api';
 import type {
   ActiveView,
   Article,
+  BreakingWireConfig,
   CategoryId,
   CitizenReport,
   ContactSubmission,
+  FollowUpCase,
   Locale,
   MediaAsset,
   RegionId,
@@ -114,10 +121,12 @@ function parseUrlPath(pathname: string, search: string): ParsedRoute {
   if (clean === '/submit' || clean === '/send-news') return { view: 'submit' };
   if (clean === '/about') return { view: 'about' };
   if (clean === '/contact') return { view: 'contact' };
+  if (clean === '/editorial-policy') return { view: 'editorial-policy' };
+  if (clean === '/follow-up') return { view: 'follow-up' };
   if (clean === '/admin/login') return { view: 'admin-login' };
   if (clean === '/admin' || clean === '/studio') return { view: 'studio' };
-  if (clean.startsWith('/news/')) {
-    const slug = decodeURIComponent(clean.slice('/news/'.length));
+  if (clean.startsWith('/news/') || clean.startsWith('/n/')) {
+    const slug = decodeURIComponent(clean.slice(clean.startsWith('/n/') ? '/n/'.length : '/news/'.length));
     if (slug) return { view: 'home', articleSlug: slug };
   }
   return { view: 'not-found' };
@@ -158,6 +167,12 @@ export default function App() {
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() =>
     loadJson<string[]>(STORAGE_KEYS.bookmarks, [])
   );
+  const [followups, setFollowups] = useState<FollowUpCase[]>([]);
+  const [breakingWire, setBreakingWire] = useState<BreakingWireConfig | null>(null);
+  const [correctionPrefill, setCorrectionPrefill] = useState<{ subject: string; message: string }>({
+    subject: '',
+    message: '',
+  });
 
   // Admin auth token lives strictly in React memory (never persisted in localStorage)
   const [adminToken, setAdminToken] = useState<string | null>(null);
@@ -171,6 +186,9 @@ export default function App() {
       if (!active || !state) return;
       setCitizenReports(state.citizenReports);
       setArticles(state.articles);
+      if (state.siteSettings) {
+        setSiteSettings((prev) => ({ ...prev, ...state.siteSettings }));
+      }
     });
     return () => { active = false; };
   }, []);
@@ -201,12 +219,11 @@ export default function App() {
     }, 3400);
   }, []);
 
-  // Load real published news from Cloudflare Worker / D1 API on mount
+  // Load fast published news summary + public config + followups on mount
   useEffect(() => {
     let active = true;
-    fetchLiveArticles().then((res) => {
+    fetchLiveArticles({ summary: true }).then((res) => {
       if (!active) return;
-      // Never display seeded sample stories as if they were live D1 news.
       const cleanFeed = (res?.articles || []).filter(
         (item) => checkEditorialPolicy([item.title.fa, item.deck.fa]).allowed
       );
@@ -214,21 +231,49 @@ export default function App() {
       setDataSource('worker-d1');
       if (!res) pushToast('دریافت اخبار واقعی ممکن نشد؛ اخبار نمونه نمایش داده نمی‌شوند.', 'warning');
     });
+    fetchPublicConfig().then((cfg) => {
+      if (!active || !cfg) return;
+      if (cfg.breaking) setBreakingWire(cfg.breaking);
+      if (cfg.siteSettings) {
+        setSiteSettings((prev) => ({ ...prev, ...cfg.siteSettings }));
+      }
+    });
+    fetchFollowUps().then((rows) => {
+      if (active) setFollowups(rows);
+    });
     return () => {
       active = false;
     };
   }, []);
 
-  // Resolve deep-linked /news/:slug once articles are loaded
+  // Resolve deep-linked /news/:slug or /n/:shortCode once articles are loaded
   useEffect(() => {
     if (!pendingSlug) return;
-    const match = articles.find((a) => a.slug === pendingSlug || a.id === pendingSlug);
+    const match = articles.find(
+      (a) => a.slug === pendingSlug || a.id === pendingSlug || a.shortCode === pendingSlug
+    );
     if (match) {
       setSelectedArticleId(match.id);
       setPendingSlug(null);
+      if (match._summaryOnly) {
+        fetchLiveArticleByKey(match.slug || match.id).then((full) => {
+          if (full) {
+            setArticles((prev) => prev.map((x) => (x.id === full.id ? full : x)));
+          }
+        });
+      }
+      trackArticleView(match.slug);
     } else if (dataSource === 'worker-d1') {
-      setActiveView('not-found');
-      setPendingSlug(null);
+      fetchLiveArticleByKey(pendingSlug).then((fetched) => {
+        if (fetched) {
+          setArticles((prev) => (prev.some((x) => x.id === fetched.id) ? prev : [fetched, ...prev]));
+          setSelectedArticleId(fetched.id);
+          trackArticleView(fetched.slug);
+        } else {
+          setActiveView('not-found');
+        }
+        setPendingSlug(null);
+      });
     }
   }, [pendingSlug, articles, dataSource]);
 
@@ -238,14 +283,17 @@ export default function App() {
       const parsed = parseUrlPath(window.location.pathname, window.location.search);
       if (parsed.articleSlug) {
         const match = articles.find(
-          (a) => a.slug === parsed.articleSlug || a.id === parsed.articleSlug
+          (a) =>
+            a.slug === parsed.articleSlug ||
+            a.id === parsed.articleSlug ||
+            a.shortCode === parsed.articleSlug
         );
         if (match) {
           setSelectedArticleId(match.id);
           setActiveView('home');
         } else {
           setSelectedArticleId(null);
-          setActiveView('not-found');
+          setPendingSlug(parsed.articleSlug);
         }
         return;
       }
@@ -380,6 +428,14 @@ export default function App() {
     setArticles((prev) =>
       prev.map((a) => (a.id === article.id ? { ...a, views: a.views + 1 } : a))
     );
+    if (article._summaryOnly) {
+      fetchLiveArticleByKey(article.slug || article.id).then((full) => {
+        if (full) {
+          setArticles((prev) => prev.map((x) => (x.id === full.id ? { ...full, views: Math.max(full.views, x.views) } : x)));
+        }
+      });
+    }
+    trackArticleView(article.slug);
     pushBrowserPath(`/news/${encodeURIComponent(article.slug)}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -405,6 +461,8 @@ export default function App() {
       submit: '/send-news',
       about: '/about',
       contact: '/contact',
+      'editorial-policy': '/editorial-policy',
+      'follow-up': '/follow-up',
       'admin-login': '/admin/login',
       studio: '/?studio=1',
       'not-found': '/404',
@@ -483,16 +541,30 @@ export default function App() {
     pushToast('گزارش در سامانه اصلی بایگانی شد.', 'info');
   };
 
-  const handleAddMediaAsset = async (_asset: MediaAsset) => {
-    pushToast('کتابخانه رسانه جدید هنوز به ذخیره‌سازی فعلی متصل نیست؛ لطفاً از مدیریت اصلی برای آپلود استفاده کنید.', 'warning');
+  const handleAddMediaAsset = async (asset: MediaAsset) => {
+    const result = await syncMediaToApi(asset, adminToken);
+    if (!result.ok) {
+      pushToast(result.error || 'آپلود تصویر انجام نشد.', 'warning');
+      return;
+    }
+    const storedAsset: MediaAsset = { ...asset, url: result.url || asset.url };
+    setMediaAssets((prev) => [storedAsset, ...prev]);
+    pushToast('فایل رسانه با موفقیت در کتابخانه ذخیره شد.', 'success');
   };
 
-  const handleDeleteMediaAsset = (_id: string) => {
-    pushToast('حذف رسانه فقط از مدیریت اصلی انجام می‌شود.', 'warning');
+  const handleDeleteMediaAsset = (id: string) => {
+    setMediaAssets((prev) => prev.filter((item) => item.id !== id));
+    pushToast('فایل از فهرست رسانه حذف شد.', 'info');
   };
 
-  const handleSaveSiteSettings = (_nextSettings: SiteSettings) => {
-    pushToast('این بخش هنوز به تنظیمات سمت سرور متصل نشده است؛ تنظیمات تغییر نکرد.', 'warning');
+  const handleSaveSiteSettings = async (nextSettings: SiteSettings) => {
+    const result = await syncSettingsToApi(nextSettings, adminToken);
+    if (!result.ok) {
+      pushToast(result.error || 'ذخیره تنظیمات سایت انجام نشد.', 'warning');
+      return;
+    }
+    setSiteSettings(nextSettings);
+    pushToast('تنظیمات عمومی سایت در سرور کلودفلر ذخیره شد.', 'success');
   };
 
   const handleSubmitContact = async (payload: Omit<ContactSubmission, 'id' | 'createdAt'>) => {
@@ -566,6 +638,21 @@ export default function App() {
               pushBrowserPath('/');
             }}
             onSelectRelated={handleOpenArticle}
+            onReportCorrection={(art) => {
+              const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nabzesardo.ir';
+              const link = `${origin}/news/${encodeURIComponent(art.slug)}`;
+              setCorrectionPrefill({
+                subject: locale === 'fa' ? `درخواست اصلاح خبر: ${art.title.fa}` : `Correction request: ${art.title.en}`,
+                message:
+                  locale === 'fa'
+                    ? `لینک خبر: ${link}\n\nشرح خطا یا اصلاحیه موردنظر:\n`
+                    : `Article URL: ${link}\n\nRequested correction details:\n`,
+              });
+              setSelectedArticleId(null);
+              setActiveView('contact');
+              pushBrowserPath('/contact');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             onNotify={(msg) => pushToast(msg, 'success')}
           />
         ) : effectiveView === 'regions' ? (
@@ -598,10 +685,16 @@ export default function App() {
           />
         ) : effectiveView === 'about' ? (
           <AboutView locale={locale} settings={siteSettings} onNavigate={handleNavigate} />
+        ) : effectiveView === 'editorial-policy' ? (
+          <EditorialPolicyView locale={locale} onNavigate={handleNavigate} />
+        ) : effectiveView === 'follow-up' ? (
+          <FollowUpView followups={followups} locale={locale} onNavigate={handleNavigate} />
         ) : effectiveView === 'contact' ? (
           <ContactView
             locale={locale}
             settings={siteSettings}
+            prefilledSubject={correctionPrefill.subject}
+            prefilledMessage={correctionPrefill.message}
             onSubmitContact={handleSubmitContact}
           />
         ) : effectiveView === 'admin-login' ? (
@@ -652,6 +745,7 @@ export default function App() {
               <LiveHero
                 slides={heroSlides}
                 breakingArticles={breakingArticles}
+                breakingWire={breakingWire}
                 locale={locale}
                 bookmarkedIds={bookmarkedIds}
                 onOpenArticle={handleOpenArticle}
@@ -677,7 +771,7 @@ export default function App() {
               onToggleBookmark={handleToggleBookmark}
               onOpenArticle={handleOpenArticle}
               onGoToSubmit={() => handleNavigate('submit')}
-              mode={effectiveView}
+              mode={effectiveView === 'desks' || effectiveView === 'archive' ? effectiveView : 'home'}
             />
           </>
         )}
