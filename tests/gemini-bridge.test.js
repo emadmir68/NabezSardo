@@ -59,7 +59,7 @@ test('monitor quarantine v5 removes old forbidden articles and queue items witho
   assert.equal(db.articles[1].status,'draft');
   assert.equal(db.articles[2].status,'draft');
   assert.equal(db.newsMonitor.queue.find(q=>q.id==='q1').status,'rejected');
-  assert.equal(db.newsMonitor.nonNewsPolicyVersion,5);
+  assert.equal(db.newsMonitor.nonNewsPolicyVersion,6);
 });
 
 test('Gemini bridge cleans imported source attribution, promotes designations, and defaults unknown region to south-kerman',()=>{

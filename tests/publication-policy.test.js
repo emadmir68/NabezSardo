@@ -101,7 +101,7 @@ test('policy migration quarantines previously published funeral notices and adve
     }
   };
   monitor.ensure(db);
-  assert.equal(db.newsMonitor.nonNewsPolicyVersion,5);
+  assert.equal(db.newsMonitor.nonNewsPolicyVersion,6);
   assert.equal(db.newsMonitor.nonNewsPolicyQuarantinedCount,3);
   for(const id of ['legacy-funeral-1','legacy-funeral-2','legacy-ad-1']){
     const item=db.articles.find(a=>a.id===id);
@@ -129,7 +129,7 @@ test('v5 hard-exclusion migration quarantines new ad, poetry, PR and quoted fune
     telegramAutoPublishVersion:1,telegramCurrentBatchReleaseVersion:1,latestOnlyPolicyVersion:1,nonNewsPolicyVersion:4
   }};
   monitor.ensure(db);
-  assert.equal(db.newsMonitor.nonNewsPolicyVersion,5);
+  assert.equal(db.newsMonitor.nonNewsPolicyVersion,6);
   assert.equal(db.newsMonitor.nonNewsPolicyQuarantinedCount,6);
   for(const item of blocked){
     const quarantined=db.articles.find(a=>a.id===item.id);

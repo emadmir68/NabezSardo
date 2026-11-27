@@ -257,6 +257,7 @@ assert.strictEqual(monitor.blockedMonitoredContentReason({title:'اعلام مح
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'دکتر سینا سیدی پور',lead:'متخصص جراحی عمومی؛ تلفن رزرو نوبت: ۰۹۰۲۰۵۷۱۰۰۷؛ آدرس: جیرفت'}),'advertisement');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'کلوچه‌سرای محبوب؛ طعم اصیل شیرینی‌های سنتی جنوب کرمان',lead:'معرفی محصولات و طعم اصیل شیرینی‌های محلی'}),'advertisement');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'امشب تو را به خوبی نسبت به ماه کردم',lead:'شب و شعر امشب تو را به خوبی نسبت به ماه کردم'}),'non-news-poetry');
+assert.strictEqual(monitor.blockedMonitoredContentReason({title:'امشب تو را به خوبی نسبت به ماه کردم',lead:'شب و شعــــــر امشب تو را به خوبی نسبت به ماه کردم'}),'non-news-poetry');
 assert.strictEqual(monitor.blockedMonitoredContentReason({title:'سرکار خانم نادری عزیز',lead:'موفقیت درخشان دانش‌آموزان مجموعه شما را تبریک می‌گوییم'}),'non-news-message');
 
 const store=require('../lib/store');
