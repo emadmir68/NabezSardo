@@ -1962,7 +1962,15 @@ body {
   }
   .rb-header-side {
     flex: 0 0 auto;
-    gap: 8px;
+    gap: 6px;
+  }
+  .rb-language-switch button {
+    padding-inline: 7px;
+  }
+  .rb-header-side .rb-theme-toggle {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
   }
   .rb-header-side .rb-search {
     display: flex;
@@ -2003,6 +2011,7 @@ body {
     display: block;
     width: 100%;
     min-width: 0;
+    color: var(--rb-text);
   }
   .rb-hero-bottomline {
     flex-wrap: wrap;
