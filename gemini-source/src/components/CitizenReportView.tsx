@@ -137,7 +137,7 @@ export function CitizenReportView({
             <div className="pt-6 border-t border-[#F5F1E8]/15 space-y-4 text-xs sm:text-sm text-[#EDE6D8]/80">
               <div>
                 <p className="font-semibold text-[#E5C17B] mb-1">
-                  {locale === 'fa' ? '۰۱. محرمانگی هویت فرستنده' : '01. Source Confidentiality'}
+                  {locale === 'fa' ? 'محرمانگی هویت فرستنده' : 'Source Confidentiality'}
                 </p>
                 <p>
                   {locale === 'fa'
@@ -147,7 +147,7 @@ export function CitizenReportView({
               </div>
               <div>
                 <p className="font-semibold text-[#E5C17B] mb-1">
-                  {locale === 'fa' ? '۰۲. دقت در مکان و زمان' : '02. Place & Time Precision'}
+                  {locale === 'fa' ? 'دقت در مکان و زمان' : 'Place & Time Precision'}
                 </p>
                 <p>
                   {locale === 'fa'
@@ -157,7 +157,7 @@ export function CitizenReportView({
               </div>
               <div>
                 <p className="font-semibold text-[#E5C17B] mb-1">
-                  {locale === 'fa' ? '۰۳. منع آگهی، رپورتاژ و ترحیم' : '03. No Ads or Obituaries'}
+                  {locale === 'fa' ? 'منع آگهی، رپورتاژ و ترحیم' : 'No Ads or Obituaries'}
                 </p>
                 <p>
                   {locale === 'fa'

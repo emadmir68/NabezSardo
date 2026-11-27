@@ -515,9 +515,9 @@ function fastHtml(body,status=200){
    publishes visible quickly. */
 const FAST_ARTICLE_CACHE_TTL_MS=120000;
 function fastArticleCacheKey(pathname){
-  // pathname arrives decoded (Persian slugs); normalize to an encoded URL so
-  // the Cache API key is stable across requests.
-  return new Request("https://nabzesardo.ir"+encodeURI(pathname),{method:"GET"});
+  // Include deployed build version so updated templates and D1 cleanups never serve stale cached HTML.
+  const ver=encodeURIComponent(String(env.CLOUDFLARE_ASSET_VERSION||"v13")+"-v13");
+  return new Request("https://nabzesardo.ir"+encodeURI(pathname)+"?__cv="+ver,{method:"GET"});
 }
 async function fastArticleCacheGet(pathname){
   try{
@@ -1936,7 +1936,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v12");
+  const marker=await getState("live_nonnews_cleanup_v13");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1951,9 +1951,9 @@ async function ensureLiveNonNewsCleanup(){
     try{invalidateFastArticleCache();}catch{}
     publicDbCache={at:0,db:null};
   }
-  await putState("live_nonnews_cleanup_v12","1");
+  await putState("live_nonnews_cleanup_v13","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v12","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v13","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 
@@ -2219,10 +2219,9 @@ export default {
       // canonical metadata, sitemaps and social bot HTML from the Worker.
       const accept=String(request.headers.get('accept')||'');
       const ua=String(request.headers.get('user-agent')||'');
-      const geminiCategory=/^\/category\/(sarduiyeh|agriculture|social|culture|weather|incidents|opinion|politics|sports|short-news)$/.test(p);
-      const geminiLocal=/^\/local\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
-      const geminiRegion=/^\/region\/(sarduiyeh|jiroft|anbarabad|kahnuj|south-kerman)$/.test(p);
-      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/editorial-policy'||p==='/follow-up'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||geminiRegion||
+      const geminiCategory=/^\/category\/[a-z0-9-]+$/i.test(p);
+      const geminiLocal=/^\/(?:local|region)\/[a-z0-9-]+$/i.test(p);
+      const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/editorial-policy'||p==='/follow-up'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||
         p.startsWith('/news/')||p.startsWith('/n/')||geminiCategory||geminiLocal;
       if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!requiresSeoHtml(ua)){
         const htmlUrl=new URL('/gemini/',request.url);

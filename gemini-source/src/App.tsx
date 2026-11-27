@@ -110,15 +110,25 @@ function parseUrlPath(pathname: string, search: string): ParsedRoute {
   if (clean === '/archive' || clean === '/all-news') return { view: 'archive' };
   if (clean === '/desks' || clean === '/categories') return { view: 'desks', category: 'all' };
   if (clean.startsWith('/category/')) {
-    const rawCat = decodeURIComponent(clean.slice('/category/'.length)) as CategoryId;
-    if (CATEGORIES.some((c) => c.id === rawCat)) return { view: 'desks', category: rawCat };
-    return { view: 'not-found' };
+    const slug = decodeURIComponent(clean.slice('/category/'.length)).toLowerCase();
+    const aliasMap: Record<string, CategoryId> = {
+      sardouiyeh: 'sarduiyeh',
+      'city-village': 'politics',
+      economy: 'agriculture',
+      tourism: 'culture',
+      kerman: 'social',
+      roads: 'incidents',
+    };
+    const mapped = (aliasMap[slug] || slug) as CategoryId;
+    if (CATEGORIES.some((c) => c.id === mapped)) return { view: 'desks', category: mapped };
+    return { view: 'desks', category: 'all' };
   }
   if (clean === '/regions' || params.get('regions') === '1') return { view: 'regions', region: 'all' };
   if (clean.startsWith('/region/') || clean.startsWith('/local/')) {
-    const rawReg = decodeURIComponent(clean.slice(clean.startsWith('/local/') ? '/local/'.length : '/region/'.length)) as RegionId;
-    if (REGIONS.some((r) => r.id === rawReg)) return { view: 'regions', region: rawReg };
-    return { view: 'not-found' };
+    const slug = decodeURIComponent(clean.slice(clean.startsWith('/local/') ? '/local/'.length : '/region/'.length)).toLowerCase();
+    const mappedReg = (slug === 'sardouiyeh' ? 'sarduiyeh' : slug) as RegionId;
+    if (REGIONS.some((r) => r.id === mappedReg)) return { view: 'regions', region: mappedReg };
+    return { view: 'regions', region: 'all' };
   }
   if (clean === '/search') {
     return { view: 'search', searchQuery: params.get('q') || '' };

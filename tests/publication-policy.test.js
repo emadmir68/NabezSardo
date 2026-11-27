@@ -250,4 +250,12 @@ test('smart taxonomy, channel cleanup, queue redaction, and admin monitor UI sta
   assert.match(adminHtml,/دارای خطا/);
   assert.match(adminHtml,/HTTP 503/);
   assert.match(adminHtml,/دلایل رد اخبار و خطاهای پردازش/);
+
+  // Word-boundary bombardment ("بمباران") vs rain ("باران"), plus duplicate paragraph cleanup
+  const bombingWeather={id:'bombing-1',slug:'bombing-1',title:'از #ایران می‌آیم...',lead:'گزارش درباره بمباران مدرسه در ایران.',body:'گزارش درباره بمباران مدرسه در ایران.\n\nگزارش درباره بمباران مدرسه در ایران.\n\nجزئیات تازه از این رویداد منتشر شد.',categoryId:'weather',status:'published'};
+  const db2={categories:[{id:'weather',name:'آب‌وهوا'},{id:'incidents',name:'حوادث'},{id:'social',name:'اجتماعی'}],articles:[bombingWeather]};
+  store.normalizeEditorialDb(db2);
+  assert.notEqual(db2.articles[0].categoryId,'weather');
+  const mappedBomb=geminiBridge.mapArticle({...db2.articles[0],publishedAt:new Date().toISOString()});
+  assert.equal(mappedBomb.body.fa.length,2);
 });
