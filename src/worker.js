@@ -468,7 +468,7 @@ function securityHeaders(){
     "referrer-policy":"strict-origin-when-cross-origin",
     "strict-transport-security":"max-age=31536000; includeSubDomains",
     "permissions-policy":"camera=(), microphone=(), geolocation=()",
-    "content-security-policy":"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    "content-security-policy":"default-src 'self'; img-src 'self' data: https:; media-src 'self' https:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
   };
 }
 let publicRateSchemaReady=false;
@@ -1936,7 +1936,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v11");
+  const marker=await getState("live_nonnews_cleanup_v12");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1951,9 +1951,9 @@ async function ensureLiveNonNewsCleanup(){
     try{invalidateFastArticleCache();}catch{}
     publicDbCache={at:0,db:null};
   }
-  await putState("live_nonnews_cleanup_v11","1");
+  await putState("live_nonnews_cleanup_v12","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v11","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v12","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 

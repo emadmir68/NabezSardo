@@ -15,7 +15,6 @@ import {
 import type { Article, Locale } from '../types/news';
 import {
   cleanEditorialDeck,
-  formatEditorialIndex,
   formatNumber,
   formatShortDate,
   getCategoryLabel,
@@ -542,8 +541,8 @@ export function ArticleReader({
                           />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-xl shrink-0 bg-[#EFE7D8] dark:bg-[#171E30] border border-[#D9CEBA] dark:border-[#252E42] flex items-center justify-center font-mono-tabular text-sm font-extrabold text-[#8F6321] dark:text-[#ECC983]">
-                          {formatEditorialIndex(idx, locale)}
+                        <div className="w-11 h-11 rounded-xl shrink-0 bg-[#EFE7D8] dark:bg-[#171E30] border border-[#D9CEBA] dark:border-[#252E42] flex items-center justify-center" aria-hidden="true">
+                          <span className="w-2.5 h-2.5 rounded-full bg-[#8F6321] dark:bg-[#ECC983]" />
                         </div>
                       )}
 
