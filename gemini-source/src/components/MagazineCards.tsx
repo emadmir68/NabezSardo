@@ -235,9 +235,9 @@ function MetaFooter({
 }
 
 /**
- * 1. Flagship Lead Card (Designed from scratch):
- *    Split editorial sheet on desktop; adapts cleanly between genuine photography
- *    and a monumental topographic typographic plate when no photo exists.
+ * 1. Flagship Lead Card (7-col primary broadsheet anchor):
+ *    Spans 7 of 12 grid columns beside the 5-col secondary stack,
+ *    adapting between a crisp 16:10 photographic spread and a luxury topographic plate.
  */
 export function MagazineLeadCard(props: MagazineCardProps) {
   const { article, locale, onToggleBookmark, index = 0 } = props;
@@ -245,144 +245,137 @@ export function MagazineLeadCard(props: MagazineCardProps) {
   const isBookmarked = resolveBookmarked(props);
   const hasPhoto = hasRealEditorialPhoto(article);
   const desk = deskFor(article.category);
-  const deck = cleanEditorialDeck(article.title[locale], article.deck[locale], 230);
+  const deck = cleanEditorialDeck(article.title[locale], article.deck[locale], hasPhoto ? 230 : 320);
   const ReadArrow = locale === 'fa' ? ArrowLeft : ArrowRight;
 
   return (
     <article
       onClick={() => openArticle(article)}
-      className="group magazine-plate rounded-[22px] overflow-hidden cursor-pointer bg-[#FFFDF8] dark:bg-[#0D111C]"
+      className="lg:col-span-7 group magazine-plate rounded-[22px] overflow-hidden cursor-pointer flex flex-col justify-between h-full bg-[#FFFDF8] dark:bg-[#0D111C]"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
-        {/* Visual or Topographic Editorial Plate Column */}
-        {hasPhoto ? (
-          <div className="lg:col-span-7 relative min-h-[250px] sm:min-h-[340px] lg:min-h-[430px] overflow-hidden bg-[#0E131F]">
-            <EditorialImage
-              src={article.coverImage}
-              alt={article.title[locale]}
-              className="magazine-media-img w-full h-full object-cover"
-            />
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  'linear-gradient(180deg, rgba(8,10,16,0.12) 0%, rgba(8,10,16,0.04) 55%, rgba(8,10,16,0.48) 100%)',
-              }}
-            />
-            {article.videoUrl && (
-              <span className="absolute top-4 end-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 text-[#F5F1E8] text-xs font-bold border border-white/20 backdrop-blur-md">
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>{locale === 'fa' ? 'گزارش ویدئویی' : 'Video'}</span>
+      {hasPhoto ? (
+        <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-[#0E131F] shrink-0">
+          <EditorialImage
+            src={article.coverImage}
+            alt={article.title[locale]}
+            className="magazine-media-img w-full h-full object-cover"
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(8,10,16,0.1) 0%, rgba(8,10,16,0.03) 55%, rgba(8,10,16,0.48) 100%)',
+            }}
+          />
+          {article.videoUrl && (
+            <span className="absolute top-4 end-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 text-[#F5F1E8] text-xs font-bold border border-white/20 backdrop-blur-md">
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>{locale === 'fa' ? 'گزارش ویدئویی' : 'Video'}</span>
+            </span>
+          )}
+          <span className="font-mono-tabular absolute bottom-4 start-4 px-3 py-1 rounded-full bg-black/65 text-[#F1D79A] text-xs font-bold border border-[#D4A85B]/35 backdrop-blur-md">
+            {formatEditorialIndex(index, locale)} / LEAD
+          </span>
+        </div>
+      ) : (
+        <div className="relative px-6 sm:px-8 pt-6 pb-5 bg-gradient-to-br from-[#EFE6D6] via-[#F7F1E6] to-[#E6DAC4] dark:from-[#121828] dark:via-[#0D121E] dark:to-[#182034] border-b border-[#D9CEBA] dark:border-[#252E42] overflow-hidden shrink-0">
+          <div
+            className="absolute inset-x-0 top-0 h-1"
+            style={{ backgroundColor: desk.accentHex }}
+          />
+          <div className="absolute inset-0 pointer-events-none">
+            <TopographicPlateWatermark color={desk.accentHex} />
+          </div>
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono-tabular px-2.5 py-1 rounded-full bg-[#161310]/8 dark:bg-[#F5F1E8]/10 text-xs font-extrabold text-[#8F6321] dark:text-[#ECC983]">
+                {formatEditorialIndex(index, locale)} / LEAD
               </span>
-            )}
-            <span className="font-mono-tabular absolute bottom-4 start-4 px-3 py-1 rounded-full bg-black/65 text-[#F1D79A] text-xs font-bold border border-[#D4A85B]/35 backdrop-blur-md">
-              {formatEditorialIndex(index, locale)} / LEAD
+              <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B5246] dark:text-[#A3ADBF]">
+                {locale === 'fa' ? 'پرونده اصلی تحریریه' : 'EDITORIAL LEAD'}
+              </span>
+            </div>
+            <span className="hidden sm:inline text-[11px] font-mono-tabular text-[#5B5246]/80 dark:text-[#A3ADBF]/80">
+              28° 40′ N · 57° 44′ E
             </span>
           </div>
-        ) : (
-          <div className="lg:col-span-5 relative min-h-[200px] lg:min-h-[410px] p-7 sm:p-9 flex flex-col justify-between bg-gradient-to-br from-[#EFE6D6] via-[#F7F1E6] to-[#E6DAC4] dark:from-[#121828] dark:via-[#0D121E] dark:to-[#182034] border-b lg:border-b-0 lg:border-e border-[#D9CEBA] dark:border-[#252E42] overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none">
-              <TopographicPlateWatermark color={desk.accentHex} />
-            </div>
-            <div className="relative flex items-center justify-between">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-[#8F6321] dark:text-[#ECC983]">
-                {locale === 'fa' ? 'پرونده اصلی تحریریه' : 'LEAD DISPATCH'}
-              </span>
-              <span className="font-mono-tabular text-3xl sm:text-4xl font-black text-[#161310]/15 dark:text-[#F5F1E8]/15">
-                {formatEditorialIndex(index, locale)}
-              </span>
-            </div>
-            <div className="relative space-y-3 my-auto py-4">
-              {article.kicker && (
-                <p className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
-                  {article.kicker}
-                </p>
-              )}
-              <div className="w-12 h-0.5 rounded-full" style={{ backgroundColor: desk.accentHex }} />
-              <p className="text-xs sm:text-sm text-[#5B5246] dark:text-[#A3ADBF] leading-relaxed">
-                {article.author[locale]} · {article.locationLabel || getRegionLabel(article.region, locale)}
-              </p>
-            </div>
-            <div className="relative flex items-center justify-between text-[11px] font-mono-tabular text-[#5B5246] dark:text-[#A3ADBF]">
-              <span>SOUTH KERMAN DESK</span>
-              <span>28° 40′ N · 57° 44′ E</span>
-            </div>
-          </div>
-        )}
+        </div>
+      )}
 
-        {/* Editorial Typography & Actions Column */}
-        <div
-          className={`${
-            hasPhoto ? 'lg:col-span-5' : 'lg:col-span-7'
-          } p-6 sm:p-8 lg:p-10 flex flex-col justify-between gap-6`}
-        >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <DeskBadge article={article} locale={locale} />
-              {onToggleBookmark && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleBookmark(article.id);
-                  }}
-                  className="magazine-circle-action shrink-0"
-                  aria-label={isBookmarked ? 'Remove bookmark' : 'Save story'}
-                >
-                  {isBookmarked ? (
-                    <BookmarkCheck className="w-4.5 h-4.5 text-[#8F6321] dark:text-[#ECC983]" />
-                  ) : (
-                    <Bookmark className="w-4.5 h-4.5" />
-                  )}
-                </button>
-              )}
-            </div>
-
-            {hasPhoto && article.kicker && (
-              <p className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
-                {article.kicker}
-              </p>
+      {/* Editorial Typography & Actions */}
+      <div className="p-6 sm:p-8 lg:p-9 flex flex-col justify-between flex-1 gap-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <DeskBadge article={article} locale={locale} />
+            {onToggleBookmark && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleBookmark(article.id);
+                }}
+                className="magazine-circle-action shrink-0"
+                aria-label={isBookmarked ? 'Remove bookmark' : 'Save story'}
+              >
+                {isBookmarked ? (
+                  <BookmarkCheck className="w-4.5 h-4.5 text-[#8F6321] dark:text-[#ECC983]" />
+                ) : (
+                  <Bookmark className="w-4.5 h-4.5" />
+                )}
+              </button>
             )}
+          </div>
 
-            <h3
-              className={`font-editorial-display text-2xl sm:text-3xl lg:text-[2.15rem] font-extrabold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors ${
-                locale === 'fa' ? 'leading-[1.42]' : 'leading-[1.15]'
+          {article.kicker && (
+            <p className="text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
+              {article.kicker}
+            </p>
+          )}
+
+          <h3
+            className={`font-editorial-display font-extrabold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors ${
+              hasPhoto
+                ? 'text-xl sm:text-2xl lg:text-[1.85rem]'
+                : 'text-2xl sm:text-3xl lg:text-[2.15rem]'
+            } ${locale === 'fa' ? 'leading-[1.45]' : 'leading-[1.18]'}`}
+          >
+            {article.title[locale]}
+          </h3>
+
+          {deck && (
+            <p
+              className={`text-sm sm:text-[15.5px] text-[#5B5246] dark:text-[#A3ADBF] leading-[1.95] ${
+                hasPhoto ? 'line-clamp-3' : 'line-clamp-4'
               }`}
             >
-              {article.title[locale]}
-            </h3>
+              {deck}
+            </p>
+          )}
+        </div>
 
-            {deck && (
-              <p className="text-sm sm:text-[15.5px] text-[#5B5246] dark:text-[#A3ADBF] leading-[1.9] line-clamp-3">
-                {deck}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <div className="magazine-hairline" />
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5B5246] dark:text-[#A3ADBF]">
-                <span className="font-semibold text-[#161310] dark:text-[#E7E0D3]">
-                  {article.author[locale]}
-                </span>
-                <span aria-hidden="true" className="opacity-35">·</span>
-                <time dateTime={article.publishedAt}>
-                  {formatRelativeTime(article.publishedAt, locale)}
-                </time>
-                <span aria-hidden="true" className="opacity-35">·</span>
-                <span className="tabular-nums">
-                  {locale === 'fa'
-                    ? `${formatNumber(article.readTimeMin, 'fa')} دقیقه مطالعه`
-                    : `${article.readTimeMin} min read`}
-                </span>
-              </div>
-
-              <span className="btn-luxury-ink !text-xs sm:!text-sm !px-5 !min-h-[44px]">
-                <span>{locale === 'fa' ? 'خواندن گزارش کامل' : 'Read full dispatch'}</span>
-                <ReadArrow className="w-4 h-4" />
+        <div className="space-y-4 mt-auto">
+          <div className="magazine-hairline" />
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#5B5246] dark:text-[#A3ADBF]">
+              <span className="font-semibold text-[#161310] dark:text-[#E7E0D3]">
+                {article.author[locale]}
+              </span>
+              <span aria-hidden="true" className="opacity-35">·</span>
+              <time dateTime={article.publishedAt}>
+                {formatRelativeTime(article.publishedAt, locale)}
+              </time>
+              <span aria-hidden="true" className="opacity-35">·</span>
+              <span className="tabular-nums">
+                {locale === 'fa'
+                  ? `${formatNumber(article.readTimeMin, 'fa')} دقیقه مطالعه`
+                  : `${article.readTimeMin} min read`}
               </span>
             </div>
+
+            <span className="btn-luxury-ink !text-xs sm:!text-sm !px-5 !min-h-[44px]">
+              <span>{locale === 'fa' ? 'خواندن گزارش کامل' : 'Read full dispatch'}</span>
+              <ReadArrow className="w-4 h-4" />
+            </span>
           </div>
         </div>
       </div>
