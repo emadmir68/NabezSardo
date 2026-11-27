@@ -724,3 +724,83 @@ export function MagazineIndexRowCard(props: MagazineCardProps) {
     </article>
   );
 }
+
+/**
+ * 6. Broadsheet Hairline Ledger Row: Print-inspired minimal row with thin hairline rules
+ *    for pacing long feeds without repeating heavy boxed cards.
+ */
+export function MagazineHairlineRow(props: MagazineCardProps) {
+  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const openArticle = resolveOpen(props);
+  const isBookmarked = resolveBookmarked(props);
+  const desk = deskFor(article.category);
+  const deck = cleanEditorialDeck(article.title[locale], article.deck[locale], 125);
+  const ReadArrow = locale === 'fa' ? ArrowLeft : ArrowRight;
+
+  return (
+    <article
+      onClick={() => openArticle(article)}
+      className="group broadsheet-row py-4 sm:py-5 px-2 sm:px-3 cursor-pointer flex items-start justify-between gap-4"
+    >
+      <div className="flex items-start gap-3.5 sm:gap-5 min-w-0 flex-1">
+        <span
+          className="font-mono-tabular text-sm sm:text-base font-extrabold pt-1 shrink-0 w-7"
+          style={{ color: desk.accentHex }}
+        >
+          {formatEditorialIndex(index, locale)}
+        </span>
+
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5B5246] dark:text-[#A3ADBF]">
+            <span className={`font-bold ${desk.accentTextClass}`}>
+              {getCategoryLabel(article.category, locale)}
+            </span>
+            <span aria-hidden="true" className="opacity-35">·</span>
+            <span>{article.locationLabel || getRegionLabel(article.region, locale)}</span>
+            <span aria-hidden="true" className="opacity-35">·</span>
+            <time dateTime={article.publishedAt}>
+              {formatRelativeTime(article.publishedAt, locale)}
+            </time>
+          </div>
+
+          <h3
+            className={`font-editorial-display text-base sm:text-[18px] font-bold text-[#161310] dark:text-[#F5F1E8] group-hover:text-[#8F6321] dark:group-hover:text-[#ECC983] transition-colors line-clamp-2 ${
+              locale === 'fa' ? 'leading-[1.52]' : 'leading-[1.28]'
+            }`}
+          >
+            {article.title[locale]}
+          </h3>
+
+          {deck && (
+            <p className="text-xs sm:text-[13px] text-[#5B5246] dark:text-[#A3ADBF] line-clamp-1 leading-relaxed">
+              {deck}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 shrink-0 pt-1">
+        {onToggleBookmark && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBookmark(article.id);
+            }}
+            className="magazine-circle-action !w-9 !h-9 !min-w-[36px] !min-h-[36px]"
+            aria-label={isBookmarked ? 'Remove bookmark' : 'Save story'}
+          >
+            {isBookmarked ? (
+              <BookmarkCheck className="w-4 h-4 text-[#8F6321] dark:text-[#ECC983]" />
+            ) : (
+              <Bookmark className="w-4 h-4" />
+            )}
+          </button>
+        )}
+        <span className="w-8 h-8 rounded-full inline-flex items-center justify-center text-[#8F6321] dark:text-[#ECC983] opacity-70 group-hover:opacity-100 transition-opacity">
+          <ReadArrow className="w-4 h-4" />
+        </span>
+      </div>
+    </article>
+  );
+}

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Bookmark, Globe, Menu, Moon, PenSquare, Search, Sun, X } from 'lucide-react';
 import type { ActiveView, Locale, ThemeMode } from '../types/news';
 import { formatJalaliDate, formatLiveClock, formatNumber } from '../utils/formatters';
+import { BrandMark } from './BrandMark';
 
 interface TopBarProps {
   activeView: ActiveView;
@@ -166,19 +167,13 @@ export function TopBar({
             scrolled ? 'h-[62px] sm:h-[68px]' : 'h-[66px] sm:h-[74px]'
           }`}
         >
-          {/* Zone 1: Editorial Masthead Wordmark */}
+          {/* Zone 1: Custom Editorial Masthead Wordmark & Monogram */}
           <button
             type="button"
             onClick={() => handleNav('home')}
-            className="group inline-flex items-center gap-2.5 whitespace-nowrap shrink-0 cursor-pointer"
+            className="group inline-flex items-center whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <span
-              aria-hidden="true"
-              className="w-1.5 h-6 sm:h-7 rounded-full bg-gradient-to-b from-[#E8C680] via-[#C69546] to-[#9A6B27] opacity-90 group-hover:scale-y-110 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-            />
-            <span className="font-editorial-display text-[23px] sm:text-[30px] font-bold tracking-tight text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors leading-none">
-              {locale === 'fa' ? 'نبض ساردو' : 'Nabz Sardo'}
-            </span>
+            <BrandMark locale={locale} size="md" />
           </button>
 
           {/* Zone 2: 5 Clean Single-Line Nav Links */}

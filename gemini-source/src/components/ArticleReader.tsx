@@ -328,13 +328,44 @@ export function ArticleReader({
         }`}
       >
         <div className="lg:col-span-8 space-y-10">
+          {/* Executive Brief Callout when deck is distinct from body lead */}
+          {(() => {
+            const brief = cleanEditorialDeck(article.title[locale], article.deck[locale], 260);
+            const firstPara = (article.body[locale][0] || '').trim();
+            if (!brief || firstPara.startsWith(brief.slice(0, 28))) return null;
+            return (
+              <div className="max-w-[68ch] rounded-2xl border-s-2 border-[#8F6321] dark:border-[#ECC983] bg-[#EFE7D8]/55 dark:bg-[#111623] px-5 sm:px-6 py-4 sm:py-5">
+                <p className="text-[11px] font-bold tracking-wider uppercase text-[#8F6321] dark:text-[#ECC983] mb-1.5">
+                  {locale === 'fa' ? 'خلاصه روایت در یک نگاه' : 'AT A GLANCE'}
+                </p>
+                <p className="text-sm sm:text-[15.5px] font-medium text-[#161310] dark:text-[#F5F1E8] leading-[1.85]">
+                  {brief}
+                </p>
+              </div>
+            );
+          })()}
+
           <div className={`max-w-[68ch] space-y-6 text-[#161310] dark:text-[#EAE5DC] ${proseSizeClass}`}>
             {article.body[locale].map((paragraph, index) => (
               <div key={index} className="space-y-6">
-                <p>{paragraph}</p>
+                <p
+                  className={
+                    index === 0
+                      ? 'first-line:font-semibold first-line:text-[#161310] dark:first-line:text-[#F6F2EA]'
+                      : undefined
+                  }
+                >
+                  {paragraph}
+                </p>
 
                 {index === 0 && article.pullQuote && (
-                  <blockquote className="my-8 luxury-panel rounded-2xl p-6 sm:p-8 text-center">
+                  <blockquote className="my-8 luxury-panel rounded-2xl p-6 sm:p-8 text-center relative">
+                    <span
+                      aria-hidden="true"
+                      className="block font-editorial-display text-4xl text-[#8F6321]/40 dark:text-[#ECC983]/45 leading-none mb-2"
+                    >
+                      «
+                    </span>
                     <div className="w-12 h-[1px] mx-auto mb-5 bg-[#8F6321] dark:bg-[#ECC983]" />
                     <p className="font-editorial-display text-xl sm:text-2xl italic font-medium text-[#161310] dark:text-[#F5F1E8] leading-relaxed">
                       {article.pullQuote[locale]}
@@ -418,7 +449,7 @@ export function ArticleReader({
           </div>
         </div>
 
-        <aside className="lg:col-span-4 space-y-6">
+        <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
           <div className="luxury-panel rounded-2xl overflow-hidden">
             <div className="h-[2px] w-full gold-hairline" />
             <div className="p-6">

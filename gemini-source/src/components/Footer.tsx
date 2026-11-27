@@ -1,5 +1,6 @@
 import { CATEGORIES, REGIONS } from '../data/initialData';
 import type { ActiveView, CategoryId, Locale, RegionId } from '../types/news';
+import { BrandMark } from './BrandMark';
 
 interface FooterProps {
   locale: Locale;
@@ -18,10 +19,10 @@ export function Footer({
     <footer className="w-full border-t-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/18 bg-[#EAE1D2]/75 dark:bg-[#05070B] text-[#5A5247] dark:text-[#A1AAB9]">
       <div className="h-[0.5px] w-full gold-hairline opacity-70" />
       <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-16 grid grid-cols-1 md:grid-cols-12 gap-10">
-        <div className="md:col-span-5 space-y-4">
-          <p className="font-editorial-display text-3xl font-bold text-[#141210] dark:text-[#F6F2EA]">
-            {locale === 'fa' ? 'نبض ساردو' : 'Nabz Sardo'}
-          </p>
+        <div className="md:col-span-5 space-y-5">
+          <div>
+            <BrandMark locale={locale} size="lg" />
+          </div>
           <p className="text-sm leading-[1.9] max-w-md">
             {locale === 'fa'
               ? 'رسانه مستقل خبری و تحلیلی ویژه پوشش روایت‌های میدانی، اقتصاد، کشاورزی، فرهنگ، اقلیم و مسائل اجتماعی ساردوئیه، جیرفت و جنوب استان کرمان.'

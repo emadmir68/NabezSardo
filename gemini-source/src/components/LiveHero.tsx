@@ -18,7 +18,6 @@ import {
   formatShortDate,
   getCategoryLabel,
   getRegionLabel,
-  hasRealEditorialPhoto,
   resolveArticleCoverImage,
 } from '../utils/formatters';
 import { EditorialImage } from './EditorialImage';
@@ -117,14 +116,14 @@ export function LiveHero({
   return (
     <section
       aria-label={locale === 'fa' ? 'هیرو زنده اخبار برگزیده' : 'Live featured stories hero'}
-      className="relative w-full bg-[#06080D] text-[#F6F2EA] overflow-hidden border-b-[0.75px] border-[#D4A85B]/25"
+      className="relative w-full bg-[#06080D] text-[#F6F2EA] overflow-hidden border-b border-[#D4A85B]/25"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative min-h-[60svh] sm:min-h-[66svh] lg:min-h-[72vh] flex flex-col justify-between">
-        {/* Full-Bleed Animated Editorial Cinema Backdrop */}
+      <div className="relative min-h-[64svh] sm:min-h-[70svh] lg:min-h-[76vh] flex flex-col justify-between">
+        {/* Widescreen Editorial Cinema Backdrop */}
         <div className="absolute inset-0 overflow-hidden">
           {safeSlides.map((slide, idx) => {
             const isActive = idx === currentIndex;
@@ -149,36 +148,28 @@ export function LiveHero({
             );
           })}
 
-          {/* Multi-layer Cinema Scrim for Razor-Sharp Persian/English Contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#06080D] via-[#06080D]/68 to-[#06080D]/32 z-10" />
+          {/* Calibrated Cinema Scrim for High-Contrast Editorial Readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#06080D] via-[#06080D]/62 to-[#06080D]/28 z-10" />
           <div
             className={`absolute inset-0 z-10 ${
               locale === 'fa'
-                ? 'bg-gradient-to-l from-[#06080D]/88 via-[#06080D]/42 to-[#06080D]/35'
-                : 'bg-gradient-to-r from-[#06080D]/88 via-[#06080D]/42 to-[#06080D]/35'
+                ? 'bg-gradient-to-l from-[#06080D]/86 via-[#06080D]/38 to-transparent'
+                : 'bg-gradient-to-r from-[#06080D]/86 via-[#06080D]/38 to-transparent'
             }`}
           />
-          <div
-            className="absolute inset-0 z-10 opacity-50 pointer-events-none"
-            style={{
-              background:
-                'radial-gradient(circle at 20% 18%, rgba(212, 168, 91, 0.22), transparent 46%)',
-            }}
-          />
-          <div className="absolute inset-0 editorial-grain opacity-30 z-10 pointer-events-none" />
+          <div className="absolute inset-0 editorial-grain opacity-25 z-10 pointer-events-none" />
         </div>
 
-        {/* Top Editorial Masthead Bar inside Hero */}
-        <div className="relative z-20 max-w-[1380px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-9 flex items-center justify-between gap-3">
+        {/* Top Editorial Masthead Marker & Playback Controls */}
+        <div className="relative z-20 max-w-[1380px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3.5 text-xs sm:text-[13px] text-[#EDE6D8]/92 min-w-0">
-            <span className="font-mono-tabular text-[#F0D496] font-semibold tracking-wider shrink-0">
+            <span className="font-mono-tabular px-2.5 py-1 rounded-full bg-black/45 border border-[#D4A85B]/30 text-[#F1D79A] font-semibold tracking-wider shrink-0 backdrop-blur-md">
               {formatEditorialIndex(currentIndex, locale)} / {formatEditorialIndex(safeSlides.length - 1, locale)}
             </span>
-            <span aria-hidden="true" className="w-5 sm:w-8 h-[0.75px] bg-[#E8C680]/60 shrink-0" />
-            <span className="font-bold text-[#F0D496] truncate">
+            <span className="font-bold text-[#F1D79A] truncate">
               {getCategoryLabel(activeSlide.category, locale)}
             </span>
-            <span aria-hidden="true" className="opacity-40 shrink-0">·</span>
+            <span aria-hidden="true" className="opacity-45 shrink-0">·</span>
             <span className="truncate text-[#EDE6D8]/85">
               {getRegionLabel(activeSlide.region, locale)}
             </span>
@@ -208,11 +199,7 @@ export function LiveHero({
                 className="btn-icon-luxury !w-11 !h-11 !bg-[#080B12]/65 !border-[#F5F1E8]/22 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
                 aria-label={locale === 'fa' ? 'خبر ویژه قبلی' : 'Previous featured story'}
               >
-                {locale === 'fa' ? (
-                  <ChevronRight className="w-4 h-4" />
-                ) : (
-                  <ChevronLeft className="w-4 h-4" />
-                )}
+                {locale === 'fa' ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
               </button>
               <button
                 type="button"
@@ -220,184 +207,97 @@ export function LiveHero({
                 className="btn-icon-luxury !w-11 !h-11 !bg-[#080B12]/65 !border-[#F5F1E8]/22 !text-[#F6F2EA] hover:!border-[#E8C680] hover:!text-[#F0D496]"
                 aria-label={locale === 'fa' ? 'خبر ویژه بعدی' : 'Next featured story'}
               >
-                {locale === 'fa' ? (
-                  <ChevronLeft className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
+                {locale === 'fa' ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
             </div>
           )}
         </div>
 
-        {/* Asymmetric Luxury Magazine Cover Stage */}
-        <div className="relative z-20 max-w-[1380px] w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 lg:py-14 my-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-end">
-            {/* Primary Cover Headline & Sculpted CTA Stage (8 cols) */}
-            <div className="lg:col-span-8">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeSlide.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -12 }}
-                  transition={{ duration: 0.44, ease: [0.16, 1, 0.3, 1] }}
-                  className="max-w-3xl"
-                >
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-[13px] text-[#EDE6D8]/85 mb-4 sm:mb-5">
-                    <span className="font-semibold text-[#FDFBF7]">{activeSlide.author[locale]}</span>
-                    <span aria-hidden="true" className="text-[#E8C680]/60">·</span>
-                    <span>{formatShortDate(activeSlide.publishedAt, locale)}</span>
-                    <span aria-hidden="true" className="text-[#E8C680]/60">·</span>
-                    <span className="tabular-nums">
-                      {locale === 'fa'
-                        ? `${formatNumber(activeSlide.readTimeMin, locale)} دقیقه مطالعه`
-                        : `${activeSlide.readTimeMin} min read`}
-                    </span>
-                  </div>
-
-                  <h1
-                    className={`font-editorial-display font-bold text-[#FDFBF7] mb-4 sm:mb-6 drop-shadow-[0_6px_28px_rgba(0,0,0,0.6)] line-clamp-3 ${
-                      locale === 'fa' ? 'leading-[1.38] sm:leading-[1.34]' : 'leading-[1.12]'
-                    }`}
-                    style={{
-                      fontSize:
-                        locale === 'fa'
-                          ? 'clamp(1.68rem, 3.8vw, 3.35rem)'
-                          : 'clamp(2.1rem, 4.8vw, 4.1rem)',
-                    }}
-                  >
-                    {activeSlide.title[locale]}
-                  </h1>
-
-                  {cleanEditorialDeck(activeSlide.title[locale], activeSlide.deck[locale], 195) && (
-                    <p className="text-[14.5px] sm:text-[17px] text-[#EDE6D8]/90 leading-[1.85] max-w-2xl mb-7 sm:mb-9 line-clamp-3">
-                      {cleanEditorialDeck(activeSlide.title[locale], activeSlide.deck[locale], 195)}
-                    </p>
-                  )}
-
-                  {/* Sculpted Luxury CTA Pair — Full Ergonomics on Mobile & Desktop */}
-                  <div className="flex flex-col xs:flex-row sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                    <button
-                      type="button"
-                      onClick={() => onOpenArticle(activeSlide)}
-                      className="btn-luxury-gold text-[13.5px] sm:text-sm !px-7 !py-3.5"
-                    >
-                      <span>{locale === 'fa' ? 'مطالعه روایت کامل' : 'Read Cover Story'}</span>
-                      {locale === 'fa' ? (
-                        <ArrowLeft className="w-4 h-4 shrink-0" />
-                      ) : (
-                        <ArrowRight className="w-4 h-4 shrink-0" />
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => onToggleBookmark(activeSlide.id)}
-                      className="btn-luxury-glass text-[13.5px] sm:text-sm !px-5 !py-3.5"
-                    >
-                      {isBookmarked ? (
-                        <BookmarkCheck className="w-4 h-4 text-[#F0D496]" />
-                      ) : (
-                        <Bookmark className="w-4 h-4" />
-                      )}
-                      <span>
-                        {isBookmarked
-                          ? locale === 'fa'
-                            ? 'ذخیره در فهرست'
-                            : 'Saved'
-                          : locale === 'fa'
-                            ? 'نشان‌کردن خبر'
-                            : 'Save Story'}
-                      </span>
-                    </button>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Desktop Floating Frosted-Glass Edition Cover Index (4 cols) */}
-            {safeSlides.length > 1 && (
-              <div className="hidden lg:block lg:col-span-4">
-                <div className="rounded-2xl bg-[#090D16]/68 backdrop-blur-2xl border-[0.75px] border-[#F5F1E8]/14 shadow-[0_32px_70px_-28px_rgba(0,0,0,0.88)] overflow-hidden">
-                  <div className="px-5 py-3.5 border-b-[0.75px] border-[#F5F1E8]/10 flex items-center justify-between">
-                    <span className="text-[11px] font-bold tracking-[0.06em] text-[#F0D496]">
-                      {locale === 'fa' ? 'فهرست جلد شماره زنده' : 'LIVE COVER EDITION'}
-                    </span>
-                    <span className="font-mono-tabular text-[11px] text-[#A1AAB9]">
-                      {formatEditorialIndex(currentIndex, locale)} / {formatEditorialIndex(safeSlides.length - 1, locale)}
-                    </span>
-                  </div>
-
-                  <div className="divide-y divide-[#F5F1E8]/8">
-                    {safeSlides.slice(0, 4).map((slide, idx) => {
-                      const isSelected = idx === currentIndex;
-                      return (
-                        <button
-                          key={slide.id}
-                          type="button"
-                          onClick={() => goToSlide(idx)}
-                          className={`group relative w-full text-start p-4 flex items-center gap-3.5 transition-all duration-200 cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#171F32]/75'
-                              : 'hover:bg-[#131929]/55'
-                          }`}
-                        >
-                          {hasRealEditorialPhoto(slide) ? (
-                            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/16">
-                              <EditorialImage
-                                src={slide.coverImage}
-                                alt={slide.title[locale]}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-14 h-14 rounded-xl shrink-0 border-[0.75px] border-[#D4A85B]/28 bg-[#121828] flex items-center justify-center font-mono-tabular text-sm font-bold text-[#F0D496]">
-                              {formatEditorialIndex(idx, locale)}
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 text-[11px] mb-1">
-                              <span className="font-mono-tabular font-semibold text-[#F0D496]">
-                                {formatEditorialIndex(idx, locale)}
-                              </span>
-                              <span aria-hidden="true" className="opacity-35">·</span>
-                              <span className="text-[#EDE6D8]/70 truncate">
-                                {getCategoryLabel(slide.category, locale)}
-                              </span>
-                            </div>
-                            <p
-                              className={`font-editorial-display text-[14.5px] font-bold line-clamp-2 leading-[1.45] transition-colors ${
-                                isSelected
-                                  ? 'text-[#FDFBF7]'
-                                  : 'text-[#EDE6D8]/78 group-hover:text-[#F0D496]'
-                              }`}
-                            >
-                              {slide.title[locale]}
-                            </p>
-                          </div>
-
-                          {/* Active Champagne Reading Bar */}
-                          <div className="absolute inset-x-0 bottom-0 h-[2px] bg-[#F5F1E8]/8">
-                            <div
-                              className="h-full bg-gradient-to-r from-[#C69546] via-[#F0D496] to-[#E8C680] transition-[width] duration-75 ease-linear"
-                              style={{
-                                width: isSelected ? `${progress}%` : idx < currentIndex ? '100%' : '0%',
-                              }}
-                            />
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+        {/* Expansive Cover Typography Stage (No Obstructing Side Box) */}
+        <div className="relative z-20 max-w-[1380px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-10 pb-8 sm:pb-10 mt-auto">
+          <div className="max-w-4xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide.id}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-[13px] text-[#EDE6D8]/85 mb-4">
+                  <span className="font-semibold text-[#FDFBF7]">{activeSlide.author[locale]}</span>
+                  <span aria-hidden="true" className="text-[#E8C680]/60">·</span>
+                  <span>{formatShortDate(activeSlide.publishedAt, locale)}</span>
+                  <span aria-hidden="true" className="text-[#E8C680]/60">·</span>
+                  <span className="tabular-nums">
+                    {locale === 'fa'
+                      ? `${formatNumber(activeSlide.readTimeMin, locale)} دقیقه مطالعه`
+                      : `${activeSlide.readTimeMin} min read`}
+                  </span>
                 </div>
-              </div>
-            )}
+
+                <h1
+                  className={`font-editorial-display font-bold text-[#FDFBF7] mb-4 sm:mb-5 drop-shadow-[0_6px_28px_rgba(0,0,0,0.65)] line-clamp-3 ${
+                    locale === 'fa' ? 'leading-[1.36] sm:leading-[1.32]' : 'leading-[1.12]'
+                  }`}
+                  style={{
+                    fontSize:
+                      locale === 'fa'
+                        ? 'clamp(1.75rem, 4vw, 3.55rem)'
+                        : 'clamp(2.15rem, 4.9vw, 4.25rem)',
+                  }}
+                >
+                  {activeSlide.title[locale]}
+                </h1>
+
+                {cleanEditorialDeck(activeSlide.title[locale], activeSlide.deck[locale], 200) && (
+                  <p className="text-[14.5px] sm:text-[17.5px] text-[#EDE6D8]/90 leading-[1.85] max-w-2xl mb-7 line-clamp-2 sm:line-clamp-3">
+                    {cleanEditorialDeck(activeSlide.title[locale], activeSlide.deck[locale], 200)}
+                  </p>
+                )}
+
+                <div className="flex flex-col xs:flex-row sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                  <button
+                    type="button"
+                    onClick={() => onOpenArticle(activeSlide)}
+                    className="btn-luxury-gold text-[13.5px] sm:text-sm !px-7"
+                  >
+                    <span>{locale === 'fa' ? 'مطالعه روایت کامل' : 'Read Cover Story'}</span>
+                    {locale === 'fa' ? (
+                      <ArrowLeft className="w-4 h-4 shrink-0" />
+                    ) : (
+                      <ArrowRight className="w-4 h-4 shrink-0" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onToggleBookmark(activeSlide.id)}
+                    className="btn-luxury-glass text-[13.5px] sm:text-sm !px-5"
+                  >
+                    {isBookmarked ? (
+                      <BookmarkCheck className="w-4 h-4 text-[#F0D496]" />
+                    ) : (
+                      <Bookmark className="w-4 h-4" />
+                    )}
+                    <span>
+                      {isBookmarked
+                        ? locale === 'fa'
+                          ? 'ذخیره در فهرست'
+                          : 'Saved'
+                        : locale === 'fa'
+                          ? 'نشان‌کردن خبر'
+                          : 'Save Story'}
+                    </span>
+                  </button>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Mobile & Tablet Horizontal Snap-Scroll Chapter Rail (Zero Vertical Bloat!) */}
+          {/* Minimal Numbered Chapter Strip along bottom edge */}
           {safeSlides.length > 1 && (
-            <div className="lg:hidden mt-8 -mx-4 px-4 flex items-stretch gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-1">
+            <div className="mt-8 sm:mt-10 pt-5 border-t border-[#F5F1E8]/14 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
               {safeSlides.slice(0, 4).map((slide, idx) => {
                 const isSelected = idx === currentIndex;
                 return (
@@ -405,48 +305,28 @@ export function LiveHero({
                     key={slide.id}
                     type="button"
                     onClick={() => goToSlide(idx)}
-                    className={`snap-start w-[240px] sm:w-[270px] shrink-0 text-start rounded-xl p-3 backdrop-blur-xl border-[0.75px] transition-all duration-200 cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#141B2B]/88 border-[#E8C680]/70 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.85)]'
-                        : 'bg-[#090D16]/62 border-[#F5F1E8]/14'
+                    className={`group relative text-start pt-2.5 pb-1 transition-opacity cursor-pointer ${
+                      isSelected ? 'opacity-100' : 'opacity-60 hover:opacity-95'
                     }`}
                   >
-                    <div className="flex items-center gap-3 mb-2.5">
-                      {hasRealEditorialPhoto(slide) ? (
-                        <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 border-[0.75px] border-[#F5F1E8]/15">
-                          <EditorialImage
-                            src={slide.coverImage}
-                            alt={slide.title[locale]}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-11 h-11 rounded-lg shrink-0 border-[0.75px] border-[#D4A85B]/28 bg-[#121828] flex items-center justify-center font-mono-tabular text-xs font-bold text-[#F0D496]">
-                          {formatEditorialIndex(idx, locale)}
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 text-[10.5px] text-[#F0D496] font-mono-tabular mb-0.5">
-                          <span>{formatEditorialIndex(idx, locale)}</span>
-                          <span aria-hidden="true" className="opacity-40">·</span>
-                          <span className="font-sans text-[#EDE6D8]/75 truncate">
-                            {getCategoryLabel(slide.category, locale)}
-                          </span>
-                        </div>
-                        <p className="font-editorial-display text-[13px] font-bold text-[#FDFBF7] line-clamp-2 leading-[1.4]">
-                          {slide.title[locale]}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="w-full h-[2px] bg-[#F5F1E8]/12 rounded-full overflow-hidden">
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-[#F5F1E8]/15 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#C69546] to-[#F3D79A] transition-[width] duration-75 ease-linear"
+                        className="h-full bg-gradient-to-r from-[#C69546] via-[#F1D79A] to-[#E8C680] transition-[width] duration-75 ease-linear"
                         style={{
                           width: isSelected ? `${progress}%` : idx < currentIndex ? '100%' : '0%',
                         }}
                       />
                     </div>
+                    <div className="flex items-center gap-2 text-[10.5px] font-mono-tabular text-[#F1D79A] mb-1">
+                      <span className="font-bold">{formatEditorialIndex(idx, locale)}</span>
+                      <span aria-hidden="true" className="opacity-40">·</span>
+                      <span className="font-sans text-[#EDE6D8]/75 truncate">
+                        {getCategoryLabel(slide.category, locale)}
+                      </span>
+                    </div>
+                    <p className="font-editorial-display text-xs sm:text-[13.5px] font-bold text-[#FDFBF7] group-hover:text-[#F1D79A] line-clamp-1 leading-relaxed transition-colors">
+                      {slide.title[locale]}
+                    </p>
                   </button>
                 );
               })}
@@ -456,7 +336,7 @@ export function LiveHero({
 
         {/* Sleek Animated Live Editorial Dispatch Wire */}
         {(currentWire || breakingWire) && (
-          <div className="relative z-20 border-t-[0.75px] border-[#D4A85B]/22 bg-[#04060A]/94 backdrop-blur-2xl">
+          <div className="relative z-20 border-t border-[#D4A85B]/22 bg-[#04060A]/94 backdrop-blur-2xl">
             <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
                 <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-[#F0D496] whitespace-nowrap shrink-0">
@@ -471,7 +351,7 @@ export function LiveHero({
                         : 'Live Desk Wire'}
                   </span>
                 </span>
-                <span aria-hidden="true" className="h-3.5 w-[0.75px] bg-[#D4A85B]/40 shrink-0" />
+                <span aria-hidden="true" className="h-3.5 w-[1px] bg-[#D4A85B]/40 shrink-0" />
                 <div className="min-w-0 flex-1 overflow-hidden">
                   {breakingWire?.kind === 'breaking' || breakingWire?.kind === 'announcement' ? (
                     <p className="text-xs sm:text-[13.5px] font-medium text-[#F6F2EA]/94 truncate">

@@ -21,6 +21,7 @@ import {
 } from '../utils/formatters';
 import {
   MagazineArticleCard,
+  MagazineHairlineRow,
   MagazineIndexRowCard,
   MagazineLeadCard,
   MagazinePortraitDossierCard,
@@ -349,17 +350,17 @@ export function FrontPageEditorial({
         </section>
       )}
 
-      {/* Visual Photojournalism Dossiers Strip (Mobile Snap Carousel / Desktop 3-Col Gallery) */}
+      {/* Visual Photojournalism Dossiers Strip — Obsidian Exhibition Band */}
       {mode === 'home' && finalVisualDossiers.length > 0 && (
-        <section className="w-full border-y-[0.5px] border-[#D9CEBC]/80 dark:border-[#D4A85B]/16 bg-[#EAE1D2]/55 dark:bg-[#0B0F18]">
-          <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20 lg:py-24">
+        <section className="dark w-full border-y border-[#D4A85B]/20 bg-[#07090F] text-[#F5F1E8]">
+          <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-8 sm:mb-12">
               <div>
-                <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680] mb-2">
+                <p className="text-xs font-bold text-[#ECC983] mb-2">
                   {locale === 'fa' ? '۰۲. پرونده‌های تصویری و میدانی' : '02. Visual Dossiers'}
                 </p>
                 <h2
-                  className={`font-editorial-display text-2xl sm:text-4xl font-bold text-[#141210] dark:text-[#F6F2EA] ${
+                  className={`font-editorial-display text-2xl sm:text-4xl font-bold text-[#FDFBF7] ${
                     locale === 'fa' ? 'leading-[1.4]' : 'leading-tight'
                   }`}
                 >
@@ -368,7 +369,7 @@ export function FrontPageEditorial({
                     : 'South Kerman Through the Editorial Lens'}
                 </h2>
               </div>
-              <span className="text-xs text-[#5A5247] dark:text-[#A1AAB9]">
+              <span className="text-xs text-[#A3ADBF]">
                 {locale === 'fa'
                   ? 'منتخب روایت‌های مستند و تحلیلی هفته'
                   : 'Curated visual journalism of the week'}
@@ -586,6 +587,48 @@ export function FrontPageEditorial({
                     onToggleBookmark={onToggleBookmark}
                   />
                 ))}
+              </div>
+            ) : mode === 'home' && !hasActiveFilters ? (
+              <div className="space-y-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-7 lg:gap-8">
+                  {filteredArticles.slice(0, Math.min(4, visibleCount)).map((article, idx) => (
+                    <MagazineArticleCard
+                      key={article.id}
+                      article={article}
+                      locale={locale}
+                      index={idx}
+                      isSaved={bookmarkedIds.includes(article.id)}
+                      onOpen={onOpenArticle}
+                      onToggleBookmark={onToggleBookmark}
+                    />
+                  ))}
+                </div>
+
+                {filteredArticles.length > 4 && visibleCount > 4 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <span className="text-[11px] font-bold tracking-wider uppercase text-[#8F6321] dark:text-[#ECC983]">
+                        {locale === 'fa' ? 'فهرست روزنامه‌ای روایت‌ها' : 'BROADSHEET DISPATCH LEDGER'}
+                      </span>
+                      <span className="text-xs text-[#5B5246] dark:text-[#A3ADBF] font-mono-tabular">
+                        {formatNumber(Math.min(visibleCount, filteredArticles.length) - 4, locale)}
+                      </span>
+                    </div>
+                    <div className="broadsheet-ledger">
+                      {filteredArticles.slice(4, visibleCount).map((article, idx) => (
+                        <MagazineHairlineRow
+                          key={article.id}
+                          article={article}
+                          locale={locale}
+                          index={idx + 4}
+                          isSaved={bookmarkedIds.includes(article.id)}
+                          onOpen={onOpenArticle}
+                          onToggleBookmark={onToggleBookmark}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 lg:gap-10">
