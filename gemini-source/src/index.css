@@ -720,3 +720,21 @@ html[dir="ltr"] .font-editorial-display {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(198, 150, 75, 0.6);
 }
+
+/* Article reading typography: scoped to body paragraphs; preserves the approved layout. */
+.article-prose-paragraph-fa {
+  direction: rtl;
+  text-align: justify;
+  text-align-last: start;
+  text-justify: inter-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.article-prose-paragraph-en {
+  direction: ltr;
+  text-align: left;
+  text-align-last: left;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
