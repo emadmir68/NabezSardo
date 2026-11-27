@@ -270,25 +270,15 @@ function ensureDirs() {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
 }
 
-let schemaReady;
+let schemaEnsured = false;
 async function ensureSchema() {
-  if (!schemaReady) {
-    schemaReady = (async () => {
-      await env.DB.prepare(
-        "CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
-      ).run();
-      await env.DB.prepare(
-        "CREATE TABLE IF NOT EXISTS media_meta (name TEXT PRIMARY KEY, content_type TEXT NOT NULL, size INTEGER NOT NULL, chunk_count INTEGER NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
-      ).run();
-      await env.DB.prepare(
-        "CREATE TABLE IF NOT EXISTS media_chunks (name TEXT NOT NULL, chunk_index INTEGER NOT NULL, chunk_data TEXT NOT NULL, PRIMARY KEY(name, chunk_index))"
-      ).run();
-    })().catch(err => {
-      schemaReady = null;
-      throw err;
-    });
-  }
-  await schemaReady;
+  if (schemaEnsured) return;
+  await env.DB.batch([
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')))"),
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS media_meta (name TEXT PRIMARY KEY, content_type TEXT NOT NULL, size INTEGER NOT NULL, chunk_count INTEGER NOT NULL, updated_at TEXT NOT NULL DEFAULT (datetime('now')))"),
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS media_chunks (name TEXT NOT NULL, chunk_index INTEGER NOT NULL, chunk_data TEXT NOT NULL, PRIMARY KEY(name, chunk_index))")
+  ]);
+  schemaEnsured = true;
 }
 
 async function getState(key) {
@@ -325,18 +315,17 @@ async function loadDbObject() {
   return store.normalizeEditorialDb(db);
 }
 
-let trafficSchemaReady;
+let trafficSchemaEnsured=false;
 async function ensureTrafficSchema(){
-  if(!trafficSchemaReady){
-    trafficSchemaReady=(async()=>{
-      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_daily(day TEXT PRIMARY KEY,page_views INTEGER NOT NULL DEFAULT 0,google_entrances INTEGER NOT NULL DEFAULT 0,external_entrances INTEGER NOT NULL DEFAULT 0,direct_entrances INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL)").run();
-      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_paths(day TEXT NOT NULL,path TEXT NOT NULL,views INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,path))").run();
-      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_sources(day TEXT NOT NULL,source TEXT NOT NULL,views INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,source))").run();
-      await env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_visitors(day TEXT NOT NULL,visitor_hash TEXT NOT NULL,PRIMARY KEY(day,visitor_hash))").run();
-      await env.DB.prepare("CREATE TABLE IF NOT EXISTS article_view_counts(article_id TEXT PRIMARY KEY,views INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL)").run();
-    })();
-  }
-  await trafficSchemaReady;
+  if(trafficSchemaEnsured)return;
+  await env.DB.batch([
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_daily(day TEXT PRIMARY KEY,page_views INTEGER NOT NULL DEFAULT 0,google_entrances INTEGER NOT NULL DEFAULT 0,external_entrances INTEGER NOT NULL DEFAULT 0,direct_entrances INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL)"),
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_paths(day TEXT NOT NULL,path TEXT NOT NULL,views INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,path))"),
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_sources(day TEXT NOT NULL,source TEXT NOT NULL,views INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,source))"),
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS traffic_visitors(day TEXT NOT NULL,visitor_hash TEXT NOT NULL,PRIMARY KEY(day,visitor_hash))"),
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS article_view_counts(article_id TEXT PRIMARY KEY,views INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL)")
+  ]);
+  trafficSchemaEnsured=true;
 }
 function tehranDayFast(date=new Date()){
   try{
@@ -449,49 +438,43 @@ async function trafficSnapshotFast(){
   };
 }
 
-const PUBLIC_DB_CACHE_TTL_MS=5000;
+const PUBLIC_DB_CACHE_TTL_MS=15000;
 let publicDbCache={at:0,db:null,publishedList:null,articleByKey:null,summaryJson:null,fullJson:null,followupsJson:null,configJson:null};
-let publicDbLoadPromise=null;
 function resetPublicDbCache(){
   publicDbCache={at:0,db:null,publishedList:null,articleByKey:null,summaryJson:null,fullJson:null,followupsJson:null,configJson:null};
 }
 async function getPublicSnapshot(){
   const nowMs=Date.now();
   if(publicDbCache.db&&nowMs-publicDbCache.at<PUBLIC_DB_CACHE_TTL_MS)return publicDbCache;
-  if(!publicDbLoadPromise){
-    publicDbLoadPromise=(async()=>{
-      await ensureTrafficSchema();
-      const [text,viewRows]=await Promise.all([
-        getState("db"),
-        env.DB.prepare("SELECT article_id,views FROM article_view_counts").all()
-      ]);
-      const db=store.normalizeEditorialDb(safeJson(text,{settings:{},categories:[],articles:[],contacts:[],citizens:[]}));
-      const counts=new Map((viewRows.results||[]).map(x=>[String(x.article_id),Number(x.views||0)]));
-      for(const a of db.articles||[])a.views=Number(a.views||0)+Number(counts.get(String(a.id))||0);
-      const publishedList=store.published(db);
-      const articleByKey=new Map();
-      for(const a of publishedList){
-        if(a.slug)articleByKey.set(String(a.slug),a);
-        if(a.id){
-          articleByKey.set(String(a.id),a);
-          const code=geminiBridge.compactStoryCode(a.id);
-          if(code)articleByKey.set(String(code),a);
-        }
-      }
-      publicDbCache={
-        at:Date.now(),
-        db,
-        publishedList,
-        articleByKey,
-        summaryJson:null,
-        fullJson:null,
-        followupsJson:null,
-        configJson:null
-      };
-      return publicDbCache;
-    })().finally(()=>{publicDbLoadPromise=null;});
+  await ensureTrafficSchema();
+  const [text,viewRows]=await Promise.all([
+    getState("db"),
+    env.DB.prepare("SELECT article_id,views FROM article_view_counts").all()
+  ]);
+  const db=store.normalizeEditorialDb(safeJson(text,{settings:{},categories:[],articles:[],contacts:[],citizens:[]}));
+  const counts=new Map((viewRows.results||[]).map(x=>[String(x.article_id),Number(x.views||0)]));
+  for(const a of db.articles||[])a.views=Number(a.views||0)+Number(counts.get(String(a.id))||0);
+  const publishedList=store.published(db);
+  const articleByKey=new Map();
+  for(const a of publishedList){
+    if(a.slug)articleByKey.set(String(a.slug),a);
+    if(a.id){
+      articleByKey.set(String(a.id),a);
+      const code=geminiBridge.compactStoryCode(a.id);
+      if(code)articleByKey.set(String(code),a);
+    }
   }
-  return publicDbLoadPromise;
+  publicDbCache={
+    at:Date.now(),
+    db,
+    publishedList,
+    articleByKey,
+    summaryJson:null,
+    fullJson:null,
+    followupsJson:null,
+    configJson:null
+  };
+  return publicDbCache;
 }
 async function loadPublicDbFast(){
   const snap=await getPublicSnapshot();
@@ -618,8 +601,40 @@ async function fastArticleCachePut(pathname,body){
   }catch{}
 }
 
+const FAST_GEMINI_API_TTL_MS=15000;
+function fastGeminiApiCacheKey(pathAndQuery){
+  const ver=encodeURIComponent(String(env.CLOUDFLARE_ASSET_VERSION||"v14")+"-v14");
+  return new Request("https://nabzesardo.ir/__edge_api"+pathAndQuery+(pathAndQuery.includes("?")?"&":"?")+"__cv="+ver,{method:"GET"});
+}
+async function fastGeminiApiGet(pathAndQuery){
+  try{
+    const hit=await caches.default.match(fastGeminiApiCacheKey(pathAndQuery));
+    if(hit){
+      const age=Number(hit.headers.get("x-nabzesardo-api-cache-age")||0);
+      if(Number.isFinite(age)&&Date.now()-age<FAST_GEMINI_API_TTL_MS)return hit;
+    }
+  }catch{}
+  return null;
+}
+async function fastGeminiApiPut(pathAndQuery,body,extraHeaders={}){
+  try{
+    await caches.default.put(fastGeminiApiCacheKey(pathAndQuery),new Response(body,{
+      status:200,
+      headers:{
+        "content-type":"application/json; charset=utf-8",
+        "cache-control":"public, max-age=15",
+        "x-nabzesardo-api-cache-age":String(Date.now()),
+        ...extraHeaders
+      }
+    }));
+  }catch{}
+}
+
 async function invalidateFastArticleCache(){
   try{await caches.default.delete(new Request("https://nabzesardo.ir/news/",{method:"GET"}));}catch{}
+  for(const k of ['/api/gemini/articles?summary=1','/api/gemini/articles','/api/gemini/config','/api/gemini/followups']){
+    try{await caches.default.delete(fastGeminiApiCacheKey(k));}catch{}
+  }
   // Cache API cannot bulk-delete by prefix; short TTL plus per-path delete on
   // mutation is enough. Mark the index stale too so codes rebuild.
   fastArticleIndexCache={at:0,promise:null};
@@ -2073,18 +2088,12 @@ async function ensureCutoverBackup() {
 }
 
 let primaryHousekeepingEnsured=false;
-let primaryHousekeepingPromise=null;
 async function ensurePrimaryHousekeeping(){
   if(primaryHousekeepingEnsured)return;
-  if(!primaryHousekeepingPromise){
-    primaryHousekeepingPromise=(async()=>{
-      await ensureCutoverBackup();
-      await ensurePrivacyCleanup();
-      await ensureLiveNonNewsCleanup();
-      primaryHousekeepingEnsured=true;
-    })().finally(()=>{primaryHousekeepingPromise=null;});
-  }
-  await primaryHousekeepingPromise;
+  await ensureCutoverBackup();
+  await ensurePrivacyCleanup();
+  await ensureLiveNonNewsCleanup();
+  primaryHousekeepingEnsured=true;
 }
 
 function handleApp(request){return withLocalState(()=>handleAppSerial(request));}
@@ -2251,13 +2260,31 @@ export default {
     }
 
 
+    if(isPrimary()&&p==='/api/gemini/admin/state'&&request.method==='GET'){
+      const cookie=String(request.headers.get('cookie')||'');
+      if(!cookie.includes('nabez_admin=')){
+        return Response.json({ok:false,error:'auth-required'},{status:401,headers:{'cache-control':'no-store'}});
+      }
+    }
     // Editorial React presentation reads only published, vetted Cloudflare D1 news.
     // The admin JSON mutation endpoints fall through to the signed-cookie Node newsroom.
     if(isPrimary()&&p==='/api/gemini/articles'&&request.method==='GET'){
       await ensurePrimaryHousekeeping();
-      const snap=await getPublicSnapshot();
       const summary=url.searchParams.get('summary')==='1';
-      return jsonStringResponse(summary?getCachedSummaryJson(snap):getCachedFullArticlesJson(snap),{
+      const cacheKey=summary?'/api/gemini/articles?summary=1':'/api/gemini/articles';
+      const cached=await fastGeminiApiGet(cacheKey);
+      if(cached){
+        return jsonStringResponse(await cached.text(),{
+          'cache-control':'private,no-store',
+          'x-nabzesardo-editorial':'verified-live-d1',
+          'x-nabzesardo-api-cache':'hit'
+        });
+      }
+      const snap=await getPublicSnapshot();
+      const payload=summary?getCachedSummaryJson(snap):getCachedFullArticlesJson(snap);
+      if(ctx)ctx.waitUntil(fastGeminiApiPut(cacheKey,payload,{'x-nabzesardo-editorial':'verified-live-d1'}));
+      else await fastGeminiApiPut(cacheKey,payload,{'x-nabzesardo-editorial':'verified-live-d1'});
+      return jsonStringResponse(payload,{
         'cache-control':'private,no-store',
         'x-nabzesardo-editorial':'verified-live-d1'
       });
@@ -2274,13 +2301,23 @@ export default {
     }
     if(isPrimary()&&p==='/api/gemini/followups'&&request.method==='GET'){
       await ensurePrimaryHousekeeping();
+      const cached=await fastGeminiApiGet('/api/gemini/followups');
+      if(cached)return jsonStringResponse(await cached.text(),{'cache-control':'private,no-store','x-nabzesardo-api-cache':'hit'});
       const snap=await getPublicSnapshot();
-      return jsonStringResponse(getCachedFollowupsJson(snap),{'cache-control':'private,no-store'});
+      const payload=getCachedFollowupsJson(snap);
+      if(ctx)ctx.waitUntil(fastGeminiApiPut('/api/gemini/followups',payload));
+      else await fastGeminiApiPut('/api/gemini/followups',payload);
+      return jsonStringResponse(payload,{'cache-control':'private,no-store'});
     }
     if(isPrimary()&&p==='/api/gemini/config'&&request.method==='GET'){
       await ensurePrimaryHousekeeping();
+      const cached=await fastGeminiApiGet('/api/gemini/config');
+      if(cached)return jsonStringResponse(await cached.text(),{'cache-control':'private,no-store','x-nabzesardo-api-cache':'hit'});
       const snap=await getPublicSnapshot();
-      return jsonStringResponse(getCachedConfigJson(snap),{'cache-control':'private,no-store'});
+      const payload=getCachedConfigJson(snap);
+      if(ctx)ctx.waitUntil(fastGeminiApiPut('/api/gemini/config',payload));
+      else await fastGeminiApiPut('/api/gemini/config',payload);
+      return jsonStringResponse(payload,{'cache-control':'private,no-store'});
     }
     if(isPrimary()&&p==='/api/gemini/view'&&request.method==='GET'){
       await ensurePrimaryHousekeeping();

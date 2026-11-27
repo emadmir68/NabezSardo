@@ -194,10 +194,29 @@ export default function App() {
   const [monitorSnapshot, setMonitorSnapshot] = useState<MonitorSnapshot | null>(null);
   const [monitorBusy, setMonitorBusy] = useState(false);
 
+  // Only check admin session when visiting Studio/Admin login routes so public readers avoid unnecessary auth probes.
+  const wantsStudioAuth =
+    typeof window !== 'undefined' &&
+    (window.location.pathname === '/admin' ||
+      window.location.pathname === '/studio' ||
+      window.location.pathname === '/admin/login' ||
+      window.location.search.includes('studio=1'));
+  const [adminAuthChecked, setAdminAuthChecked] = useState(false);
+
+  const initialRoute = useMemo(
+    () => parseUrlPath(window.location.pathname, window.location.search),
+    []
+  );
+  const [activeView, setActiveView] = useState<ActiveView>(initialRoute.view);
+
   useEffect(() => {
+    if (adminToken || adminAuthChecked) return;
+    if (!wantsStudioAuth && activeView !== 'studio' && activeView !== 'admin-login') return;
     let active = true;
     fetchAdminAuthStatus(null).then(async (status) => {
-      if (!active || !status.authenticated) return;
+      if (!active) return;
+      setAdminAuthChecked(true);
+      if (!status.authenticated) return;
       setAdminToken('signed-cookie-session');
       const state = await fetchAdminState();
       if (!active || !state) return;
@@ -210,13 +229,7 @@ export default function App() {
       }
     });
     return () => { active = false; };
-  }, []);
-
-  const initialRoute = useMemo(
-    () => parseUrlPath(window.location.pathname, window.location.search),
-    []
-  );
-  const [activeView, setActiveView] = useState<ActiveView>(initialRoute.view);
+  }, [activeView, adminAuthChecked, adminToken, wantsStudioAuth]);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   const [pendingSlug, setPendingSlug] = useState<string | null>(initialRoute.articleSlug ?? null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>(
