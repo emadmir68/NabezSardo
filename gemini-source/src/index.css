@@ -37,6 +37,7 @@
   }
 
   body {
+    position: relative;
     font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
     background-color: var(--ns-bg);
     color: var(--ns-ink);
@@ -44,6 +45,21 @@
     overflow-x: hidden;
     transition: background-color 240ms var(--ease-luxury-media),
       color 240ms var(--ease-luxury-media);
+  }
+
+  /* Tactile cotton-broadsheet / matte-obsidian fine paper grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.026;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+  }
+
+  .dark body::before {
+    opacity: 0.032;
   }
 
   html[dir="ltr"] body {
@@ -400,7 +416,7 @@ html[dir="ltr"] .font-editorial-display {
 
 .magazine-plate {
   position: relative;
-  border: 1px solid rgba(154, 128, 92, 0.3);
+  border: 0.75px solid rgba(154, 128, 92, 0.34);
   box-shadow:
     0 4px 12px -4px rgba(10, 12, 18, 0.14),
     0 24px 52px -20px rgba(10, 12, 18, 0.25);
@@ -419,16 +435,96 @@ html[dir="ltr"] .font-editorial-display {
 
 .magazine-plate:hover {
   transform: translateY(-4px);
-  border-color: rgba(232, 198, 128, 0.45);
+  border-color: rgba(232, 198, 128, 0.52);
+}
+
+/* Full-Bleed Exhibition Magazine Cover Card (4:5 Portrait Overlay) */
+.magazine-cover-portrait {
+  position: relative;
+  border: 0.75px solid rgba(236, 201, 131, 0.2);
+  box-shadow:
+    0 10px 28px -12px rgba(0, 0, 0, 0.65),
+    0 30px 64px -26px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 250, 236, 0.12);
+  transition:
+    transform 380ms var(--ease-luxury-lift),
+    border-color 280ms var(--ease-luxury-lift),
+    box-shadow 380ms var(--ease-luxury-lift);
+}
+
+.magazine-cover-portrait:hover {
+  transform: translateY(-4px);
+  border-color: rgba(236, 201, 131, 0.55);
+  box-shadow:
+    0 18px 40px -14px rgba(0, 0, 0, 0.8),
+    0 10px 30px -16px rgba(212, 168, 91, 0.28),
+    inset 0 1px 0 rgba(255, 250, 236, 0.2);
+}
+
+/* Top Gold Edge Accent Reveal on Cards */
+.magazine-top-rule {
+  position: relative;
+  overflow: hidden;
+}
+
+.magazine-top-rule::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #D4A85B 50%, transparent);
+  transform: scaleX(0.28);
+  opacity: 0;
+  transition:
+    transform 360ms var(--ease-luxury-lift),
+    opacity 260ms ease;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.group:hover .magazine-top-rule::before,
+.magazine-top-rule:hover::before {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Distinct Warm Editorial Essay / Opinion Card Surface */
+.opinion-editorial-card {
+  position: relative;
+  background: linear-gradient(155deg, #FBF6EC 0%, #EFE5D3 100%);
+  border: 0.75px solid rgba(143, 99, 33, 0.34);
+  box-shadow: 0 2px 6px rgba(20, 18, 16, 0.04);
+  transition:
+    transform 280ms var(--ease-luxury-lift),
+    border-color 240ms var(--ease-luxury-lift),
+    box-shadow 320ms var(--ease-luxury-lift);
+}
+
+.opinion-editorial-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(143, 99, 33, 0.62);
+  box-shadow: 0 16px 34px -16px rgba(143, 99, 33, 0.22);
+}
+
+.dark .opinion-editorial-card {
+  background: linear-gradient(155deg, #131A29 0%, #0D121E 100%);
+  border-color: rgba(236, 201, 131, 0.24);
+}
+
+.dark .opinion-editorial-card:hover {
+  border-color: rgba(236, 201, 131, 0.52);
+  box-shadow: 0 22px 48px -18px rgba(0, 0, 0, 0.8), 0 8px 24px -16px rgba(212, 168, 91, 0.22);
 }
 
 .magazine-media-img {
-  transition: transform 640ms var(--ease-luxury-media);
+  transition: transform 640ms var(--ease-luxury-media), filter 420ms var(--ease-luxury-media);
   will-change: transform;
 }
 
 .group:hover .magazine-media-img {
-  transform: scale(1.035);
+  transform: scale(1.04);
+  filter: contrast(1.03) brightness(1.03);
 }
 
 .magazine-hairline {
@@ -570,6 +666,9 @@ html[dir="ltr"] .font-editorial-display {
   .magazine-card,
   .luxury-card,
   .magazine-plate,
+  .magazine-cover-portrait,
+  .opinion-editorial-card,
+  .magazine-top-rule::before,
   .magazine-media-img,
   .magazine-hairline::after,
   .magazine-circle-action {
@@ -578,6 +677,8 @@ html[dir="ltr"] .font-editorial-display {
   .magazine-card:hover,
   .luxury-card:hover,
   .magazine-plate:hover,
+  .magazine-cover-portrait:hover,
+  .opinion-editorial-card:hover,
   .group:hover .magazine-media-img {
     transform: none !important;
   }

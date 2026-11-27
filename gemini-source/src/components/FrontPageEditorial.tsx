@@ -26,6 +26,7 @@ import {
   MagazineLeadCard,
   MagazinePortraitDossierCard,
   MagazineSecondaryCard,
+  MagazineWideFeatureCard,
 } from './MagazineCards';
 
 interface FrontPageEditorialProps {
@@ -304,9 +305,15 @@ export function FrontPageEditorial({
         <section className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20 lg:py-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-6 sm:pb-8 mb-8 sm:mb-12 border-b-[0.75px] border-[#D9CEBC] dark:border-[#D4A85B]/18">
             <div>
-              <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680] mb-2">
-                {locale === 'fa' ? '۰۱. گزیده ویژه تحریریه' : '01. Editorial Spotlight'}
-              </p>
+              <div className="flex items-center gap-2.5 mb-2">
+                <span className="w-4 h-[1.5px] bg-[#9A6B27] dark:bg-[#E8C680] rounded-full" />
+                <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680]">
+                  {locale === 'fa' ? '۰۱. گزیده ویژه تحریریه' : '01. Editorial Spotlight'}
+                </p>
+                <span className="hidden sm:inline font-mono-tabular text-[10px] tracking-widest uppercase text-[#5A5247]/70 dark:text-[#A1AAB9]/70">
+                  · {formatNumber(published.length, locale)} {locale === 'fa' ? 'روایت فعال' : 'ACTIVE DISPATCHES'}
+                </span>
+              </div>
               <h2
                 className={`font-editorial-display text-2xl sm:text-4xl font-bold text-[#141210] dark:text-[#F6F2EA] ${
                   locale === 'fa' ? 'leading-[1.4]' : 'leading-tight'
@@ -356,9 +363,15 @@ export function FrontPageEditorial({
           <div className="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-10 py-14 sm:py-20">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-8 sm:mb-12">
               <div>
-                <p className="text-xs font-bold text-[#ECC983] mb-2">
-                  {locale === 'fa' ? '۰۲. پرونده‌های تصویری و میدانی' : '02. Visual Dossiers'}
-                </p>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <span className="w-4 h-[1.5px] bg-[#ECC983] rounded-full" />
+                  <p className="text-xs font-bold text-[#ECC983]">
+                    {locale === 'fa' ? '۰۲. پرونده‌های تصویری و میدانی' : '02. Visual Dossiers'}
+                  </p>
+                  <span className="hidden sm:inline font-mono-tabular text-[10px] tracking-widest uppercase text-[#A3ADBF]/75">
+                    · EXHIBITION PLATE
+                  </span>
+                </div>
                 <h2
                   className={`font-editorial-display text-2xl sm:text-4xl font-bold text-[#FDFBF7] ${
                     locale === 'fa' ? 'leading-[1.4]' : 'leading-tight'
@@ -386,7 +399,9 @@ export function FrontPageEditorial({
                     article={dossier}
                     locale={locale}
                     index={idx}
+                    isSaved={bookmarkedIds.includes(dossier.id)}
                     onOpen={onOpenArticle}
+                    onToggleBookmark={onToggleBookmark}
                   />
                 </div>
               ))}
@@ -409,9 +424,12 @@ export function FrontPageEditorial({
         {mode === 'home' && (
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-6 sm:pb-8 mb-8 sm:mb-10 border-b-[0.5px] border-[#D9CEBC]/85 dark:border-[#D4A85B]/16">
             <div>
-              <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680] mb-2">
-                {locale === 'fa' ? '۰۳. میزهای خبری و جغرافیای منطقه' : '03. Regional Desks & Archive'}
-              </p>
+              <div className="flex items-center gap-2.5 mb-2">
+                <span className="w-4 h-[1.5px] bg-[#9A6B27] dark:bg-[#E8C680] rounded-full" />
+                <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680]">
+                  {locale === 'fa' ? '۰۳. میزهای خبری و جغرافیای منطقه' : '03. Regional Desks & Archive'}
+                </p>
+              </div>
               <h2
                 className={`font-editorial-display text-2xl sm:text-4xl font-bold text-[#141210] dark:text-[#F6F2EA] ${
                   locale === 'fa' ? 'leading-[1.4]' : 'leading-tight'
@@ -631,18 +649,31 @@ export function FrontPageEditorial({
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 lg:gap-10">
-                {filteredArticles.slice(0, visibleCount).map((article, idx) => (
-                  <MagazineArticleCard
-                    key={article.id}
-                    article={article}
-                    locale={locale}
-                    index={idx}
-                    isSaved={bookmarkedIds.includes(article.id)}
-                    onOpen={onOpenArticle}
-                    onToggleBookmark={onToggleBookmark}
-                  />
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 lg:gap-9">
+                {filteredArticles.slice(0, visibleCount).map((article, idx) =>
+                  idx === 0 && filteredArticles.length >= 3 ? (
+                    <MagazineWideFeatureCard
+                      key={article.id}
+                      article={article}
+                      locale={locale}
+                      index={idx}
+                      className="md:col-span-2"
+                      isSaved={bookmarkedIds.includes(article.id)}
+                      onOpen={onOpenArticle}
+                      onToggleBookmark={onToggleBookmark}
+                    />
+                  ) : (
+                    <MagazineArticleCard
+                      key={article.id}
+                      article={article}
+                      locale={locale}
+                      index={idx}
+                      isSaved={bookmarkedIds.includes(article.id)}
+                      onOpen={onOpenArticle}
+                      onToggleBookmark={onToggleBookmark}
+                    />
+                  ),
+                )}
               </div>
             )}
 
