@@ -72,7 +72,11 @@ async function ensureRasterSocialImage(article){
   const name=path.basename(new URL(article.image,"https://nabzesardo.ir").pathname);
   const socialName=name.replace(/\.svg$/i,"-social.png");
   if(!(await getMedia(socialName))){
-    const source=await getMedia(name);
+    let source=await getMedia(name);
+    if(!source){
+      const assetRes=await env.ASSETS.fetch(new Request("https://nabzesardo.ir/"+encodeURIComponent(name)));
+      if(assetRes.ok)source=Buffer.from(await assetRes.arrayBuffer());
+    }
     if(!source)throw new Error("social-preview-source-missing");
     rasterReady ||= initWasm(resvgModule);await rasterReady;
     coverFontReady ||= (async()=>{
@@ -1511,6 +1515,10 @@ async function serveAsset(request, pathname) {
   } else {
     if (pathname === "/hero-mosque.jpg") u.pathname = "/header-mosque-fixed.jpg";
     assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    if (!assetResponse.ok && (pathname === "/header-mosque-fixed.jpg" || pathname === "/hero-mosque.jpg")) {
+      u.pathname = "/assets/gemini-design/hero_sarduiyeh_highlands_1795255635485.jpg";
+      assetResponse = await env.ASSETS.fetch(new Request(u, request));
+    }
   }
   if ((request.method !== "GET" && request.method !== "HEAD") || !assetResponse.ok) return assetResponse;
   const headers = new Headers(assetResponse.headers);
@@ -2136,7 +2144,7 @@ export default {
       return serveUpload(path.basename(p),request);
     }
 
-    if ((p.startsWith("/assets/") || p.startsWith("/fonts/") || p.startsWith("/src/assets/") || p === "/hero-mosque.jpg" || p.startsWith("/demo/")) && (request.method === "GET" || request.method === "HEAD")) {
+    if ((p.startsWith("/assets/") || p.startsWith("/fonts/") || p.startsWith("/src/assets/") || p === "/hero-mosque.jpg" || p === "/header-mosque-fixed.jpg" || p.startsWith("/demo/")) && (request.method === "GET" || request.method === "HEAD")) {
       return serveAsset(request, p);
     }
 
