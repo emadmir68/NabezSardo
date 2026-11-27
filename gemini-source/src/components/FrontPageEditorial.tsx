@@ -12,7 +12,6 @@ import {
 import { CATEGORIES, REGIONS } from '../data/initialData';
 import type { Article, CategoryId, Locale, RegionId } from '../types/news';
 import {
-  formatEditorialIndex,
   formatNumber,
   formatShortDate,
   getCategoryLabel,
@@ -114,8 +113,14 @@ export function FrontPageEditorial({
       return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
 
-  const mostRead = [...published].sort((a, b) => b.views - a.views).slice(0, 5);
-  const quickDispatches = published.slice(0, 4);
+  const mostReadPool = published.filter(
+    (a) => Date.now() - new Date(a.publishedAt).getTime() <= 30 * 86400000,
+  );
+  const mostRead = [...(mostReadPool.length >= 3 ? mostReadPool : published)]
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 5);
+  const shortNewsItems = published.filter((a) => a.category === 'short-news');
+  const quickDispatches = (shortNewsItems.length > 0 ? shortNewsItems : published).slice(0, 4);
 
   const hasActiveFilters =
     selectedCategory !== 'all' ||
@@ -177,9 +182,9 @@ export function FrontPageEditorial({
                         : 'bg-[#10141F]/78 border-[#F5F1E8]/14 hover:border-[#E8C680]/45 hover:bg-[#141B2B]/88'
                     }`}
                   >
-                    <div className="flex items-center justify-between text-[11px] sm:text-xs font-mono-tabular mb-3">
-                      <span className="text-[#F0D496] font-semibold">{cat.code}</span>
-                      <span className="text-[#A1AAB9]">
+                    <div className="flex items-center justify-between text-[11px] sm:text-xs mb-3">
+                      <span className="inline-block w-2 h-2 rounded-full bg-[#F0D496]" aria-hidden="true" />
+                      <span className="text-[#A1AAB9] font-mono-tabular">
                         {locale === 'fa'
                           ? `${formatNumber(count, locale)} روایت`
                           : `${count} stories`}
@@ -308,7 +313,7 @@ export function FrontPageEditorial({
               <div className="flex items-center gap-2.5 mb-2">
                 <span className="w-4 h-[1.5px] bg-[#9A6B27] dark:bg-[#E8C680] rounded-full" />
                 <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680]">
-                  {locale === 'fa' ? '۰۱. گزیده ویژه تحریریه' : '01. Editorial Spotlight'}
+                  {locale === 'fa' ? 'گزیده ویژه تحریریه' : 'Editorial Spotlight'}
                 </p>
                 <span className="hidden sm:inline font-mono-tabular text-[10px] tracking-widest uppercase text-[#5A5247]/70 dark:text-[#A1AAB9]/70">
                   · {formatNumber(published.length, locale)} {locale === 'fa' ? 'روایت فعال' : 'ACTIVE DISPATCHES'}
@@ -366,10 +371,10 @@ export function FrontPageEditorial({
                 <div className="flex items-center gap-2.5 mb-2">
                   <span className="w-4 h-[1.5px] bg-[#ECC983] rounded-full" />
                   <p className="text-xs font-bold text-[#ECC983]">
-                    {locale === 'fa' ? '۰۲. پرونده‌های تصویری و میدانی' : '02. Visual Dossiers'}
+                    {locale === 'fa' ? 'پرونده‌های تصویری و میدانی' : 'Visual Dossiers'}
                   </p>
-                  <span className="hidden sm:inline font-mono-tabular text-[10px] tracking-widest uppercase text-[#A3ADBF]/75">
-                    · EXHIBITION PLATE
+                  <span className="hidden sm:inline text-[11px] text-[#A3ADBF]/85">
+                    {locale === 'fa' ? '· منتخب تحریریه' : '· Editorial Selection'}
                   </span>
                 </div>
                 <h2
@@ -427,7 +432,7 @@ export function FrontPageEditorial({
               <div className="flex items-center gap-2.5 mb-2">
                 <span className="w-4 h-[1.5px] bg-[#9A6B27] dark:bg-[#E8C680] rounded-full" />
                 <p className="text-xs font-bold text-[#9A6B27] dark:text-[#E8C680]">
-                  {locale === 'fa' ? '۰۳. میزهای خبری و جغرافیای منطقه' : '03. Regional Desks & Archive'}
+                  {locale === 'fa' ? 'میزهای خبری و جغرافیای منطقه' : 'Regional Desks & Archive'}
                 </p>
               </div>
               <h2
@@ -704,8 +709,8 @@ export function FrontPageEditorial({
                   <h3 className="font-editorial-display text-xl font-bold text-[#141210] dark:text-[#F6F2EA]">
                     {locale === 'fa' ? 'پربازدیدترین روایت‌ها' : 'Most Read'}
                   </h3>
-                  <span className="text-xs font-mono-tabular text-[#9A6B27] dark:text-[#E8C680]">
-                    {locale === 'fa' ? 'برگزیده مخاطبان' : 'Top 05'}
+                  <span className="text-xs text-[#9A6B27] dark:text-[#E8C680]">
+                    {locale === 'fa' ? '۳۰ روز اخیر' : 'Last 30 Days'}
                   </span>
                 </div>
 
@@ -717,9 +722,10 @@ export function FrontPageEditorial({
                         onClick={() => onOpenArticle(item)}
                         className="group w-full text-start flex items-start gap-4 cursor-pointer"
                       >
-                        <span className="font-mono-tabular text-2xl font-light text-[#9A6B27] dark:text-[#E8C680] leading-none pt-1 shrink-0 transition-transform duration-200 group-hover:scale-105">
-                          {formatEditorialIndex(idx, locale)}
-                        </span>
+                        <span
+                          className="w-2 h-2 rounded-full bg-[#9A6B27] dark:bg-[#E8C680] mt-2 shrink-0 transition-transform duration-200 group-hover:scale-125"
+                          aria-hidden="true"
+                        />
                         <div className="min-w-0">
                           <p
                             className={`font-editorial-display text-[15px] font-bold text-[#141210] dark:text-[#F6F2EA] group-hover:text-[#9A6B27] dark:group-hover:text-[#E8C680] transition-colors mb-1.5 ${

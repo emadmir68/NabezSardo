@@ -23,7 +23,7 @@ const home=views.home(sample);
 fresh(home,'homepage');
 assert.match(home,/rb-hero-story/);
 assert.match(home,/آینده کشاورزی جنوب کرمان/);
-assert.match(home,/نبض فوری/);
+assert.match(home,/نبض فوری|نبض خبر/);
 
 const article=views.article(sample,sample.articles[0]);
 fresh(article,'article');

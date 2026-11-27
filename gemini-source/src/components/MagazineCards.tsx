@@ -10,7 +10,6 @@ import {
 import type { Article, CategoryId, Locale } from '../types/news';
 import {
   cleanEditorialDeck,
-  formatEditorialIndex,
   formatNumber,
   formatRelativeTime,
   getCategoryLabel,
@@ -314,7 +313,7 @@ function MetaFooter({
  *    adapting between a crisp 16:10 photographic spread and a luxury topographic plate.
  */
 export function MagazineLeadCard(props: MagazineCardProps) {
-  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const { article, locale, onToggleBookmark } = props;
   const openArticle = resolveOpen(props);
   const isBookmarked = resolveBookmarked(props);
   const hasPhoto = hasRealEditorialPhoto(article);
@@ -346,8 +345,8 @@ export function MagazineLeadCard(props: MagazineCardProps) {
             }}
           />
           <PhotoCornerBadges article={article} locale={locale} />
-          <span className="font-mono-tabular absolute bottom-4 start-4 px-3 py-1 rounded-full bg-black/65 text-[#F1D79A] text-xs font-bold border border-[#D4A85B]/35 backdrop-blur-md">
-            {formatEditorialIndex(index, locale)} / LEAD
+          <span className="absolute bottom-4 start-4 px-3 py-1 rounded-full bg-black/65 text-[#F1D79A] text-xs font-bold border border-[#D4A85B]/35 backdrop-blur-md">
+            {locale === 'fa' ? 'روایت اصلی' : 'LEAD'}
           </span>
         </div>
       ) : (
@@ -361,15 +360,15 @@ export function MagazineLeadCard(props: MagazineCardProps) {
           </div>
           <div className="relative flex items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
-              <span className="font-mono-tabular px-2.5 py-1 rounded-full bg-[#161310]/8 dark:bg-[#F5F1E8]/10 text-xs font-extrabold text-[#8F6321] dark:text-[#ECC983]">
-                {formatEditorialIndex(index, locale)} / LEAD
+              <span className="px-2.5 py-1 rounded-full bg-[#161310]/8 dark:bg-[#F5F1E8]/10 text-xs font-extrabold text-[#8F6321] dark:text-[#ECC983]">
+                {locale === 'fa' ? 'روایت اصلی' : 'LEAD'}
               </span>
               <span className="text-[11px] font-bold tracking-wider uppercase text-[#5B5246] dark:text-[#A3ADBF]">
                 {locale === 'fa' ? 'پرونده اصلی تحریریه' : 'EDITORIAL LEAD'}
               </span>
             </div>
-            <span className="hidden sm:inline text-[11px] font-mono-tabular text-[#5B5246]/80 dark:text-[#A3ADBF]/80">
-              28° 40′ N · 57° 44′ E
+            <span className="hidden sm:inline text-[11px] text-[#5B5246]/80 dark:text-[#A3ADBF]/80">
+              {locale === 'fa' ? 'ساردوئیه · جنوب کرمان' : 'Sarduiyeh · South Kerman'}
             </span>
           </div>
         </div>
@@ -461,7 +460,7 @@ export function MagazineLeadCard(props: MagazineCardProps) {
  * 2. Secondary Split Card: Crisp horizontal brief/feature slot next to or below the Lead.
  */
 export function MagazineSecondaryCard(props: MagazineCardProps) {
-  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const { article, locale, onToggleBookmark } = props;
   const openArticle = resolveOpen(props);
   const isBookmarked = resolveBookmarked(props);
   const hasPhoto = hasRealEditorialPhoto(article);
@@ -492,17 +491,16 @@ export function MagazineSecondaryCard(props: MagazineCardProps) {
             )}
           </div>
         ) : (
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl shrink-0 flex flex-col items-center justify-center bg-[#EFE7D8] dark:bg-[#171E30] border border-[#D9CEBA] dark:border-[#252E42] overflow-hidden">
+          <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl shrink-0 flex items-center justify-center bg-[#EFE7D8] dark:bg-[#171E30] border border-[#D9CEBA] dark:border-[#252E42] overflow-hidden">
             <div
               className="absolute inset-x-0 top-0 h-[2px]"
               style={{ backgroundColor: desk.accentHex }}
             />
-            <span className="font-mono-tabular text-base font-extrabold text-[#8F6321] dark:text-[#ECC983]">
-              {formatEditorialIndex(index, locale)}
-            </span>
-            <span className="text-[9px] uppercase tracking-wider text-[#5B5246] dark:text-[#A3ADBF]">
-              {desk.code}
-            </span>
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: desk.accentHex }}
+              aria-hidden="true"
+            />
           </div>
         )}
 
@@ -539,7 +537,7 @@ export function MagazineSecondaryCard(props: MagazineCardProps) {
  *    obsidian bottom scrim and floating editorial typography. Otherwise renders a contoured folio plate.
  */
 export function MagazinePortraitDossierCard(props: MagazineCardProps) {
-  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const { article, locale, onToggleBookmark } = props;
   const openArticle = resolveOpen(props);
   const isBookmarked = resolveBookmarked(props);
   const hasPhoto = hasRealEditorialPhoto(article);
@@ -560,20 +558,10 @@ export function MagazinePortraitDossierCard(props: MagazineCardProps) {
         <div className="absolute inset-x-0 top-0 h-36 pointer-events-none">
           <TopographicPlateWatermark color={desk.accentHex} />
         </div>
-        <span
-          aria-hidden="true"
-          className="font-editorial-display pointer-events-none select-none absolute bottom-12 end-4 text-7xl font-black opacity-[0.06] dark:opacity-[0.08] leading-none"
-          style={{ color: desk.accentHex }}
-        >
-          {formatEditorialIndex(index, locale)}
-        </span>
 
         <div className="relative space-y-4">
           <div className="flex items-center justify-between gap-2">
             <DeskBadge article={article} locale={locale} />
-            <span className="font-mono-tabular text-xs font-bold text-[#8F6321] dark:text-[#ECC983]">
-              #{formatEditorialIndex(index, locale)}
-            </span>
           </div>
 
           <div className="inline-flex items-center gap-2 text-[10.5px] font-bold tracking-wider uppercase text-[#8F6321] dark:text-[#ECC983]">
@@ -636,9 +624,6 @@ export function MagazinePortraitDossierCard(props: MagazineCardProps) {
       {/* Top Exhibition Frame Header */}
       <div className="relative z-10 flex items-center justify-between gap-2 p-4 sm:p-5">
         <div className="flex items-center gap-2">
-          <span className="font-mono-tabular px-2.5 py-1 rounded-full bg-[#07090F]/75 text-[#F1D79A] text-[11px] font-bold border border-[#D4A85B]/35 backdrop-blur-md">
-            #{formatEditorialIndex(index, locale)}
-          </span>
           {fresh && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#07090F]/75 text-[#ECC983] text-[10.5px] font-bold border border-[#ECC983]/35 backdrop-blur-md">
               <span className="w-1.5 h-1.5 rounded-full bg-[#ECC983] animate-pulse" />
@@ -733,7 +718,7 @@ export function MagazinePortraitDossierCard(props: MagazineCardProps) {
  *    or contoured Broadsheet typographic folio plate when no photograph exists.
  */
 export function MagazineArticleCard(props: MagazineCardProps) {
-  const { article, locale, onToggleBookmark, index } = props;
+  const { article, locale, onToggleBookmark } = props;
   const openArticle = resolveOpen(props);
   const isBookmarked = resolveBookmarked(props);
   const hasPhoto = hasRealEditorialPhoto(article);
@@ -744,8 +729,6 @@ export function MagazineArticleCard(props: MagazineCardProps) {
     article.deck[locale],
     hasPhoto ? 130 : 185,
   );
-  const folioCode =
-    typeof index === 'number' ? formatEditorialIndex(index, locale) : desk.code;
 
   return (
     <article
@@ -785,20 +768,12 @@ export function MagazineArticleCard(props: MagazineCardProps) {
             <div className="absolute inset-x-0 top-0 h-32 pointer-events-none">
               <TopographicPlateWatermark color={desk.accentHex} />
             </div>
-            {isOpinionPlate ? (
+            {isOpinionPlate && (
               <span
                 aria-hidden="true"
                 className="font-editorial-display pointer-events-none select-none absolute top-2 end-5 text-6xl font-black opacity-[0.14] text-[#8F6321] dark:text-[#ECC983] leading-none"
               >
                 «
-              </span>
-            ) : (
-              <span
-                aria-hidden="true"
-                className="font-editorial-display pointer-events-none select-none absolute bottom-12 end-4 text-6xl font-black opacity-[0.055] dark:opacity-[0.075] leading-none"
-                style={{ color: desk.accentHex }}
-              >
-                {folioCode}
               </span>
             )}
           </>
@@ -807,11 +782,6 @@ export function MagazineArticleCard(props: MagazineCardProps) {
         <div className="relative space-y-2.5">
           <div className="flex items-center justify-between gap-2">
             <DeskBadge article={article} locale={locale} />
-            {!hasPhoto && (
-              <span className="font-mono-tabular text-[11px] font-bold text-[#5B5246]/75 dark:text-[#A3ADBF]/75">
-                {folioCode}
-              </span>
-            )}
           </div>
 
           {(article.kicker || !hasPhoto) && (
@@ -869,7 +839,7 @@ export function MagazineArticleCard(props: MagazineCardProps) {
  * 5. Ranked / Wire Index Row Card: Dense numbered list item for Most Read & Quick Dispatches.
  */
 export function MagazineIndexRowCard(props: MagazineCardProps) {
-  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const { article, locale, onToggleBookmark } = props;
   const openArticle = resolveOpen(props);
   const isBookmarked = resolveBookmarked(props);
   const desk = deskFor(article.category);
@@ -881,10 +851,13 @@ export function MagazineIndexRowCard(props: MagazineCardProps) {
       className="group magazine-card magazine-top-rule rounded-2xl p-4 sm:p-5 cursor-pointer flex items-start gap-4"
     >
       <div
-        className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center font-mono-tabular text-sm font-extrabold border border-[#D9CEBA] dark:border-[#252E42] bg-[#F1E9DA] dark:bg-[#151C2C]"
-        style={{ color: desk.accentHex }}
+        className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center border border-[#D9CEBA] dark:border-[#252E42] bg-[#F1E9DA] dark:bg-[#151C2C]"
+        aria-hidden="true"
       >
-        {formatEditorialIndex(index, locale)}
+        <span
+          className="w-2.5 h-2.5 rounded-full"
+          style={{ backgroundColor: desk.accentHex }}
+        />
       </div>
 
       <div className="flex-1 min-w-0 space-y-1.5">
@@ -938,7 +911,7 @@ export function MagazineIndexRowCard(props: MagazineCardProps) {
  *    for pacing long feeds without repeating heavy boxed cards.
  */
 export function MagazineHairlineRow(props: MagazineCardProps) {
-  const { article, locale, onToggleBookmark, index = 0 } = props;
+  const { article, locale, onToggleBookmark } = props;
   const openArticle = resolveOpen(props);
   const isBookmarked = resolveBookmarked(props);
   const desk = deskFor(article.category);
@@ -952,11 +925,10 @@ export function MagazineHairlineRow(props: MagazineCardProps) {
     >
       <div className="flex items-start gap-3.5 sm:gap-5 min-w-0 flex-1">
         <span
-          className="font-mono-tabular text-sm sm:text-base font-extrabold pt-1 shrink-0 w-7"
-          style={{ color: desk.accentHex }}
-        >
-          {formatEditorialIndex(index, locale)}
-        </span>
+          className="w-2 h-2 rounded-full mt-2 shrink-0"
+          style={{ backgroundColor: desk.accentHex }}
+          aria-hidden="true"
+        />
 
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5B5246] dark:text-[#A3ADBF]">
@@ -1018,7 +990,7 @@ export function MagazineHairlineRow(props: MagazineCardProps) {
  *    Breaks visual grid monotony by showcasing the top story in a balanced horizontal frame.
  */
 export function MagazineWideFeatureCard(props: MagazineCardProps) {
-  const { article, locale, onToggleBookmark, index = 0, className = '' } = props;
+  const { article, locale, onToggleBookmark, className = '' } = props;
   const openArticle = resolveOpen(props);
   const isBookmarked = resolveBookmarked(props);
   const hasPhoto = hasRealEditorialPhoto(article);
@@ -1060,20 +1032,12 @@ export function MagazineWideFeatureCard(props: MagazineCardProps) {
             <TopographicPlateWatermark color={desk.accentHex} />
           </div>
           <div className="relative flex items-center justify-between gap-2">
-            <span className="font-mono-tabular px-2.5 py-1 rounded-full bg-[#161310]/8 dark:bg-[#F5F1E8]/10 text-xs font-extrabold text-[#8F6321] dark:text-[#ECC983]">
-              #{formatEditorialIndex(index, locale)}
-            </span>
-            <span className="text-[10.5px] font-bold tracking-wider uppercase text-[#5B5246] dark:text-[#A3ADBF]">
-              {locale === 'fa' ? 'گزارش منتخب فهرست' : 'FEATURED DISPATCH'}
+            <span className="px-2.5 py-1 rounded-full bg-[#161310]/8 dark:bg-[#F5F1E8]/10 text-xs font-extrabold text-[#8F6321] dark:text-[#ECC983]">
+              {locale === 'fa' ? 'گزارش منتخب' : 'Featured'}
             </span>
           </div>
           <div className="relative pt-8">
-            <span
-              className="font-editorial-display text-5xl font-black opacity-[0.14]"
-              style={{ color: desk.accentHex }}
-            >
-              {formatEditorialIndex(index, locale)}
-            </span>
+            <TopographicPlateWatermark color={desk.accentHex} />
           </div>
         </div>
       )}

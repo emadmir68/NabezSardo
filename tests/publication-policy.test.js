@@ -173,3 +173,37 @@ test('high-confidence political category correction reaches Gemini without miscl
   const sport=geminiBridge.mapArticle({id:'sports-story',title:'تیم فوتبال جیرفت قهرمان لیگ شد',lead:'مسابقه ورزشی برگزار شد',categoryId:'sports',status:'published',publishedAt:new Date().toISOString()});
   assert.equal(sport.category,'sports');
 });
+
+test('regional focus and SSR cleanup quarantine bereavement notices, foreign wires, card numbering and duplicated leads',()=>{
+  const mourning={id:'bereavement-1',slug:'bereavement-1',title:'فردا عزای عمومی اعلام شد',lead:'در پی رحلت مرجع عالیقدر فردا عزای عمومی اعلام شد.',categoryId:'social',status:'published'};
+  const foreignPentagon={id:'pentagon-1',slug:'pentagon-1',title:'گزارش جدید پنتاگون درباره عملیات ارتش یمن و ناو هواپیمابر آمریکا',lead:'پنتاگون درباره صنعا و جده در عربستان بیانیه داد.',categoryId:'politics',status:'published'};
+  const doctorAd={id:'doc-ad-1',slug:'doc-ad-1',title:'دکتر متخصص قلب در جیرفت - نوبت دهی مطب با شماره تماس 09131234567',lead:'رزرو نوبت اینترنتی و آدرس کلینیک',categoryId:'health',status:'published'};
+  const localFresh={id:'local-1',slug:'local-1',title:'افتتاح جاده روستایی ساردوئیه',lead:'افتتاح جاده روستایی ساردوئیه.',body:'افتتاح جاده روستایی ساردوئیه\nمسیر ارتباطی سه روستا به شبکه اصلی پیوست.',categoryId:'local',status:'published',publishedAt:new Date().toISOString(),views:45};
+  const localTwo={id:'local-2',slug:'local-2',title:'آغاز برداشت مرکبات جیرفت',lead:'کشاورزان جیرفتی برداشت مرکبات پاییزی را آغاز کردند.',categoryId:'farming',status:'published',publishedAt:new Date(Date.now()-3600000).toISOString(),views:20};
+  const localOldPopular={id:'old-popular',slug:'old-popular',title:'گزارش قدیمی دو ماه پیش',lead:'خبر قدیمی با بازدید بالا',categoryId:'social',status:'published',publishedAt:'2026-08-01T10:00:00.000Z',views:99999};
+
+  assert.equal(store.publiclyVisibleArticle(mourning),false);
+  assert.ok(articleTools._test.publicationPolicyReason(mourning));
+
+  const db={
+    settings:{},
+    categories:[{id:'local',name:'محلی'},{id:'farming',name:'کشاورزی'},{id:'social',name:'اجتماعی'}],
+    articles:[mourning,foreignPentagon,localFresh,localTwo,localOldPopular].map(x=>({...x})),
+    newsMonitor:{settings:{},sources:[{id:'mehr-world',enabled:true},{id:'mehr-politics',enabled:true}],queue:[],logs:[],seenUrls:[],nonNewsPolicyVersion:6,regionalFocusVersion:0}
+  };
+  assert.equal(store.publiclyVisibleArticle(doctorAd),false);
+  monitor.ensure(db);
+  assert.equal(db.articles.find(a=>a.id==='bereavement-1').status,'draft');
+  assert.equal(db.articles.find(a=>a.id==='pentagon-1').status,'draft');
+  assert.equal(db.articles.find(a=>a.id==='local-1').status,'published');
+  assert.equal(db.newsMonitor.sources.find(s=>s.id==='mehr-world').enabled,false);
+
+  const homeHtml=rebirthPublic.home(db);
+  assert.doesNotMatch(homeHtml,/rb-image-index|class="rb-en"|NABZ SARDO|01 \/ LEAD/);
+  assert.match(homeHtml,/پربازدیدترین‌ها \(۳۰ روز اخیر\)/);
+  assert.match(homeHtml,/آغاز برداشت مرکبات جیرفت/);
+  assert.doesNotMatch(homeHtml,/پنتاگون|عزای عمومی/);
+
+  const mapped=geminiBridge.mapArticle(localFresh);
+  assert.equal(mapped.deck.fa,'مسیر ارتباطی سه روستا به شبکه اصلی پیوست.');
+});

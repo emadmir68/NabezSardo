@@ -13,7 +13,6 @@ import {
 import type { Article, BreakingWireConfig, Locale } from '../types/news';
 import {
   cleanEditorialDeck,
-  formatEditorialIndex,
   formatNumber,
   formatShortDate,
   getCategoryLabel,
@@ -163,8 +162,8 @@ export function LiveHero({
         {/* Top Editorial Masthead Marker & Playback Controls */}
         <div className="relative z-20 max-w-[1380px] w-full mx-auto px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3.5 text-xs sm:text-[13px] text-[#EDE6D8]/92 min-w-0">
-            <span className="font-mono-tabular px-2.5 py-1 rounded-full bg-black/45 border border-[#D4A85B]/30 text-[#F1D79A] font-semibold tracking-wider shrink-0 backdrop-blur-md">
-              {formatEditorialIndex(currentIndex, locale)} / {formatEditorialIndex(safeSlides.length - 1, locale)}
+            <span className="px-2.5 py-1 rounded-full bg-black/45 border border-[#D4A85B]/30 text-[#F1D79A] font-semibold shrink-0 backdrop-blur-md">
+              {getCategoryLabel(activeSlide.category, locale)}
             </span>
             <span className="font-bold text-[#F1D79A] truncate">
               {getCategoryLabel(activeSlide.category, locale)}
@@ -317,10 +316,9 @@ export function LiveHero({
                         }}
                       />
                     </div>
-                    <div className="flex items-center gap-2 text-[10.5px] font-mono-tabular text-[#F1D79A] mb-1">
-                      <span className="font-bold">{formatEditorialIndex(idx, locale)}</span>
-                      <span aria-hidden="true" className="opacity-40">·</span>
-                      <span className="font-sans text-[#EDE6D8]/75 truncate">
+                    <div className="flex items-center gap-2 text-[10.5px] text-[#F1D79A] mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#F1D79A] shrink-0" aria-hidden="true" />
+                      <span className="font-sans text-[#EDE6D8]/85 truncate">
                         {getCategoryLabel(slide.category, locale)}
                       </span>
                     </div>
@@ -346,9 +344,13 @@ export function LiveHero({
                       ? locale === 'fa'
                         ? 'اطلاعیه تحریریه'
                         : 'Notice'
-                      : locale === 'fa'
-                        ? breakingWire?.label || 'خط فوری تحریریه'
-                        : 'Live Desk Wire'}
+                      : breakingArticles.length > 0 || breakingWire?.kind === 'breaking'
+                        ? locale === 'fa'
+                          ? breakingWire?.label || 'خط فوری تحریریه'
+                          : 'Live Desk Wire'
+                        : locale === 'fa'
+                          ? 'نبض خبر'
+                          : 'News Wire'}
                   </span>
                 </span>
                 <span aria-hidden="true" className="h-3.5 w-[1px] bg-[#D4A85B]/40 shrink-0" />

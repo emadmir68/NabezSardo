@@ -610,7 +610,8 @@ async function handleFastPublic(request,url,pathname,ctx){
         const cachedArticle=idx.get(key);
         if(!cachedArticle){
           try{await caches.default.delete(fastArticleCacheKey(pathname));}catch{}
-          return new Response("خبر پیدا نشد.",{status:404,headers:{...securityHeaders(),"content-type":"text/plain; charset=utf-8","cache-control":"no-store"}});
+          const gone=(db.articles||[]).some(a=>a&&(a.slug===key||a.id===key||shortArticleCodeWorker(a.id)===key));
+          return new Response("خبر پیدا نشد.",{status:gone?410:404,headers:{...securityHeaders(),"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-robots-tag":"noindex, nofollow, noarchive"}});
         }
         if(ctx&&fastTrackablePath(pathname)&&!fastBot(request.headers.get("user-agent")||"")){
           const cachedArticleId=String(cachedArticle.id);
@@ -630,7 +631,10 @@ async function handleFastPublic(request,url,pathname,ctx){
     const idx=await fastArticleIndex(db);
     const article=idx.get(key);
     if(article){body=views.article(db,article);articleId=String(article.id);}
-    else{body="خبر یافت نشد";status=404;}
+    else{
+      const gone=(db.articles||[]).some(a=>a&&(a.slug===key||a.id===key||shortArticleCodeWorker(a.id)===key));
+      return new Response("خبر یافت نشد",{status:gone?410:404,headers:{...securityHeaders(),"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-robots-tag":"noindex, nofollow, noarchive"}});
+    }
   }
   if(status===200&&ctx&&fastTrackablePath(pathname)){
     ctx.waitUntil(recordFastVisit(request,pathname,articleId).catch(err=>console.error("fast-analytics",String(err?.message||err))));
@@ -1932,7 +1936,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v8");
+  const marker=await getState("live_nonnews_cleanup_v9");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1946,9 +1950,9 @@ async function ensureLiveNonNewsCleanup(){
     try{invalidateFastArticleCache();}catch{}
     publicDbCache={at:0,db:null};
   }
-  await putState("live_nonnews_cleanup_v8","1");
+  await putState("live_nonnews_cleanup_v9","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v8","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v9","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 

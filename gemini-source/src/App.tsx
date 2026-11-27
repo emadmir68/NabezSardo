@@ -376,20 +376,23 @@ export default function App() {
     [articles]
   );
 
-  // Prioritize articles with authentic editorial photography for Live Hero slides
+  // Prioritize featured stories, then recent South Kerman photo stories for Live Hero slides
   const heroSlides = useMemo(() => {
+    const isLocalRegion = (a: Article) =>
+      ['sarduiyeh', 'jiroft', 'anbarabad', 'kahnuj'].includes(String(a.region || ''));
     const featured = publishedArticles.filter((a) => a.featuredInHero);
     const featuredWithPhotos = featured.filter((a) => hasRealEditorialPhoto(a));
     if (featuredWithPhotos.length > 0) return featuredWithPhotos.slice(0, 4);
     if (featured.length > 0) return featured.slice(0, 4);
+    const localPhotoStories = publishedArticles.filter((a) => hasRealEditorialPhoto(a) && isLocalRegion(a));
+    if (localPhotoStories.length > 0) return localPhotoStories.slice(0, 4);
     const photoStories = publishedArticles.filter((a) => hasRealEditorialPhoto(a));
     return photoStories.length > 0 ? photoStories.slice(0, 4) : publishedArticles.slice(0, 4);
   }, [publishedArticles]);
 
   const breakingArticles = useMemo(() => {
     if (!siteSettings.showBreakingWire) return [];
-    const breaking = publishedArticles.filter((a) => a.isBreaking);
-    return breaking.length > 0 ? breaking : publishedArticles.slice(0, 4);
+    return publishedArticles.filter((a) => a.isBreaking);
   }, [publishedArticles, siteSettings.showBreakingWire]);
 
   const activeArticle = useMemo(

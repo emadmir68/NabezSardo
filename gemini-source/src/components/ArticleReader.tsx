@@ -331,8 +331,19 @@ export function ArticleReader({
           {/* Executive Brief Callout when deck is distinct from body lead */}
           {(() => {
             const brief = cleanEditorialDeck(article.title[locale], article.deck[locale], 260);
-            const firstPara = (article.body[locale][0] || '').trim();
-            if (!brief || firstPara.startsWith(brief.slice(0, 28))) return null;
+            const norm = (s: string) =>
+              String(s || '')
+                .replace(/\u200c/g, ' ')
+                .replace(/[\u064A\u0649\u06CC]/g, '\u06CC')
+                .replace(/[\u0643\u06A9]/g, '\u06A9')
+                .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const firstPara = norm(article.body[locale][0] || '');
+            const briefNorm = norm(brief);
+            if (!brief || !briefNorm || firstPara.startsWith(briefNorm.slice(0, 28)) || briefNorm.startsWith(firstPara.slice(0, 28))) {
+              return null;
+            }
             return (
               <div className="max-w-[68ch] rounded-2xl border-s-2 border-[#8F6321] dark:border-[#ECC983] bg-[#EFE7D8]/55 dark:bg-[#111623] px-5 sm:px-6 py-4 sm:py-5">
                 <p className="text-[11px] font-bold tracking-wider uppercase text-[#8F6321] dark:text-[#ECC983] mb-1.5">
