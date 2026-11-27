@@ -91,8 +91,21 @@ assert.match(login,/\/assets\/rebirth\.css/);
 const admin=views.admin(sample,[],new URLSearchParams(),{telegram:false,rubika:false,whatsapp:false,baseUrl:true},{totalPageViews:100,today:{pageViews:20}},{settings:{enabled:true,keywords:'جیرفت'},sources:[],queue:[],counts:{pending:0,sourcesOn:0,sources:0}});
 assert.match(admin,/rb-admin-layout/);
 assert.match(admin,/action="\/admin\/news-monitor\/settings"/);
-assert.match(admin,/آگهی، محتوای تبلیغاتی و اطلاعیه‌های فوت/);
+assert.match(admin,/name="intervalMinutes" min="5" max="1440"/);
+assert.match(admin,/name="maxAgeHours"/);
+assert.match(admin,/id="followups"/);
+assert.match(admin,/\/admin\/citizens\/u1\/delete/);
+assert.match(admin,/\/admin\/contacts\/c1\/delete/);
+assert.match(admin,/آگهی، محتوای تبلیغاتی، اطلاعیه‌های فوت/);
 assert.doesNotMatch(admin,/\/assets\/site\.css/);
+
+const fs=require('node:fs');
+const path=require('node:path');
+const rebirthCss=fs.readFileSync(path.join(__dirname,'../public/assets/rebirth.css'),'utf8');
+assert.match(rebirthCss,/\.rb-admin-layout\s*\{/);
+assert.match(rebirthCss,/\.rb-monitor-row/);
+assert.match(rebirthCss,/\.rb-rich-editor\s*\{/);
+assert.match(rebirthCss,/\.rb-button\s*\{/);
 
 const editor=views.editor(sample,{title:'خبر آزمایشی',categoryId:'agriculture',bodyHtml:'<p>متن</p>',status:'draft'});
 assert.match(editor,/data-rebirth-editor/);

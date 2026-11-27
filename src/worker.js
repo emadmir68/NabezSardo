@@ -1920,7 +1920,8 @@ async function handleCloudflareAdminLogin(request) {
     return new Response("Invalid login request.", { status: 400 });
   }
   const ok = await verifyRuntimePassword(fields.get("username"), fields.get("password"));
-  if (!ok) return Response.redirect(new URL("/admin/login?error=1", request.url).toString(), 302);
+  const isGemini = new URL(request.url).searchParams.get("gemini") === "1";
+  if (!ok) return Response.redirect(new URL(isGemini ? "/admin/login?gemini=1&error=1" : "/admin/login?error=1", request.url).toString(), 302);
   const body = new URLSearchParams({ username: String(auth.user), password: String(auth.verifier) }).toString();
   const headers = new Headers(request.headers);
   headers.set("content-type", "application/x-www-form-urlencoded");
@@ -1931,7 +1932,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v7");
+  const marker=await getState("live_nonnews_cleanup_v8");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1945,9 +1946,9 @@ async function ensureLiveNonNewsCleanup(){
     try{invalidateFastArticleCache();}catch{}
     publicDbCache={at:0,db:null};
   }
-  await putState("live_nonnews_cleanup_v7","1");
+  await putState("live_nonnews_cleanup_v8","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v7","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v8","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 

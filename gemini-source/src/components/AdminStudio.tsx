@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertCircle,
   Check,
@@ -12,11 +12,13 @@ import {
   ImagePlus,
   LayoutDashboard,
   LogOut,
+  Mail,
   Plus,
   RotateCcw,
   Save,
   Search,
   Settings,
+  Share2,
   ShieldCheck,
   Star,
   Trash2,
@@ -57,6 +59,8 @@ interface AdminStudioProps {
   onDeleteArticle: (id: string) => void;
   onApproveCitizenReport: (report: CitizenReport) => void;
   onArchiveCitizenReport: (id: string) => void;
+  onDeleteCitizenReport?: (id: string) => void;
+  onDeleteContactMessage?: (id: string) => void;
   onAddMediaAsset: (asset: MediaAsset) => void;
   onDeleteMediaAsset: (id: string) => void;
   onSaveSiteSettings: (settings: SiteSettings) => void;
@@ -67,7 +71,7 @@ interface AdminStudioProps {
   onNotify: (msg: string, tone?: 'success' | 'info' | 'warning') => void;
 }
 
-type StudioTab = 'dashboard' | 'articles' | 'citizen' | 'media' | 'settings' | 'operations';
+type StudioTab = 'dashboard' | 'articles' | 'citizen' | 'messages' | 'media' | 'settings' | 'operations';
 
 export function AdminStudio({
   articles,
@@ -81,6 +85,8 @@ export function AdminStudio({
   onDeleteArticle,
   onApproveCitizenReport,
   onArchiveCitizenReport,
+  onDeleteCitizenReport,
+  onDeleteContactMessage,
   onAddMediaAsset,
   onDeleteMediaAsset,
   onSaveSiteSettings,
@@ -118,8 +124,11 @@ export function AdminStudio({
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Local editable settings copy
+  // Local editable settings copy synced cleanly once D1 config finishes loading
   const [settingsDraft, setSettingsDraft] = useState<SiteSettings>(siteSettings);
+  useEffect(() => {
+    setSettingsDraft(siteSettings);
+  }, [siteSettings]);
 
   const pendingReports = useMemo(
     () => citizenReports.filter((r) => r.status === 'pending'),
@@ -314,6 +323,8 @@ export function AdminStudio({
     const articleObj: Article = {
       id,
       slug: existing ? existing.slug : `${slugBase || 'dispatch'}-${Date.now().toString(36)}`,
+      shortCode: existing?.shortCode,
+      kicker: existing?.kicker,
       title: { fa: finalTitleFa, en: finalTitleEn },
       deck: { fa: finalDeckFa, en: finalDeckEn },
       body: {
@@ -328,19 +339,25 @@ export function AdminStudio({
       pullQuote: existing?.pullQuote,
       category,
       region,
+      locationLabel: existing && existing.region === region ? existing.locationLabel : undefined,
       author: {
         fa: authorFa.trim() || 'تحریریه نبض ساردو',
         en: existing?.author.en || 'Nabz Sardo Newsroom',
       },
-      authorRole: {
+      authorRole: existing?.authorRole || {
         fa: 'تحریریه منطقه‌ای',
         en: 'Regional Editorial Desk',
       },
       coverImage,
-      imageCaption: {
-        fa: `نگاره تحریریه — ${getRegionLabel(region, 'fa')}`,
-        en: `Editorial photo — ${getRegionLabel(region, 'en')}`,
-      },
+      videoUrl: existing?.videoUrl,
+      videoType: existing?.videoType,
+      gallery: existing?.gallery,
+      imageCaption: existing?.imageCaption?.fa
+        ? existing.imageCaption
+        : {
+            fa: `نگاره تحریریه — ${getRegionLabel(region, 'fa')}`,
+            en: `Editorial photo — ${getRegionLabel(region, 'en')}`,
+          },
       publishedAt: existing ? existing.publishedAt : new Date().toISOString(),
       readTimeMin: Math.max(2, Math.ceil((faParagraphs.join(' ').split(/\s+/).length || 120) / 140)),
       views: existing ? existing.views : 1,
@@ -387,6 +404,12 @@ export function AdminStudio({
       labelFa: `گزارش مردمی (${formatNumber(pendingReports.length, locale)})`,
       labelEn: `Citizen Queue (${pendingReports.length})`,
       icon: Users,
+    },
+    {
+      id: 'messages',
+      labelFa: `پیام‌های تماس (${formatNumber(contactMessages.length, locale)})`,
+      labelEn: `Messages (${contactMessages.length})`,
+      icon: Mail,
     },
     {
       id: 'media',
@@ -991,6 +1014,15 @@ export function AdminStudio({
                     <Edit3 className="w-3.5 h-3.5" />
                     <span>{locale === 'fa' ? 'ویرایش' : 'Edit'}</span>
                   </button>
+                  {item.status === 'published' && (
+                    <a
+                      href={`/admin/articles/${encodeURIComponent(item.id)}/share-kit`}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/22 text-[#8F6321] dark:text-[#ECC983] hover:border-[#9A6B27] dark:hover:border-[#E8C680] rounded-lg transition-colors"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>{locale === 'fa' ? 'پکیج انتشار' : 'Share Kit'}</span>
+                    </a>
+                  )}
                   {confirmDeleteId === item.id ? (
                     <div className="inline-flex items-center gap-1.5">
                       <button
@@ -1095,24 +1127,81 @@ export function AdminStudio({
                   )}
                 </div>
 
-                {report.status === 'pending' && (
-                  <div className="relative z-10 flex items-center gap-2.5 shrink-0">
+                <div className="relative z-10 flex flex-wrap items-center gap-2.5 shrink-0">
+                  {report.status === 'pending' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onApproveCitizenReport(report)}
+                        className="btn-luxury-ink text-xs"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>{locale === 'fa' ? 'تایید و انتشار' : 'Approve & Publish'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onArchiveCitizenReport(report.id)}
+                        className="px-4 py-2.5 text-xs font-semibold border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/20 text-[#5A5247] dark:text-[#A1AAB9] rounded-xl cursor-pointer"
+                      >
+                        {locale === 'fa' ? 'بایگانی' : 'Archive'}
+                      </button>
+                    </>
+                  )}
+                  {onDeleteCitizenReport && (
                     <button
                       type="button"
-                      onClick={() => onApproveCitizenReport(report)}
-                      className="btn-luxury-ink text-xs"
+                      onClick={() => onDeleteCitizenReport(report.id)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold border-[0.5px] border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-500/10 rounded-xl cursor-pointer"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{locale === 'fa' ? 'تایید و انتشار' : 'Approve & Publish'}</span>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{locale === 'fa' ? 'حذف' : 'Delete'}</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => onArchiveCitizenReport(report.id)}
-                      className="px-4 py-2.5 text-xs font-semibold border-[0.5px] border-[#D9CEBC] dark:border-[#D4A85B]/20 text-[#5A5247] dark:text-[#A1AAB9] rounded-xl cursor-pointer"
-                    >
-                      {locale === 'fa' ? 'بایگانی' : 'Archive'}
-                    </button>
+                  )}
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* TAB 3B: CONTACT MESSAGES INBOX */}
+      {activeTab === 'messages' && (
+        <div className="space-y-5">
+          {contactMessages.length === 0 ? (
+            <div className="luxury-panel rounded-[24px] p-14 text-center text-sm text-[#5A5247] dark:text-[#A1AAB9]">
+              {locale === 'fa' ? 'هنوز پیامی از فرم تماس ثبت نشده است.' : 'No contact messages received yet.'}
+            </div>
+          ) : (
+            contactMessages.map((msg) => (
+              <article
+                key={msg.id}
+                className="magazine-card rounded-[22px] p-6 sm:p-7 flex flex-col sm:flex-row sm:items-start justify-between gap-5 overflow-hidden"
+              >
+                <div className="space-y-2.5 max-w-3xl">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#5A5247] dark:text-[#A1AAB9]">
+                    <span className="font-bold text-[#9A6B27] dark:text-[#E8C680]">{msg.name}</span>
+                    <span aria-hidden="true" className="opacity-40">·</span>
+                    <span dir="ltr">{msg.email}</span>
+                    <span aria-hidden="true" className="opacity-40">·</span>
+                    <span>{formatShortDate(msg.createdAt, locale)}</span>
                   </div>
+                  <h3 className="font-editorial-display text-lg font-bold text-[#141210] dark:text-[#F6F2EA]">
+                    {msg.subject}
+                  </h3>
+                  <p className="text-sm text-[#5A5247] dark:text-[#A1AAB9] leading-relaxed whitespace-pre-line">
+                    {msg.message}
+                  </p>
+                </div>
+
+                {onDeleteContactMessage && (
+                  <button
+                    type="button"
+                    onClick={() => onDeleteContactMessage(msg.id)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold border-[0.5px] border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-500/10 rounded-xl shrink-0 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{locale === 'fa' ? 'حذف پیام' : 'Delete'}</span>
+                  </button>
                 )}
               </article>
             ))

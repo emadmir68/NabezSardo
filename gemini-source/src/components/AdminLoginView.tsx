@@ -8,6 +8,10 @@ interface AdminLoginViewProps {
 }
 
 export function AdminLoginView({ locale, onCancel }: AdminLoginViewProps) {
+  const hasError =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('error') === '1';
+
   return (
     <section className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24">
       <div className="luxury-panel rounded-[24px] p-7 sm:p-10 space-y-6">
@@ -27,6 +31,17 @@ export function AdminLoginView({ locale, onCancel }: AdminLoginViewProps) {
               : 'Authentication uses a signed HttpOnly newsroom session cookie.'}
           </p>
         </div>
+
+        {hasError && (
+          <div
+            role="alert"
+            className="p-3.5 rounded-xl border border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300 text-xs sm:text-sm font-semibold text-center"
+          >
+            {locale === 'fa'
+              ? 'نام کاربری یا رمز عبور تحریریه نادرست است.'
+              : 'Invalid editorial username or password.'}
+          </div>
+        )}
 
         <form method="post" action="/admin/login?gemini=1" className="space-y-4">
           <div className="space-y-1.5">

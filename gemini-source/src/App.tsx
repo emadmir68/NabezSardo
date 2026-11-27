@@ -32,6 +32,8 @@ import {
   approveCitizenFromApi,
   archiveCitizenFromApi,
   deleteArticleFromApi,
+  deleteCitizenFromApi,
+  deleteContactFromApi,
   fetchAdminAuthStatus,
   fetchAdminState,
   fetchFollowUps,
@@ -185,6 +187,7 @@ export default function App() {
       const state = await fetchAdminState();
       if (!active || !state) return;
       setCitizenReports(state.citizenReports);
+      setContactMessages(state.contactMessages);
       setArticles(state.articles);
       if (state.siteSettings) {
         setSiteSettings((prev) => ({ ...prev, ...state.siteSettings }));
@@ -541,6 +544,20 @@ export default function App() {
     pushToast('گزارش در سامانه اصلی بایگانی شد.', 'info');
   };
 
+  const handleDeleteCitizenReport = async (id: string) => {
+    const result = await deleteCitizenFromApi(id, adminToken);
+    if (!result.ok) { pushToast(result.error || 'حذف گزارش مردمی انجام نشد.', 'warning'); return; }
+    setCitizenReports((prev) => prev.filter((r) => r.id !== id));
+    pushToast('گزارش مردمی حذف شد.', 'info');
+  };
+
+  const handleDeleteContactMessage = async (id: string) => {
+    const result = await deleteContactFromApi(id, adminToken);
+    if (!result.ok) { pushToast(result.error || 'حذف پیام انجام نشد.', 'warning'); return; }
+    setContactMessages((prev) => prev.filter((m) => m.id !== id));
+    pushToast('پیام حذف شد.', 'info');
+  };
+
   const handleAddMediaAsset = async (asset: MediaAsset) => {
     const result = await syncMediaToApi(asset, adminToken);
     if (!result.ok) {
@@ -724,6 +741,8 @@ export default function App() {
             onDeleteArticle={handleDeleteArticle}
             onApproveCitizenReport={handleApproveCitizenReport}
             onArchiveCitizenReport={handleArchiveCitizenReport}
+            onDeleteCitizenReport={handleDeleteCitizenReport}
+            onDeleteContactMessage={handleDeleteContactMessage}
             onAddMediaAsset={handleAddMediaAsset}
             onDeleteMediaAsset={handleDeleteMediaAsset}
             onSaveSiteSettings={handleSaveSiteSettings}

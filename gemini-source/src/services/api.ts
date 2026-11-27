@@ -314,6 +314,7 @@ export async function fetchAdminAuthStatus(_token: string | null): Promise<Admin
 export async function fetchAdminState(): Promise<{
   articles: Article[];
   citizenReports: CitizenReport[];
+  contactMessages: ContactSubmission[];
   siteSettings?: Partial<SiteSettings>;
 } | null> {
   try {
@@ -325,6 +326,7 @@ export async function fetchAdminState(): Promise<{
         .map((x: Record<string, unknown>, i: number) => normalizeArticle(x, i))
         .filter((a: Article | null): a is Article => a !== null),
       citizenReports: Array.isArray(json.citizenReports) ? (json.citizenReports as CitizenReport[]) : [],
+      contactMessages: Array.isArray(json.contacts) ? (json.contacts as ContactSubmission[]) : [],
       siteSettings: json.settings
         ? {
             siteNameFa: json.settings.siteName?.fa || DEFAULT_SITE_SETTINGS.siteNameFa,
@@ -377,6 +379,16 @@ export async function approveCitizenFromApi(id: string, token: string | null): P
 export async function archiveCitizenFromApi(id: string, token: string | null): Promise<{ ok: boolean; error?: string }> {
   if (!token) return { ok: false, error: 'ورود به مدیریت لازم است.' };
   return adminAction({ action: 'archive-citizen', id });
+}
+
+export async function deleteCitizenFromApi(id: string, token: string | null): Promise<{ ok: boolean; error?: string }> {
+  if (!token) return { ok: false, error: 'ورود به مدیریت لازم است.' };
+  return adminAction({ action: 'delete-citizen', id });
+}
+
+export async function deleteContactFromApi(id: string, token: string | null): Promise<{ ok: boolean; error?: string }> {
+  if (!token) return { ok: false, error: 'ورود به مدیریت لازم است.' };
+  return adminAction({ action: 'delete-contact', id });
 }
 
 export async function logoutAdmin(_token: string | null): Promise<void> {

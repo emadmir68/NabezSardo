@@ -103,3 +103,22 @@ test('monitored news never exposes the monitored source in public presentation',
  assert.match(html,/تحریریه نبض ساردو/);
  assert.equal(stripSourceAttribution('https://mehrnews.com/x3dhxd\nمنبع: خبرگزاری مهر',imported),'');
 });
+
+test('external source URLs, handles and konarsandal attributions are always stripped',()=>{
+ const leaked={
+  id:'konar-leak',
+  slug:'konar-leak',
+  status:'published',
+  categoryId:'social',
+  title:'همایش توسعه منطقه | پایگاه خبری کنارصندل',
+  lead:'به گزارش پایگاه خبری کنار صندل طرح آبرسانی جیرفت آغاز شد.',
+  body:'@konardandal\n\nhttps://negahjavan.ir/n/101\n\nمتن خبر واقعی درباره توسعه زیرساخت جنوب کرمان.\n\nکنارصندل',
+  createdAt:'2026-10-12T12:00:00Z'
+ };
+ const shown=presentArticle(leaked);
+ assert.doesNotMatch(shown.title,/کنارصندل|پایگاه خبری/i);
+ assert.doesNotMatch(shown.lead,/کنار\s*صندل|پایگاه خبری/i);
+ assert.doesNotMatch(shown.body,/@konardandal|negahjavan\.ir|https?:\/\//i);
+ assert.match(shown.lead,/طرح آبرسانی جیرفت آغاز شد/);
+ assert.match(shown.body,/متن خبر واقعی درباره توسعه زیرساخت جنوب کرمان/);
+});

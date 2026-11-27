@@ -336,6 +336,7 @@ const server=http.createServer(async(req,res)=>{
       ok:true,
       articles:(db.articles||[]).map(geminiBridge.mapArticle),
       citizenReports:(db.citizens||[]).map(geminiBridge.mapCitizen),
+      contacts:(db.contacts||[]).map(x=>({id:String(x.id||''),name:String(x.name||''),email:String(x.contact||''),subject:String(x.subject||''),message:String(x.message||''),createdAt:String(x.createdAt||'')})),
       followups:[...(db.followups||[])],
       settings:geminiBridge.siteConfig(db,process.env.TURNSTILE_SITE_KEY||'')
     }),'application/json; charset=utf-8',{'Cache-Control':'private,no-store'});
@@ -442,6 +443,21 @@ const server=http.createServer(async(req,res)=>{
       if(!existing)return done(404,{ok:false,error:'article-not-found'});
       if(existing.image)deleteUpload(existing.image);
       db.articles=db.articles.filter(a=>a.id!==key);
+      save(db);return done(200,{ok:true});
+    }
+    if(action==='delete-citizen'){
+      const key=String(input.id||'');
+      const item=(db.citizens||[]).find(x=>x.id===key);
+      if(!item)return done(404,{ok:false,error:'report-not-found'});
+      if(item.mediaUrl)deleteUpload(item.mediaUrl);
+      db.citizens=(db.citizens||[]).filter(x=>x.id!==key);
+      save(db);return done(200,{ok:true});
+    }
+    if(action==='delete-contact'){
+      const key=String(input.id||'');
+      const before=(db.contacts||[]).length;
+      db.contacts=(db.contacts||[]).filter(x=>x.id!==key);
+      if(db.contacts.length===before)return done(404,{ok:false,error:'contact-not-found'});
       save(db);return done(200,{ok:true});
     }
     if(action==='archive-citizen'){
@@ -572,7 +588,7 @@ const server=http.createServer(async(req,res)=>{
         const secure=process.env.NODE_ENV==='production'?'; Secure':'';
         return redirect(res,(u.searchParams.get('gemini')==='1'?'/?studio=1':'/admin'),'nabez_admin='+token()+'; HttpOnly; SameSite=Lax; Path=/; Max-Age=43200'+secure);
       }
-      return redirect(res,'/admin/login?error=1');
+      return redirect(res,u.searchParams.get('gemini')==='1'?'/admin/login?gemini=1&error=1':'/admin/login?error=1');
     }
     if(p==='/contact'){
       if(String(f.website||'').trim())return redirect(res,'/contact?ok=1');
