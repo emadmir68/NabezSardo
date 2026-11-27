@@ -258,4 +258,16 @@ test('smart taxonomy, channel cleanup, queue redaction, and admin monitor UI sta
   assert.notEqual(db2.articles[0].categoryId,'weather');
   const mappedBomb=geminiBridge.mapArticle({...db2.articles[0],publishedAt:new Date().toISOString()});
   assert.equal(mappedBomb.body.fa.length,2);
+  assert.notEqual(mappedBomb.authorRole.fa,mappedBomb.author.fa);
+
+  // Structural hazard headline stays incidents despite weather context; municipal PR international unit stays social
+  const bridgeHazard={id:'bridge-hazard',slug:'bridge-hazard',title:'پل روستای سعیدآباد ایلخانی در آستانه فاجعه',lead:'بخش‌های بزرگی از دیواره بتنی پل تخریب شده و با توجه به آغاز فصل بارندگی و هشدارهای هواشناسی مبنی بر احتمال وقوع سیلاب‌های فصلی این پل تهدید جدی است.',body:'گزارش کامل وضعیت پل فرسوده در آستانه فاجعه.',categoryId:'weather',status:'published'};
+  const municipalPaving={id:'mun-paving',slug:'mun-paving',title:'نهضت آسفالت به محله کهوروئیه جیرفت رسید',lead:'عملیات آسفالت خیابان انقلاب محله کهوروئیه جیرفت توسط شهرداری در حال اجراست. مدیریت ارتباطات و امور بین‌الملل شهرداری و شورای اسلامی شهر جیرفت.',body:'پروژه بهسازی معابر شهری.',categoryId:'city-village',status:'published'};
+  const db3={categories:[{id:'weather',name:'آب‌وهوا'},{id:'incidents',name:'حوادث'},{id:'city-village',name:'سیاسی'},{id:'social',name:'اجتماعی'}],articles:[bridgeHazard,municipalPaving]};
+  store.normalizeEditorialDb(db3);
+  assert.equal(db3.articles[0].categoryId,'incidents');
+  assert.equal(db3.articles[1].categoryId,'social');
+  assert.equal(geminiBridge.mapArticle({...db3.articles[0],publishedAt:new Date().toISOString()}).category,'incidents');
+  assert.equal(geminiBridge.mapArticle({...db3.articles[1],publishedAt:new Date().toISOString()}).category,'social');
+  assert.equal(monitor._test.categoryFromText(municipalPaving.title+' '+municipalPaving.lead),'social');
 });

@@ -112,7 +112,7 @@ async function ensureSocialPreviewForPath(pathname){
     const beforeArticle=structuredClone(article);
     if(await ensureRasterSocialImage(article)){
       await publishing.commitChanges(env.DB,{articles:[beforeArticle]},{articles:[article]});
-      try{await invalidateFastArticleCache();}catch{} publicDbCache.at=0;
+      try{await invalidateFastArticleCache();}catch{} resetPublicDbCache();
     }
   }catch(err){
     console.error("social-preview-raster",article.id,String(err?.message||err));
@@ -283,7 +283,10 @@ async function ensureSchema() {
       await env.DB.prepare(
         "CREATE TABLE IF NOT EXISTS media_chunks (name TEXT NOT NULL, chunk_index INTEGER NOT NULL, chunk_data TEXT NOT NULL, PRIMARY KEY(name, chunk_index))"
       ).run();
-    })();
+    })().catch(err => {
+      schemaReady = null;
+      throw err;
+    });
   }
   await schemaReady;
 }
@@ -446,20 +449,92 @@ async function trafficSnapshotFast(){
   };
 }
 
-let publicDbCache={at:0,db:null};
-async function loadPublicDbFast(){
+const PUBLIC_DB_CACHE_TTL_MS=5000;
+let publicDbCache={at:0,db:null,publishedList:null,articleByKey:null,summaryJson:null,fullJson:null,followupsJson:null,configJson:null};
+let publicDbLoadPromise=null;
+function resetPublicDbCache(){
+  publicDbCache={at:0,db:null,publishedList:null,articleByKey:null,summaryJson:null,fullJson:null,followupsJson:null,configJson:null};
+}
+async function getPublicSnapshot(){
   const nowMs=Date.now();
-  if(publicDbCache.db&&nowMs-publicDbCache.at<1500)return publicDbCache.db;
-  await ensureTrafficSchema();
-  const [text,viewRows]=await Promise.all([
-    getState("db"),
-    env.DB.prepare("SELECT article_id,views FROM article_view_counts").all()
-  ]);
-  const db=store.normalizeEditorialDb(safeJson(text,{settings:{},categories:[],articles:[],contacts:[],citizens:[]}));
-  const counts=new Map((viewRows.results||[]).map(x=>[String(x.article_id),Number(x.views||0)]));
-  for(const a of db.articles||[])a.views=Number(a.views||0)+Number(counts.get(String(a.id))||0);
-  publicDbCache={at:nowMs,db};
-  return db;
+  if(publicDbCache.db&&nowMs-publicDbCache.at<PUBLIC_DB_CACHE_TTL_MS)return publicDbCache;
+  if(!publicDbLoadPromise){
+    publicDbLoadPromise=(async()=>{
+      await ensureTrafficSchema();
+      const [text,viewRows]=await Promise.all([
+        getState("db"),
+        env.DB.prepare("SELECT article_id,views FROM article_view_counts").all()
+      ]);
+      const db=store.normalizeEditorialDb(safeJson(text,{settings:{},categories:[],articles:[],contacts:[],citizens:[]}));
+      const counts=new Map((viewRows.results||[]).map(x=>[String(x.article_id),Number(x.views||0)]));
+      for(const a of db.articles||[])a.views=Number(a.views||0)+Number(counts.get(String(a.id))||0);
+      const publishedList=store.published(db);
+      const articleByKey=new Map();
+      for(const a of publishedList){
+        if(a.slug)articleByKey.set(String(a.slug),a);
+        if(a.id){
+          articleByKey.set(String(a.id),a);
+          const code=geminiBridge.compactStoryCode(a.id);
+          if(code)articleByKey.set(String(code),a);
+        }
+      }
+      publicDbCache={
+        at:Date.now(),
+        db,
+        publishedList,
+        articleByKey,
+        summaryJson:null,
+        fullJson:null,
+        followupsJson:null,
+        configJson:null
+      };
+      return publicDbCache;
+    })().finally(()=>{publicDbLoadPromise=null;});
+  }
+  return publicDbLoadPromise;
+}
+async function loadPublicDbFast(){
+  const snap=await getPublicSnapshot();
+  return snap.db;
+}
+function getCachedSummaryJson(snap){
+  if(!snap.summaryJson){
+    snap.summaryJson=JSON.stringify({
+      ok:true,
+      articles:snap.publishedList.map(a=>geminiBridge.mapArticle(a,{summary:true})),
+      source:"cloudflare-d1"
+    });
+  }
+  return snap.summaryJson;
+}
+function getCachedFullArticlesJson(snap){
+  if(!snap.fullJson){
+    snap.fullJson=JSON.stringify({
+      ok:true,
+      articles:snap.publishedList.map(a=>geminiBridge.mapArticle(a,{summary:false})),
+      source:"cloudflare-d1"
+    });
+  }
+  return snap.fullJson;
+}
+function getCachedFollowupsJson(snap){
+  if(!snap.followupsJson){
+    const followups=[...(snap.db.followups||[])].sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
+    snap.followupsJson=JSON.stringify({ok:true,followups});
+  }
+  return snap.followupsJson;
+}
+function getCachedConfigJson(snap){
+  if(!snap.configJson){
+    snap.configJson=JSON.stringify(geminiBridge.siteConfig(snap.db,env.TURNSTILE_SITE_KEY||""));
+  }
+  return snap.configJson;
+}
+function jsonStringResponse(body,extraHeaders={}){
+  return new Response(body,{
+    status:200,
+    headers:{"content-type":"application/json; charset=utf-8",...extraHeaders}
+  });
 }
 function securityHeaders(){
   return {
@@ -516,7 +591,7 @@ function fastHtml(body,status=200){
 const FAST_ARTICLE_CACHE_TTL_MS=120000;
 function fastArticleCacheKey(pathname){
   // Include deployed build version so updated templates and D1 cleanups never serve stale cached HTML.
-  const ver=encodeURIComponent(String(env.CLOUDFLARE_ASSET_VERSION||"v13")+"-v13");
+  const ver=encodeURIComponent(String(env.CLOUDFLARE_ASSET_VERSION||"v14")+"-v14");
   return new Request("https://nabzesardo.ir"+encodeURI(pathname)+"?__cv="+ver,{method:"GET"});
 }
 async function fastArticleCacheGet(pathname){
@@ -1870,7 +1945,7 @@ async function suppressPendingAutomaticPublications(){
   }
   if(afterArticles.length){
     await publishing.commitChanges(env.DB,{articles:beforeArticles},{articles:afterArticles});
-    try{await invalidateFastArticleCache();}catch{} publicDbCache.at=0;
+    try{await invalidateFastArticleCache();}catch{} resetPublicDbCache();
   }
   return afterArticles.length>0;
 }
@@ -1908,7 +1983,7 @@ async function refreshOpinionSocialWording(){
   }
   if(afterArticles.length){
     await publishing.commitChanges(env.DB,{articles:beforeArticles},{articles:afterArticles});
-    try{invalidateFastArticleCache();}catch{} publicDbCache.at=0;
+    try{invalidateFastArticleCache();}catch{} resetPublicDbCache();
   }
   return afterArticles.length>0;
 }
@@ -1936,7 +2011,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v13");
+  const marker=await getState("live_nonnews_cleanup_v14");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -1948,12 +2023,12 @@ async function ensureLiveNonNewsCleanup(){
   const afterCount=Array.isArray(after.articles)?after.articles.length:0;
   if(JSON.stringify(before)!==JSON.stringify(after)){
     await publishing.commitChanges(env.DB,before,after);
-    try{invalidateFastArticleCache();}catch{}
-    publicDbCache={at:0,db:null};
+    try{await invalidateFastArticleCache();}catch{}
+    resetPublicDbCache();
   }
-  await putState("live_nonnews_cleanup_v13","1");
+  await putState("live_nonnews_cleanup_v14","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v13","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v14","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 
@@ -1978,7 +2053,7 @@ async function ensurePrivacyCleanup(){
   if(JSON.stringify(before)!==JSON.stringify(after)){
     await publishing.commitChanges(env.DB,before,after);
     for(const name of removedMedia){try{await deleteMedia(name);}catch{}}
-    try{invalidateFastArticleCache();}catch{} publicDbCache={at:0,db:null};
+    try{await invalidateFastArticleCache();}catch{} resetPublicDbCache();
   }
   await putState("privacy_cleanup_v1","1");
   privacyCleanupEnsured=true;
@@ -1995,6 +2070,21 @@ async function ensureCutoverBackup() {
   await putState("backup:cutover-" + stamp + ".json", dbText);
   await putState("cutover_backup_created", "1");
   cutoverBackupEnsured=true;
+}
+
+let primaryHousekeepingEnsured=false;
+let primaryHousekeepingPromise=null;
+async function ensurePrimaryHousekeeping(){
+  if(primaryHousekeepingEnsured)return;
+  if(!primaryHousekeepingPromise){
+    primaryHousekeepingPromise=(async()=>{
+      await ensureCutoverBackup();
+      await ensurePrivacyCleanup();
+      await ensureLiveNonNewsCleanup();
+      primaryHousekeepingEnsured=true;
+    })().finally(()=>{primaryHousekeepingPromise=null;});
+  }
+  await primaryHousekeepingPromise;
 }
 
 function handleApp(request){return withLocalState(()=>handleAppSerial(request));}
@@ -2042,9 +2132,16 @@ async function runBackgroundMaintenance(){
   }
 }
 
+function safeDecodePath(pathname){
+  try{return decodeURIComponent(pathname);}
+  catch{return pathname;}
+}
+
 export default {
   async fetch(request, _bindings, ctx) {
     const url = new URL(request.url);
+    const p = safeDecodePath(url.pathname);
+    try{
     if (url.hostname.toLowerCase() === "www.nabzesardo.ir") {
       url.protocol = "https:";
       url.hostname = "nabzesardo.ir";
@@ -2054,7 +2151,6 @@ export default {
       url.protocol = "https:";
       return Response.redirect(url.toString(), 301);
     }
-    const p = decodeURIComponent(url.pathname);
     if (typeof process !== "undefined" && process.env) {
       if (env.CLOUDFLARE_PRIMARY !== undefined) process.env.CLOUDFLARE_PRIMARY = String(env.CLOUDFLARE_PRIMARY);
       if (env.PREVIEW_READONLY !== undefined) process.env.PREVIEW_READONLY = String(env.PREVIEW_READONLY);
@@ -2158,62 +2254,46 @@ export default {
     // Editorial React presentation reads only published, vetted Cloudflare D1 news.
     // The admin JSON mutation endpoints fall through to the signed-cookie Node newsroom.
     if(isPrimary()&&p==='/api/gemini/articles'&&request.method==='GET'){
-      await ensureCutoverBackup();
-      await ensurePrivacyCleanup();
-      await ensureLiveNonNewsCleanup();
-      const db=await loadPublicDbFast();
+      await ensurePrimaryHousekeeping();
+      const snap=await getPublicSnapshot();
       const summary=url.searchParams.get('summary')==='1';
-      const articles=store.published(db).map(a=>geminiBridge.mapArticle(a,{summary}));
-      return Response.json({ok:true,articles,source:'cloudflare-d1'},{
-        headers:{'cache-control':'private,no-store','x-nabzesardo-editorial':'verified-live-d1'}
+      return jsonStringResponse(summary?getCachedSummaryJson(snap):getCachedFullArticlesJson(snap),{
+        'cache-control':'private,no-store',
+        'x-nabzesardo-editorial':'verified-live-d1'
       });
     }
     if(isPrimary()&&p==='/api/gemini/article'&&request.method==='GET'){
-      await ensureCutoverBackup();
-      await ensurePrivacyCleanup();
-      await ensureLiveNonNewsCleanup();
+      await ensurePrimaryHousekeeping();
       const key=String(url.searchParams.get('slug')||url.searchParams.get('key')||url.searchParams.get('id')||'').trim().slice(0,200);
-      const db=await loadPublicDbFast();
-      const publishedList=store.published(db);
-      const found=publishedList.find(a=>a.slug===key||a.id===key||geminiBridge.compactStoryCode(a.id)===key);
+      const snap=await getPublicSnapshot();
+      const found=snap.articleByKey.get(key);
       if(!found)return Response.json({ok:false,error:'not-found'},{status:404,headers:{'cache-control':'no-store'}});
       return Response.json({ok:true,article:geminiBridge.mapArticle(found),source:'cloudflare-d1'},{
         headers:{'cache-control':'private,no-store','x-nabzesardo-editorial':'verified-live-d1'}
       });
     }
     if(isPrimary()&&p==='/api/gemini/followups'&&request.method==='GET'){
-      await ensureCutoverBackup();
-      await ensurePrivacyCleanup();
-      await ensureLiveNonNewsCleanup();
-      const db=await loadPublicDbFast();
-      const followups=[...(db.followups||[])].sort((a,b)=>new Date(b.updatedAt||b.createdAt||0)-new Date(a.updatedAt||a.createdAt||0));
-      return Response.json({ok:true,followups},{headers:{'cache-control':'private,no-store'}});
+      await ensurePrimaryHousekeeping();
+      const snap=await getPublicSnapshot();
+      return jsonStringResponse(getCachedFollowupsJson(snap),{'cache-control':'private,no-store'});
     }
     if(isPrimary()&&p==='/api/gemini/config'&&request.method==='GET'){
-      await ensureCutoverBackup();
-      await ensurePrivacyCleanup();
-      await ensureLiveNonNewsCleanup();
-      const db=await loadPublicDbFast();
-      return Response.json(geminiBridge.siteConfig(db,env.TURNSTILE_SITE_KEY||''),{
-        headers:{'cache-control':'private,no-store'}
-      });
+      await ensurePrimaryHousekeeping();
+      const snap=await getPublicSnapshot();
+      return jsonStringResponse(getCachedConfigJson(snap),{'cache-control':'private,no-store'});
     }
     if(isPrimary()&&p==='/api/gemini/view'&&request.method==='GET'){
-      await ensureCutoverBackup();
-      await ensurePrivacyCleanup();
-      await ensureLiveNonNewsCleanup();
+      await ensurePrimaryHousekeeping();
       const key=String(url.searchParams.get('slug')||'').slice(0,200);
-      const db=await loadPublicDbFast();
-      const article=store.published(db).find(a=>a.slug===key||a.id===key||geminiBridge.compactStoryCode(a.id)===key);
+      const snap=await getPublicSnapshot();
+      const article=snap.articleByKey.get(key);
       if(!article)return new Response(null,{status:404});
       if(ctx)ctx.waitUntil(recordFastVisit(request,'/news/'+encodeURIComponent(article.slug||key),String(article.id)).catch(()=>{}));
       return new Response(null,{status:204,headers:{'cache-control':'no-store'}});
     }
 
     if (isPrimary()) {
-      await ensureCutoverBackup();
-      await ensurePrivacyCleanup();
-      await ensureLiveNonNewsCleanup();
+      await ensurePrimaryHousekeeping();
 
       // Serve the React SPA to real browsers, while preserving SSR,
       // canonical metadata, sitemaps and social bot HTML from the Worker.
@@ -2248,6 +2328,19 @@ export default {
     }
 
     return handleApp(request);
+    } catch (err) {
+      console.error("worker-fetch-error", request.method, p, String(err?.stack || err?.message || err));
+      if (p.startsWith("/api/")) {
+        return Response.json(
+          { ok: false, error: "service-temporarily-unavailable" },
+          { status: 503, headers: { "cache-control": "no-store", "retry-after": "2" } }
+        );
+      }
+      return fastHtml(
+        '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>خطای موقت سرویس | نبض ساردو</title></head><body style="font-family:Vazirmatn,Tahoma,sans-serif;background:#fbf9f4;color:#141414;padding:40px 20px;text-align:center"><h1>اختلال موقت در پردازش درخواست</h1><p>سرویس در حال همگام‌سازی است؛ لطفاً چند ثانیه دیگر صفحه را تازه کنید.</p><p><a href="/">بازگشت به صفحه اصلی</a></p></body></html>',
+        503
+      );
+    }
   },
 
   async scheduled(controller) {

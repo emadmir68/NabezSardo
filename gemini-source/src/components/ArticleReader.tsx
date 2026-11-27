@@ -124,6 +124,54 @@ export function ArticleReader({
 
   const captionText = article.imageCaption?.[locale]?.trim() || '';
 
+  const normalizeComparable = (value: string) =>
+    String(value || '')
+      .replace(/\u200c/g, ' ')
+      .replace(/[\u064A\u0649\u06CC]/g, '\u06CC')
+      .replace(/[\u0643\u06A9]/g, '\u06A9')
+      .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const titleNorm = normalizeComparable(article.title[locale]);
+  const renderedBody: string[] = [];
+  const seenBody = new Set<string>();
+  for (const rawParagraph of article.body[locale]) {
+    let p = String(rawParagraph || '').trim();
+    if (!p) continue;
+    let pNorm = normalizeComparable(p);
+    if (!pNorm) continue;
+    if (titleNorm && titleNorm.length >= 12 && pNorm.startsWith(titleNorm) && pNorm.length > titleNorm.length + 12) {
+      const stripped = p.slice(article.title[locale].length).replace(/^[\s،,:؛.!؟—–-]+/u, '').trim();
+      if (normalizeComparable(stripped).length >= 12) {
+        p = stripped;
+        pNorm = normalizeComparable(p);
+      }
+    }
+    if (seenBody.has(pNorm)) continue;
+    seenBody.add(pNorm);
+    renderedBody.push(p);
+  }
+  if (renderedBody.length > 1 && titleNorm && normalizeComparable(renderedBody[0]) === titleNorm) {
+    renderedBody.shift();
+  }
+
+  const rawDeck = cleanEditorialDeck(article.title[locale], article.deck[locale], 280);
+  const deckNorm = normalizeComparable(rawDeck);
+  const firstBodyNorm = normalizeComparable(renderedBody[0] || '');
+  const distinctDeck =
+    rawDeck &&
+    deckNorm &&
+    (!firstBodyNorm || (!firstBodyNorm.startsWith(deckNorm.slice(0, 28)) && !deckNorm.startsWith(firstBodyNorm.slice(0, 28))))
+      ? rawDeck
+      : '';
+
+  const authorName = (article.author[locale] || '').trim();
+  const authorRoleName = (article.authorRole[locale] || '').trim();
+  const showAuthorRole = Boolean(
+    authorRoleName && normalizeComparable(authorRoleName) !== normalizeComparable(authorName),
+  );
+
   return (
     <article className="relative w-full pb-24">
       {/* Top Viewport Gold Reading Depth Bar */}
@@ -267,16 +315,20 @@ export function ArticleReader({
               {article.title[locale]}
             </h1>
 
-            {cleanEditorialDeck(article.title[locale], article.deck[locale], 280) && (
+            {distinctDeck && (
               <p className="text-base sm:text-xl text-[#EDE6D8]/88 leading-relaxed mb-7">
-                {cleanEditorialDeck(article.title[locale], article.deck[locale], 280)}
+                {distinctDeck}
               </p>
             )}
 
             <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-[#EDE6D8]/80">
-              <span className="font-semibold text-[#F5F1E8]">{article.author[locale]}</span>
-              <span aria-hidden="true" className="text-[#ECC983]/60">·</span>
-              <span>{article.authorRole[locale]}</span>
+              <span className="font-semibold text-[#F5F1E8]">{authorName}</span>
+              {showAuthorRole && (
+                <>
+                  <span aria-hidden="true" className="text-[#ECC983]/60">·</span>
+                  <span>{authorRoleName}</span>
+                </>
+              )}
               <span aria-hidden="true" className="text-[#ECC983]/60">·</span>
               <span className="tabular-nums">
                 {locale === 'fa'
@@ -327,36 +379,8 @@ export function ArticleReader({
         }`}
       >
         <div className="lg:col-span-8 space-y-10">
-          {/* Executive Brief Callout when deck is distinct from body lead */}
-          {(() => {
-            const brief = cleanEditorialDeck(article.title[locale], article.deck[locale], 260);
-            const norm = (s: string) =>
-              String(s || '')
-                .replace(/\u200c/g, ' ')
-                .replace(/[\u064A\u0649\u06CC]/g, '\u06CC')
-                .replace(/[\u0643\u06A9]/g, '\u06A9')
-                .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-            const firstPara = norm(article.body[locale][0] || '');
-            const briefNorm = norm(brief);
-            if (!brief || !briefNorm || firstPara.startsWith(briefNorm.slice(0, 28)) || briefNorm.startsWith(firstPara.slice(0, 28))) {
-              return null;
-            }
-            return (
-              <div className="max-w-[68ch] rounded-2xl border-s-2 border-[#8F6321] dark:border-[#ECC983] bg-[#EFE7D8]/55 dark:bg-[#111623] px-5 sm:px-6 py-4 sm:py-5">
-                <p className="text-[11px] font-bold tracking-wider uppercase text-[#8F6321] dark:text-[#ECC983] mb-1.5">
-                  {locale === 'fa' ? 'خلاصه روایت در یک نگاه' : 'AT A GLANCE'}
-                </p>
-                <p className="text-sm sm:text-[15.5px] font-medium text-[#161310] dark:text-[#F5F1E8] leading-[1.85]">
-                  {brief}
-                </p>
-              </div>
-            );
-          })()}
-
           <div className={`max-w-[68ch] space-y-6 text-[#161310] dark:text-[#EAE5DC] ${proseSizeClass}`}>
-            {article.body[locale].map((paragraph, index) => (
+            {renderedBody.map((paragraph, index) => (
               <div key={index} className="space-y-6">
                 <p
                   className={
