@@ -256,11 +256,16 @@ export function ArticleReader({
 
       {/* Asymmetric Reading Canvas (8-Col Prose / 4-Col Luxury Dossier Rail) */}
       <div className="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-        <div className="lg:col-span-8">
-          <div className={`max-w-[68ch] space-y-7 text-[#161412] dark:text-[#EAE5DC] ${proseSizeClass}`}>
+        <div className="lg:col-span-8 min-w-0">
+          <div className={`w-full min-w-0 max-w-[68ch] space-y-7 text-[#161412] dark:text-[#EAE5DC] ${proseSizeClass}`}>
             {article.body[locale].map((paragraph, index) => (
               <div key={index} className="space-y-7">
-                <p>{paragraph}</p>
+                <p
+                  dir={locale === 'fa' ? 'rtl' : 'ltr'}
+                  className={locale === 'fa' ? 'article-prose-paragraph-fa' : 'article-prose-paragraph-en'}
+                >
+                  {paragraph}
+                </p>
 
                 {index === 0 && article.pullQuote && (
                   <blockquote className="my-10 luxury-panel rounded-xl p-7 sm:p-8 text-center">
