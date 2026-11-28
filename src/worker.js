@@ -2341,6 +2341,16 @@ export default {
       const geminiPage=p==='/'||p==='/all-news'||p==='/send-news'||p==='/search'||p==='/about'||p==='/contact'||p==='/editorial-policy'||p==='/follow-up'||p==='/regions'||p==='/categories'||p==='/desks'||p==='/archive'||p==='/submit'||p==='/studio'||p==='/admin/login'||
         p.startsWith('/news/')||p.startsWith('/n/')||geminiCategory||geminiLocal;
       if(request.method==='GET'&&geminiPage&&accept.includes('text/html')&&!requiresSeoHtml(ua)){
+        // A removed or blocked article must not receive a successful SPA shell.
+        // Older short-code aliases are resolved by the existing server route.
+        const articleRoute=p.match(/^\/(?:news|n)\/(.+)$/);
+        if(articleRoute){
+          const snap=await getPublicSnapshot();
+          if(!snap.articleByKey.has(articleRoute[1])){
+            const resolved=await handleFastPublic(request,url,p,ctx);
+            if(resolved)return resolved;
+          }
+        }
         const htmlUrl=new URL('/gemini/',request.url);
         const page=await env.ASSETS.fetch(new Request(htmlUrl.toString(),{method:'GET'}));
         if(page.ok){
