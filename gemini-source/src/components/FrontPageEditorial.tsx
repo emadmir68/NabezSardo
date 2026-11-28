@@ -113,14 +113,15 @@ export function FrontPageEditorial({
       return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
 
-  const mostReadPool = published.filter(
-    (a) => Date.now() - new Date(a.publishedAt).getTime() <= 30 * 86400000,
-  );
-  const mostRead = [...(mostReadPool.length >= 3 ? mostReadPool : published)]
+  const now = Date.now();
+  const isRecent = (article: Article, days: number) => {
+    const stamp = Date.parse(article.publishedAt);
+    return Number.isFinite(stamp) && stamp <= now + 300000 && now - stamp <= days * 86400000;
+  };
+  const mostRead = published.filter((a) => isRecent(a, 30))
     .sort((a, b) => b.views - a.views)
     .slice(0, 5);
-  const shortNewsItems = published.filter((a) => a.category === 'short-news');
-  const quickDispatches = (shortNewsItems.length > 0 ? shortNewsItems : published).slice(0, 4);
+  const quickDispatches = published.filter((a) => a.category === 'short-news' && isRecent(a, 7)).slice(0, 4);
 
   const hasActiveFilters =
     selectedCategory !== 'all' ||
@@ -715,7 +716,8 @@ export function FrontPageEditorial({
                 </div>
 
                 <ol className="divide-y divide-[#D9CEBC]/65 dark:divide-[#D4A85B]/12">
-                  {mostRead.map((item, idx) => (
+                  {mostRead.length === 0 && <li className="text-sm text-[#5A5247] dark:text-[#A1AAB9]">{locale === 'fa' ? 'در ۳۰ روز اخیر خبری ثبت نشده است.' : 'No stories in the last 30 days.'}</li>}
+                  {mostRead.map((item) => (
                     <li key={item.id} className="py-4 sm:py-5 first:pt-0 last:pb-0">
                       <button
                         type="button"
@@ -757,6 +759,7 @@ export function FrontPageEditorial({
               </h3>
 
               <ul className="space-y-4 sm:space-y-5">
+                {quickDispatches.length === 0 && <li className="text-sm text-[#5A5247] dark:text-[#A1AAB9]">{locale === 'fa' ? 'در هفت روز اخیر خبر کوتاه مستقلی ثبت نشده است.' : 'No new regional briefs in the last seven days.'}</li>}
                 {quickDispatches.map((brief) => (
                   <li
                     key={brief.id}

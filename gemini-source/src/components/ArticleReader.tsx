@@ -378,16 +378,13 @@ export function ArticleReader({
           !hasVideo && !hasPhoto ? 'pt-12' : ''
         }`}
       >
-        <div className="lg:col-span-8 space-y-10">
-          <div className={`max-w-[68ch] space-y-6 text-[#161310] dark:text-[#EAE5DC] ${proseSizeClass}`}>
+        <div className="lg:col-span-8 min-w-0 space-y-10">
+          <div className={`w-full min-w-0 max-w-[68ch] space-y-6 text-[#161310] dark:text-[#EAE5DC] ${proseSizeClass}`}>
             {renderedBody.map((paragraph, index) => (
               <div key={index} className="space-y-6">
                 <p
-                  className={
-                    index === 0
-                      ? 'first-line:font-semibold first-line:text-[#161310] dark:first-line:text-[#F6F2EA]'
-                      : undefined
-                  }
+                  dir={locale === 'fa' ? 'rtl' : 'ltr'}
+                  className={`article-prose-paragraph ${index === 0 ? 'first-line:font-semibold first-line:text-[#161310] dark:first-line:text-[#F6F2EA]' : ''}`}
                 >
                   {paragraph}
                 </p>

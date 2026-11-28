@@ -409,19 +409,29 @@ export default function App() {
   const heroSlides = useMemo(() => {
     const isLocalRegion = (a: Article) =>
       ['sarduiyeh', 'jiroft', 'anbarabad', 'kahnuj'].includes(String(a.region || ''));
-    const featured = publishedArticles.filter((a) => a.featuredInHero);
+    const now = Date.now();
+    const recent = publishedArticles.filter((a) => {
+      const stamp = Date.parse(a.publishedAt);
+      return Number.isFinite(stamp) && stamp <= now + 300000 && now - stamp <= 7 * 86400000;
+    });
+    const pool = recent.length ? recent : publishedArticles;
+    const featured = pool.filter((a) => a.featuredInHero);
     const featuredWithPhotos = featured.filter((a) => hasRealEditorialPhoto(a));
     if (featuredWithPhotos.length > 0) return featuredWithPhotos.slice(0, 4);
     if (featured.length > 0) return featured.slice(0, 4);
-    const localPhotoStories = publishedArticles.filter((a) => hasRealEditorialPhoto(a) && isLocalRegion(a));
+    const localPhotoStories = pool.filter((a) => hasRealEditorialPhoto(a) && isLocalRegion(a));
     if (localPhotoStories.length > 0) return localPhotoStories.slice(0, 4);
-    const photoStories = publishedArticles.filter((a) => hasRealEditorialPhoto(a));
-    return photoStories.length > 0 ? photoStories.slice(0, 4) : publishedArticles.slice(0, 4);
+    const photoStories = pool.filter((a) => hasRealEditorialPhoto(a));
+    return photoStories.length > 0 ? photoStories.slice(0, 4) : pool.slice(0, 4);
   }, [publishedArticles]);
 
   const breakingArticles = useMemo(() => {
     if (!siteSettings.showBreakingWire) return [];
-    return publishedArticles.filter((a) => a.isBreaking);
+    const now = Date.now();
+    return publishedArticles.filter((a) => {
+      const stamp = Date.parse(a.publishedAt);
+      return a.isBreaking && Number.isFinite(stamp) && stamp <= now + 300000 && now - stamp <= 72 * 3600000;
+    });
   }, [publishedArticles, siteSettings.showBreakingWire]);
 
   const activeArticle = useMemo(
