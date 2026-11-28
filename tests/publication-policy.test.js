@@ -271,3 +271,26 @@ test('smart taxonomy, channel cleanup, queue redaction, and admin monitor UI sta
   assert.equal(geminiBridge.mapArticle({...db3.articles[1],publishedAt:new Date().toISOString()}).category,'social');
   assert.equal(monitor._test.categoryFromText(municipalPaving.title+' '+municipalPaving.lead),'social');
 });
+
+
+test('standalone personal gratitude cannot enter public news or survive the new cleanup',()=>{
+  const prayer={id:'prayer-20261128',slug:'prayer-20261128',status:'published',imported:false,categoryId:'social',title:'خدایا شکرت که امروز هم با عشق و حضورت، قلبم پر از آرامش بود',lead:'شکرگزاری خدایا شکرت که امروز هم با عشق و حضورت، قلبم پر از آرامش بود',body:'خدایا شکرت که زندگیم هر روز زیباتر و پربرکت‌تر میشه.'};
+  assert.equal(store.publiclyVisibleArticle(prayer),false);
+  assert.equal(articleTools._test.publicationPolicyReason(prayer),'non-news-message');
+  const religiousNews={...ordinaryNews,id:'religious-news',title:'برگزاری مراسم نیایش و شکرگزاری در جیرفت',lead:'مسئولان از برگزاری برنامه فرهنگی در جیرفت خبر دادند.',body:'در این برنامه عمومی، سخنران درباره شکرگزاری صحبت کرد.'};
+  assert.equal(store.publiclyVisibleArticle(religiousNews),true);
+  const db={settings:{},categories:[],articles:[{...prayer},{...fatalAccident},{...religiousNews}],newsMonitor:{settings:{},sources:[],queue:[{...prayer,id:'q-prayer',status:'pending'}],logs:[],seenUrls:[],nonNewsPolicyVersion:6,regionalFocusVersion:6}};
+  monitor.ensure(db);
+  assert.equal(db.articles.find(a=>a.id===prayer.id).status,'draft');
+  assert.equal(db.articles.find(a=>a.id===fatalAccident.id).status,'published');
+  assert.equal(db.articles.find(a=>a.id===religiousNews.id).status,'published');
+  const q=db.newsMonitor.queue.find(a=>a.id==='q-prayer');
+  assert.ok(q.redacted);assert.equal(q.body,'');assert.equal(q.status,'rejected');
+  assert.equal(db.newsMonitor.devotionalCleanupVersion,1);
+});
+test('school closures due to illness belong to social news in both renderers',()=>{
+  const story={id:'school-health',title:'تعطیلی مدارس سیرجان در روز شنبه در پی فوت دو دانش‌آموز بر اثر آنفلوانزا',lead:'آموزش حضوری مدارس متوقف شد.',categoryId:'culture',status:'published',publishedAt:new Date().toISOString()};
+  assert.equal(store.inferEditorialCategory(story),'social');
+  assert.equal(geminiBridge.mapArticle(story).category,'social');
+  assert.equal(store.publiclyVisibleArticle(story),true);
+});

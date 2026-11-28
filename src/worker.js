@@ -2026,7 +2026,7 @@ async function handleCloudflareAdminLogin(request) {
 let liveNonNewsCleanupEnsured=false;
 async function ensureLiveNonNewsCleanup(){
   if(liveNonNewsCleanupEnsured)return;
-  const marker=await getState("live_nonnews_cleanup_v14");
+  const marker=await getState("live_nonnews_cleanup_v15");
   if(marker==="1"){liveNonNewsCleanupEnsured=true;return;}
   const raw=await getState("db");
   if(!raw){return;}
@@ -2041,9 +2041,9 @@ async function ensureLiveNonNewsCleanup(){
     try{await invalidateFastArticleCache();}catch{}
     resetPublicDbCache();
   }
-  await putState("live_nonnews_cleanup_v14","1");
+  await putState("live_nonnews_cleanup_v15","1");
   const quarantined=Number(after.newsMonitor?.nonNewsPolicyQuarantinedCount||0);
-  console.log("live-nonnews-cleanup-v14","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
+  console.log("live-nonnews-cleanup-v15","quarantined="+String(quarantined),"removed="+String(Math.max(0,beforeCount-afterCount)));
   liveNonNewsCleanupEnsured=true;
 }
 
