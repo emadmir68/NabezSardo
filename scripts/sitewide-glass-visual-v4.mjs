@@ -143,6 +143,8 @@ try{
       }
       if(route.startsWith('/news/')){
         report(metrics.article,size.w+' article root and share metadata exist');
+        const prose=await page.locator('.rb-article-prose p').first().evaluate(el=>({align:getComputedStyle(el).textAlign,direction:getComputedStyle(el).direction}));
+        report(prose.align==='justify'&&prose.direction==='rtl',size.w+' Persian article body is actually justified and RTL');
         report(await page.locator('[data-article-share-image]').count()===1,size.w+' article image-share control exists');
         report(await page.locator('[data-article-text-story]').count()===1,size.w+' article text-story export exists');
       }

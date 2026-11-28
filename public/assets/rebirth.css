@@ -2466,3 +2466,10 @@ body {
   .rb-hero-bottomline { flex-wrap:wrap; align-items:center; row-gap:8px; letter-spacing:.8px; }
   .rb-breaking p { min-width:0; }
 }
+
+/* Keep iOS from zooming focused newsroom and public form controls on phones. */
+@media(max-width:480px){
+  main input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  main textarea,
+  main select { font-size:16px !important; }
+}

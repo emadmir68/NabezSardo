@@ -41,3 +41,7 @@ test('mobile server search uses aligned CSS and JS breakpoints',()=>{
   assert.match(read('public/assets/rebirth.css'),/\.rb-header-side \.rb-search\.is-open\s*\{[^}]*position:absolute/);
   assert.match(read('public/assets/rebirth.js'),/matchMedia\('\(max-width:820px\)'\)/);
 });
+
+test('mobile main forms keep text at the iOS minimum focus size',()=>{
+  assert.match(read('public/assets/rebirth.css'),/@media\(max-width:480px\)\{[\s\S]*?main select\s*\{\s*font-size:16px !important/);
+});
